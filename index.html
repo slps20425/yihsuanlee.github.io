@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evan Lee - Software QA Engineer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Professional Calm -->
+    <!-- Application Structure Plan: The SPA uses a single-page portfolio/dashboard structure to provide a scannable yet detailed overview of Evan Lee's resume. The structure includes a sticky navigation, a "Key Metrics" section for immediate impact, an interactive timeline for career progression, and a modal-based project gallery. This non-linear design was chosen to allow recruiters to quickly access the information most relevant to them, encouraging exploration rather than forcing a linear read of a static document. -->
+    <!-- Visualization & Content Choices: 1. Skills Breakdown: Donut Chart (Chart.js) shows the proportion of skills per category, offering a quick visual summary of technical breadth. 2. Career History: Interactive Vertical Timeline (HTML/CSS/JS) displays job progression; users can click to expand details, keeping the initial view clean. 3. Projects: Card Grid with Modals (HTML/CSS/JS) organizes projects for easy browsing; modals provide detailed descriptions on demand without cluttering the main page. This approach prioritizes user-led discovery of information. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #333;
+        }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #d1d5db;
+        }
+        .timeline-item:last-child:before {
+            height: 20px;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #4f46e5;
+            border: 3px solid #f8f7f4;
+        }
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+        .nav-link {
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .nav-link.active {
+            color: #4f46e5;
+            border-bottom-color: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-gray-800">Evan Lee</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#summary" class="nav-link text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Summary</a>
+                        <a href="#skills" class="nav-link text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Skills</a>
+                        <a href="#experience" class="nav-link text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Experience</a>
+                        <a href="#projects" class="nav-link text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Projects</a>
+                        <a href="#education" class="nav-link text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Education</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <section id="summary" class="mb-16 scroll-mt-24">
+            <div class="text-center">
+                <h2 class="text-4xl font-extrabold text-gray-900 tracking-tight">Evan Lee</h2>
+                <p class="mt-2 text-lg text-indigo-600 font-semibold">Software QA Engineer | Test Automation Specialist</p>
+                <p class="mt-4 max-w-3xl mx-auto text-gray-600">
+                    Experienced Software QA Engineer with 5+ years in comprehensive testing across mobile, web, and embedded systems. Proven track record in test automation, CI/CD pipeline management, and cross-functional collaboration with international teams. Skilled in leveraging AI/ML technologies and prompt engineering to build innovative tools that enhance team productivity and streamline development workflows.
+                </p>
+                <div class="mt-6 text-sm text-gray-500">
+                    <span>Taiwan</span> | <span>+886-976-347-762</span> | <span>eason.s@hotmail.com</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="skills" class="mb-16 scroll-mt-24">
+            <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center">Technical Skills</h3>
+             <div class="text-center mb-8 px-4">
+                 <p class="text-gray-600">This section provides a summary of my technical capabilities. The chart visualizes the distribution of my skills across different technology domains, giving a quick overview of my expertise. You can explore the detailed list of technologies in each category below.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-center">
+                <div class="lg:col-span-1">
+                    <div class="chart-container relative w-full max-w-xs mx-auto h-72">
+                        <canvas id="skillsChart"></canvas>
+                    </div>
+                </div>
+                <div class="md:col-span-1 lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">Systems & Cloud</h4>
+                        <p class="text-gray-600 text-sm">Linux (Ubuntu), Unix, Windows, Mac OS, AWS (Bedrock, Lambda, S3, EC2), Amazon Q</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">Programming</h4>
+                        <p class="text-gray-600 text-sm">Python, Java, SQL, Shell, JavaScript, Prompt Engineering</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">Testing & Automation</h4>
+                        <p class="text-gray-600 text-sm">Selenium, Appium, Robot Framework, Jenkins CI/CD, Cucumber, BDD</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">Databases & Dev Tools</h4>
+                        <p class="text-gray-600 text-sm">Oracle, PostgreSQL, Docker, Jira, Git, Postman, JMeter</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="experience" class="mb-16 scroll-mt-24">
+            <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center">Professional Experience</h3>
+            <div class="text-center mb-8 px-4">
+                 <p class="text-gray-600">My professional journey is presented as an interactive timeline. Click on any role to expand or collapse its details, allowing you to focus on the experiences most relevant to you. This format highlights my career progression and key responsibilities at each stage.</p>
+            </div>
+            <div class="relative max-w-2xl mx-auto">
+                <div class="experience-item cursor-pointer">
+                    <div class="timeline-item pl-12 pb-8">
+                        <div class="timeline-dot"></div>
+                        <div class="experience-header">
+                            <p class="text-sm text-gray-500">11/2021 - Present</p>
+                            <h4 class="font-bold text-xl text-gray-800">Software QA Engineer</h4>
+                            <p class="font-semibold text-indigo-600">Amazon Ring, Taipei Taiwan</p>
+                        </div>
+                        <div class="experience-details mt-2 text-gray-600 space-y-2 text-sm overflow-hidden">
+                           <ul class="list-disc pl-5 mt-2">
+                                <li>Execute comprehensive testing for home security systems (manual, automated, API, mobile).</li>
+                                <li>Manage Jenkins CI/CD pipelines for streamlined software delivery.</li>
+                                <li>Test EAA compliance and third-party sensor integration across Android/iOS platforms.</li>
+                                <li>Developed a prompt flow tool for efficient Jira ticket creation by analyzing screenshots/logs.</li>
+                                <li>Contributed functionality to MCP servers and automated test cases with 2-4 PRs per month.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="experience-item cursor-pointer">
+                    <div class="timeline-item pl-12 pb-8">
+                        <div class="timeline-dot"></div>
+                        <div class="experience-header">
+                            <p class="text-sm text-gray-500">4/2019 - 11/2021</p>
+                            <h4 class="font-bold text-xl text-gray-800">Software QA Engineer</h4>
+                            <p class="font-semibold text-indigo-600">Ironyun Company, HsinChu Taiwan</p>
+                        </div>
+                        <div class="experience-details mt-2 text-gray-600 space-y-2 text-sm overflow-hidden hidden">
+                            <ul class="list-disc pl-5 mt-2">
+                                <li>Developed automation scripts using Java/Python and Robot Framework for VaaS face/object recognition solutions.</li>
+                                <li>Created comprehensive test scenarios and performed API testing (CRUD operations).</li>
+                                <li>Collaborated with international team (India, Russia) and troubleshot issues from system logs.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="experience-item cursor-pointer">
+                    <div class="timeline-item pl-12 pb-8">
+                        <div class="timeline-dot"></div>
+                        <div class="experience-header">
+                            <p class="text-sm text-gray-500">7/2016 - 3/2019</p>
+                            <h4 class="font-bold text-xl text-gray-800">Hardware Testing Engineer</h4>
+                            <p class="font-semibold text-indigo-600">Quanta Company, Shanghai China</p>
+                        </div>
+                        <div class="experience-details mt-2 text-gray-600 space-y-2 text-sm overflow-hidden hidden">
+                             <p class="font-medium text-gray-700">Major Project: Apple Watch Series 3/4 testing and production optimization</p>
+                            <ul class="list-disc pl-5 mt-2">
+                                <li>Collaborated with Apple engineers on wearable device testing, reducing retest rates to &lt;3%.</li>
+                                <li>Analyzed production data using JMP/Python and led daily meetings with Apple clients.</li>
+                                <li>Traveled to US 7+ times for hardware tuning; developed SOPs using Python tools.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                 <div class="experience-item cursor-pointer">
+                    <div class="timeline-item pl-12 pb-8">
+                        <div class="timeline-dot"></div>
+                        <div class="experience-header">
+                            <p class="text-sm text-gray-500">10/2014 - 6/2016</p>
+                            <h4 class="font-bold text-xl text-gray-800">Software Field Application Engineer</h4>
+                            <p class="font-semibold text-indigo-600">YING HAN Technology, Tainan Taiwan</p>
+                        </div>
+                        <div class="experience-details mt-2 text-gray-600 space-y-2 text-sm overflow-hidden hidden">
+                            <ul class="list-disc pl-5 mt-2">
+                                <li>Provided global technical support for bender manufacturing software/hardware issues.</li>
+                                <li>Created training documentation for worldwide partner technicians and managed case tracking.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="projects" class="mb-16 scroll-mt-24">
+            <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center">Key Projects</h3>
+             <div class="text-center mb-8 px-4">
+                 <p class="text-gray-600">This gallery showcases my key projects, with a focus on AI and automation. Click the "Learn More" button on any project card to view a detailed description of its purpose, technologies used, and my specific contributions in a pop-up window.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                    <h4 class="font-bold text-lg text-gray-800">Prompt Flow for Jira Creation</h4>
+                    <p class="mt-2 text-gray-600 text-sm flex-grow">An AI-powered tool that automates and enhances Jira ticket creation by analyzing screenshots and logs.</p>
+                    <button class="project-modal-trigger mt-4 bg-indigo-100 text-indigo-700 text-sm font-semibold py-2 px-4 rounded-lg self-start hover:bg-indigo-200 transition-colors" data-project-id="0">Learn More</button>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                    <h4 class="font-bold text-lg text-gray-800">UI Element Extractor</h4>
+                    <p class="mt-2 text-gray-600 text-sm flex-grow">An automated tool to streamline test case creation by extracting UI elements from mobile apps.</p>
+                    <button class="project-modal-trigger mt-4 bg-indigo-100 text-indigo-700 text-sm font-semibold py-2 px-4 rounded-lg self-start hover:bg-indigo-200 transition-colors" data-project-id="1">Learn More</button>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                    <h4 class="font-bold text-lg text-gray-800">Apple Watch Series 3/4 Testing</h4>
+                    <p class="mt-2 text-gray-600 text-sm flex-grow">Led key testing initiatives for wearable device production, significantly reducing retest rates.</p>
+                    <button class="project-modal-trigger mt-4 bg-indigo-100 text-indigo-700 text-sm font-semibold py-2 px-4 rounded-lg self-start hover:bg-indigo-200 transition-colors" data-project-id="2">Learn More</button>
+                </div>
+                 <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                    <h4 class="font-bold text-lg text-gray-800">Python Django API</h4>
+                    <p class="mt-2 text-gray-600 text-sm flex-grow">Personal project developing RESTful API services for web applications.</p>
+                    <button class="project-modal-trigger mt-4 bg-indigo-100 text-indigo-700 text-sm font-semibold py-2 px-4 rounded-lg self-start hover:bg-indigo-200 transition-colors" data-project-id="3">Learn More</button>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                    <h4 class="font-bold text-lg text-gray-800">Automated Test Framework</h4>
+                    <p class="mt-2 text-gray-600 text-sm flex-grow">Consistently delivered automation improvements, submitting 2-4 pull requests monthly.</p>
+                    <button class="project-modal-trigger mt-4 bg-indigo-100 text-indigo-700 text-sm font-semibold py-2 px-4 rounded-lg self-start hover:bg-indigo-200 transition-colors" data-project-id="4">Learn More</button>
+                </div>
+                 <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                    <h4 class="font-bold text-lg text-gray-800">Line Chat Bot</h4>
+                    <p class="mt-2 text-gray-600 text-sm flex-grow">Personal project creating an interactive chatbot using Python.</p>
+                    <button class="project-modal-trigger mt-4 bg-indigo-100 text-indigo-700 text-sm font-semibold py-2 px-4 rounded-lg self-start hover:bg-indigo-200 transition-colors" data-project-id="5">Learn More</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="education" class="scroll-mt-24 bg-white p-8 rounded-lg shadow-md">
+            <h3 class="text-3xl font-bold text-gray-900 mb-6 text-center">Education & Training</h3>
+            <div class="space-y-4 max-w-2xl mx-auto">
+                <div>
+                    <h4 class="text-lg font-bold text-gray-800">Master of Science, Computer Science</h4>
+                    <p class="text-indigo-600">National Central University | 2019</p>
+                    <p class="text-sm text-gray-600 mt-1">Thesis: Portfolio Allocation using Autoencoder and Reinforcement Learning</p>
+                </div>
+                <hr>
+                <div>
+                    <h4 class="text-lg font-bold text-gray-800">Bachelor of Science, Innovative Information Technology</h4>
+                    <p class="text-indigo-600">Tamkang University | 2013</p>
+                     <p class="text-sm text-gray-600 mt-1">Exchange Program: Washington State University</p>
+                </div>
+                 <hr>
+                <div>
+                    <h4 class="text-lg font-bold text-gray-800">Recent Training</h4>
+                    <p class="text-indigo-600">OpenAI (LangChain) and GitHub Copilot Workshop | 2024</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="project-modal" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 hidden opacity-0">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-start">
+                    <h3 id="modal-title" class="text-2xl font-bold text-gray-900"></h3>
+                    <button id="modal-close" class="text-gray-400 hover:text-gray-600">&times;</button>
+                </div>
+                <div id="modal-content" class="mt-4 text-gray-600 text-sm space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const skillsData = {
+                labels: ['Systems & Cloud', 'Programming', 'Testing & Automation', 'Databases & Dev Tools'],
+                datasets: [{
+                    label: 'Skills Distribution',
+                    data: [5, 6, 6, 7],
+                    backgroundColor: [
+                        'rgba(79, 70, 229, 0.7)',
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(249, 115, 22, 0.7)',
+                    ],
+                    borderColor: [
+                        'rgba(79, 70, 229, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(16, 185, 129, 1)',
+                        'rgba(249, 115, 22, 1)',
+                    ],
+                    borderWidth: 1,
+                    hoverOffset: 8
+                }]
+            };
+
+            const skillsChartCtx = document.getElementById('skillsChart').getContext('2d');
+            new Chart(skillsChartCtx, {
+                type: 'doughnut',
+                data: skillsData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 12 },
+                                boxWidth: 15,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed;
+                                    }
+                                    return label + ' technologies';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const experienceItems = document.querySelectorAll('.experience-item');
+            experienceItems.forEach(item => {
+                const header = item.querySelector('.experience-header');
+                const details = item.querySelector('.experience-details');
+                header.parentElement.addEventListener('click', () => {
+                    details.classList.toggle('hidden');
+                });
+            });
+            
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.4
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            const projects = [
+                {
+                    title: 'Prompt Flow for Jira Creation',
+                    content: `
+                        <p>Developed a robust prompt flow solution that automates Jira ticket creation for the team. This tool was designed to reduce manual effort and improve the quality and consistency of bug reports and feature requests.</p>
+                        <ul class="list-disc pl-5 mt-2">
+                            <li>The tool analyzes screenshots and log files to generate detailed, accurate descriptions.</li>
+                            <li>It intelligently asks for required information if missing from the initial input.</li>
+                            <li>Rephrases user input for clarity and conciseness, adhering to team standards.</li>
+                            <li><strong>Technologies Used:</strong> Python, Prompt Engineering, AWS Bedrock, Amazon Q.</li>
+                        </ul>`
+                },
+                {
+                    title: 'UI Element Extractor',
+                    content: `
+                        <p>Engineered a comprehensive, automated UI element extractor to streamline test case creation and maintenance for mobile applications.</p>
+                        <p>The tool features a prompt-based workflow with four key modules:</p>
+                        <ol class="list-decimal pl-5 mt-2 space-y-1">
+                            <li><strong>Android Init & Setup:</strong> Dumps view hierarchy (XML) and captures screenshots.</li>
+                            <li><strong>iOS Init & Setup:</strong> Leverages WDA to capture screenshots and dump UI hierarchy.</li>
+                            <li><strong>Extraction:</strong> Utilizes visual and XML parsers to accurately extract UI elements and their properties.</li>
+                            <li><strong>Integration & Reporting:</strong> The final flow integrates with the existing automation framework, automatically updating and mapping UI elements. It also generates a downloadable PDF report of the extracted elements.</li>
+                        </ol>
+                        <p class="mt-2"><strong>Technologies Used:</strong> Python, Appium, Selenium, Robot Framework, Prompt Engineering.</p>`
+                },
+                {
+                    title: 'Apple Watch Series 3/4 Testing',
+                    content: `
+                        <p>As a Hardware Testing Engineer at Quanta, I led critical testing initiatives for the Apple Watch Series 3/4 production.</p>
+                        <ul class="list-disc pl-5 mt-2">
+                            <li>Collaborated directly with Apple engineers on-site to refine testing protocols for wearable devices.</li>
+                            <li>Successfully reduced production retest rates to below 3% through rigorous analysis and process optimization.</li>
+                            <li>Analyzed vast amounts of production data using JMP and Python to identify trends and prevent potential issues.</li>
+                            <li>Led daily sync-up meetings with Apple client stakeholders to report progress and align on priorities.</li>
+                        </ul>`
+                },
+                 {
+                    title: 'Python Django API',
+                    content: `<p>A personal software project focused on building scalable and secure web services. I developed a complete RESTful API using the Django REST Framework, covering user authentication, data models, and CRUD operations. This project deepened my understanding of back-end architecture and API design principles.</p>
+                             <p class="mt-2"><strong>Technologies Used:</strong> Python, Django, Django REST Framework, PostgreSQL.</p>`
+                },
+                {
+                    title: 'Automated Test Framework',
+                    content: `<p>A continuous professional project involving the maintenance and enhancement of the automated testing framework at Amazon Ring. My role focused on improving reliability, increasing test coverage, and adding new features to support evolving product requirements.</p>
+                             <ul class="list-disc pl-5 mt-2">
+                                <li>Consistently contributed to the framework with an average of 2-4 approved pull requests per month.</li>
+                                <li>Refactored existing test suites to improve execution speed and reduce flakiness.</li>
+                                <li>Integrated new testing capabilities to cover additional product features and third-party services.</li>
+                             </ul>`
+                },
+                {
+                    title: 'Line Chat Bot',
+                    content: `<p>A personal project to explore conversational AI and API integrations. I built an interactive chatbot for the LINE messaging platform using Python. The bot could handle various user commands, fetch data from external APIs, and provide responses in a conversational manner. This project was a practical application of my Python and API development skills.</p>
+                    <p class="mt-2"><strong>Technologies Used:</strong> Python, Flask, LINE Messaging API.</p>`
+                }
+            ];
+
+            const modal = document.getElementById('project-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+            const modalClose = document.getElementById('modal-close');
+
+            document.querySelectorAll('.project-modal-trigger').forEach(button => {
+                button.addEventListener('click', () => {
+                    const projectId = button.getAttribute('data-project-id');
+                    const project = projects[projectId];
+                    modalTitle.textContent = project.title;
+                    modalContent.innerHTML = project.content;
+                    modal.classList.remove('hidden');
+                    setTimeout(() => modal.classList.remove('opacity-0'), 10);
+                });
+            });
+
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 250);
+            };
+
+            modalClose.addEventListener('click', closeModal);
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
