@@ -4,84 +4,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Reservation</title>
+    <title>AI Reservation System</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         :root {
             --primary-color: #00b900;
-            --primary-dark: #009800;
-            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --dark-gray: #1a1a1a;
+            --medium-gray: #2d2d2d;
+            --text-light: #eeeeee;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, sans-serif;
             margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: var(--bg-gradient);
+            /* Gradient dark gray background */
+            background: linear-gradient(135deg, #0f0f0f 0%, #2c2c2c 100%);
             padding: 20px;
+            color: var(--text-light);
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--medium-gray);
             padding: 30px;
             border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
             width: 100%;
             max-width: 400px;
-            animation: slideUp 0.5s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         h2 {
             margin-top: 0;
             color: var(--primary-color);
-            font-size: 24px;
             text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
+            font-size: 24px;
+            letter-spacing: 1px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-top: 15px;
             font-size: 14px;
             font-weight: 600;
-            color: #555;
+            color: #bbb;
         }
 
         input {
             width: 100%;
-            padding: 14px;
-            border: 2px solid #eee;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #444;
             border-radius: 12px;
             box-sizing: border-box;
             font-size: 16px;
-            transition: all 0.3s ease;
-            background: #fafafa;
+            background: #1a1a1a;
+            color: white;
+            transition: border-color 0.3s;
         }
 
         input:focus {
             outline: none;
             border-color: var(--primary-color);
-            background: #fff;
-            box-shadow: 0 0 0 4px rgba(0, 185, 0, 0.1);
+            background: #222;
         }
 
         button {
@@ -91,64 +79,48 @@
             color: white;
             border: none;
             border-radius: 12px;
-            margin-top: 10px;
+            margin-top: 25px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 185, 0, 0.3);
-        }
-
-        button:active {
-            transform: scale(0.98);
+            box-shadow: 0 4px 15px rgba(0, 185, 0, 0.2);
         }
 
         button:disabled {
-            background-color: #abdca3;
-            cursor: not-allowed;
-            box-shadow: none;
+            background-color: #444;
+            color: #888;
         }
 
-        .footer-text {
+        .footer {
             text-align: center;
             font-size: 12px;
-            color: #999;
-            margin-top: 20px;
+            color: #666;
+            margin-top: 15px;
         }
     </style>
 </head>
 
 <body>
     <div class="card">
-        <h2>✨ 智能預約系統</h2>
+        <h2>✨ AI 智能訂位</h2>
         <form id="resForm">
-            <div class="input-group">
-                <label>👤 姓名 (英文拼音)</label>
-                <input type="text" id="userName" placeholder="載入中..." required>
-            </div>
+            <label>👤 姓名 (英文拼音)</label>
+            <input type="text" id="userName" required>
 
-            <div class="input-group">
-                <label>👥 人數</label>
-                <input type="number" id="partySize" value="3" min="1" required>
-            </div>
+            <label>👥 人數</label>
+            <input type="number" id="partySize" value="3" min="1" required>
 
-            <div class="input-group">
-                <label>📅 預約日期</label>
-                <input type="date" id="resDate" required>
-            </div>
+            <label>📅 預約日期</label>
+            <input type="date" id="resDate" required>
 
-            <div class="input-group">
-                <label>⏰ 預約時間</label>
-                <input type="time" id="resTime" required>
-            </div>
+            <label>⏰ 預約時間</label>
+            <input type="time" id="resTime" required>
 
-            <div class="input-group">
-                <label>📞 餐廳電話</label>
-                <input type="tel" id="targetPhone" value="+886" required>
-            </div>
+            <label>📞 餐廳電話</label>
+            <input type="tel" id="targetPhone" value="+886" required>
 
-            <button type="submit" id="submitBtn">立即撥打電話</button>
-            <p class="footer-text">點擊後 AI 將立即為您撥號預約</p>
+            <button type="submit" id="submitBtn">啟動 AI 撥號</button>
+            <div class="footer">由 AI 助手提供自動化撥號服務</div>
         </form>
     </div>
 
@@ -163,13 +135,10 @@
                     liff.login();
                 } else {
                     const profile = await liff.getProfile();
-                    document.getElementById('userName').placeholder = profile.displayName || "例如: Evan";
-                    if (!document.getElementById('userName').value) {
-                        document.getElementById('userName').value = profile.displayName || "";
-                    }
+                    document.getElementById('userName').value = profile.displayName || "";
                 }
             } catch (err) {
-                console.error('LIFF Initialization failed', err);
+                console.error('LIFF Init Error', err);
             }
         }
 
@@ -177,7 +146,7 @@
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerText = '🚀 正在啟動 AI 撥號...';
+            btn.innerText = '正在處理預約...';
 
             const payload = {
                 Name: document.getElementById('userName').value,
@@ -189,7 +158,7 @@
             };
 
             try {
-                // FIXED: Using no-cors to prevent browser popup errors
+                // Using no-cors to prevent browser popup errors
                 fetch(N8N_WEBHOOK, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -197,18 +166,17 @@
                     body: JSON.stringify(payload)
                 });
 
-                // Assume success and send LINE message
                 await liff.sendMessages([{
                     type: 'text',
-                    text: `✅ 預約指令已發送！\nAI 正在撥打電話中...\n姓名：${payload.Name}\n電話：${payload.targetPhoneNumber}`
+                    text: `✅ 預約指令已發送！\n姓名：${payload.Name}\n時間：${payload['date/month/year']} ${payload.time}\nAI 正在撥打：${payload.targetPhoneNumber}`
                 }]);
 
                 setTimeout(() => { liff.closeWindow(); }, 1500);
 
             } catch (error) {
-                alert('系統繁忙，請稍後再試');
+                alert('連線失敗');
                 btn.disabled = false;
-                btn.innerText = '立即撥打電話';
+                btn.innerText = '啟動 AI 撥號';
             }
         });
 
