@@ -158,25 +158,29 @@
             };
 
             try {
-                // Using no-cors to prevent browser popup errors
-                fetch(N8N_WEBHOOK, {
+                const response = await fetch(N8N_WEBHOOK, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(payload)
                 });
 
-                await liff.sendMessages([{
-                    type: 'text',
-                    text: `✅ 預約指令已發送！\n姓名：${payload.Name}\n時間：${payload['date/month/year']} ${payload.time}\nAI 正在撥打：${payload.targetPhoneNumber}`
-                }]);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
-                setTimeout(() => { liff.closeWindow(); }, 1500);
+                const result = await response.json();
+
+                btn.innerText = '✅ 預約成功！';
+                alert('AI 助手已開始撥號！');
 
             } catch (error) {
-                alert('連線失敗');
+                console.error('Error:', error);
+                btn.innerText = '❌ 預約失敗';
+                alert('預約失敗，請稍後再試');
+            } finally {
                 btn.disabled = false;
-                btn.innerText = '啟動 AI 撥號';
             }
         });
 
