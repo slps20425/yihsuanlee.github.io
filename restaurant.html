@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Booking</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: -apple-system, sans-serif; padding: 20px; background-color: #f4f4f7; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #00b900; }
+        label { display: block; margin-top: 15px; font-size: 14px; font-weight: bold; }
+        input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; background-color: #00b900; color: white; border: none; border-radius: 8px; margin-top: 25px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        button:disabled { background-color: #ccc; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>預約訂位</h2>
+        <form id="resForm">
+            <label>姓名 (英文拼音)</label>
+            <input type="text" id="userName" placeholder="例如: Evan" required>
+
+            <label>人數</label>
+            <input type="number" id="partySize" value="3" min="1" required>
+
+            <label>預約日期</label>
+            <input type="date" id="resDate" required>
+
+            <label>預約時間</label>
+            <input type="time" id="resTime" required>
+
+            <label>餐廳電話 (含國碼)</label>
+            <input type="tel" id="targetPhone" value="+886" required>
+
+            <button type="submit" id="submitBtn">確認並撥打電話</button>
+        </form>
+    </div>
+
+    <script>
+        const LIFF_ID = 'YOUR_LIFF_ID'; // 貼上你的 LIFF ID
+        const N8N_WEBHOOK = 'YOUR_N8N_WEBHOOK_URL'; // 貼上你的 n8n Webhook URL
+
+        async function initLiff() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
+                    const profile = await liff.getProfile();
+                    // 如果用戶沒填姓名，自動帶入 LINE 名稱
+                    if (profile.displayName) {
+                        document.getElementById('userName').placeholder = profile.displayName;
+                    }
+                }
+            } catch (err) {
+                console.error('LIFF Initialization failed', err);
+            }
+        }
+
+        document.getElementById('resForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = '處理中...';
+
+            const payload = {
+                Name: document.getElementById('userName').value || document.getElementById('userName').placeholder,
+                'Party Size': document.getElementById('partySize').value,
+                'date/month/year': document.getElementById('resDate').value,
+                time: document.getElementById('resTime').value,
+                targetPhoneNumber: document.getElementById('targetPhone').value,
+                language: 'zh'
+            };
+
+            try {
+                const response = await fetch(N8N_WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    await liff.sendMessages([{
+                        type: 'text',
+                        text: `🚀 已收到預約請求！正在撥打電話給餐廳...\n姓名：${payload.Name}\n時間：${payload['date/month/year']} ${payload.time}`
+                    }]);
+                    liff.closeWindow();
+                } else {
+                    alert('傳送失敗，請稍後再試');
+                    btn.disabled = false;
+                    btn.innerText = '確認並撥打電話';
+                }
+            } catch (error) {
+                alert('網路錯誤');
+                btn.disabled = false;
+            }
+        });
+
+        initLiff();
+    </script>
+</body>
+</html>
