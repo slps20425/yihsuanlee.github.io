@@ -252,7 +252,8 @@
             <input type="number" id="partySize" value="3" min="1" required>
 
             <label data-i18n="label_date">📅 Date</label>
-            <input type="date" id="resDate" required>
+            <input type="text" id="resDate" data-i18n-placeholder="placeholder_date" placeholder="Select Date"
+                onfocus="(this.type='date')" onblur="(this.value ? this.type='date' : this.type='text')" required>
 
             <label data-i18n="label_time">⏰ Time</label>
             <input type="time" id="resTime" required>
@@ -684,7 +685,8 @@
                 msg_calling: "AI Assistant is calling!",
                 msg_success: "Success",
                 msg_failed: "Failed",
-                msg_fail_alert: "Reservation failed, please try again"
+                msg_fail_alert: "Reservation failed, please try again",
+                placeholder_date: "Select Date"
             },
             zh: {
                 title: "✨ AI 智能訂位",
@@ -705,7 +707,8 @@
                 msg_calling: "AI 助手已開始撥號！",
                 msg_success: "預約成功",
                 msg_failed: "預約失敗",
-                msg_fail_alert: "預約失敗，請稍後再試"
+                msg_fail_alert: "預約失敗，請稍後再試",
+                placeholder_date: "選擇日期"
             },
             jp: {
                 title: "✨ AI 予約",
@@ -726,7 +729,8 @@
                 msg_calling: "AIアシスタントが電話をかけています！",
                 msg_success: "成功",
                 msg_failed: "失敗",
-                msg_fail_alert: "予約に失敗しました。もう一度お試しください"
+                msg_fail_alert: "予約に失敗しました。もう一度お試しください",
+                placeholder_date: "日付を選択"
             },
             kr: {
                 title: "✨ AI 예약",
@@ -747,7 +751,8 @@
                 msg_calling: "AI 비서가 전화 중입니다!",
                 msg_success: "성공",
                 msg_failed: "실패",
-                msg_fail_alert: "예약 실패, 다시 시도해 주세요"
+                msg_fail_alert: "예약 실패, 다시 시도해 주세요",
+                placeholder_date: "날짜 선택"
             },
             es: {
                 title: "✨ Reserva con IA",
@@ -768,7 +773,8 @@
                 msg_calling: "¡El Asistente IA está llamando!",
                 msg_success: "Éxito",
                 msg_failed: "Fallido",
-                msg_fail_alert: "Reserva fallida, intente de nuevo"
+                msg_fail_alert: "Reserva fallida, intente de nuevo",
+                placeholder_date: "Seleccionar fecha"
             },
             fr: {
                 title: "✨ Réservation IA",
@@ -789,7 +795,8 @@
                 msg_calling: "L'Assistant IA appelle !",
                 msg_success: "Succès",
                 msg_failed: "Échec",
-                msg_fail_alert: "Échec de la réservation, réessayez"
+                msg_fail_alert: "Échec de la réservation, réessayez",
+                placeholder_date: "Date sélectionnée"
             },
             it: {
                 title: "✨ Prenotazione AI",
@@ -810,7 +817,8 @@
                 msg_calling: "L'Assistente AI sta chiamando!",
                 msg_success: "Successo",
                 msg_failed: "Fallito",
-                msg_fail_alert: "Prenotazione fallita, riprova"
+                msg_fail_alert: "Prenotazione fallita, riprova",
+                placeholder_date: "Seleziona data"
             }
         };
 
@@ -819,9 +827,6 @@
             document.documentElement.lang = lang;
             document.getElementById('languageSelector').value = lang;
             localStorage.setItem('preferredLanguage', lang);
-
-            // Force date input to respect language (browser dependent)
-            document.getElementById('resDate').lang = lang;
 
             // Update Text
             document.querySelectorAll('[data-i18n]').forEach(element => {
