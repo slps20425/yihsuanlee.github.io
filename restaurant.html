@@ -270,12 +270,15 @@
     <script>
         const LIFF_ID = '2008812650-lyjR7Z5O';
         const N8N_WEBHOOK = 'https://wisecat.app.n8n.cloud/webhook-test/line-reservation';
-        
         const GOOGLE_MAPS_API_KEY = 'AIzaSyA1ycN9_H2nI_Oh8ZypPtGcqyZ5QQhkLIk';
 
         let map;
         let placesService;
         let searchTimeout;
+        let currentMarker = null;
+
+        // Cache to reduce API calls
+        const placeDetailsCache = {};
 
         async function initLiff() {
             try {
@@ -340,12 +343,38 @@
 
             } catch (error) {
                 console.error('Error loading Google Maps:', error);
-                alert('無法載入 Google Maps。請確認 API 金鑰是否正確設定。');
+                alert('無法載入 Google Maps。請確認網路連線。');
             }
         }
 
+        // Get place details with phone number (with caching)
+        function getPlaceDetails(placeId) {
+            // Check cache first
+            if (placeDetailsCache[placeId]) {
+                console.log('Using cached place details');
+                return Promise.resolve(placeDetailsCache[placeId]);
+            }
+
+            return new Promise((resolve, reject) => {
+                const request = {
+                    placeId: placeId,
+                    fields: ['name', 'formatted_address', 'formatted_phone_number', 'international_phone_number', 'geometry']
+                };
+
+                placesService.getDetails(request, (place, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        // Cache the result
+                        placeDetailsCache[placeId] = place;
+                        resolve(place);
+                    } else {
+                        reject(status);
+                    }
+                });
+            });
+        }
+
         // Search for places
-        function searchPlaces(query) {
+        async function searchPlaces(query) {
             if (!query || query.length < 2) {
                 document.getElementById('searchResults').classList.remove('show');
                 return;
@@ -355,15 +384,23 @@
             resultsContainer.innerHTML = '<div class="loading">搜尋中...</div>';
             resultsContainer.classList.add('show');
 
+            // Auto-detect location based on query
+            let location = { lat: 25.0330, lng: 121.5654 }; // Default: Taipei
+            
+            // If query contains Japanese characters, search in Tokyo
+            if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(query)) {
+                location = { lat: 35.6762, lng: 139.6503 }; // Tokyo
+            }
+
             const request = {
-                query: query,
-                fields: ['name', 'formatted_address', 'formatted_phone_number', 'geometry', 'place_id'],
-                locationBias: { lat: 25.0330, lng: 121.5654 } // Taipei
+                query: query + ' restaurant',
+                fields: ['name', 'formatted_address', 'place_id', 'geometry'],
+                locationBias: location
             };
 
             placesService.textSearch(request, (results, status) => {
                 if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-                    displaySearchResults(results.slice(0, 5)); // Show top 5 results
+                    displaySearchResults(results.slice(0, 5));
                 } else {
                     resultsContainer.innerHTML = '<div class="loading">找不到餐廳</div>';
                 }
@@ -389,13 +426,23 @@
                 
                 const phone = document.createElement('div');
                 phone.className = 'result-phone';
-                phone.textContent = place.formatted_phone_number || '電話未提供';
+                phone.textContent = '點擊查看電話';
                 
                 item.appendChild(name);
                 item.appendChild(address);
                 item.appendChild(phone);
                 
-                item.addEventListener('click', () => selectPlace(place));
+                item.addEventListener('click', async () => {
+                    phone.textContent = '載入中...';
+                    try {
+                        const detailedPlace = await getPlaceDetails(place.place_id);
+                        selectPlace(detailedPlace);
+                    } catch (error) {
+                        console.error('Error getting place details:', error);
+                        alert('無法取得餐廳電話，請手動輸入');
+                        selectPlace(place);
+                    }
+                });
                 
                 resultsContainer.appendChild(item);
             });
@@ -403,19 +450,58 @@
 
         // Select a place from search results
         function selectPlace(place) {
+            console.log('Selected place:', place);
+            
             // Fill in phone number
-            if (place.formatted_phone_number) {
-                const phoneNumber = place.formatted_phone_number.replace(/\s/g, '').replace(/-/g, '');
+            const phoneNumber = place.international_phone_number || place.formatted_phone_number;
+            
+            if (phoneNumber) {
+                console.log('Phone found:', phoneNumber);
                 
-                // Auto-detect country code
-                if (phoneNumber.startsWith('0')) {
-                    document.getElementById('targetPhone').value = phoneNumber.substring(1);
-                } else if (phoneNumber.startsWith('+886')) {
+                // Clean phone number
+                let cleanPhone = phoneNumber.replace(/\s/g, '').replace(/-/g, '').replace(/\(/g, '').replace(/\)/g, '');
+                
+                // Handle Taiwan numbers
+                if (cleanPhone.startsWith('+886')) {
                     document.getElementById('countryCode').value = '+886';
-                    document.getElementById('targetPhone').value = phoneNumber.substring(4);
-                } else {
-                    document.getElementById('targetPhone').value = phoneNumber;
+                    document.getElementById('targetPhone').value = cleanPhone.substring(4);
+                } 
+                // Handle Japan numbers
+                else if (cleanPhone.startsWith('+81')) {
+                    document.getElementById('countryCode').value = '+81';
+                    document.getElementById('targetPhone').value = cleanPhone.substring(3);
                 }
+                // Handle local format (starting with 0)
+                else if (cleanPhone.startsWith('0')) {
+                    // Detect if it's Taiwan or Japan based on phone length or context
+                    // Taiwan mobile: 09XX-XXX-XXX (10 digits)
+                    // Japan: 0X-XXXX-XXXX or 03-XXXX-XXXX (9-10 digits)
+                    if (cleanPhone.length === 10 && cleanPhone.startsWith('09')) {
+                        // Taiwan mobile
+                        document.getElementById('countryCode').value = '+886';
+                        document.getElementById('targetPhone').value = cleanPhone.substring(1);
+                    } else {
+                        // Assume Japan for other 0-prefix numbers
+                        document.getElementById('countryCode').value = '+81';
+                        document.getElementById('targetPhone').value = cleanPhone.substring(1);
+                    }
+                }
+                else if (cleanPhone.startsWith('+')) {
+                    const countryCodeMatch = cleanPhone.match(/^\+(\d{1,3})/);
+                    if (countryCodeMatch) {
+                        const code = '+' + countryCodeMatch[1];
+                        document.getElementById('countryCode').value = code;
+                        document.getElementById('targetPhone').value = cleanPhone.substring(code.length);
+                    }
+                }
+                else {
+                    // Default: Taiwan
+                    document.getElementById('countryCode').value = '+886';
+                    document.getElementById('targetPhone').value = cleanPhone;
+                }
+            } else {
+                console.warn('No phone number available');
+                alert('此餐廳沒有提供電話號碼，請手動輸入');
             }
 
             // Update map
@@ -423,10 +509,16 @@
                 map.setCenter(place.geometry.location);
                 map.setZoom(17);
                 
-                new google.maps.Marker({
+                // Clear existing marker
+                if (currentMarker) {
+                    currentMarker.setMap(null);
+                }
+                
+                currentMarker = new google.maps.Marker({
                     map: map,
                     position: place.geometry.location,
-                    title: place.name
+                    title: place.name,
+                    animation: google.maps.Animation.DROP
                 });
                 
                 document.getElementById('mapContainer').classList.add('show');
@@ -486,6 +578,7 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
+                // Check if response has content before parsing JSON
                 const contentType = response.headers.get('content-type');
                 let result = null;
                 if (contentType && contentType.includes('application/json')) {
