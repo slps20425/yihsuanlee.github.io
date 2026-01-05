@@ -34,6 +34,8 @@
             width: 100%;
             max-width: 400px;
             border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 100;
         }
 
         h2 {
@@ -52,7 +54,8 @@
             color: #bbb;
         }
 
-        input, select {
+        input,
+        select {
             width: 100%;
             padding: 12px;
             margin-top: 5px;
@@ -65,7 +68,8 @@
             transition: border-color 0.3s;
         }
 
-        input:focus, select:focus {
+        input:focus,
+        select:focus {
             outline: none;
             border-color: var(--primary-color);
             background: #222;
@@ -203,33 +207,62 @@
             color: #888;
             margin-top: 5px;
         }
+
+        .language-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: auto;
+            margin: 0;
+            padding: 8px 12px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
+    <canvas id="bg-canvas"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;"></canvas>
     <div class="card">
-        <h2>✨ AI 智能訂位</h2>
-        <form id="resForm">
-            <label>👤 姓名 (英文拼音)</label>
-            <input type="text" id="userName" required>
+        <select id="languageSelector" class="language-selector">
+            <option value="en">🇺🇸 English</option>
+            <option value="zh">🇹🇼 繁體中文</option>
+            <option value="jp">🇯🇵 日本語</option>
+            <option value="kr">🇰🇷 한국어</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="fr">🇫🇷 Français</option>
+            <option value="it">🇮🇹 Italiano</option>
+        </select>
 
-            <label>👥 人數</label>
+        <h2 data-i18n="title">✨ AI Reservation</h2>
+        <form id="resForm">
+            <label data-i18n="label_name">👤 Name (English Only)</label>
+            <input type="text" id="userName" pattern="[a-zA-Z\s]*" maxlength="20"
+                data-i18n-placeholder="placeholder_name" placeholder="English name only" required>
+
+            <label data-i18n="label_party">👥 Party Size</label>
             <input type="number" id="partySize" value="3" min="1" required>
 
-            <label>📅 預約日期</label>
+            <label data-i18n="label_date">📅 Date</label>
             <input type="date" id="resDate" required>
 
-            <label>⏰ 預約時間</label>
+            <label data-i18n="label_time">⏰ Time</label>
             <input type="time" id="resTime" required>
 
-            <label>🔍 搜尋餐廳</label>
+            <label data-i18n="label_search">🔍 Search Restaurant</label>
             <div class="search-container">
-                <input type="text" id="restaurantSearch" placeholder="輸入餐廳名稱或地址搜尋">
-                <div class="info-text">搜尋後自動填入電話號碼</div>
+                <input type="text" id="restaurantSearch" data-i18n-placeholder="placeholder_search"
+                    placeholder="Enter restaurant name or address">
+                <div class="info-text" data-i18n="info_search">Phone number auto-filled after search</div>
                 <div id="searchResults" class="search-results"></div>
             </div>
 
-            <label>📞 餐廳電話</label>
+            <label data-i18n="label_phone">📞 Phone</label>
             <div class="phone-container">
                 <select id="countryCode" required>
                     <option value="+886">🇹🇼 +886</option>
@@ -258,12 +291,17 @@
                 <input type="tel" id="targetPhone" placeholder="912345678" required>
             </div>
 
+            <label data-i18n="label_note">📝 Special Requests (Optional)</label>
+            <textarea id="note" rows="3"
+                style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;"
+                data-i18n-placeholder="placeholder_note" placeholder="Any special requests?"></textarea>
+
             <div id="mapContainer" class="map-container">
                 <div id="map" style="width: 100%; height: 100%;"></div>
             </div>
-            
-            <button type="submit" id="submitBtn">啟動 AI 撥號</button>
-            <div class="footer">由 AI 助手提供自動化撥號服務</div>
+
+            <button type="submit" id="submitBtn" data-i18n="btn_submit">Start AI Call</button>
+            <div class="footer" data-i18n="footer">Automated call service provided by AI Assistant</div>
         </form>
     </div>
 
@@ -316,25 +354,25 @@
         async function initMap() {
             try {
                 await loadGoogleMapsAPI();
-                
+
                 // Default center (Taipei)
                 const defaultLocation = { lat: 25.0330, lng: 121.5654 };
-                
+
                 map = new google.maps.Map(document.getElementById('map'), {
                     center: defaultLocation,
                     zoom: 15,
                     styles: [
                         {
                             "elementType": "geometry",
-                            "stylers": [{"color": "#212121"}]
+                            "stylers": [{ "color": "#212121" }]
                         },
                         {
                             "elementType": "labels.text.fill",
-                            "stylers": [{"color": "#757575"}]
+                            "stylers": [{ "color": "#757575" }]
                         },
                         {
                             "elementType": "labels.text.stroke",
-                            "stylers": [{"color": "#212121"}]
+                            "stylers": [{ "color": "#212121" }]
                         }
                     ]
                 });
@@ -386,7 +424,7 @@
 
             // Auto-detect location based on query
             let location = { lat: 25.0330, lng: 121.5654 }; // Default: Taipei
-            
+
             // If query contains Japanese characters, search in Tokyo
             if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(query)) {
                 location = { lat: 35.6762, lng: 139.6503 }; // Tokyo
@@ -415,23 +453,23 @@
             places.forEach(place => {
                 const item = document.createElement('div');
                 item.className = 'search-result-item';
-                
+
                 const name = document.createElement('div');
                 name.className = 'result-name';
                 name.textContent = place.name;
-                
+
                 const address = document.createElement('div');
                 address.className = 'result-address';
                 address.textContent = place.formatted_address || '地址未提供';
-                
+
                 const phone = document.createElement('div');
                 phone.className = 'result-phone';
                 phone.textContent = '點擊查看電話';
-                
+
                 item.appendChild(name);
                 item.appendChild(address);
                 item.appendChild(phone);
-                
+
                 item.addEventListener('click', async () => {
                     phone.textContent = '載入中...';
                     try {
@@ -443,7 +481,7 @@
                         selectPlace(place);
                     }
                 });
-                
+
                 resultsContainer.appendChild(item);
             });
         }
@@ -451,21 +489,21 @@
         // Select a place from search results
         function selectPlace(place) {
             console.log('Selected place:', place);
-            
+
             // Fill in phone number
             const phoneNumber = place.international_phone_number || place.formatted_phone_number;
-            
+
             if (phoneNumber) {
                 console.log('Phone found:', phoneNumber);
-                
+
                 // Clean phone number
                 let cleanPhone = phoneNumber.replace(/\s/g, '').replace(/-/g, '').replace(/\(/g, '').replace(/\)/g, '');
-                
+
                 // Handle Taiwan numbers
                 if (cleanPhone.startsWith('+886')) {
                     document.getElementById('countryCode').value = '+886';
                     document.getElementById('targetPhone').value = cleanPhone.substring(4);
-                } 
+                }
                 // Handle Japan numbers
                 else if (cleanPhone.startsWith('+81')) {
                     document.getElementById('countryCode').value = '+81';
@@ -508,19 +546,19 @@
             if (place.geometry && place.geometry.location) {
                 map.setCenter(place.geometry.location);
                 map.setZoom(17);
-                
+
                 // Clear existing marker
                 if (currentMarker) {
                     currentMarker.setMap(null);
                 }
-                
+
                 currentMarker = new google.maps.Marker({
                     map: map,
                     position: place.geometry.location,
                     title: place.name,
                     animation: google.maps.Animation.DROP
                 });
-                
+
                 document.getElementById('mapContainer').classList.add('show');
             }
 
@@ -548,7 +586,7 @@
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerText = '正在處理預約...';
+            btn.innerText = 'Sending...'; // Temporary fallback or could be from translation
 
             const countryCode = document.getElementById('countryCode').value;
             const phoneNumber = document.getElementById('targetPhone').value.replace(/^0+/, '');
@@ -560,8 +598,18 @@
                 'date/month/year': document.getElementById('resDate').value,
                 time: document.getElementById('resTime').value,
                 targetPhoneNumber: fullPhoneNumber,
-                language: 'zh'
+                note: document.getElementById('note').value,
+                language: currentLang
             };
+
+            // Validation for Name (Double check)
+            const namePattern = /^[a-zA-Z\s]*$/;
+            if (!namePattern.test(payload.Name)) {
+                alert(translations[currentLang].validation_name);
+                btn.disabled = false;
+                btn.innerText = translations[currentLang].btn_submit;
+                return;
+            }
 
             console.log('Sending payload:', payload);
 
@@ -588,29 +636,354 @@
                     }
                 }
 
-                btn.innerText = '✅ 預約成功！';
-                alert('AI 助手已開始撥號！');
-                
+                btn.innerText = `✅ ${translations[currentLang].msg_success}`;
+                alert(translations[currentLang].msg_calling);
+
                 setTimeout(() => {
-                    btn.innerText = '啟動 AI 撥號';
+                    btn.innerText = translations[currentLang].btn_submit;
                     btn.disabled = false;
                 }, 3000);
 
             } catch (error) {
                 console.error('Error:', error);
-                btn.innerText = '❌ 預約失敗';
-                alert('預約失敗，請稍後再試');
-                
+                btn.innerText = `❌ ${translations[currentLang].msg_failed}`;
+                alert(translations[currentLang].msg_fail_alert);
+
                 setTimeout(() => {
-                    btn.innerText = '啟動 AI 撥號';
+                    btn.innerText = translations[currentLang].btn_submit;
                     btn.disabled = false;
                 }, 2000);
             }
         });
 
+        // ----------------------------------------------------
+        // Multi-language Logic
+        // ----------------------------------------------------
+        let currentLang = 'en';
+
+        const translations = {
+            en: {
+                title: "✨ AI Reservation",
+                label_name: "👤 Name (English Only)",
+                placeholder_name: "English name only",
+                label_party: "👥 Party Size",
+                label_date: "📅 Date",
+                label_time: "⏰ Time",
+                label_search: "🔍 Search Restaurant",
+                placeholder_search: "Enter restaurant name or address",
+                info_search: "Phone number auto-filled after search",
+                label_phone: "📞 Phone",
+                label_note: "📝 Special Requests (Optional)",
+                placeholder_note: "Any special requests?",
+                btn_submit: "Start AI Call",
+                footer: "Automated call service provided by AI Assistant",
+                validation_name: "Name must be English letters only",
+                msg_calling: "AI Assistant is calling!",
+                msg_success: "Success",
+                msg_failed: "Failed",
+                msg_fail_alert: "Reservation failed, please try again"
+            },
+            zh: {
+                title: "✨ AI 智能訂位",
+                label_name: "👤 姓名 (限英文)",
+                placeholder_name: "請輸入英文姓名",
+                label_party: "👥 人數",
+                label_date: "📅 預約日期",
+                label_time: "⏰ 預約時間",
+                label_search: "🔍 搜尋餐廳",
+                placeholder_search: "輸入餐廳名稱或地址搜尋",
+                info_search: "搜尋後自動填入電話號碼",
+                label_phone: "📞 餐廳電話",
+                label_note: "📝 備註 (選填)",
+                placeholder_note: "有什麼特殊需求嗎？",
+                btn_submit: "啟動 AI 撥號",
+                footer: "由 AI 助手提供自動化撥號服務",
+                validation_name: "姓名限英文",
+                msg_calling: "AI 助手已開始撥號！",
+                msg_success: "預約成功",
+                msg_failed: "預約失敗",
+                msg_fail_alert: "預約失敗，請稍後再試"
+            },
+            jp: {
+                title: "✨ AI 予約",
+                label_name: "👤 名前 (英語のみ)",
+                placeholder_name: "英語名を入力してください",
+                label_party: "👥 人数",
+                label_date: "📅 日付",
+                label_time: "⏰ 時間",
+                label_search: "🔍 レストラン検索",
+                placeholder_search: "レストラン名または住所を入力",
+                info_search: "検索後に電話番号が自動入力されます",
+                label_phone: "📞 電話番号",
+                label_note: "📝 リクエスト (任意)",
+                placeholder_note: "特別なリクエストはありますか？",
+                btn_submit: "AI通話を開始",
+                footer: "AIアシスタントによる自動通話サービス",
+                validation_name: "名前は英語のみ入力可能です",
+                msg_calling: "AIアシスタントが電話をかけています！",
+                msg_success: "成功",
+                msg_failed: "失敗",
+                msg_fail_alert: "予約に失敗しました。もう一度お試しください"
+            },
+            kr: {
+                title: "✨ AI 예약",
+                label_name: "👤 이름 (영어만)",
+                placeholder_name: "영어 이름만 입력하세요",
+                label_party: "👥 인원",
+                label_date: "📅 날짜",
+                label_time: "⏰ 시간",
+                label_search: "🔍 식당 검색",
+                placeholder_search: "식당 이름 또는 주소 입력",
+                info_search: "검색 후 전화번호 자동 입력",
+                label_phone: "📞 전화번호",
+                label_note: "📝 요청 사항 (선택)",
+                placeholder_note: "특별한 요청이 있으신가요?",
+                btn_submit: "AI 통화 시작",
+                footer: "AI 비서가 제공하는 자동 통화 서비스",
+                validation_name: "이름은 영어로만 입력해야 합니다",
+                msg_calling: "AI 비서가 전화 중입니다!",
+                msg_success: "성공",
+                msg_failed: "실패",
+                msg_fail_alert: "예약 실패, 다시 시도해 주세요"
+            },
+            es: {
+                title: "✨ Reserva con IA",
+                label_name: "👤 Nombre (Sólo inglés)",
+                placeholder_name: "Sólo nombre en inglés",
+                label_party: "👥 Personas",
+                label_date: "📅 Fecha",
+                label_time: "⏰ Hora",
+                label_search: "🔍 Buscar Restaurante",
+                placeholder_search: "Ingrese nombre o dirección del restaurante",
+                info_search: "Teléfono autocompletado tras buscar",
+                label_phone: "📞 Teléfono",
+                label_note: "📝 Solicitudes (Opcional)",
+                placeholder_note: "¿Alguna solicitud especial?",
+                btn_submit: "Iniciar llamada IA",
+                footer: "Servicio de llamada automatizada por Asistente IA",
+                validation_name: "El nombre debe ser solo en letras inglesas",
+                msg_calling: "¡El Asistente IA está llamando!",
+                msg_success: "Éxito",
+                msg_failed: "Fallido",
+                msg_fail_alert: "Reserva fallida, intente de nuevo"
+            },
+            fr: {
+                title: "✨ Réservation IA",
+                label_name: "👤 Nom (Anglais uniquement)",
+                placeholder_name: "Nom en anglais uniquement",
+                label_party: "👥 Personnes",
+                label_date: "📅 Date",
+                label_time: "⏰ Heure",
+                label_search: "🔍 Chercher Restaurant",
+                placeholder_search: "Entrez le nom ou l'adresse",
+                info_search: "Numéro rempli automatiquement après recherche",
+                label_phone: "📞 Téléphone",
+                label_note: "📝 Demandes (Optionnel)",
+                placeholder_note: "Demandes spéciales ?",
+                btn_submit: "Lancer appel IA",
+                footer: "Service d'appel automatisé par Assistant IA",
+                validation_name: "Le nom doit être en lettres anglaises",
+                msg_calling: "L'Assistant IA appelle !",
+                msg_success: "Succès",
+                msg_failed: "Échec",
+                msg_fail_alert: "Échec de la réservation, réessayez"
+            },
+            it: {
+                title: "✨ Prenotazione AI",
+                label_name: "👤 Nome (Solo inglese)",
+                placeholder_name: "Solo nome in inglese",
+                label_party: "👥 Persone",
+                label_date: "📅 Data",
+                label_time: "⏰ Ora",
+                label_search: "🔍 Cerca Ristorante",
+                placeholder_search: "Inserisci nome o indirizzo ristorante",
+                info_search: "Numero compilato automaticamente dopo ricerca",
+                label_phone: "📞 Telefono",
+                label_note: "📝 Richieste (Opzionale)",
+                placeholder_note: "Richieste speciali?",
+                btn_submit: "Avvia chiamata AI",
+                footer: "Servizio di chiamata automatica da Assistente AI",
+                validation_name: "Il nome deve contenere solo lettere inglesi",
+                msg_calling: "L'Assistente AI sta chiamando!",
+                msg_success: "Successo",
+                msg_failed: "Fallito",
+                msg_fail_alert: "Prenotazione fallita, riprova"
+            }
+        };
+
+        function updateLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            document.getElementById('languageSelector').value = lang;
+            localStorage.setItem('preferredLanguage', lang);
+
+            // Update Text
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+
+            // Update Placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-i18n-placeholder');
+                if (translations[lang][key]) {
+                    element.placeholder = translations[lang][key];
+                }
+            });
+
+            // Update Title
+            document.title = translations[lang].title;
+
+            // Allow name patterns to change? Currently keeping English pattern strict
+            // But we might want to update alerts logic
+        }
+
+        // Initialize Language
+        const savedLang = localStorage.getItem('preferredLanguage');
+        const browserLang = navigator.language.slice(0, 2);
+        const initialLang = savedLang || (translations[browserLang] ? browserLang : 'en');
+        updateLanguage(initialLang);
+
+        // Event Listener
+        document.getElementById('languageSelector').addEventListener('change', (e) => {
+            updateLanguage(e.target.value);
+        });
+
         // Initialize
         initLiff();
         initMap();
+
+        // Background Animation
+        // Background Animation
+        function startBackgroundAnimation() {
+            const canvas = document.getElementById('bg-canvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            let animationFrameId;
+
+            // Configuration
+            const particleCount = 50;
+            const connectionDistance = 150;
+            const mouseDistance = 200;
+
+            function resize() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+
+            const mouse = { x: null, y: null };
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.x;
+                mouse.y = e.y;
+            });
+            window.addEventListener('mouseout', () => {
+                mouse.x = null;
+                mouse.y = null;
+            });
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.size = Math.random() * 2 + 1;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < 0 || this.x > width) this.vx *= -1;
+                    if (this.y < 0 || this.y > height) this.vy *= -1;
+
+                    // Mouse interaction
+                    if (mouse.x != null) {
+                        let dx = mouse.x - this.x;
+                        let dy = mouse.y - this.y;
+                        let distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < mouseDistance) {
+                            const forceDirectionX = dx / distance;
+                            const forceDirectionY = dy / distance;
+                            const force = (mouseDistance - distance) / mouseDistance;
+                            // Gentle repulsion/attraction
+                            const directionX = forceDirectionX * force * 0.5;
+                            const directionY = forceDirectionY * force * 0.5;
+                        }
+                    }
+                }
+
+                draw() {
+                    ctx.fillStyle = 'rgba(0, 185, 0, 0.4)'; // Primary Green
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+
+                    for (let j = i; j < particles.length; j++) {
+                        let dx = particles[i].x - particles[j].x;
+                        let dy = particles[i].y - particles[j].y;
+                        let distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < connectionDistance) {
+                            ctx.beginPath();
+                            // Green lines for the AI feel
+                            ctx.strokeStyle = `rgba(0, 185, 0, ${0.15 - distance / connectionDistance * 0.15})`;
+                            ctx.lineWidth = 1;
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                animationFrameId = requestAnimationFrame(animate);
+            }
+
+            initParticles();
+            // Cancel previous frame if any (though scoping prevents it, good for restart)
+            if (window.bgAnimationFrame) cancelAnimationFrame(window.bgAnimationFrame);
+            animate();
+            window.bgAnimationFrame = animationFrameId;
+        }
+
+        // Initialize Animation Safely
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startBackgroundAnimation);
+        } else {
+            startBackgroundAnimation();
+        }
+
+        // Re-initialize on page show (bfcache support)
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                startBackgroundAnimation();
+            }
+        });
     </script>
 </body>
 
