@@ -7,6 +7,7 @@
     <title>WiseCat Reservation Assistant</title>
     <link rel="icon" href="favicon.png" type="image/x-icon">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         :root {
             --primary-color: #00b900;
@@ -328,8 +329,12 @@
                     Credits</a>
             </div>
 
-            <button type="submit" id="submitBtn" data-i18n="btn_submit">Start AI Call</button>
-            <div class="footer" data-i18n="footer">Automated call service provided by AI Assistant</div>
+            <div class="cf-turnstile" data-sitekey="0x4AAAAAACKreG1nTIC_lSzg" data-callback="onTurnstileSuccess"
+                style="margin-top: 20px;"></div>
+
+            <button type="submit" id="submitBtn" data-i18n="btn_submit" disabled style="opacity: 0.5;">Start AI
+                Call</button>
+            <div class="footer" data-i18n="footer">Automated call service provided by WiseCat AI</div>
         </form>
     </div>
 
@@ -342,6 +347,29 @@
         let placesService;
         let searchTimeout;
         let currentMarker = null;
+
+        // Turnstile Success Callback
+        function onTurnstileSuccess(token) {
+            console.log("Validation Successful, Token:", token);
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = false;
+            btn.style.opacity = "1";
+        }
+
+        // Scam Detector Logic
+        const ScamDetector = {
+            patterns: [
+                /投資獲利|飆股|加賴|加LINE|賺錢|兼職|獲利|高報酬|博弈/i,
+                /investment|profit|crypto|jackpot|lottery|free money|giveaway/i,
+                /恭喜中獎|領取獎品|點擊連結|驗證身分|帳戶異常/i,
+                /congratulations|winner|claim prize|verify account|unusual activity/i,
+                /kiếm tiền|nhận thưởng|หัวหน้า|โบนัส/i
+            ],
+            isScam(text) {
+                const cleanText = text.replace(/[^\w\s\u4e00-\u9fa5]/gi, '').replace(/\s+/g, '');
+                return this.patterns.some(regex => regex.test(cleanText));
+            }
+        };
 
         // Cache to reduce API calls
         const placeDetailsCache = {};
@@ -612,6 +640,18 @@
 
         document.getElementById('resForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            // Scam Detection Check
+            const name = document.getElementById('userName').value;
+            const phone = document.getElementById('targetPhone').value;
+            const note = document.getElementById('note').value;
+            const userInput = name + phone + note;
+
+            if (ScamDetector.isScam(userInput)) {
+                alert("⚠️ Suspicious content detected, please check your input. (偵測到可疑內容，請重新輸入正確資訊)");
+                return;
+            }
+
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.innerText = 'Sending...'; // Temporary fallback or could be from translation
