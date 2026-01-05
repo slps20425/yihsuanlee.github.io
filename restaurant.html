@@ -21,7 +21,6 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            /* Gradient dark gray background */
             background: linear-gradient(135deg, #0f0f0f 0%, #2c2c2c 100%);
             padding: 20px;
             color: var(--text-light);
@@ -53,7 +52,7 @@
             color: #bbb;
         }
 
-        input {
+        input, select {
             width: 100%;
             padding: 12px;
             margin-top: 5px;
@@ -66,10 +65,88 @@
             transition: border-color 0.3s;
         }
 
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: var(--primary-color);
             background: #222;
+        }
+
+        .phone-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .phone-container select {
+            width: 35%;
+            flex-shrink: 0;
+        }
+
+        .phone-container input {
+            width: 65%;
+            margin-top: 0;
+        }
+
+        .search-container {
+            position: relative;
+            margin-top: 5px;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 12px;
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .search-results.show {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-result-item:hover {
+            background: #2a2a2a;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-name {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .result-address {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .result-phone {
+            font-size: 13px;
+            color: #bbb;
+        }
+
+        .loading {
+            padding: 12px;
+            text-align: center;
+            color: #999;
         }
 
         button {
@@ -84,11 +161,17 @@
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0, 185, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #00a000;
         }
 
         button:disabled {
             background-color: #444;
             color: #888;
+            cursor: not-allowed;
         }
 
         .footer {
@@ -96,6 +179,29 @@
             font-size: 12px;
             color: #666;
             margin-top: 15px;
+        }
+
+        select option {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .map-container {
+            margin-top: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            height: 250px;
+            display: none;
+        }
+
+        .map-container.show {
+            display: block;
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -116,14 +222,44 @@
             <label>⏰ 預約時間</label>
             <input type="time" id="resTime" required>
 
+            <label>🔍 搜尋餐廳</label>
+            <div class="search-container">
+                <input type="text" id="restaurantSearch" placeholder="輸入餐廳名稱或地址搜尋">
+                <div class="info-text">搜尋後自動填入電話號碼</div>
+                <div id="searchResults" class="search-results"></div>
+            </div>
+
             <label>📞 餐廳電話</label>
-            <input type="tel" id="targetPhone" value="+886" required>
+            <div class="phone-container">
+                <select id="countryCode" required>
+                    <option value="+886">🇹🇼 +886</option>
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+81">🇯🇵 +81</option>
+                    <option value="+82">🇰🇷 +82</option>
+                    <option value="+86">🇨🇳 +86</option>
+                    <option value="+852">🇭🇰 +852</option>
+                    <option value="+853">🇲🇴 +853</option>
+                    <option value="+65">🇸🇬 +65</option>
+                    <option value="+60">🇲🇾 +60</option>
+                    <option value="+66">🇹🇭 +66</option>
+                    <option value="+84">🇻🇳 +84</option>
+                    <option value="+63">🇵🇭 +63</option>
+                    <option value="+62">🇮🇩 +62</option>
+                    <option value="+61">🇦🇺 +61</option>
+                    <option value="+64">🇳🇿 +64</option>
+                    <option value="+44">🇬🇧 +44</option>
+                    <option value="+33">🇫🇷 +33</option>
+                    <option value="+49">🇩🇪 +49</option>
+                    <option value="+39">🇮🇹 +39</option>
+                    <option value="+34">🇪🇸 +34</option>
+                    <option value="+7">🇷🇺 +7</option>
+                    <option value="+91">🇮🇳 +91</option>
+                </select>
+                <input type="tel" id="targetPhone" placeholder="912345678" required>
+            </div>
 
-             <label>📍 餐廳地址 (選填)</label>
-            <input type="text" id="restaurantAddress" placeholder="輸入地址後按 Enter 顯示地圖">
-
-            <div id="mapContainer" style="display: none; margin-top: 15px; border-radius: 12px; overflow: hidden; height: 250px;">
-                <iframe id="mapFrame" width="100%" height="100%" frameborder="0" style="border:0" allowfullscreen="" loading="lazy"></iframe>
+            <div id="mapContainer" class="map-container">
+                <div id="map" style="width: 100%; height: 100%;"></div>
             </div>
             
             <button type="submit" id="submitBtn">啟動 AI 撥號</button>
@@ -134,6 +270,12 @@
     <script>
         const LIFF_ID = '2008812650-lyjR7Z5O';
         const N8N_WEBHOOK = 'https://wisecat.app.n8n.cloud/webhook-test/line-reservation';
+        
+        const GOOGLE_MAPS_API_KEY = 'AIzaSyA1ycN9_H2nI_Oh8ZypPtGcqyZ5QQhkLIk';
+
+        let map;
+        let placesService;
+        let searchTimeout;
 
         async function initLiff() {
             try {
@@ -149,20 +291,187 @@
             }
         }
 
+        // Load Google Maps API dynamically
+        function loadGoogleMapsAPI() {
+            return new Promise((resolve, reject) => {
+                if (window.google && window.google.maps) {
+                    resolve();
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&language=zh-TW`;
+                script.async = true;
+                script.defer = true;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // Initialize Google Maps
+        async function initMap() {
+            try {
+                await loadGoogleMapsAPI();
+                
+                // Default center (Taipei)
+                const defaultLocation = { lat: 25.0330, lng: 121.5654 };
+                
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: defaultLocation,
+                    zoom: 15,
+                    styles: [
+                        {
+                            "elementType": "geometry",
+                            "stylers": [{"color": "#212121"}]
+                        },
+                        {
+                            "elementType": "labels.text.fill",
+                            "stylers": [{"color": "#757575"}]
+                        },
+                        {
+                            "elementType": "labels.text.stroke",
+                            "stylers": [{"color": "#212121"}]
+                        }
+                    ]
+                });
+
+                placesService = new google.maps.places.PlacesService(map);
+
+            } catch (error) {
+                console.error('Error loading Google Maps:', error);
+                alert('無法載入 Google Maps。請確認 API 金鑰是否正確設定。');
+            }
+        }
+
+        // Search for places
+        function searchPlaces(query) {
+            if (!query || query.length < 2) {
+                document.getElementById('searchResults').classList.remove('show');
+                return;
+            }
+
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = '<div class="loading">搜尋中...</div>';
+            resultsContainer.classList.add('show');
+
+            const request = {
+                query: query,
+                fields: ['name', 'formatted_address', 'formatted_phone_number', 'geometry', 'place_id'],
+                locationBias: { lat: 25.0330, lng: 121.5654 } // Taipei
+            };
+
+            placesService.textSearch(request, (results, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+                    displaySearchResults(results.slice(0, 5)); // Show top 5 results
+                } else {
+                    resultsContainer.innerHTML = '<div class="loading">找不到餐廳</div>';
+                }
+            });
+        }
+
+        // Display search results
+        function displaySearchResults(places) {
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = '';
+
+            places.forEach(place => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                
+                const name = document.createElement('div');
+                name.className = 'result-name';
+                name.textContent = place.name;
+                
+                const address = document.createElement('div');
+                address.className = 'result-address';
+                address.textContent = place.formatted_address || '地址未提供';
+                
+                const phone = document.createElement('div');
+                phone.className = 'result-phone';
+                phone.textContent = place.formatted_phone_number || '電話未提供';
+                
+                item.appendChild(name);
+                item.appendChild(address);
+                item.appendChild(phone);
+                
+                item.addEventListener('click', () => selectPlace(place));
+                
+                resultsContainer.appendChild(item);
+            });
+        }
+
+        // Select a place from search results
+        function selectPlace(place) {
+            // Fill in phone number
+            if (place.formatted_phone_number) {
+                const phoneNumber = place.formatted_phone_number.replace(/\s/g, '').replace(/-/g, '');
+                
+                // Auto-detect country code
+                if (phoneNumber.startsWith('0')) {
+                    document.getElementById('targetPhone').value = phoneNumber.substring(1);
+                } else if (phoneNumber.startsWith('+886')) {
+                    document.getElementById('countryCode').value = '+886';
+                    document.getElementById('targetPhone').value = phoneNumber.substring(4);
+                } else {
+                    document.getElementById('targetPhone').value = phoneNumber;
+                }
+            }
+
+            // Update map
+            if (place.geometry && place.geometry.location) {
+                map.setCenter(place.geometry.location);
+                map.setZoom(17);
+                
+                new google.maps.Marker({
+                    map: map,
+                    position: place.geometry.location,
+                    title: place.name
+                });
+                
+                document.getElementById('mapContainer').classList.add('show');
+            }
+
+            // Hide search results
+            document.getElementById('searchResults').classList.remove('show');
+            document.getElementById('restaurantSearch').value = place.name;
+        }
+
+        // Restaurant search with debounce
+        document.getElementById('restaurantSearch').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchPlaces(e.target.value);
+            }, 500);
+        });
+
+        // Hide search results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                document.getElementById('searchResults').classList.remove('show');
+            }
+        });
+
         document.getElementById('resForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.innerText = '正在處理預約...';
 
+            const countryCode = document.getElementById('countryCode').value;
+            const phoneNumber = document.getElementById('targetPhone').value.replace(/^0+/, '');
+            const fullPhoneNumber = countryCode + phoneNumber;
+
             const payload = {
                 Name: document.getElementById('userName').value,
                 'Party Size': document.getElementById('partySize').value,
                 'date/month/year': document.getElementById('resDate').value,
                 time: document.getElementById('resTime').value,
-                targetPhoneNumber: document.getElementById('targetPhone').value,
+                targetPhoneNumber: fullPhoneNumber,
                 language: 'zh'
             };
+
+            console.log('Sending payload:', payload);
 
             try {
                 const response = await fetch(N8N_WEBHOOK, {
@@ -177,21 +486,38 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                const result = await response.json();
+                const contentType = response.headers.get('content-type');
+                let result = null;
+                if (contentType && contentType.includes('application/json')) {
+                    const text = await response.text();
+                    if (text) {
+                        result = JSON.parse(text);
+                    }
+                }
 
                 btn.innerText = '✅ 預約成功！';
                 alert('AI 助手已開始撥號！');
+                
+                setTimeout(() => {
+                    btn.innerText = '啟動 AI 撥號';
+                    btn.disabled = false;
+                }, 3000);
 
             } catch (error) {
                 console.error('Error:', error);
                 btn.innerText = '❌ 預約失敗';
                 alert('預約失敗，請稍後再試');
-            } finally {
-                btn.disabled = false;
+                
+                setTimeout(() => {
+                    btn.innerText = '啟動 AI 撥號';
+                    btn.disabled = false;
+                }, 2000);
             }
         });
 
+        // Initialize
         initLiff();
+        initMap();
     </script>
 </body>
 
