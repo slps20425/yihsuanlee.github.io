@@ -305,6 +305,29 @@
                 <div id="map" style="width: 100%; height: 100%;"></div>
             </div>
 
+            <label data-i18n="label_schedule" style="margin-top: 20px;">Schedule Call Preference</label>
+            <select id="schedulePreference">
+                <option value="open" data-i18n="option_open">Call when restaurant open</option>
+                <option value="asap" data-i18n="option_asap">Call ASAP</option>
+            </select>
+
+            <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="retryOption" style="width: 20px; height: 20px; margin: 0;">
+                <label for="retryOption" style="margin: 0; display: inline;">
+                    <span data-i18n="label_retry">Re-try 1 time</span>
+                    <span data-i18n="warning_retry" style="color: #ff4444; font-size: 12px; margin-left: 5px;">(This
+                        will charge you twice, careful)</span>
+                </label>
+            </div>
+
+            <div
+                style="margin-top: 25px; padding: 15px; background: #222; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #444;">
+                <span data-i18n="text_credits" style="font-weight: bold; color: #fff;">Current Credits: $0 USD</span>
+                <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank" data-i18n="btn_refill"
+                    style="padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 8px; font-size: 14px;">Refill
+                    Credits</a>
+            </div>
+
             <button type="submit" id="submitBtn" data-i18n="btn_submit">Start AI Call</button>
             <div class="footer" data-i18n="footer">Automated call service provided by AI Assistant</div>
         </form>
@@ -604,7 +627,9 @@
                 time: document.getElementById('resTime').value,
                 targetPhoneNumber: fullPhoneNumber,
                 note: document.getElementById('note').value,
-                language: currentLang
+                language: currentLang,
+                schedulePreference: document.getElementById('schedulePreference').value,
+                retryOneTime: document.getElementById('retryOption').checked
             };
 
             // Validation for Name (Double check)
@@ -687,7 +712,14 @@
                 msg_success: "Success",
                 msg_failed: "Failed",
                 msg_fail_alert: "Reservation failed, please try again",
-                placeholder_date: "Select Date"
+                placeholder_date: "Select Date",
+                label_schedule: "Schedule Call Preference",
+                option_open: "Call when restaurant open",
+                option_asap: "Call ASAP",
+                label_retry: "Re-try 1 time",
+                warning_retry: "(This will charge you twice, careful)",
+                text_credits: "Current Credits: $0 USD",
+                btn_refill: "Refill Credits"
             },
             zh: {
                 title: "WiseCat 訂位助手",
@@ -709,7 +741,14 @@
                 msg_success: "預約成功",
                 msg_failed: "預約失敗",
                 msg_fail_alert: "預約失敗，請稍後再試",
-                placeholder_date: "選擇日期"
+                placeholder_date: "選擇日期",
+                label_schedule: "通話時間偏好",
+                option_open: "餐廳營業時撥打",
+                option_asap: "隨時撥打 (ASAP)",
+                label_retry: "自動重撥 1 次",
+                warning_retry: "(將收取兩次費用，請注意)",
+                text_credits: "目前餘額: $0 USD",
+                btn_refill: "儲值點數"
             },
             jp: {
                 title: "WiseCat 予約アシスタント",
@@ -731,7 +770,14 @@
                 msg_success: "成功",
                 msg_failed: "失敗",
                 msg_fail_alert: "予約に失敗しました。もう一度お試しください",
-                placeholder_date: "日付を選択"
+                placeholder_date: "日付を選択",
+                label_schedule: "通話スケジュールの設定",
+                option_open: "営業時間内に電話",
+                option_asap: "すぐに電話 (ASAP)",
+                label_retry: "1回リダイヤル",
+                warning_retry: "(2倍の料金がかかります、ご注意ください)",
+                text_credits: "現在のクレジット: $0 USD",
+                btn_refill: "クレジットをチャージ"
             },
             kr: {
                 title: "WiseCat 예약 비서",
@@ -753,7 +799,14 @@
                 msg_success: "성공",
                 msg_failed: "실패",
                 msg_fail_alert: "예약 실패, 다시 시도해 주세요",
-                placeholder_date: "날짜 선택"
+                placeholder_date: "날짜 선택",
+                label_schedule: "통화 일정 설정",
+                option_open: "영업 시간에 통화",
+                option_asap: "즉시 통화 (ASAP)",
+                label_retry: "1회 재다이얼",
+                warning_retry: "(요금이 두 번 부과됩니다. 주의하세요)",
+                text_credits: "현재 크레딧: $0 USD",
+                btn_refill: "크레딧 충전"
             },
             es: {
                 title: "Asistente de Reservas WiseCat",
@@ -775,7 +828,14 @@
                 msg_success: "Éxito",
                 msg_failed: "Fallido",
                 msg_fail_alert: "Reserva fallida, intente de nuevo",
-                placeholder_date: "Seleccionar fecha"
+                placeholder_date: "Seleccionar fecha",
+                label_schedule: "Preferencia de horario de llamada",
+                option_open: "Llamar cuando esté abierto",
+                option_asap: "Llamar ASAP",
+                label_retry: "Reintentar 1 vez",
+                warning_retry: "(Se cobrará dos veces, cuidado)",
+                text_credits: "Créditos actuales: $0 USD",
+                btn_refill: "Recargar créditos"
             },
             fr: {
                 title: "Assistant de Réservation WiseCat",
@@ -797,7 +857,14 @@
                 msg_success: "Succès",
                 msg_failed: "Échec",
                 msg_fail_alert: "Échec de la réservation, réessayez",
-                placeholder_date: "Date sélectionnée"
+                placeholder_date: "Date sélectionnée",
+                label_schedule: "Préférence d'horaire d'appel",
+                option_open: "Appeler pendant les heures d'ouverture",
+                option_asap: "Appeler ASAP",
+                label_retry: "Réessayer 1 fois",
+                warning_retry: "(Cela vous coûtera deux fois, attention)",
+                text_credits: "Crédits actuels: $0 USD",
+                btn_refill: "Recharger des crédits"
             },
             it: {
                 title: "Assistente di Prenotazione WiseCat",
@@ -819,7 +886,14 @@
                 msg_success: "Successo",
                 msg_failed: "Fallito",
                 msg_fail_alert: "Prenotazione fallita, riprova",
-                placeholder_date: "Seleziona data"
+                placeholder_date: "Seleziona data",
+                label_schedule: "Preferenza orario chiamata",
+                option_open: "Chiama durante l'orario di apertura",
+                option_asap: "Chiama ASAP",
+                label_retry: "Riprova 1 volta",
+                warning_retry: "(Ti verrà addebitato due volte, attenzione)",
+                text_credits: "Crediti attuali: $0 USD",
+                btn_refill: "Ricarica crediti"
             }
         };
 
