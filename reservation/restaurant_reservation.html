@@ -324,7 +324,8 @@
 
             <div
                 style="margin-top: 25px; padding: 15px; background: #222; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #444;">
-                <span data-i18n="text_credits" style="font-weight: bold; color: #fff;">Current Credits: $0 USD</span>
+                <span id="creditsDisplay" data-i18n="text_credits" style="font-weight: bold; color: #fff;">Current
+                    Credits: $0 USD</span>
                 <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank" data-i18n="btn_refill"
                     style="padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 8px; font-size: 14px;">Refill
                     Credits</a>
@@ -353,8 +354,24 @@
         function onTurnstileSuccess(token) {
             console.log("Validation Successful, Token:", token);
             const btn = document.getElementById('submitBtn');
-            btn.disabled = false;
-            btn.style.opacity = "1";
+
+            // Re-check credits
+            const userSession = localStorage.getItem('wisecat_user');
+            let credits = 0;
+            if (userSession) {
+                try {
+                    credits = JSON.parse(userSession).credits || 0;
+                } catch (e) { }
+            }
+
+            if (credits > 0) {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+            } else {
+                console.log("Button stays disabled: 0 credits");
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+            }
         }
 
         // Scam Detector Logic
@@ -378,13 +395,34 @@
         // Check for logged-in user and auto-fill name
         window.addEventListener('DOMContentLoaded', () => {
             const userSession = localStorage.getItem('wisecat_user');
+            const btn = document.getElementById('submitBtn');
+            const creditsDisplay = document.getElementById('creditsDisplay');
+
             if (userSession) {
                 try {
                     const user = JSON.parse(userSession);
                     document.getElementById('userName').value = user.name || "";
+
+                    // Update Credits Display
+                    const credits = user.credits || 0;
+                    if (creditsDisplay) {
+                        const currentLangData = translations[currentLang] || translations['en'];
+                        const creditTextTemplate = currentLangData.text_credits || "Current Credits: $0 USD";
+                        creditsDisplay.innerText = creditTextTemplate.replace('$0', `$${credits}`);
+                    }
+
+                    // Initial button state check (will be overridden by Turnstile)
+                    if (credits <= 0) {
+                        btn.disabled = true;
+                        btn.style.opacity = "0.5";
+                    }
                 } catch (e) {
                     console.error('Error loading user session:', e);
                 }
+            } else {
+                // Not logged in - disable button anyway
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
             }
         });
 
@@ -961,6 +999,19 @@
 
             // Update Title
             document.title = translations[lang].title;
+
+            // Update Credits Display with actual value
+            const userSession = localStorage.getItem('wisecat_user');
+            if (userSession) {
+                try {
+                    const user = JSON.parse(userSession);
+                    const credits = user.credits || 0;
+                    const creditsDisplay = document.getElementById('creditsDisplay');
+                    if (creditsDisplay && translations[lang].text_credits) {
+                        creditsDisplay.innerText = translations[lang].text_credits.replace('$0', `$${credits}`);
+                    }
+                } catch (e) { }
+            }
 
             // Allow name patterns to change? Currently keeping English pattern strict
             // But we might want to update alerts logic
