@@ -296,6 +296,43 @@
             margin-bottom: 12px;
         }
 
+        /* Social Buttons */
+        .social-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .social-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .social-btn img {
+            width: 18px;
+            height: 18px;
+        }
+
         /* Animation */
         @keyframes fadeUp {
             from {
@@ -342,9 +379,22 @@
         <div id="loginPrompt" class="login-prompt fade-in delay-1">
             <p style="margin-bottom: 15px; color: #aaa;">Sign in to continue</p>
 
+            <div class="social-buttons">
+                <button type="button" class="social-btn" id="googleLoginBtn">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                    Continue with Google
+                </button>
+                <button type="button" class="social-btn" id="microsoftLoginBtn">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft">
+                    Continue with Microsoft
+                </button>
+            </div>
+
             <form id="authForm" class="auth-form">
-                <input type="email" id="emailInput" class="auth-input" placeholder="Email" required>
-                <input type="password" id="passwordInput" class="auth-input" placeholder="Password" required>
+                <input type="email" id="emailInput" class="auth-input" placeholder="Email" autocomplete="email"
+                    required>
+                <input type="password" id="passwordInput" class="auth-input" placeholder="Password"
+                    autocomplete="current-password" required>
                 <div id="authError" class="auth-error"></div>
                 <button type="submit" class="auth-btn">Sign In</button>
                 <button type="button" id="signUpBtn" class="auth-btn secondary">Create Account</button>
@@ -415,12 +465,33 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // Auth Providers
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
+        const microsoftProvider = new firebase.auth.OAuthProvider('microsoft.com');
+
         // DOM Elements
         const authForm = document.getElementById('authForm');
         const signUpBtn = document.getElementById('signUpBtn');
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        const microsoftLoginBtn = document.getElementById('microsoftLoginBtn');
         const emailInput = document.getElementById('emailInput');
         const passwordInput = document.getElementById('passwordInput');
         const authError = document.getElementById('authError');
+
+        // Social Login Handlers
+        googleLoginBtn.addEventListener('click', () => handleSocialLogin(googleProvider));
+        microsoftLoginBtn.addEventListener('click', () => handleSocialLogin(microsoftProvider));
+
+        async function handleSocialLogin(provider) {
+            authError.textContent = '';
+            try {
+                const result = await auth.signInWithPopup(provider);
+                console.log('Social login success:', result.user);
+            } catch (error) {
+                console.error('Social login error:', error);
+                authError.textContent = 'Auth error: ' + error.message;
+            }
+        }
 
         // Sign In
         authForm.addEventListener('submit', async (e) => {
