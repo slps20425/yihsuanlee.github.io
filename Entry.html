@@ -9,6 +9,7 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --primary-color: #00b900;
@@ -412,6 +413,7 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const db = firebase.firestore();
 
         // DOM Elements
         const authForm = document.getElementById('authForm');
@@ -461,17 +463,42 @@
         // Listen for auth state changes
         auth.onAuthStateChanged((user) => {
             if (user) {
-                // User is signed in
-                const userSession = {
-                    name: user.displayName || user.email.split('@')[0],
-                    email: user.email,
-                    picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email),
-                    sub: user.uid,
-                    credits: 0.00 // Default credits, should be fetched from backend
-                };
+                // User is signed in - set up Firestore listener
+                db.collection("users").doc(user.email)
+                    .onSnapshot((doc) => {
+                        if (doc.exists) {
+                            const data = doc.data();
+                            const userSession = {
+                                name: data.name || user.displayName || user.email.split('@')[0],
+                                email: user.email,
+                                picture: data.picture || user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email),
+                                sub: user.uid,
+                                credits: data.credits || 0.00
+                            };
 
-                localStorage.setItem('wisecat_user', JSON.stringify(userSession));
-                displayUserProfile(userSession);
+                            localStorage.setItem('wisecat_user', JSON.stringify(userSession));
+                            displayUserProfile(userSession);
+                        } else {
+                            // New user - initialize Firestore document
+                            const initialData = {
+                                name: user.displayName || user.email.split('@')[0],
+                                email: user.email,
+                                picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email),
+                                credits: 0.00,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            };
+
+                            db.collection("users").doc(user.email).set(initialData)
+                                .then(() => {
+                                    console.log('User document created in Firestore');
+                                })
+                                .catch((error) => {
+                                    console.error('Error creating user document:', error);
+                                });
+                        }
+                    }, (error) => {
+                        console.error('Error listening to user document:', error);
+                    });
             } else {
                 // User is signed out
                 localStorage.removeItem('wisecat_user');
