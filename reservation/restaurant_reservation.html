@@ -248,7 +248,7 @@
         <h2 data-i18n="title">✨ AI Reservation</h2>
         <form id="resForm">
             <label data-i18n="label_name">👤 Name (English Only)</label>
-            <input type="text" id="userName" pattern="[a-zA-Z\s]*" maxlength="20"
+            <input type="text" id="userName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
                 data-i18n-placeholder="placeholder_name" placeholder="English name only" required>
 
             <label data-i18n="label_party">👥 Party Size</label>
@@ -711,7 +711,7 @@
             };
 
             // Validation for Name (Double check)
-            const namePattern = /^[a-zA-Z\s]*$/;
+            const namePattern = /^[a-zA-Z\s\-_]*$/;
             if (!namePattern.test(payload.Name)) {
                 alert(translations[currentLang].validation_name);
                 btn.disabled = false;

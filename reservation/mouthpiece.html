@@ -4,56 +4,538 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WiseCat Mouthpiece Service</title>
+    <title>WiseCat Mouthpiece - AI Voice Proxy</title>
     <link rel="icon" href="../favicon.png" type="image/x-icon">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         :root {
             --primary-color: #00b900;
-            --dark-bg: #0f0f0f;
+            --dark-gray: #1a1a1a;
+            --medium-gray: #2d2d2d;
             --text-light: #eeeeee;
         }
 
         body {
             font-family: -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0f0f0f 0%, #2c2c2c 100%);
-            color: var(--text-light);
+            margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0f0f 0%, #2c2c2c 100%);
+            padding: 20px;
+            color: var(--text-light);
         }
 
-        .container {
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .card {
+            background: var(--medium-gray);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 100;
         }
 
-        h1 {
-            margin-bottom: 20px;
-        }
-
-        p {
-            color: #aaa;
-            margin-bottom: 30px;
-        }
-
-        a {
+        h2 {
+            margin-top: 0;
             color: var(--primary-color);
+            text-align: center;
+            font-size: 24px;
+            letter-spacing: 1px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #bbb;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #444;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 16px;
+            background: #1a1a1a;
+            color: white;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: #222;
+        }
+
+        .phone-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .phone-container select {
+            width: 35%;
+            flex-shrink: 0;
+        }
+
+        .phone-container input {
+            width: 65%;
+            margin-top: 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            margin-top: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 185, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #00a000;
+        }
+
+        button:disabled {
+            background-color: #444;
+            color: #888;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-top: 15px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #888;
             text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+        }
+
+        .language-selector {
+            display: block;
+            width: fit-content;
+            margin: 0 0 15px auto;
+            padding: 8px 12px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .credits-display {
+            margin-top: 25px;
+            padding: 15px;
+            background: #222;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #444;
+        }
+
+        .refill-btn {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>📢 WiseCat Mouthpiece</h1>
-        <p>AI Voice Representation Service - Coming Soon</p>
-        <a href="../entry.html">← Back to Portal</a>
+    <canvas id="bg-canvas"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;"></canvas>
+
+    <div class="card">
+        <select id="languageSelector" class="language-selector">
+            <option value="en">🇺🇸 English</option>
+            <option value="zh">🇹🇼 繁體中文</option>
+            <option value="jp">🇯🇵 日本語</option>
+            <option value="kr">🇰🇷 한국어</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="fr">🇫🇷 Français</option>
+            <option value="it">🇮🇹 Italiano</option>
+        </select>
+
+        <div style="text-align: center; margin-bottom: 10px;">
+            <img src="https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3MXB6Mmo2ODEzYmU4aW1ia3JuZzg1dmszN2s5OGFjODJuY3ZmZnVpOSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/bZCy0rf8TBRB2hYfUg/giphy.gif"
+                alt="AI Cat" style="width: 100px; border-radius: 50%;">
+        </div>
+
+        <h2 data-i18n="title">📢 AI Mouthpiece</h2>
+        <form id="mouthpieceForm">
+            <label data-i18n="label_your_name">👤 Your Name</label>
+            <input type="text" id="userName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
+                data-i18n-placeholder="placeholder_name" placeholder="English name only" required>
+
+            <label data-i18n="label_recipient_name">👤 Recipient Name</label>
+            <input type="text" id="recipientName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
+                data-i18n-placeholder="placeholder_recipient" placeholder="English name only" required>
+
+            <label data-i18n="label_phone">📞 Recipient Phone</label>
+            <div class="phone-container">
+                <select id="countryCode" required>
+                    <option value="+886">🇹🇼 +886</option>
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+81">🇯🇵 +81</option>
+                    <option value="+82">🇰🇷 +82</option>
+                    <option value="+44">🇬🇧 +44</option>
+                </select>
+                <input type="tel" id="targetPhone" placeholder="912345678" required>
+            </div>
+
+            <label data-i18n="label_script">📄 AI Message Script</label>
+            <textarea id="scriptContent" rows="4" data-i18n-placeholder="placeholder_script"
+                placeholder="What should the AI say?" required></textarea>
+
+            <label data-i18n="label_schedule" style="margin-top: 20px;">Schedule Call Preference</label>
+            <select id="schedulePreference">
+                <option value="asap" data-i18n="option_asap">Call ASAP</option>
+                <option value="open" data-i18n="option_open">Call when available</option>
+            </select>
+
+            <div class="credits-display">
+                <span id="creditsDisplay" data-i18n="text_credits" style="font-weight: bold; color: #fff;">Current
+                    Credits: $0 USD</span>
+                <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank" data-i18n="btn_refill"
+                    class="refill-btn">Refill</a>
+            </div>
+
+            <div class="cf-turnstile" data-sitekey="0x4AAAAAACKreG1nTIC_lSzg" data-callback="onTurnstileSuccess"
+                style="margin-top: 20px;"></div>
+
+            <button type="submit" id="submitBtn" data-i18n="btn_submit" disabled>Start AI Call</button>
+            <a href="../entry.html" class="back-link" data-i18n="btn_back">← Back to Portal</a>
+            <div class="footer" data-i18n="footer">Automated call service provided by WiseCat AI</div>
+        </form>
     </div>
+
+    <script>
+        const N8N_WEBHOOK = 'https://wisecat.app.n8n.cloud/webhook-test/line-reservation'; // Using same endpoint for now
+        let currentLang = 'en';
+
+        const translations = {
+            en: {
+                title: "WiseCat Mouthpiece",
+                label_your_name: "Your Name",
+                label_recipient_name: "Recipient Name",
+                placeholder_name: "English name only",
+                placeholder_recipient: "English name only",
+                label_phone: "Recipient Phone",
+                label_script: "AI Message Script",
+                placeholder_script: "What should the AI say?",
+                label_schedule: "Schedule Call Preference",
+                option_asap: "Call ASAP",
+                option_open: "Call when available",
+                text_credits: "Current Credits: $0 USD",
+                btn_refill: "Refill",
+                btn_submit: "Start AI Call",
+                btn_back: "← Back to Portal",
+                footer: "Automated call service provided by WiseCat AI",
+                validation_name: "Names must be English letters (hyphens/underscores allowed)",
+                msg_calling: "WiseCat Assistant is calling!",
+                msg_success: "Success",
+                msg_failed: "Failed",
+                msg_fail_alert: "Call failed, please try again"
+            },
+            zh: {
+                title: "WiseCat 傳聲筒",
+                label_your_name: "您的姓名",
+                label_recipient_name: "收件人姓名",
+                placeholder_name: "請輸入英文姓名",
+                placeholder_recipient: "收件人英文姓名",
+                label_phone: "收件人電話",
+                label_script: "AI 語音腳本",
+                placeholder_script: "AI 應該說什麼內容？",
+                label_schedule: "撥打偏好",
+                option_asap: "立即撥打 (ASAP)",
+                option_open: "對方有空時撥打",
+                text_credits: "目前餘額: $0 USD",
+                btn_refill: "儲值",
+                btn_submit: "啟動 AI 撥號",
+                btn_back: "← 返回主頁面",
+                footer: "由 WiseCat AI 提供自動化撥號服務",
+                validation_name: "姓名限英文 (可含 - 或 _)",
+                msg_calling: "WiseCat 助手已開始撥號！",
+                msg_success: "撥號成功",
+                msg_failed: "撥號失敗",
+                msg_fail_alert: "撥號失敗，請稍後再試"
+            },
+            jp: {
+                title: "WiseCat マウスピース",
+                label_your_name: "あなたの名前",
+                label_recipient_name: "受信者の名前",
+                placeholder_name: "英語名のみ",
+                placeholder_recipient: "英語名のみ",
+                label_phone: "受信者電話番号",
+                label_script: "AI 音声スクリプト",
+                placeholder_script: "AI は何を話すべきですか？",
+                label_schedule: "通話スケジュールの設定",
+                option_asap: "すぐに電話 (ASAP)",
+                option_open: "対応可能な時に電話",
+                text_credits: "現在のクレジット: $0 USD",
+                btn_refill: "チャージ",
+                btn_submit: "AI通話を開始",
+                btn_back: "← ポータルに戻る",
+                footer: "WiseCat AIによる自動通話サービス",
+                validation_name: "名前は英語のみ（ハイフン/アンダースコア可）"
+            },
+            kr: {
+                title: "WiseCat 보이스 프록시",
+                label_your_name: "사용자 이름",
+                label_recipient_name: "수신자 이름",
+                placeholder_name: "영어 이름만",
+                placeholder_recipient: "영어 이름만",
+                label_phone: "수신자 전화번호",
+                label_script: "AI 메시지 스크립트",
+                placeholder_script: "AI가 무엇을 말해야 합니까?",
+                label_schedule: "통화 일정 설정",
+                option_asap: "즉시 통화 (ASAP)",
+                option_open: "통화 가능 시 통화",
+                text_credits: "현재 크레딧: $0 USD",
+                btn_refill: "충전",
+                btn_submit: "AI 통화 시작",
+                btn_back: "← 포탈로 돌아가기",
+                footer: "WiseCat AI가 제공하는 자동 통화 서비스"
+            },
+            es: {
+                title: "Boquilla WiseCat (Mouthpiece)",
+                label_your_name: "Tu Nombre",
+                label_recipient_name: "Nombre del Destinatario",
+                placeholder_name: "Solo nombre en inglés",
+                placeholder_recipient: "Solo nombre en inglés",
+                label_phone: "Teléfono del Destinatario",
+                label_script: "Guion de Mensaje IA",
+                placeholder_script: "¿Qué debería decir la IA?",
+                label_schedule: "Preferencia de horario",
+                option_asap: "Llamar ASAP",
+                option_open: "Llamar cuando esté disponible",
+                text_credits: "Créditos: $0 USD",
+                btn_refill: "Recargar",
+                btn_submit: "Iniciar llamada IA",
+                btn_back: "← Volver al Portal",
+                footer: "Servicio de llamada automatizada por WiseCat AI"
+            },
+            fr: {
+                title: "Porte-voix WiseCat",
+                label_your_name: "Votre Nom",
+                label_recipient_name: "Nom du Destinataire",
+                placeholder_name: "Nom en anglais uniquement",
+                placeholder_recipient: "Nom en anglais uniquement",
+                label_phone: "Téléphone du Destinataire",
+                label_script: "Script du Message IA",
+                placeholder_script: "Que doit dire l'IA ?",
+                label_schedule: "Préférence d'horaire",
+                option_asap: "Appeler ASAP",
+                option_open: "Appeler si disponible",
+                text_credits: "Crédits: $0 USD",
+                btn_refill: "Recharger",
+                btn_submit: "Lancer appel IA",
+                btn_back: "← Retour au Portail",
+                footer: "Service d'appel automatisé par WiseCat AI"
+            },
+            it: {
+                title: "Boccaglio WiseCat",
+                label_your_name: "Tuo Nome",
+                label_recipient_name: "Nome Destinatario",
+                placeholder_name: "Solo nome in inglese",
+                placeholder_recipient: "Solo nome in inglese",
+                label_phone: "Telefono Destinatario",
+                label_script: "Script Messaggio IA",
+                placeholder_script: "Cosa dovrebbe dire l'IA?",
+                label_schedule: "Preferenza orario",
+                option_asap: "Chiama ASAP",
+                option_open: "Chiama se disponibile",
+                text_credits: "Crediti: $0 USD",
+                btn_refill: "Ricarica",
+                btn_submit: "Avvia chiamata IA",
+                btn_back: "← Torna al Portale",
+                footer: "Servizio di chiamata automatizzata da WiseCat AI"
+            }
+        };
+
+        // Turnstile Success Callback
+        function onTurnstileSuccess(token) {
+            const btn = document.getElementById('submitBtn');
+            const userSession = localStorage.getItem('wisecat_user');
+            let credits = 0;
+            if (userSession) {
+                try { credits = JSON.parse(userSession).credits || 0; } catch (e) { }
+            }
+
+            if (credits > 0) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        function updateLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            document.getElementById('languageSelector').value = lang;
+            localStorage.setItem('preferredLanguage', lang);
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) el.textContent = translations[lang][key];
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang][key]) el.placeholder = translations[lang][key];
+            });
+
+            // Update Credits Display
+            const userSession = localStorage.getItem('wisecat_user');
+            if (userSession) {
+                try {
+                    const user = JSON.parse(userSession);
+                    const credits = user.credits || 0;
+                    const display = document.getElementById('creditsDisplay');
+                    if (display && translations[lang].text_credits) {
+                        display.innerText = translations[lang].text_credits.replace('$0', `$${credits}`);
+                    }
+                } catch (e) { }
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const userSession = localStorage.getItem('wisecat_user');
+            if (userSession) {
+                try {
+                    const user = JSON.parse(userSession);
+                    document.getElementById('userName').value = user.name || "";
+                    updateLanguage(localStorage.getItem('preferredLanguage') || 'en');
+                } catch (e) { }
+            }
+            startBackgroundAnimation();
+        });
+
+        document.getElementById('languageSelector').addEventListener('change', (e) => updateLanguage(e.target.value));
+
+        document.getElementById('mouthpieceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = 'Sending...';
+
+            const payload = {
+                type: 'mouthpiece',
+                userName: document.getElementById('userName').value,
+                recipientName: document.getElementById('recipientName').value,
+                targetPhoneNumber: document.getElementById('countryCode').value + document.getElementById('targetPhone').value.replace(/^0+/, ''),
+                script: document.getElementById('scriptContent').value,
+                schedulePreference: document.getElementById('schedulePreference').value,
+                language: currentLang
+            };
+
+            const namePattern = /^[a-zA-Z\s\-_]*$/;
+            if (!namePattern.test(payload.userName) || !namePattern.test(payload.recipientName)) {
+                alert(translations[currentLang].validation_name || "Invalid name format");
+                btn.disabled = false;
+                btn.innerText = translations[currentLang].btn_submit;
+                return;
+            }
+
+            try {
+                const response = await fetch(N8N_WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert(translations[currentLang].msg_calling || "Calling!");
+                    btn.innerText = translations[currentLang].msg_success || "Success";
+                } else {
+                    throw new Error();
+                }
+            } catch (error) {
+                alert(translations[currentLang].msg_fail_alert || "Failed");
+                btn.innerText = translations[currentLang].btn_submit;
+                btn.disabled = false;
+            }
+        });
+
+        // Background Animation (Copied from reservation page for consistency)
+        function startBackgroundAnimation() {
+            const canvas = document.getElementById('bg-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width, height, particles = [];
+            const particleCount = 40;
+
+            function resize() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = (Math.random() - 0.5) * 0.3;
+                    this.size = Math.random() * 2 + 1;
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy;
+                    if (this.x < 0 || this.x > width) this.vx *= -1;
+                    if (this.y < 0 || this.y > height) this.vy *= -1;
+                }
+                draw() {
+                    ctx.fillStyle = 'rgba(0, 185, 0, 0.3)';
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+                }
+            }
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+    </script>
 </body>
 
 </html>
