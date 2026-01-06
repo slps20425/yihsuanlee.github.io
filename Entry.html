@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WiseCat Portal</title>
     <link rel="icon" href="favicon.png" type="image/x-icon">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
             --primary-color: #00b900;
@@ -168,6 +169,70 @@
             color: #555;
         }
 
+        /* User Profile */
+        .user-profile {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .user-profile.show {
+            display: flex;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .user-email {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Login Prompt */
+        .login-prompt {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .login-prompt.hide {
+            display: none;
+        }
+
         /* Animation */
         @keyframes fadeUp {
             from {
@@ -210,11 +275,33 @@
             <div class="subtitle">Your Personal AI Assistant Hub</div>
         </div>
 
+        <!-- Login Prompt (shown when not logged in) -->
+        <div id="loginPrompt" class="login-prompt fade-in delay-1">
+            <p style="margin-bottom: 15px; color: #aaa;">Please sign in with Google to continue</p>
+            <div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID_HERE" data-callback="handleCredentialResponse"
+                data-auto_select="false">
+            </div>
+            <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_black"
+                data-text="signin_with" data-size="large" data-logo_alignment="left"
+                style="display: flex; justify-content: center;">
+            </div>
+        </div>
+
+        <!-- User Profile (shown when logged in) -->
+        <div id="userProfile" class="user-profile fade-in delay-1">
+            <img id="userAvatar" src="" alt="User" class="user-avatar">
+            <div class="user-info">
+                <div class="user-name" id="userName"></div>
+                <div class="user-email" id="userEmail"></div>
+            </div>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+
         <!-- Credits Section -->
         <div class="credits-card fade-in delay-1">
             <div class="credits-info">
                 <div class="credits-label">Available Balance</div>
-                <div class="credits-amount">$0.00 USD</div>
+                <div class="credits-amount" id="creditsAmount">$0.00 USD</div>
             </div>
             <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank" class="refill-btn">Refill +</a>
         </div>
@@ -246,6 +333,72 @@
             &copy; 2026 WiseCat AI. All rights reserved.
         </div>
     </div>
+
+    <script>
+        // Google Login Handler
+        function handleCredentialResponse(response) {
+            try {
+                const credential = response.credential;
+                const payload = parseJwt(credential);
+
+                console.log('User logged in:', payload);
+
+                // Store user session
+                const userSession = {
+                    name: payload.name,
+                    email: payload.email,
+                    picture: payload.picture,
+                    sub: payload.sub,
+                    credits: 0.00 // Default credits, should be fetched from backend
+                };
+
+                localStorage.setItem('wisecat_user', JSON.stringify(userSession));
+                displayUserProfile(userSession);
+
+            } catch (e) {
+                console.error('Error handling Google login:', e);
+            }
+        }
+
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function displayUserProfile(user) {
+            document.getElementById('loginPrompt').classList.add('hide');
+            document.getElementById('userProfile').classList.add('show');
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userAvatar').src = user.picture;
+            document.getElementById('creditsAmount').textContent = `$${user.credits.toFixed(2)} USD`;
+        }
+
+        function logout() {
+            localStorage.removeItem('wisecat_user');
+            document.getElementById('loginPrompt').classList.remove('hide');
+            document.getElementById('userProfile').classList.remove('show');
+            document.getElementById('creditsAmount').textContent = '$0.00 USD';
+        }
+
+        // Check if user is already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const userSession = localStorage.getItem('wisecat_user');
+            if (userSession) {
+                try {
+                    const user = JSON.parse(userSession);
+                    displayUserProfile(user);
+                } catch (e) {
+                    console.error('Error loading user session:', e);
+                    localStorage.removeItem('wisecat_user');
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>
