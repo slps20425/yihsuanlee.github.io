@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WiseCat Portal</title>
     <link rel="icon" href="favicon.png" type="image/x-icon">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <style>
         :root {
             --primary-color: #00b900;
@@ -233,6 +235,66 @@
             display: none;
         }
 
+        /* Auth Form */
+        .auth-form {
+            margin-bottom: 15px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .auth-input::placeholder {
+            color: #888;
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .auth-btn:hover {
+            background: #00a000;
+            transform: translateY(-1px);
+        }
+
+        .auth-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .auth-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .auth-error {
+            color: #ff4444;
+            font-size: 12px;
+            margin-top: -8px;
+            margin-bottom: 12px;
+        }
+
         /* Animation */
         @keyframes fadeUp {
             from {
@@ -277,14 +339,15 @@
 
         <!-- Login Prompt (shown when not logged in) -->
         <div id="loginPrompt" class="login-prompt fade-in delay-1">
-            <p style="margin-bottom: 15px; color: #aaa;">Please sign in with Google to continue</p>
-            <div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID_HERE" data-callback="handleCredentialResponse"
-                data-auto_select="false">
-            </div>
-            <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_black"
-                data-text="signin_with" data-size="large" data-logo_alignment="left"
-                style="display: flex; justify-content: center;">
-            </div>
+            <p style="margin-bottom: 15px; color: #aaa;">Sign in to continue</p>
+
+            <form id="authForm" class="auth-form">
+                <input type="email" id="emailInput" class="auth-input" placeholder="Email" required>
+                <input type="password" id="passwordInput" class="auth-input" placeholder="Password" required>
+                <div id="authError" class="auth-error"></div>
+                <button type="submit" class="auth-btn">Sign In</button>
+                <button type="button" id="signUpBtn" class="auth-btn secondary">Create Account</button>
+            </form>
         </div>
 
         <!-- User Profile (shown when logged in) -->
@@ -335,38 +398,98 @@
     </div>
 
     <script>
-        // Google Login Handler
-        function handleCredentialResponse(response) {
+        // Firebase Configuration (REPLACE WITH YOUR ACTUAL CONFIG)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // DOM Elements
+        const authForm = document.getElementById('authForm');
+        const signUpBtn = document.getElementById('signUpBtn');
+        const emailInput = document.getElementById('emailInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const authError = document.getElementById('authError');
+
+        // Sign In
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            authError.textContent = '';
+
             try {
-                const credential = response.credential;
-                const payload = parseJwt(credential);
+                const userCredential = await auth.signInWithEmailAndPassword(
+                    emailInput.value,
+                    passwordInput.value
+                );
+                console.log('User signed in:', userCredential.user);
+            } catch (error) {
+                console.error('Sign in error:', error);
+                authError.textContent = getErrorMessage(error.code);
+            }
+        });
 
-                console.log('User logged in:', payload);
+        // Sign Up
+        signUpBtn.addEventListener('click', async () => {
+            authError.textContent = '';
 
-                // Store user session
+            if (!emailInput.value || !passwordInput.value) {
+                authError.textContent = 'Please enter email and password';
+                return;
+            }
+
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(
+                    emailInput.value,
+                    passwordInput.value
+                );
+                console.log('User created:', userCredential.user);
+            } catch (error) {
+                console.error('Sign up error:', error);
+                authError.textContent = getErrorMessage(error.code);
+            }
+        });
+
+        // Listen for auth state changes
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in
                 const userSession = {
-                    name: payload.name,
-                    email: payload.email,
-                    picture: payload.picture,
-                    sub: payload.sub,
+                    name: user.displayName || user.email.split('@')[0],
+                    email: user.email,
+                    picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email),
+                    sub: user.uid,
                     credits: 0.00 // Default credits, should be fetched from backend
                 };
 
                 localStorage.setItem('wisecat_user', JSON.stringify(userSession));
                 displayUserProfile(userSession);
-
-            } catch (e) {
-                console.error('Error handling Google login:', e);
+            } else {
+                // User is signed out
+                localStorage.removeItem('wisecat_user');
+                document.getElementById('loginPrompt').classList.remove('hide');
+                document.getElementById('userProfile').classList.remove('show');
+                document.getElementById('creditsAmount').textContent = '$0.00 USD';
             }
-        }
+        });
 
-        function parseJwt(token) {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
+        function getErrorMessage(code) {
+            const messages = {
+                'auth/email-already-in-use': 'Email already registered. Please sign in.',
+                'auth/invalid-email': 'Invalid email address.',
+                'auth/weak-password': 'Password should be at least 6 characters.',
+                'auth/user-not-found': 'No account found. Please create one.',
+                'auth/wrong-password': 'Incorrect password.',
+                'auth/too-many-requests': 'Too many attempts. Please try again later.'
+            };
+            return messages[code] || 'An error occurred. Please try again.';
         }
 
         function displayUserProfile(user) {
