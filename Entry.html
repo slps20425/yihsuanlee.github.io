@@ -10,395 +10,58 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <style>
-        :root {
-            --primary-color: #00b900;
-            --secondary-color: #007bff;
-            --dark-bg: #0f0f0f;
-            --card-bg: #1a1a1a;
-            --text-light: #eeeeee;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0f0f0f 0%, #2c2c2c 100%);
-            padding: 20px;
-            color: var(--text-light);
-        }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-        }
-
-        .header {
-            margin-bottom: 40px;
-        }
-
-        .logo {
-            width: 120px;
-            border-radius: 50%;
-            margin-bottom: 20px;
-            box-shadow: 0 0 20px rgba(0, 185, 0, 0.4);
-        }
-
-        h1 {
-            font-size: 28px;
-            margin: 0;
-            background: linear-gradient(45deg, #fff, #aaa);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            font-size: 16px;
-            color: #888;
-            margin-top: 10px;
-        }
-
-        .credits-card {
-            background: linear-gradient(145deg, #222, #111);
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .credits-info {
-            text-align: left;
-        }
-
-        .credits-label {
-            font-size: 12px;
-            color: #aaa;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .credits-amount {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-top: 5px;
-        }
-
-        .refill-btn {
-            background: var(--secondary-color);
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            transition: transform 0.2s, background 0.2s;
-        }
-
-        .refill-btn:hover {
-            transform: scale(1.05);
-            background: #0056b3;
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-
-        .menu-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 25px;
-            border-radius: 20px;
-            text-decoration: none;
-            color: white;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .menu-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-            border-color: var(--primary-color);
-        }
-
-        .card-icon {
-            font-size: 32px;
-            background: rgba(0, 0, 0, 0.3);
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 16px;
-        }
-
-        .card-content {
-            text-align: left;
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .card-desc {
-            font-size: 13px;
-            color: #aaa;
-        }
-
-        .footer {
-            margin-top: 50px;
-            font-size: 12px;
-            color: #555;
-        }
-
-        /* User Profile */
-        .user-profile {
-            display: none;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-
-        .user-profile.show {
-            display: flex;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid var(--primary-color);
-        }
-
-        .user-info {
-            flex: 1;
-        }
-
-        .user-name {
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .user-email {
-            font-size: 12px;
-            color: #888;
-        }
-
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        /* Login Prompt */
-        .login-prompt {
-            text-align: center;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-
-        .login-prompt.hide {
-            display: none;
-        }
-
-        /* Auth Form */
-        .auth-form {
-            margin-bottom: 15px;
-        }
-
-        .auth-input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-
-        .auth-input::placeholder {
-            color: #888;
-        }
-
-        .auth-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .auth-btn {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 8px;
-            transition: all 0.2s;
-        }
-
-        .auth-btn:hover {
-            background: #00a000;
-            transform: translateY(-1px);
-        }
-
-        .auth-btn.secondary {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .auth-btn.secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .auth-error {
-            color: #ff4444;
-            font-size: 12px;
-            margin-top: -8px;
-            margin-bottom: 12px;
-        }
-
-        /* Social Buttons */
-        .social-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .social-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .social-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-1px);
-        }
-
-        .social-btn img {
-            width: 18px;
-            height: 18px;
-        }
-
-        /* Animation */
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in {
-            animation: fadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            opacity: 0;
-        }
-
-        .delay-1 {
-            animation-delay: 0.1s;
-        }
-
-        .delay-2 {
-            animation-delay: 0.2s;
-        }
-
-        .delay-3 {
-            animation-delay: 0.3s;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <script src="i18n.js" defer></script>
 </head>
 
 <body>
+    <canvas id="bg-canvas"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;"></canvas>
+
     <div class="container">
+        <!-- Language Selector -->
+        <select id="languageSelector" class="language-selector">
+            <option value="en">🇺🇸 English</option>
+            <option value="zh">🇹🇼 繁體中文</option>
+            <option value="jp">🇯🇵 日本語</option>
+            <option value="kr">🇰🇷 한국어</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="fr">🇫🇷 Français</option>
+            <option value="it">🇮🇹 Italiano</option>
+        </select>
+
         <!-- Logo & Title -->
         <div class="header fade-in">
             <img src="https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3MXB6Mmo2ODEzYmU4aW1ia3JuZzg1dmszN2s5OGFjODJuY3ZmZnVpOSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/bZCy0rf8TBRB2hYfUg/giphy.gif"
                 alt="WiseCat Logo" class="logo">
-            <h1>WiseCat Portal</h1>
-            <div class="subtitle">Your Personal AI Assistant Hub</div>
+            <h1 data-i18n="portal_title">WiseCat Portal</h1>
+            <div class="subtitle" data-i18n="portal_subtitle">Your Personal AI Assistant Hub</div>
+        </div>
+
+        <!-- Credits Section (New Position: Above Login/Profile) -->
+        <div class="credits-card fade-in delay-1">
+            <div class="credits-info">
+                <div class="credits-label" data-i18n="balance_label">Available Balance</div>
+                <div class="credits-amount" id="creditsAmount">$0.00 USD</div>
+            </div>
+            <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank" class="refill-btn"
+                data-i18n="btn_refill">Refill +</a>
         </div>
 
         <!-- Login Prompt (shown when not logged in) -->
         <div id="loginPrompt" class="login-prompt fade-in delay-1">
-            <p style="margin-bottom: 15px; color: #aaa;">Sign in to continue</p>
-
             <div class="social-buttons">
                 <button type="button" class="social-btn" id="googleLoginBtn">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-                    Continue with Google
+                    <span data-i18n="btn_google">Continue with Google</span>
                 </button>
                 <button type="button" class="social-btn" id="microsoftLoginBtn">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft">
-                    Continue with Microsoft
+                    <span data-i18n="btn_microsoft">Continue with Microsoft</span>
                 </button>
             </div>
-
-            <form id="authForm" class="auth-form">
-                <input type="email" id="emailInput" class="auth-input" placeholder="Email" autocomplete="email"
-                    required>
-                <input type="password" id="passwordInput" class="auth-input" placeholder="Password"
-                    autocomplete="current-password" required>
-                <div id="authError" class="auth-error"></div>
-                <button type="submit" class="auth-btn">Sign In</button>
-                <button type="button" id="signUpBtn" class="auth-btn secondary">Create Account</button>
-            </form>
+            <p class="login-instruction" data-i18n="login_subtitle">Sign in to continue</p>
+            <div id="authError" class="auth-error"></div>
         </div>
 
         <!-- User Profile (shown when logged in) -->
@@ -411,14 +74,7 @@
             <button onclick="logout()" class="logout-btn">Logout</button>
         </div>
 
-        <!-- Credits Section -->
-        <div class="credits-card fade-in delay-1">
-            <div class="credits-info">
-                <div class="credits-label">Available Balance</div>
-                <div class="credits-amount" id="creditsAmount">$0.00 USD</div>
-            </div>
-            <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank" class="refill-btn">Refill +</a>
-        </div>
+
 
         <!-- Menu Grid -->
         <div class="menu-grid">
@@ -426,8 +82,9 @@
             <a href="reservation/restaurant_reservation.html" class="menu-card fade-in delay-2">
                 <div class="card-icon">🍽️</div>
                 <div class="card-content">
-                    <div class="card-title">Restaurant Reservation</div>
-                    <div class="card-desc">AI-powered booking assistant for any restaurant</div>
+                    <div class="card-title" data-i18n="service_res_title">Restaurant Reservation</div>
+                    <div class="card-desc" data-i18n="service_res_desc">AI-powered booking assistant for any restaurant
+                    </div>
                 </div>
             </a>
 
@@ -435,12 +92,11 @@
             <a href="reservation/mouthpiece.html" class="menu-card fade-in delay-3">
                 <div class="card-icon">📢</div>
                 <div class="card-content">
-                    <div class="card-title">Mouthpiece Service</div>
-                    <div class="card-desc">AI Voice representation service (Beta)</div>
+                    <div class="card-title" data-i18n="service_mouthpiece_title">Mouthpiece Service</div>
+                    <div class="card-desc" data-i18n="service_mouthpiece_desc">AI Voice representation service (Beta)
+                    </div>
                 </div>
             </a>
-
-
         </div>
 
         <div class="footer fade-in delay-3">
@@ -470,12 +126,8 @@
         const microsoftProvider = new firebase.auth.OAuthProvider('microsoft.com');
 
         // DOM Elements
-        const authForm = document.getElementById('authForm');
-        const signUpBtn = document.getElementById('signUpBtn');
         const googleLoginBtn = document.getElementById('googleLoginBtn');
         const microsoftLoginBtn = document.getElementById('microsoftLoginBtn');
-        const emailInput = document.getElementById('emailInput');
-        const passwordInput = document.getElementById('passwordInput');
         const authError = document.getElementById('authError');
 
         // Social Login Handlers
@@ -492,44 +144,6 @@
                 authError.textContent = 'Auth error: ' + error.message;
             }
         }
-
-        // Sign In
-        authForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            authError.textContent = '';
-
-            try {
-                const userCredential = await auth.signInWithEmailAndPassword(
-                    emailInput.value,
-                    passwordInput.value
-                );
-                console.log('User signed in:', userCredential.user);
-            } catch (error) {
-                console.error('Sign in error:', error);
-                authError.textContent = getErrorMessage(error.code);
-            }
-        });
-
-        // Sign Up
-        signUpBtn.addEventListener('click', async () => {
-            authError.textContent = '';
-
-            if (!emailInput.value || !passwordInput.value) {
-                authError.textContent = 'Please enter email and password';
-                return;
-            }
-
-            try {
-                const userCredential = await auth.createUserWithEmailAndPassword(
-                    emailInput.value,
-                    passwordInput.value
-                );
-                console.log('User created:', userCredential.user);
-            } catch (error) {
-                console.error('Sign up error:', error);
-                authError.textContent = getErrorMessage(error.code);
-            }
-        });
 
         // Listen for auth state changes
         auth.onAuthStateChanged((user) => {
@@ -579,17 +193,7 @@
             }
         });
 
-        function getErrorMessage(code) {
-            const messages = {
-                'auth/email-already-in-use': 'Email already registered. Please sign in.',
-                'auth/invalid-email': 'Invalid email address.',
-                'auth/weak-password': 'Password should be at least 6 characters.',
-                'auth/user-not-found': 'No account found. Please create one.',
-                'auth/wrong-password': 'Incorrect password.',
-                'auth/too-many-requests': 'Too many attempts. Please try again later.'
-            };
-            return messages[code] || 'An error occurred. Please try again.';
-        }
+
 
         function displayUserProfile(user) {
             document.getElementById('loginPrompt').classList.add('hide');
@@ -616,7 +220,52 @@
                     localStorage.removeItem('wisecat_user');
                 }
             }
+            startBackgroundAnimation();
         });
+
+        // Background Animation (Consistent with service pages)
+        function startBackgroundAnimation() {
+            const canvas = document.getElementById('bg-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width, height, particles = [];
+            const particleCount = 50;
+
+            function resize() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = (Math.random() - 0.5) * 0.3;
+                    this.size = Math.random() * 2 + 1;
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy;
+                    if (this.x < 0 || this.x > width) this.vx *= -1;
+                    if (this.y < 0 || this.y > height) this.vy *= -1;
+                }
+                draw() {
+                    ctx.fillStyle = 'rgba(0, 185, 0, 0.3)';
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+                }
+            }
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
     </script>
 </body>
 

@@ -8,221 +8,8 @@
     <link rel="icon" href="../favicon.png" type="image/x-icon">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <style>
-        :root {
-            --primary-color: #00b900;
-            --dark-gray: #1a1a1a;
-            --medium-gray: #2d2d2d;
-            --text-light: #eeeeee;
-        }
-
-        body {
-            font-family: -apple-system, sans-serif;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0f0f0f 0%, #2c2c2c 100%);
-            padding: 20px;
-            color: var(--text-light);
-        }
-
-        .card {
-            background: var(--medium-gray);
-            padding: 30px;
-            border-radius: 24px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            position: relative;
-            z-index: 100;
-        }
-
-        h2 {
-            margin-top: 0;
-            color: var(--primary-color);
-            text-align: center;
-            font-size: 24px;
-            letter-spacing: 1px;
-        }
-
-        label {
-            display: block;
-            margin-top: 15px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #bbb;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 12px;
-            margin-top: 5px;
-            border: 1px solid #444;
-            border-radius: 12px;
-            box-sizing: border-box;
-            font-size: 16px;
-            background: #1a1a1a;
-            color: white;
-            transition: border-color 0.3s;
-        }
-
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            background: #222;
-        }
-
-        .phone-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 5px;
-        }
-
-        .phone-container select {
-            width: 35%;
-            flex-shrink: 0;
-        }
-
-        .phone-container input {
-            width: 65%;
-            margin-top: 0;
-        }
-
-        .search-container {
-            position: relative;
-            margin-top: 5px;
-        }
-
-        .search-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: #1a1a1a;
-            border: 1px solid #444;
-            border-radius: 12px;
-            margin-top: 5px;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-        }
-
-        .search-results.show {
-            display: block;
-        }
-
-        .search-result-item {
-            padding: 12px;
-            border-bottom: 1px solid #333;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .search-result-item:hover {
-            background: #2a2a2a;
-        }
-
-        .search-result-item:last-child {
-            border-bottom: none;
-        }
-
-        .result-name {
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 4px;
-        }
-
-        .result-address {
-            font-size: 12px;
-            color: #999;
-            margin-bottom: 4px;
-        }
-
-        .result-phone {
-            font-size: 13px;
-            color: #bbb;
-        }
-
-        .loading {
-            padding: 12px;
-            text-align: center;
-            color: #999;
-        }
-
-        button {
-            width: 100%;
-            padding: 16px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            margin-top: 25px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 185, 0, 0.2);
-            transition: background-color 0.3s;
-        }
-
-        button:hover:not(:disabled) {
-            background-color: #00a000;
-        }
-
-        button:disabled {
-            background-color: #444;
-            color: #888;
-            cursor: not-allowed;
-        }
-
-        .footer {
-            text-align: center;
-            font-size: 12px;
-            color: #666;
-            margin-top: 15px;
-        }
-
-        select option {
-            background: #1a1a1a;
-            color: white;
-        }
-
-        .map-container {
-            margin-top: 15px;
-            border-radius: 12px;
-            overflow: hidden;
-            height: 250px;
-            display: none;
-        }
-
-        .map-container.show {
-            display: block;
-        }
-
-        .info-text {
-            font-size: 12px;
-            color: #888;
-            margin-top: 5px;
-        }
-
-        .language-selector {
-            display: block;
-            width: fit-content;
-            margin: 0 0 15px auto;
-            padding: 8px 12px;
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="../styles.css">
+    <script src="../i18n.js" defer></script>
 </head>
 
 <body>
@@ -245,7 +32,7 @@
         </div>
 
 
-        <h2 data-i18n="title">✨ AI Reservation</h2>
+        <h2 data-i18n="reservation_title">✨ AI Reservation</h2>
         <form id="resForm">
             <label data-i18n="label_name">👤 Name (English Only)</label>
             <input type="text" id="userName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
@@ -262,16 +49,19 @@
             <input type="time" id="resTime" required>
 
             <label data-i18n="label_search">🔍 Search Restaurant</label>
-            <div class="search-container">
+            <div class="search-container" style="position: relative;">
                 <input type="text" id="restaurantSearch" data-i18n-placeholder="placeholder_search"
                     placeholder="Enter restaurant name or address">
-                <div class="info-text" data-i18n="info_search">Phone number auto-filled after search</div>
-                <div id="searchResults" class="search-results"></div>
+                <div class="info-text" data-i18n="info_search" style="font-size: 12px; color: #888; margin-top: 5px;">
+                    Phone number auto-filled after search</div>
+                <div id="searchResults" class="search-results"
+                    style="position: absolute; top: 100%; left: 0; right: 0; background: #1a1a1a; border: 1px solid #444; border-radius: 12px; margin-top: 5px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none;">
+                </div>
             </div>
 
             <label data-i18n="label_phone">📞 Phone</label>
-            <div class="phone-container">
-                <select id="countryCode" required>
+            <div class="phone-container" style="display: flex; gap: 10px; margin-top: 5px;">
+                <select id="countryCode" required style="width: 35%;">
                     <option value="+886">🇹🇼 +886</option>
                     <option value="+1">🇺🇸 +1</option>
                     <option value="+81">🇯🇵 +81</option>
@@ -295,7 +85,7 @@
                     <option value="+7">🇷🇺 +7</option>
                     <option value="+91">🇮🇳 +91</option>
                 </select>
-                <input type="tel" id="targetPhone" placeholder="912345678" required>
+                <input type="tel" id="targetPhone" placeholder="912345678" required style="width: 65%;">
             </div>
 
             <label data-i18n="label_note">📝 Special Requests (Optional)</label>
@@ -303,7 +93,8 @@
                 style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;"
                 data-i18n-placeholder="placeholder_note" placeholder="Any special requests?"></textarea>
 
-            <div id="mapContainer" class="map-container">
+            <div id="mapContainer" class="map-container"
+                style="margin-top: 15px; border-radius: 12px; overflow: hidden; height: 250px; display: none;">
                 <div id="map" style="width: 100%; height: 100%;"></div>
             </div>
 
@@ -313,29 +104,28 @@
                 <option value="asap" data-i18n="option_asap">Call ASAP</option>
             </select>
 
-            <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" id="retryOption" style="width: 20px; height: 20px; margin: 0;">
-                <label for="retryOption" style="margin: 0; display: inline;">
+            <div class="retry-container">
+                <input type="checkbox" id="retryOption">
+                <label for="retryOption">
                     <span data-i18n="label_retry">Re-try 1 time</span>
-                    <span data-i18n="warning_retry" style="color: #ff4444; font-size: 12px; margin-left: 5px;">(This
-                        will charge you twice, careful)</span>
+                    <span class="warning-text" data-i18n="warning_retry">(This will charge you twice, careful)</span>
                 </label>
             </div>
 
-            <div
-                style="margin-top: 25px; padding: 15px; background: #222; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #444;">
-                <span id="creditsDisplay" data-i18n="text_credits" style="font-weight: bold; color: #fff;">Current
-                    Credits: $0 USD</span>
+            <div class="credits-card" style="margin-top: 45px;">
+                <div class="credits-info">
+                    <span id="creditsDisplay" data-i18n="text_credits" style="font-weight: bold; color: #fff;">Current
+                        Credits: $0 USD</span>
+                </div>
                 <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank" data-i18n="btn_refill"
-                    style="padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 8px; font-size: 14px;">Refill
-                    Credits</a>
+                    class="refill-btn">Refill</a>
             </div>
 
             <div class="cf-turnstile" data-sitekey="0x4AAAAAACKreG1nTIC_lSzg" data-callback="onTurnstileSuccess"
                 style="margin-top: 20px;"></div>
 
-            <button type="submit" id="submitBtn" data-i18n="btn_submit" disabled style="opacity: 0.5;">Start AI
-                Call</button>
+            <button type="submit" id="submitBtn" data-i18n="btn_submit" disabled>Start AI Call</button>
+            <a href="../Entry.html" class="back-link" data-i18n="btn_back">← Back to Portal</a>
             <div class="footer" data-i18n="footer">Automated call service provided by WiseCat AI</div>
         </form>
     </div>
@@ -676,6 +466,12 @@
             }
         });
 
+        // Initialize
+        initMap();
+
+        // ----------------------------------------------------
+        // Form Submission Logic
+        // ----------------------------------------------------
         document.getElementById('resForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -686,346 +482,59 @@
             const userInput = name + phone + note;
 
             if (ScamDetector.isScam(userInput)) {
-                alert("⚠️ Suspicious content detected, please check your input. (偵測到可疑內容，請重新輸入正確資訊)");
+                alert("⚠️ Suspicious content detected, please check your input.");
                 return;
             }
 
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerText = 'Sending...'; // Temporary fallback or could be from translation
 
             const countryCode = document.getElementById('countryCode').value;
             const phoneNumber = document.getElementById('targetPhone').value.replace(/^0+/, '');
             const fullPhoneNumber = countryCode + phoneNumber;
 
             const payload = {
+                type: 'reservation',
                 Name: document.getElementById('userName').value,
                 'Party Size': document.getElementById('partySize').value,
                 'date/month/year': document.getElementById('resDate').value,
                 time: document.getElementById('resTime').value,
                 targetPhoneNumber: fullPhoneNumber,
                 note: document.getElementById('note').value,
-                language: currentLang,
+                language: WiseCatI18n.currentLang,
                 schedulePreference: document.getElementById('schedulePreference').value,
                 retryOneTime: document.getElementById('retryOption').checked
             };
 
-            // Validation for Name (Double check)
+            // i18n Dictionary for script alerts
+            const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
+
+            // Validation for Name
             const namePattern = /^[a-zA-Z\s\-_]*$/;
             if (!namePattern.test(payload.Name)) {
-                alert(translations[currentLang].validation_name);
+                alert(dict.validation_name || "Name must be English letters only");
                 btn.disabled = false;
-                btn.innerText = translations[currentLang].btn_submit;
                 return;
             }
-
-            console.log('Sending payload:', payload);
 
             try {
                 const response = await fetch(N8N_WEBHOOK, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                if (response.ok) {
+                    btn.innerText = dict.msg_success;
+                    alert(dict.msg_calling);
+                } else {
+                    throw new Error();
                 }
-
-                // Check if response has content before parsing JSON
-                const contentType = response.headers.get('content-type');
-                let result = null;
-                if (contentType && contentType.includes('application/json')) {
-                    const text = await response.text();
-                    if (text) {
-                        result = JSON.parse(text);
-                    }
-                }
-
-                btn.innerText = translations[currentLang].msg_success;
-                alert(translations[currentLang].msg_calling);
-
-                setTimeout(() => {
-                    btn.innerText = translations[currentLang].btn_submit;
-                    btn.disabled = false;
-                }, 3000);
-
             } catch (error) {
-                console.error('Error:', error);
-                btn.innerText = translations[currentLang].msg_failed;
-                alert(translations[currentLang].msg_fail_alert);
-
-                setTimeout(() => {
-                    btn.innerText = translations[currentLang].btn_submit;
-                    btn.disabled = false;
-                }, 2000);
+                btn.innerText = dict.msg_failed;
+                alert(dict.msg_fail_alert);
+                btn.disabled = false;
             }
-        });
-
-        // ----------------------------------------------------
-        // Multi-language Logic
-        // ----------------------------------------------------
-        let currentLang = 'en';
-
-        const translations = {
-            en: {
-                title: "WiseCat Reservation Assistant",
-                label_name: "Name (English Only)",
-                placeholder_name: "English name only",
-                label_party: "Party Size",
-                label_date: "Date",
-                label_time: "Time",
-                label_search: "Search Restaurant",
-                placeholder_search: "Enter restaurant name or address",
-                info_search: "Phone number auto-filled after search",
-                label_phone: "Phone",
-                label_note: "Special Requests (Optional)",
-                placeholder_note: "Any special requests?",
-                btn_submit: "Start AI Call",
-                footer: "Automated call service provided by WiseCat AI",
-                validation_name: "Name must be English letters only",
-                msg_calling: "WiseCat Assistant is calling!",
-                msg_success: "Success",
-                msg_failed: "Failed",
-                msg_fail_alert: "Reservation failed, please try again",
-                placeholder_date: "Select Date",
-                label_schedule: "Schedule Call Preference",
-                option_open: "Call when restaurant open",
-                option_asap: "Call ASAP",
-                label_retry: "Re-try 1 time",
-                warning_retry: "(This will charge you twice, careful)",
-                text_credits: "Current Credits: $0 USD",
-                btn_refill: "Refill Credits"
-            },
-            zh: {
-                title: "WiseCat 訂位助手",
-                label_name: "姓名 (限英文)",
-                placeholder_name: "請輸入英文姓名",
-                label_party: "人數",
-                label_date: "預約日期",
-                label_time: "預約時間",
-                label_search: "搜尋餐廳",
-                placeholder_search: "輸入餐廳名稱或地址搜尋",
-                info_search: "搜尋後自動填入電話號碼",
-                label_phone: "餐廳電話",
-                label_note: "備註 (選填)",
-                placeholder_note: "有什麼特殊需求嗎？",
-                btn_submit: "啟動 AI 撥號",
-                footer: "由 WiseCat AI 提供自動化撥號服務",
-                validation_name: "姓名限英文",
-                msg_calling: "WiseCat 助手已開始撥號！",
-                msg_success: "預約成功",
-                msg_failed: "預約失敗",
-                msg_fail_alert: "預約失敗，請稍後再試",
-                placeholder_date: "選擇日期",
-                label_schedule: "通話時間偏好",
-                option_open: "餐廳營業時撥打",
-                option_asap: "隨時撥打 (ASAP)",
-                label_retry: "自動重撥 1 次",
-                warning_retry: "(將收取兩次費用，請注意)",
-                text_credits: "目前餘額: $0 USD",
-                btn_refill: "儲值點數"
-            },
-            jp: {
-                title: "WiseCat 予約アシスタント",
-                label_name: "名前 (英語のみ)",
-                placeholder_name: "英語名を入力してください",
-                label_party: "人数",
-                label_date: "日付",
-                label_time: "時間",
-                label_search: "レストラン検索",
-                placeholder_search: "レストラン名または住所を入力",
-                info_search: "検索後に電話番号が自動入力されます",
-                label_phone: "電話番号",
-                label_note: "リクエスト (任意)",
-                placeholder_note: "特別なリクエストはありますか？",
-                btn_submit: "AI通話を開始",
-                footer: "WiseCat AIによる自動通話サービス",
-                validation_name: "名前は英語のみ入力可能です",
-                msg_calling: "WiseCatアシスタントが電話をかけています！",
-                msg_success: "成功",
-                msg_failed: "失敗",
-                msg_fail_alert: "予約に失敗しました。もう一度お試しください",
-                placeholder_date: "日付を選択",
-                label_schedule: "通話スケジュールの設定",
-                option_open: "営業時間内に電話",
-                option_asap: "すぐに電話 (ASAP)",
-                label_retry: "1回リダイヤル",
-                warning_retry: "(2倍の料金がかかります、ご注意ください)",
-                text_credits: "現在のクレジット: $0 USD",
-                btn_refill: "クレジットをチャージ"
-            },
-            kr: {
-                title: "WiseCat 예약 비서",
-                label_name: "이름 (영어만)",
-                placeholder_name: "영어 이름만 입력하세요",
-                label_party: "인원",
-                label_date: "날짜",
-                label_time: "시간",
-                label_search: "식당 검색",
-                placeholder_search: "식당 이름 또는 주소 입력",
-                info_search: "검색 후 전화번호 자동 입력",
-                label_phone: "전화번호",
-                label_note: "요청 사항 (선택)",
-                placeholder_note: "특별한 요청이 있으신가요?",
-                btn_submit: "AI 통화 시작",
-                footer: "WiseCat AI가 제공하는 자동 통화 서비스",
-                validation_name: "이름은 영어로만 입력해야 합니다",
-                msg_calling: "WiseCat 비서가 전화 중입니다!",
-                msg_success: "성공",
-                msg_failed: "실패",
-                msg_fail_alert: "예약 실패, 다시 시도해 주세요",
-                placeholder_date: "날짜 선택",
-                label_schedule: "통화 일정 설정",
-                option_open: "영업 시간에 통화",
-                option_asap: "즉시 통화 (ASAP)",
-                label_retry: "1회 재다이얼",
-                warning_retry: "(요금이 두 번 부과됩니다. 주의하세요)",
-                text_credits: "현재 크레딧: $0 USD",
-                btn_refill: "크레딧 충전"
-            },
-            es: {
-                title: "Asistente de Reservas WiseCat",
-                label_name: "Nombre (Sólo inglés)",
-                placeholder_name: "Sólo nombre en inglés",
-                label_party: "Personas",
-                label_date: "Fecha",
-                label_time: "Hora",
-                label_search: "Buscar Restaurante",
-                placeholder_search: "Ingrese nombre o dirección del restaurante",
-                info_search: "Teléfono autocompletado tras buscar",
-                label_phone: "Teléfono",
-                label_note: "Solicitudes (Opcional)",
-                placeholder_note: "¿Alguna solicitud especial?",
-                btn_submit: "Iniciar llamada IA",
-                footer: "Servicio de llamada automatizada por WiseCat AI",
-                validation_name: "El nombre debe ser solo en letras inglesas",
-                msg_calling: "¡El Asistente WiseCat está llamando!",
-                msg_success: "Éxito",
-                msg_failed: "Fallido",
-                msg_fail_alert: "Reserva fallida, intente de nuevo",
-                placeholder_date: "Seleccionar fecha",
-                label_schedule: "Preferencia de horario de llamada",
-                option_open: "Llamar cuando esté abierto",
-                option_asap: "Llamar ASAP",
-                label_retry: "Reintentar 1 vez",
-                warning_retry: "(Se cobrará dos veces, cuidado)",
-                text_credits: "Créditos actuales: $0 USD",
-                btn_refill: "Recargar créditos"
-            },
-            fr: {
-                title: "Assistant de Réservation WiseCat",
-                label_name: "Nom (Anglais uniquement)",
-                placeholder_name: "Nom en anglais uniquement",
-                label_party: "Personnes",
-                label_date: "Date",
-                label_time: "Heure",
-                label_search: "Chercher Restaurant",
-                placeholder_search: "Entrez le nom ou l'adresse",
-                info_search: "Numéro rempli automatiquement après recherche",
-                label_phone: "Téléphone",
-                label_note: "Demandes (Optionnel)",
-                placeholder_note: "Demandes spéciales ?",
-                btn_submit: "Lancer appel IA",
-                footer: "Service d'appel automatisé par WiseCat AI",
-                validation_name: "Le nom doit être en lettres anglaises",
-                msg_calling: "L'Assistant WiseCat appelle !",
-                msg_success: "Succès",
-                msg_failed: "Échec",
-                msg_fail_alert: "Échec de la réservation, réessayez",
-                placeholder_date: "Date sélectionnée",
-                label_schedule: "Préférence d'horaire d'appel",
-                option_open: "Appeler pendant les heures d'ouverture",
-                option_asap: "Appeler ASAP",
-                label_retry: "Réessayer 1 fois",
-                warning_retry: "(Cela vous coûtera deux fois, attention)",
-                text_credits: "Crédits actuels: $0 USD",
-                btn_refill: "Recharger des crédits"
-            },
-            it: {
-                title: "Assistente di Prenotazione WiseCat",
-                label_name: "Nome (Solo inglese)",
-                placeholder_name: "Solo nome in inglese",
-                label_party: "Persone",
-                label_date: "Data",
-                label_time: "Ora",
-                label_search: "Cerca Ristorante",
-                placeholder_search: "Inserisci nome o indirizzo ristorante",
-                info_search: "Numero compilato automaticamente dopo ricerca",
-                label_phone: "Telefono",
-                label_note: "Richieste (Opzionale)",
-                placeholder_note: "Qualche richiesta speciale?",
-                btn_submit: "Avvia chiamata IA",
-                footer: "Servizio di chiamata automatizzata da WiseCat AI",
-                validation_name: "Il nome deve essere solo in lettere inglesi",
-                msg_calling: "L'Assistente WiseCat sta chiamando!",
-                msg_success: "Successo",
-                msg_failed: "Fallito",
-                msg_fail_alert: "Prenotazione fallita, riprova",
-                placeholder_date: "Seleziona data",
-                label_schedule: "Preferenza orario chiamata",
-                option_open: "Chiama durante l'orario di apertura",
-                option_asap: "Chiama ASAP",
-                label_retry: "Riprova 1 volta",
-                warning_retry: "(Ti verrà addebitato due volte, attenzione)",
-                text_credits: "Crediti attuali: $0 USD",
-                btn_refill: "Ricarica crediti"
-            }
-        };
-
-        function updateLanguage(lang) {
-            currentLang = lang;
-            document.documentElement.lang = lang;
-            document.getElementById('languageSelector').value = lang;
-            localStorage.setItem('preferredLanguage', lang);
-
-            // Update Text
-            document.querySelectorAll('[data-i18n]').forEach(element => {
-                const key = element.getAttribute('data-i18n');
-                if (translations[lang][key]) {
-                    element.textContent = translations[lang][key];
-                }
-            });
-
-            // Update Placeholders
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
-                const key = element.getAttribute('data-i18n-placeholder');
-                if (translations[lang][key]) {
-                    element.placeholder = translations[lang][key];
-                }
-            });
-
-            // Update Title
-            document.title = translations[lang].title;
-
-            // Update Credits Display with actual value
-            const userSession = localStorage.getItem('wisecat_user');
-            if (userSession) {
-                try {
-                    const user = JSON.parse(userSession);
-                    const credits = user.credits || 0;
-                    const creditsDisplay = document.getElementById('creditsDisplay');
-                    if (creditsDisplay && translations[lang].text_credits) {
-                        creditsDisplay.innerText = translations[lang].text_credits.replace('$0', `$${credits}`);
-                    }
-                } catch (e) { }
-            }
-
-            // Allow name patterns to change? Currently keeping English pattern strict
-            // But we might want to update alerts logic
-        }
-
-        // Initialize Language
-        const savedLang = localStorage.getItem('preferredLanguage');
-        const browserLang = navigator.language.slice(0, 2);
-        const initialLang = savedLang || (translations[browserLang] ? browserLang : 'en');
-        updateLanguage(initialLang);
-
-        // Event Listener
-        document.getElementById('languageSelector').addEventListener('change', (e) => {
-            updateLanguage(e.target.value);
         });
 
         // Initialize
