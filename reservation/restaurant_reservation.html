@@ -196,8 +196,8 @@
                     // Update Credits Display
                     const credits = user.credits || 0;
                     if (creditsDisplay) {
-                        const currentLangData = translations[currentLang] || translations['en'];
-                        const creditTextTemplate = currentLangData.text_credits || "Current Credits: $0 USD";
+                        const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
+                        const creditTextTemplate = dict.text_credits || "Current Credits: $0 USD";
                         creditsDisplay.innerText = creditTextTemplate.replace('$0', `$${credits}`);
                     }
 

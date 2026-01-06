@@ -100,8 +100,43 @@
 
     <script>
         const N8N_WEBHOOK = 'https://wisecat.app.n8n.cloud/webhook-test/line-reservation'; // Using same endpoint for now
+
+        // Turnstile Success Callback
+        function onTurnstileSuccess(token) {
+            console.log("Turnstile Success, Token:", token);
+            const btn = document.getElementById('submitBtn');
+            const userSession = localStorage.getItem('wisecat_user');
+            let credits = 0;
+            if (userSession) {
+                try {
+                    const user = JSON.parse(userSession);
+                    credits = parseFloat(user.credits) || 0;
+                    console.log("Credits found:", credits);
+                } catch (e) {
+                    console.error("Error parsing user session:", e);
+                }
+            }
+
+            if (credits > 0) {
+                btn.disabled = false;
+                console.log("Button enabled");
+            } else {
+                btn.disabled = true;
+                console.log("Button stays disabled: insufficient credits");
+            }
+        }
+
         // Initialize
-        startBackgroundAnimation();
+        window.addEventListener('DOMContentLoaded', () => {
+            const userSession = localStorage.getItem('wisecat_user');
+            if (userSession) {
+                try {
+                    const user = JSON.parse(userSession);
+                    if (user.name) document.getElementById('userName').value = user.name;
+                } catch (e) { }
+            }
+            startBackgroundAnimation();
+        });
 
         // ----------------------------------------------------
         // Form Submission Logic
