@@ -60,7 +60,27 @@
                 </div>
             </div>
 
-            <label data-i18n="label_phone">📞 Phone</label>
+            <label data-i18n="label_mission">🎯 Choose Mission</label>
+            <select id="mission" required
+                style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;">
+                <option value="reservation_new" data-i18n="opt_res_new" selected>Restaurant Reservation</option>
+                <option value="reservation_update_cancel" data-i18n="opt_res_update">Reservation Update or Cancel
+                </option>
+                <option value="reservation_food_preorder" data-i18n="opt_res_food">Reservation with Food Pre-order
+                </option>
+            </select>
+
+            <div id="preorderBackup"
+                style="display: none; margin-top: 15px; padding: 10px; border: 1px dashed #555; border-radius: 8px;">
+                <label data-i18n="label_preorder_backup" style="font-size: 13px; color: #aaa;">If food is
+                    unavailable:</label>
+                <select id="preorderBackupChoice" style="margin-top: 5px;">
+                    <option value="cancel" data-i18n="opt_backup_cancel">Cancel Reservation</option>
+                    <option value="proceed" data-i18n="opt_backup_proceed" selected>Proceed anyway</option>
+                </select>
+            </div>
+
+            <label data-i18n="label_phone" style="margin-top: 20px;">📞 Phone</label>
             <div class="phone-container" style="display: flex; gap: 10px; margin-top: 5px;">
                 <select id="countryCode" required style="width: 35%;">
                     <option value="+886">🇹🇼 +886</option>
@@ -241,6 +261,12 @@
                         const creditTextTemplate = dict.text_credits || "Current Credits: $0 USD";
                         creditsDisplay.innerText = creditTextTemplate.replace('$0', `$${credits}`);
                     }
+
+                    // Mission Logic
+                    document.getElementById('mission').addEventListener('change', (e) => {
+                        const backup = document.getElementById('preorderBackup');
+                        if (backup) backup.style.display = e.target.value === 'reservation_food_preorder' ? 'block' : 'none';
+                    });
 
                     // Initial button state check (will be overridden by Turnstile)
                     if (credits <= 0) {
@@ -536,6 +562,8 @@
 
             const payload = {
                 type: 'reservation',
+                mission: document.getElementById('mission').value,
+                preorderBackup: document.getElementById('mission').value === 'reservation_food_preorder' ? document.getElementById('preorderBackupChoice').value : 'n/a',
                 Name: document.getElementById('userName').value,
                 'Party Size': document.getElementById('partySize').value,
                 'date/month/year': document.getElementById('resDate').value,
