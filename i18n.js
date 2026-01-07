@@ -44,6 +44,7 @@ const WiseCatI18n = {
             option_asap: "Call ASAP",
             option_open: "Call when available",
             validation_name: "Names must be English letters (hyphens/underscores allowed)",
+            validation_phone: "Invalid phone format for selected country",
 
             // Reservation Specific
             reservation_title: "✨ AI Reservation",
@@ -110,6 +111,7 @@ const WiseCatI18n = {
             option_asap: "立即撥打 (ASAP)",
             option_open: "對方有空時撥打",
             validation_name: "姓名限英文 (可含 - 或 _)",
+            validation_phone: "手機格式與所選國家不符",
 
             reservation_title: "✨ AI 餐廳代訂",
             label_name: "👤 姓名 (限英文)",
@@ -175,6 +177,7 @@ const WiseCatI18n = {
             option_asap: "すぐに電話 (ASAP)",
             option_open: "対応可能な時に電話",
             validation_name: "名前は英語のみ（ハイフン/アンダースコア可）",
+            validation_phone: "電話番号の形式が正しくありません",
 
             reservation_title: "✨ AI レストラン予約",
             label_name: "👤 名前 (英語のみ)",
@@ -238,6 +241,7 @@ const WiseCatI18n = {
             option_asap: "즉시 통화 (ASAP)",
             option_open: "가능할 때 통화",
             validation_name: "이름은 영문자만 가능합니다 (하이픈/언더스코어 허용)",
+            validation_phone: "전화번호 형식이 올바르지 않습니다",
             reservation_title: "✨ AI 식당 예약",
             label_name: "👤 이름 (영어만)",
             label_party: "👥 인원",
@@ -300,6 +304,7 @@ const WiseCatI18n = {
             option_asap: "Llamar lo antes posible",
             option_open: "Llamar cuando esté disponible",
             validation_name: "Nombres en letras inglesas (se permiten guiones)",
+            validation_phone: "Formato de teléfono no válido",
             reservation_title: "✨ Reserva con IA",
             label_name: "👤 Nombre (Solo inglés)",
             label_party: "👥 Personas",
@@ -362,6 +367,7 @@ const WiseCatI18n = {
             option_asap: "Appeler dès que possible",
             option_open: "Appeler si disponible",
             validation_name: "Noms en lettres anglaises (tirets autorisés)",
+            validation_phone: "Format de téléphone invalide",
             reservation_title: "✨ Réservation IA",
             label_name: "👤 Nom (Anglais uniquement)",
             label_party: "👥 Personnes",
@@ -424,6 +430,7 @@ const WiseCatI18n = {
             option_asap: "Chiama prima possibile",
             option_open: "Chiama se disponibile",
             validation_name: "Nomi in lettere inglesi (trattini consentiti)",
+            validation_phone: "Formato telefono non valido",
             reservation_title: "✨ Prenotazione IA",
             label_name: "👤 Nome (Solo inglese)",
             label_party: "👥 Persone",
@@ -570,6 +577,19 @@ const WiseCatI18n = {
                 }
             } catch (e) { console.error("i18n credits error", e); }
         }
+    },
+
+    phoneRules: {
+        '+886': /^9\d{8}$/,      // Taiwan: 9 digits starting with 9
+        '+1': /^\d{10}$/,        // USA: 10 digits
+        '+81': /^\d{10,11}$/,    // Japan: 10-11 digits
+        '+82': /^\d{9,11}$/,     // Korea: 9-11 digits
+        'default': /^\d{7,15}$/  // Generic fallback
+    },
+
+    validatePhone(code, number) {
+        const rule = this.phoneRules[code] || this.phoneRules['default'];
+        return rule.test(number.replace(/\D/g, ''));
     }
 };
 

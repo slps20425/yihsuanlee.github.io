@@ -72,6 +72,10 @@
                 </select>
                 <input type="tel" id="targetPhone" placeholder="912345678" required>
             </div>
+            <div id="phoneHint" style="font-size: 11px; color: #ff4d4d; margin-top: 5px; display: none;"
+                data-i18n="validation_phone">
+                Invalid phone format for selected country
+            </div>
 
             <label data-i18n="label_script">📄 AI Message Script</label>
             <textarea id="scriptContent" rows="4" data-i18n-placeholder="placeholder_script"
@@ -114,30 +118,57 @@
     <script>
         const N8N_WEBHOOK = 'https://wisecat.app.n8n.cloud/webhook-test/line-reservation'; // Using same endpoint for now
 
+        let turnstileValidated = false;
+
         // Turnstile Success Callback
         function onTurnstileSuccess(token) {
             console.log("Turnstile Success, Token:", token);
+            turnstileValidated = true;
+            validateForm();
+        }
+
+        function validateForm() {
             const btn = document.getElementById('submitBtn');
+            const phoneInput = document.getElementById('targetPhone');
+            const phoneHint = document.getElementById('phoneHint');
+            const countryCode = document.getElementById('countryCode').value;
+            const phoneNumber = phoneInput.value;
+
+            // 1. Credit Check
             const userSession = localStorage.getItem('wisecat_user');
             let credits = 0;
             if (userSession) {
                 try {
                     const user = JSON.parse(userSession);
                     credits = parseFloat(user.credits) || 0;
-                    console.log("Credits found:", credits);
                 } catch (e) {
                     console.error("Error parsing user session:", e);
                 }
             }
 
-            if (credits > 0) {
+            // 2. Phone Validation
+            const isPhoneValid = WiseCatI18n.validatePhone(countryCode, phoneNumber);
+            if (phoneNumber && !isPhoneValid) {
+                phoneInput.style.borderColor = "#ff4d4d";
+                phoneHint.style.display = "block";
+            } else {
+                phoneInput.style.borderColor = "";
+                phoneHint.style.display = "none";
+            }
+
+            // 3. Combined Logic
+            if (credits > 0 && turnstileValidated && isPhoneValid) {
                 btn.disabled = false;
-                console.log("Button enabled");
+                btn.style.opacity = "1";
             } else {
                 btn.disabled = true;
-                console.log("Button stays disabled: insufficient credits");
+                btn.style.opacity = "0.5";
             }
         }
+
+        // Listen for input changes
+        document.getElementById('targetPhone').addEventListener('input', validateForm);
+        document.getElementById('countryCode').addEventListener('change', validateForm);
 
         // Initialize
         window.addEventListener('DOMContentLoaded', () => {
