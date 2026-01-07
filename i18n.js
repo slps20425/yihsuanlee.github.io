@@ -61,18 +61,18 @@ const WiseCatI18n = {
             option_res_open: "Call when restaurant open",
             placeholder_date: "Select Date",
             helper_title: "AI Prompt Helper 🐱",
-            res_ex1_t: "Simple Reservation",
-            res_ex1_v: "Reserve a table for 4 at [Restaurant Name] for tonight.",
-            res_ex2_t: "Item Pre-order",
-            res_ex2_v: "Reserve a cake at the bakery before 5PM.",
-            res_ex3_t: "Holiday Inquiry",
-            res_ex3_v: "Check if you are opening on the upcoming holiday.",
-            mouth_ex1_t: "Personal Message",
-            mouth_ex1_v: "Hey XXX, I'm trying to call you but you blocked me. I just wanted to say sorry.",
-            mouth_ex2_t: "Urgent Meeting",
-            mouth_ex2_v: "I'm in an out-of-service area, I need to sync up the meet up point with the driver now.",
-            mouth_ex3_t: "Urgent Inquiry",
-            mouth_ex3_v: "Checking some urgent information with you now."
+            helper_examples: {
+                res: [
+                    { t: "Simple Reservation", v: "Reserve a table for 4 at [Restaurant Name] for tonight." },
+                    { t: "Item Pre-order", v: "Reserve a cake at the bakery before 5PM." },
+                    { t: "Holiday Inquiry", v: "Check if you are opening on the upcoming holiday." }
+                ],
+                mouth: [
+                    { t: "Personal Message", v: "Hey XXX, I'm trying to call you but you blocked me. I just wanted to say sorry." },
+                    { t: "Urgent Meeting", v: "I'm in an out-of-service area, I need to sync up the meet up point with the driver now." },
+                    { t: "Urgent Inquiry", v: "Checking some urgent information with you now." }
+                ]
+            }
         },
         zh: {
             portal_title: "WiseCat 門戶",
@@ -126,18 +126,18 @@ const WiseCatI18n = {
             option_res_open: "餐廳營業時撥打",
             placeholder_date: "選擇預約日期",
             helper_title: "AI 範例語法 🐱",
-            res_ex1_t: "簡單預約",
-            res_ex1_v: "今晚在 [餐廳名稱] 預訂一桌 4 人位。",
-            res_ex2_t: "品項預留",
-            res_ex2_v: "在下午 5 點前到麵包店預留一個蛋糕。",
-            res_ex3_t: "假日確認",
-            res_ex3_v: "詢問特定節假日是否照常營業。",
-            mouth_ex1_t: "個人訊息",
-            mouth_ex1_v: "嘿 XXX，我試著撥給你但你封鎖我了，我只是想跟你說聲抱歉。",
-            mouth_ex2_t: "緊急會合",
-            mouth_ex2_v: "我目前處於收訊不佳的地區，現在需要與司機同步會合地點。",
-            mouth_ex3_t: "緊急詢問",
-            mouth_ex3_v: "現在要與您確認一些緊急資訊。"
+            helper_examples: {
+                res: [
+                    { t: "簡單預約", v: "今晚在 [餐廳名稱] 預訂一桌 4 人位。" },
+                    { t: "品項預留", v: "在下午 5 點前到麵包店預留一個蛋糕。" },
+                    { t: "假日確認", v: "詢問特定節假日是否照常營業。" }
+                ],
+                mouth: [
+                    { t: "個人訊息", v: "嘿 XXX，我試著撥給你但你封鎖我了，我只是想跟你說聲抱歉。" },
+                    { t: "緊急會合", v: "我目前處於收訊不佳的地區，現在需要與司機同步會合地點。" },
+                    { t: "緊急詢問", v: "現在要與您確認一些緊急資訊。" }
+                ]
+            }
         },
         jp: {
             portal_title: "WiseCat ポータル",
@@ -191,18 +191,18 @@ const WiseCatI18n = {
             option_res_open: "開店時に電話",
             placeholder_date: "日付を選択",
             helper_title: "AIプロンプトヘルパー 🐱",
-            res_ex1_t: "簡単な予約",
-            res_ex1_v: "今夜、[レストラン名]で4人のテーブルを予約してください。",
-            res_ex2_t: "商品の予約",
-            res_ex2_v: "午後5時までにパン屋でケーキを予約してください。",
-            res_ex3_t: "休日の問い合わせ",
-            res_ex3_v: "今度の祝日に営業しているか確認してください。",
-            mouth_ex1_t: "個人的なメッセージ",
-            mouth_ex1_v: "ねえXXX、電話しようとしたけどブロックされているみたい。ただ謝りたかっただけなんだ。",
-            mouth_ex2_t: "緊急の待ち合わせ",
-            mouth_ex2_v: "圏外にいるので、今すぐ運転手と待ち合わせ場所を確認したいです。",
-            mouth_ex3_t: "緊急の問い合わせ",
-            mouth_ex3_v: "今すぐ緊急の情報について確認したいです。"
+            helper_examples: {
+                res: [
+                    { t: "簡単な予約", v: "今夜、[レストラン名]で4人のテーブルを予約してください。" },
+                    { t: "商品の予約", v: "午後5時までにパン屋でケーキを予約してください。" },
+                    { t: "休日の問い合わせ", v: "今度の祝日に営業しているか確認してください。" }
+                ],
+                mouth: [
+                    { t: "個人的なメッセージ", v: "ねえXXX、電話しようとしたけどブロックされているみたい。ただ謝りたかっただけなんだ。" },
+                    { t: "緊急の待ち合わせ", v: "圏外にいるので、今すぐ運転手と待ち合わせ場所を確認したいです。" },
+                    { t: "緊急の問い合わせ", v: "今すぐ緊急の情報について確認したいです。" }
+                ]
+            }
         },
         kr: {
             portal_title: "WiseCat 포털",
@@ -253,18 +253,18 @@ const WiseCatI18n = {
             option_res_open: "영업 시 통화",
             placeholder_date: "날짜 선택",
             helper_title: "AI 프롬프트 도우미 🐱",
-            res_ex1_t: "간단한 예약",
-            res_ex1_v: "오늘 밤 [식당 이름]에 4인 테이블을 예약해 주세요.",
-            res_ex2_t: "품목 예약",
-            res_ex2_v: "오후 5시 이전에 빵집에서 케이크를 예약해 주세요.",
-            res_ex3_t: "공휴일 문의",
-            res_ex3_v: "다가오는 공휴일에 영업하는지 확인해 주세요.",
-            mouth_ex1_t: "개인 메시지",
-            mouth_ex1_v: "XXX님, 전화를 시도했지만 차단되어 있어 죄송하다는 말을 전하고 싶습니다.",
-            mouth_ex2_t: "긴급 미팅",
-            mouth_ex2_v: "통신 서비스 지역이 아니라서 지금 바로 기사님과 만남 장소를 확인해야 합니다.",
-            mouth_ex3_t: "긴급 문의",
-            mouth_ex3_v: "지금 바로 긴급한 정보를 확인하고 싶습니다."
+            helper_examples: {
+                res: [
+                    { t: "간단한 예약", v: "오늘 밤 [식당 이름]에 4인 테이블을 예약해 주세요." },
+                    { t: "품목 예약", v: "오후 5시 이전에 빵집에서 케이크를 예약해 주세요." },
+                    { t: "공휴일 문의", v: "다가오는 공휴일에 영업하는지 확인해 주세요." }
+                ],
+                mouth: [
+                    { t: "개인 메시지", v: "XXX님, 전화를 시도했지만 차단되어 있어 죄송하다는 말을 전하고 싶습니다." },
+                    { t: "긴급 미팅", v: "통신 서비스 지역이 아니라서 지금 바로 기사님과 만남 장소를 확인해야 합니다." },
+                    { t: "긴급 문의", v: "지금 바로 긴급한 정보를 확인하고 싶습니다." }
+                ]
+            }
         },
         es: {
             portal_title: "Portal WiseCat",
@@ -315,18 +315,18 @@ const WiseCatI18n = {
             option_res_open: "Llamar cuando esté abierto",
             placeholder_date: "Seleccionar fecha",
             helper_title: "Ayudante de IA 🐱",
-            res_ex1_t: "Reserva Simple",
-            res_ex1_v: "Reserva una mesa para 4 en [Nombre del Restaurante] para esta noche.",
-            res_ex2_t: "Pedido de Artículo",
-            res_ex2_v: "Reserva un pastel en la panadería antes de las 5 PM.",
-            res_ex3_t: "Consulta de Festivo",
-            res_ex3_v: "Consulta si abren en el próximo día festivo.",
-            mouth_ex1_t: "Mensaje Personal",
-            mouth_ex1_v: "Hola XXX, traté de llamarte pero me bloqueaste. Solo quería pedirte disculpas.",
-            mouth_ex2_t: "Reunión Urgente",
-            mouth_ex2_v: "Estoy en un área sin servicio, necesito coordinar el punto de encuentro con el conductor ahora.",
-            mouth_ex3_t: "Consulta Urgente",
-            mouth_ex3_v: "Verificando información urgente contigo ahora stesso."
+            helper_examples: {
+                res: [
+                    { t: "Reserva Simple", v: "Reserva una mesa para 4 en [Nombre del Restaurante] para esta noche." },
+                    { t: "Pedido de Artículo", v: "Reserva un pastel en la panadería antes de las 5 PM." },
+                    { t: "Consulta de Festivo", v: "Consulta si abren en el próximo día festivo." }
+                ],
+                mouth: [
+                    { t: "Mensaje Personal", v: "Hola XXX, traté de llamarte pero me bloqueaste. Solo quería pedirte disculpas." },
+                    { t: "Reunión Urgente", v: "Estoy en un área sin servicio, necesito coordinar el punto de encuentro con el conductor ahora." },
+                    { t: "Consulta Urgente", v: "Verificando información urgente contigo ahora stesso." }
+                ]
+            }
         },
         fr: {
             portal_title: "Portail WiseCat",
@@ -377,18 +377,18 @@ const WiseCatI18n = {
             option_res_open: "Appeler si ouvert",
             placeholder_date: "Choisir la date",
             helper_title: "Assistant de Prompt IA 🐱",
-            res_ex1_t: "Réservation Simple",
-            res_ex1_v: "Réservez une table pour 4 à [Nom du Restaurant] pour ce soir.",
-            res_ex2_t: "Commande d'Article",
-            res_ex2_v: "Réservez un gâteau à la boulangerie avant 17h00.",
-            res_ex3_t: "Demande de Congé",
-            res_ex3_v: "Vérifiez si vous êtes ouvert lors du prochain jour férié.",
-            mouth_ex1_t: "Message Personnel",
-            mouth_ex1_v: "Hé XXX, j'ai essayé de t'appeler mais tu m'as bloqué. Je voulais juste te dire que je suis désolé.",
-            mouth_ex2_t: "Réunion Urgente",
-            mouth_ex2_v: "Je suis dans une zone sans service, je dois coordonner le point de rencontre avec le chauffeur maintenant.",
-            mouth_ex3_t: "Demande Urgente",
-            mouth_ex3_v: "Vérification d'informations urgentes avec vous maintenant."
+            helper_examples: {
+                res: [
+                    { t: "Réservation Simple", v: "Réservez une table pour 4 à [Nom du Restaurant] pour ce soir." },
+                    { t: "Commande d'Article", v: "Réservez un gâteau à la boulangerie avant 17h00." },
+                    { t: "Demande de Congé", v: "Vérifiez si vous êtes ouvert lors du prochain jour férié." }
+                ],
+                mouth: [
+                    { t: "Message Personnel", v: "Hé XXX, j'ai essayé de t'appeler mais tu m'as bloqué. Je voulais juste te dire que je suis désolé." },
+                    { t: "Réunion Urgente", v: "Je suis dans une zone sans service, je dois coordonner le point de rencontre avec le chauffeur maintenant." },
+                    { t: "Demande Urgente", v: "Vérification d'informations urgentes avec vous maintenant." }
+                ]
+            }
         },
         it: {
             portal_title: "Portale WiseCat",
@@ -439,18 +439,18 @@ const WiseCatI18n = {
             option_res_open: "Chiama se aperto",
             placeholder_date: "Seleziona data",
             helper_title: "Assistente Prompt IA 🐱",
-            res_ex1_t: "Prenotazione Semplice",
-            res_ex1_v: "Prenota un tavolo per 4 a [Nome Ristorante] per stasera.",
-            res_ex2_t: "Ordine Articolo",
-            res_ex2_v: "Prenota una torta in pasticceria prima delle 17:00.",
-            res_ex3_t: "Richiesta Festività",
-            res_ex3_v: "Controlla se siete aperti durante la prossima festività.",
-            mouth_ex1_t: "Messaggio Personale",
-            mouth_ex1_v: "Ehi XXX, ho provato a chiamarti ma mi hai bloccato. volevo solo dirti che mi dispiace.",
-            mouth_ex2_t: "Incontro Urgente",
-            mouth_ex2_v: "Sono in una zona senza servizio, devo coordinare il punto di incontro con l'autista ora.",
-            mouth_ex3_t: "Richiesta Urgente",
-            mouth_ex3_v: "Verifica di informazioni urgenti con te ora."
+            helper_examples: {
+                res: [
+                    { t: "Prenotazione Semplice", v: "Prenota un tavolo per 4 a [Nome Ristorante] per stasera." },
+                    { t: "Ordine Articolo", v: "Prenota una torta in pasticceria prima delle 17:00." },
+                    { t: "Richiesta Festività", v: "Controlla se siete aperti durante la prossima festività." }
+                ],
+                mouth: [
+                    { t: "Messaggio Personale", v: "Ehi XXX, ho provato a chiamarti ma mi hai bloccato. volevo solo dirti che mi dispiace." },
+                    { t: "Incontro Urgente", v: "Sono in una zona senza servizio, devo coordinare il punto di incontro con l'autista ora." },
+                    { t: "Richiesta Urgente", v: "Verifica di informazioni urgenti con te ora." }
+                ]
+            }
         }
     },
 
@@ -505,6 +505,50 @@ const WiseCatI18n = {
 
         // Special handling for credits display
         this.refreshCredits();
+
+        // Render Helper Examples if container exists
+        this.renderHelper();
+    },
+
+    renderHelper() {
+        const helperPanel = document.getElementById('helperPanel');
+        if (!helperPanel) return;
+
+        const lang = this.currentLang;
+        const dict = this.translations[lang] || this.translations['en'];
+        const type = document.title.toLowerCase().includes('mouthpiece') ? 'mouth' : 'res';
+        const examples = dict.helper_examples ? dict.helper_examples[type] : [];
+
+        // Clear existing examples (except header)
+        const existingExamples = helperPanel.querySelectorAll('.helper-example');
+        existingExamples.forEach(el => el.remove());
+
+        // Create and append new examples
+        examples.forEach(ex => {
+            const div = document.createElement('div');
+            div.className = 'helper-example';
+            div.onclick = () => {
+                const targetId = type === 'mouth' ? 'scriptContent' : 'note';
+                const textarea = document.getElementById(targetId);
+                if (textarea) {
+                    textarea.value = ex.v;
+                    helperPanel.classList.remove('show');
+                    textarea.focus();
+                }
+            };
+
+            const title = document.createElement('span');
+            title.className = 'helper-example-title';
+            title.textContent = ex.t;
+
+            const content = document.createElement('span');
+            content.className = 'helper-example-content';
+            content.textContent = ex.v;
+
+            div.appendChild(title);
+            div.appendChild(content);
+            helperPanel.appendChild(div);
+        });
     },
 
     refreshCredits() {

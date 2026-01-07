@@ -138,20 +138,7 @@
             <span data-i18n="helper_title">AI Prompt Helper 🐱</span>
             <span class="helper-close" id="helperClose">✕</span>
         </div>
-        <div class="helper-example" onclick="copyExample('res_ex1_v')">
-            <span class="helper-example-title" data-i18n="res_ex1_t">Simple Reservation</span>
-            <span class="helper-example-content" data-i18n="res_ex1_v">Reserve a table for 4 at [Restaurant Name] for
-                tonight.</span>
-        </div>
-        <div class="helper-example" onclick="copyExample('res_ex2_v')">
-            <span class="helper-example-title" data-i18n="res_ex2_t">Item Pre-order</span>
-            <span class="helper-example-content" data-i18n="res_ex2_v">Reserve a cake at the bakery before 5PM.</span>
-        </div>
-        <div class="helper-example" onclick="copyExample('res_ex3_v')">
-            <span class="helper-example-title" data-i18n="res_ex3_t">Holiday Inquiry</span>
-            <span class="helper-example-content" data-i18n="res_ex3_v">Check if you are opening on the upcoming
-                holiday.</span>
-        </div>
+        <!-- Examples are rendered dynamically from i18n.js -->
     </div>
 
     <script>
@@ -588,17 +575,6 @@
 
         buddy.addEventListener('click', () => panel.classList.toggle('show'));
         close.addEventListener('click', () => panel.classList.remove('show'));
-
-        function copyExample(key) {
-            const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
-            const text = dict[key];
-            if (text) {
-                const textarea = document.getElementById('note');
-                textarea.value = text;
-                panel.classList.remove('show');
-                textarea.focus();
-            }
-        }
     </script>
 </body>
 
