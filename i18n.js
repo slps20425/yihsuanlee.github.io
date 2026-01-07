@@ -80,9 +80,11 @@ const WiseCatI18n = {
                     { t: "Holiday Inquiry", v: "Check if you are opening on the upcoming holiday." }
                 ],
                 mouth: [
-                    { t: "Personal Message", v: "Hey XXX, I'm trying to call you but you blocked me. I just wanted to say sorry." },
-                    { t: "Urgent Meeting", v: "I'm in an out-of-service area, I need to sync up the meet up point with the driver now." },
-                    { t: "Urgent Inquiry", v: "Checking some urgent information with you now." }
+                    { t: "Urgent Sync", v: "I'm in an out-of-service area, I need to sync up the meet up point with the driver now." },
+                    { t: "Holiday Inquiry", v: "Checking urgent information: are you open during the upcoming holiday?" },
+                    { t: "Personal Message", v: "Hey [Name], I'm trying to call you but you blocked me. I just wanted to say sorry and explain." },
+                    { t: "Logistics Sync", v: "Checking if the package needs to be dropped at the management office (管理室)." },
+                    { t: "Fallback Contact", v: "I've been trying to reach you. Please contact me via email at {email}." }
                 ]
             }
         },
@@ -157,9 +159,11 @@ const WiseCatI18n = {
                     { t: "假日確認", v: "詢問特定節假日是否照常營業。" }
                 ],
                 mouth: [
-                    { t: "個人訊息", v: "嘿 XXX，我試著撥給你但你封鎖我了，我只是想跟你說聲抱歉。" },
                     { t: "緊急會合", v: "我目前處於收訊不佳的地區，現在需要與司機同步會合地點。" },
-                    { t: "緊急詢問", v: "現在要與您確認一些緊急資訊。" }
+                    { t: "節日確認", v: "緊急確認：請問您在即將到來的節假日是否照常營業？" },
+                    { t: "個人訊息", v: "嘿 [姓名]，我試著撥給你但你封鎖我了，我只是想跟妳說聲抱歉並解釋一下。" },
+                    { t: "物流確認", v: "確認物流包裹是否需要放在管理室？" },
+                    { t: "聯繫方式", v: "我一直聯絡不上您，請透過電子郵件 {email} 與我聯繫。" }
                 ]
             }
         },
@@ -234,9 +238,11 @@ const WiseCatI18n = {
                     { t: "休日の問い合わせ", v: "今度の祝日に営業しているか確認してください。" }
                 ],
                 mouth: [
-                    { t: "個人的なメッセージ", v: "ねえXXX、電話しようとしたけどブロックされているみたい。ただ謝りたかっただけなんだ。" },
-                    { t: "緊急の待ち合わせ", v: "圏外にいるので、今すぐ運転手と待ち合わせ場所を確認したいです。" },
-                    { t: "緊急の問い合わせ", v: "今すぐ緊急の情報について確認したいです。" }
+                    { t: "緊急確認", v: "圏外にいるため、今すぐ運転手と待ち合わせ場所を確認する必要があります。" },
+                    { t: "休日問い合わせ", v: "緊急の確認です：今度の祝日は営業していますか？" },
+                    { t: "個人的なメッセージ", v: "ねえ[なまえ]、電話したけどブロックされてるみたい。ただ謝って説明したかっただけなんだ。" },
+                    { t: "物流の確認", v: "荷物を管理室に預ける必要があるか物流会社に確認しています。" },
+                    { t: "連絡先", v: "連絡が取れませんでした。メール {email} で連絡をください。" }
                 ]
             }
         },
@@ -308,9 +314,11 @@ const WiseCatI18n = {
                     { t: "공휴일 문의", v: "다가오는 공휴일에 영업하는지 확인해 주세요." }
                 ],
                 mouth: [
-                    { t: "개인 메시지", v: "XXX님, 전화를 시도했지만 차단되어 있어 죄송하다는 말을 전하고 싶습니다." },
-                    { t: "긴급 미팅", v: "통신 서비스 지역이 아니라서 지금 바로 기사님과 만남 장소를 확인해야 합니다." },
-                    { t: "긴급 문의", v: "지금 바로 긴급한 정보를 확인하고 싶습니다." }
+                    { t: "긴급 동기화", v: "현재 서비스 지역 외에 있어서 지금 당장 기사님과 미팅 장소를 확인해야 합니다." },
+                    { t: "공휴일 문의", v: "긴급 확인: 다가오는 공휴일에 영업하시나요?" },
+                    { t: "개인 메시지", v: "안녕하세요 [이름]님, 전화를 드렸으나 차단된 것 같아 사과와 설명을 드리고자 연락드렸습니다." },
+                    { t: "물류 확인", v: "택배를 관리실에 맡겨야 하는지 물류팀에 확인 중입니다." },
+                    { t: "연락처", v: "연락이 닿지 않아 이메일 {email}로 연락 부탁드립니다." }
                 ]
             }
         },
@@ -382,9 +390,11 @@ const WiseCatI18n = {
                     { t: "Consulta de Festivo", v: "Consulta si abren en el próximo día festivo." }
                 ],
                 mouth: [
-                    { t: "Mensaje Personal", v: "Hola XXX, traté de llamarte pero me bloqueaste. Solo quería pedirte disculpas." },
-                    { t: "Reunión Urgente", v: "Estoy en un área sin servicio, necesito coordinar el punto de encuentro con el conductor ahora." },
-                    { t: "Consulta Urgente", v: "Verificando información urgente contigo ahora stesso." }
+                    { t: "Sincronización Urgente", v: "Estoy en una zona sin servicio, necesito coordinar el punto de encuentro con el conductor ahora." },
+                    { t: "Consulta de Festivo", v: "Consulta urgente: ¿abren durante el próximo día festivo?" },
+                    { t: "Mensaje Personal", v: "Hola [Nombre], traté de llamarte pero me bloqueaste. Solo quería pedirte disculpas y explicarme." },
+                    { t: "Logística", v: "Confirmando con logística si el paquete debe dejarse en la oficina de administración (管理室)." },
+                    { t: "Contacto", v: "He intentado contactarte. Por favor, escríbeme al correo {email}." }
                 ]
             }
         },
@@ -456,9 +466,11 @@ const WiseCatI18n = {
                     { t: "Demande de Congé", v: "Vérifiez si vous êtes ouvert lors du prochain jour férié." }
                 ],
                 mouth: [
-                    { t: "Message Personnel", v: "Hé XXX, j'ai essayé de t'appeler mais tu m'as bloqué. Je voulais juste te dire que je suis désolé." },
-                    { t: "Réunion Urgente", v: "Je suis dans une zone sans service, je dois coordonner le point de rencontre avec le chauffeur maintenant." },
-                    { t: "Demande Urgente", v: "Vérification d'informations urgentes avec vous maintenant." }
+                    { t: "Urgence Synchro", v: "Je suis dans une zone sans service, je dois coordonner le point de rencontre avec le chauffeur maintenant." },
+                    { t: "Demande Jour Férié", v: "Vérification urgente : êtes-vous ouvert lors du prochain jour férié ?" },
+                    { t: "Message Personnel", v: "Hé [Nom], j'ai essayé de t'appeler mais tu m'as bloqué. Je voulais juste te présenter mes excuses et m'expliquer." },
+                    { t: "Logistique", v: "Vérification avec la logistique si le colis doit être déposé au bureau de gestion (管理室)." },
+                    { t: "Contact", v: "J'ai essayé de vous joindre. Veuillez me contacter par e-mail à {email}." }
                 ]
             }
         },
@@ -530,9 +542,11 @@ const WiseCatI18n = {
                     { t: "Richiesta Festività", v: "Controlla se siete aperti durante la prossima festività." }
                 ],
                 mouth: [
-                    { t: "Messaggio Personale", v: "Ehi XXX, ho provato a chiamarti ma mi hai bloccato. volevo solo dirti che mi dispiace." },
-                    { t: "Incontro Urgente", v: "Sono in una zona senza servizio, devo coordinare il punto di incontro con l'autista ora." },
-                    { t: "Richiesta Urgente", v: "Verifica di informazioni urgenti con te ora." }
+                    { t: "Sincronizzazione Urgente", v: "Sono in una zona senza servizio, devo coordinare il punto di incontro con l'autista ora." },
+                    { t: "Richiesta Festività", v: "Verifica urgente: siete aperti durante la prossima festività?" },
+                    { t: "Messaggio Personale", v: "Ehi [Nome], ho provato a chiamarti ma mi hai bloccato. Volevo solo scusarmi e spiegarti." },
+                    { t: "Logistica", v: "Verifica con la logistica se il pacco deve essere lasciato nell'ufficio di gestione (管理室)." },
+                    { t: "Contatto", v: "Ho provato a contattarti. Per favore, scrivimi via email a {email}." }
                 ]
             }
         }
@@ -615,7 +629,16 @@ const WiseCatI18n = {
                 const targetId = type === 'mouth' ? 'scriptContent' : 'note';
                 const textarea = document.getElementById(targetId);
                 if (textarea) {
-                    textarea.value = ex.v;
+                    let text = ex.v;
+                    if (text.includes('{email}')) {
+                        const userSession = localStorage.getItem('wisecat_user');
+                        let email = '[your_email]';
+                        try {
+                            if (userSession) email = JSON.parse(userSession).email || email;
+                        } catch (e) { }
+                        text = text.replace('{email}', email);
+                    }
+                    textarea.value = text;
                     helperPanel.classList.remove('show');
                     textarea.focus();
                 }
