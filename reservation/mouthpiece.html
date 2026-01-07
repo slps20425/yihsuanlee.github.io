@@ -101,6 +101,30 @@
         </form>
     </div>
 
+    <!-- Help Buddy -->
+    <button class="helper-buddy" id="helperBuddy">🐱</button>
+    <div class="helper-panel" id="helperPanel">
+        <div class="helper-header">
+            <span data-i18n="helper_title">AI Prompt Helper 🐱</span>
+            <span class="helper-close" id="helperClose">✕</span>
+        </div>
+        <div class="helper-example" onclick="copyExample('mouth_ex1_v')">
+            <span class="helper-example-title" data-i18n="mouth_ex1_t">Personal Message</span>
+            <span class="helper-example-content" data-i18n="mouth_ex1_v">Hey XXX, I'm trying to call you but you blocked
+                me. I just wanted to say sorry.</span>
+        </div>
+        <div class="helper-example" onclick="copyExample('mouth_ex2_v')">
+            <span class="helper-example-title" data-i18n="mouth_ex2_t">Urgent Meeting</span>
+            <span class="helper-example-content" data-i18n="mouth_ex2_v">I'm in an out-of-service area, I need to sync
+                up the meet up point with the driver now.</span>
+        </div>
+        <div class="helper-example" onclick="copyExample('mouth_ex3_v')">
+            <span class="helper-example-title" data-i18n="mouth_ex3_t">Urgent Inquiry</span>
+            <span class="helper-example-content" data-i18n="mouth_ex3_v">Checking some urgent information with you
+                now.</span>
+        </div>
+    </div>
+
     <script>
         const N8N_WEBHOOK = 'https://wisecat.app.n8n.cloud/webhook-test/line-reservation'; // Using same endpoint for now
 
@@ -187,7 +211,24 @@
             }
         });
 
+        // Helper Buddy Logic
+        const buddy = document.getElementById('helperBuddy');
+        const panel = document.getElementById('helperPanel');
+        const close = document.getElementById('helperClose');
 
+        buddy.addEventListener('click', () => panel.classList.toggle('show'));
+        close.addEventListener('click', () => panel.classList.remove('show'));
+
+        function copyExample(key) {
+            const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
+            const text = dict[key];
+            if (text) {
+                const textarea = document.getElementById('scriptContent');
+                textarea.value = text;
+                panel.classList.remove('show');
+                textarea.focus();
+            }
+        }
     </script>
 </body>
 

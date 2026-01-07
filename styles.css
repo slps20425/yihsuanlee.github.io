@@ -562,3 +562,117 @@ button:disabled {
         transform: translateX(1);
     }
 }
+
+/* Help Buddy Floating Component */
+.helper-buddy {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+}
+
+.helper-buddy:hover {
+    transform: scale(1.1);
+}
+
+.helper-panel {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    width: 330px;
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    backdrop-filter: blur(10px);
+    animation: slideIn 0.3s ease-out;
+}
+
+.helper-panel.show {
+    display: flex;
+}
+
+.helper-header {
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 16px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.helper-close {
+    cursor: pointer;
+    font-size: 18px;
+    opacity: 0.6;
+}
+
+.helper-close:hover {
+    opacity: 1;
+}
+
+.helper-example {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: 1px solid transparent;
+}
+
+.helper-example:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary-color);
+}
+
+.helper-example-title {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #fff;
+}
+
+.helper-example-content {
+    display: block;
+    color: #aaa;
+    font-style: italic;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 480px) {
+    .helper-panel {
+        width: calc(100% - 60px);
+        right: 30px;
+    }
+}
