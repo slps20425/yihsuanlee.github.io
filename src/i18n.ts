@@ -765,9 +765,9 @@ const WiseCatI18n: WiseCatI18nType = {
 
         const lang = this.currentLang;
         const dict = this.translations[lang] || this.translations['en'];
-        // Detect page type from URL instead of title (which changes with language)
-        const type = window.location.pathname.toLowerCase().includes('mouthpiece') ? 'mouth' : 'res';
-        const examples = dict.helper_examples ? dict.helper_examples[type] : [];
+        // Detect page type from URL or Title
+        const type = (window.location.pathname.toLowerCase().includes('mouthpiece') || document.title.toLowerCase().includes('mouthpiece')) ? 'mouth' : 'res';
+        const examples = (dict.helper_examples && dict.helper_examples[type]) || [];
 
         console.log(`renderHelper: lang=${lang}, type=${type}, examples count=${examples.length}`);
 

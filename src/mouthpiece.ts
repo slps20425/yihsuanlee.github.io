@@ -63,7 +63,11 @@ function validateForm() {
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize i18n explicitly
-    WiseCatI18n.init();
+    try {
+        WiseCatI18n.init();
+    } catch (e) {
+        console.error("i18n init failed:", e);
+    }
 
     // Initialize intl-tel-input
     const input = document.querySelector("#targetPhone");
