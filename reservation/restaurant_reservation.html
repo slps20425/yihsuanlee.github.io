@@ -383,36 +383,40 @@
             const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
 
             if (!resDateVal || !resTimeVal || !currentPlaceOpeningHours) {
-                timeHint.style.display = "none";
+                if (timeHint) timeHint.style.display = "none";
                 return true;
             }
 
-            const selectedDate = new Date(resDateVal);
+            // Use split to ensure local time parsing instead of UTC
+            const [y, m, d] = resDateVal.split('-').map(Number);
+            const selectedDate = new Date(y, m - 1, d);
             const dayOfWeek = selectedDate.getDay(); // 0 (Sun) to 6 (Sat)
 
             // Check if restricted by periods
-            if (!currentPlaceOpeningHours.periods) {
-                timeHint.style.display = "none";
+            if (!currentPlaceOpeningHours.periods || currentPlaceOpeningHours.periods.length === 0) {
+                if (timeHint) timeHint.style.display = "none";
                 return true;
             }
 
-            // Filter periods for this day
             const periods = currentPlaceOpeningHours.periods.filter(p => p.open.day === dayOfWeek);
 
             if (periods.length === 0) {
-                // Check if it's open 24 hours (periods[0].open.day === 0 and time === "0000" and close is undefined)
+                // Check if it's open 24 hours (Special Google format)
+                const firstPeriod = currentPlaceOpeningHours.periods[0];
                 const is24Hours = currentPlaceOpeningHours.periods.length === 1 &&
-                    currentPlaceOpeningHours.periods[0].open.day === 0 &&
-                    currentPlaceOpeningHours.periods[0].open.time === "0000" &&
-                    !currentPlaceOpeningHours.periods[0].close;
+                    firstPeriod.open.day === 0 &&
+                    firstPeriod.open.time === "0000" &&
+                    !firstPeriod.close;
 
                 if (is24Hours) {
-                    timeHint.style.display = "none";
+                    if (timeHint) timeHint.style.display = "none";
                     return true;
                 }
 
-                timeHint.innerText = dict.validation_closed || "Closed on this date";
-                timeHint.style.display = "block";
+                if (timeHint) {
+                    timeHint.innerText = dict.validation_closed || "Closed on this date";
+                    timeHint.style.display = "block";
+                }
                 return false;
             }
 
@@ -427,7 +431,7 @@
                 const openMin = parseInt(period.open.time.substring(2, 4));
                 const openTotalMinutes = openHour * 60 + openMin;
 
-                if (!period.close) { // Open 24h from this point
+                if (!period.close) { // Open 24h from this start day
                     isValid = true;
                     break;
                 }
@@ -453,11 +457,13 @@
             }
 
             if (isValid) {
-                timeHint.style.display = "none";
+                if (timeHint) timeHint.style.display = "none";
                 return true;
             } else {
-                timeHint.innerText = errorMsg;
-                timeHint.style.display = "block";
+                if (timeHint) {
+                    timeHint.innerText = errorMsg;
+                    timeHint.style.display = "block";
+                }
                 return false;
             }
         }
