@@ -373,8 +373,11 @@
         // Listen for input changes
         document.getElementById('targetPhone').addEventListener('input', validateForm);
         document.getElementById('countryCode').addEventListener('change', validateForm);
-        document.getElementById('resDate').addEventListener('change', validateForm);
-        document.getElementById('resTime').addEventListener('input', validateForm);
+
+        ['input', 'change'].forEach(evt => {
+            document.getElementById('resDate').addEventListener(evt, validateForm);
+            document.getElementById('resTime').addEventListener(evt, validateForm);
+        });
 
         function validateReservationTime() {
             const resDateVal = document.getElementById('resDate').value;
