@@ -370,13 +370,13 @@
             }
         }
 
-        // Listen for input and change events for immediate feedback
+        // Listen for all validation-related inputs to ensure immediate UI updates
         ['input', 'change'].forEach(evt => {
             document.getElementById('targetPhone')?.addEventListener(evt, validateForm);
             document.getElementById('resDate')?.addEventListener(evt, validateForm);
             document.getElementById('resTime')?.addEventListener(evt, validateForm);
+            document.getElementById('countryCode')?.addEventListener(evt, validateForm);
         });
-        document.getElementById('countryCode')?.addEventListener('change', validateForm);
 
         function validateReservationTime() {
             const resDateVal = document.getElementById('resDate').value;
@@ -386,73 +386,87 @@
 
             if (!timeHint) return true;
 
-            // Reset UI if missing critical data
-            if (!resDateVal || !resTimeVal || !currentPlaceOpeningHours || !currentPlaceOpeningHours.periods) {
+            // Step 1: Missing Data check
+            if (!resDateVal || !resTimeVal || !currentPlaceOpeningHours) {
                 timeHint.style.display = "none";
                 return true;
             }
 
-            // Use split to ensure local time parsing instead of UTC
+            // Step 2: Parse local date to get correct day of week
             const [y, m, d] = resDateVal.split('-').map(Number);
             const selectedDate = new Date(y, m - 1, d);
             const dayOfWeek = selectedDate.getDay(); // 0 (Sun) to 6 (Sat)
 
-            // Check if restricted by periods
-            if (!currentPlaceOpeningHours.periods || currentPlaceOpeningHours.periods.length === 0) {
-                if (timeHint) timeHint.style.display = "none";
-                return true;
-            }
-
+            // Step 3: Parse user time in minutes
             const [resHour, resMin] = resTimeVal.split(':').map(Number);
             const resTotalMinutes = resHour * 60 + resMin;
 
+            // Step 4: Handle cases with NO periods (could be closed or always open)
+            if (!currentPlaceOpeningHours.periods || currentPlaceOpeningHours.periods.length === 0) {
+                // If it's explicitly closed in weekday_text or status, we should ideally block it
+                // but for now, we assume if periods are missing, we can't validate reliably.
+                timeHint.style.display = "none";
+                return true;
+            }
+
+            // Step 5: Handle 24/7 Special Case
+            const periods = currentPlaceOpeningHours.periods;
+            const is24h = periods.length === 1 && periods[0].open.day === 0 && periods[0].open.time === "0000" && !periods[0].close;
+            if (is24h) {
+                timeHint.style.display = "none";
+                return true;
+            }
+
             let isValid = false;
-            let foundPeriodForDay = false;
-            let errorMsg = dict.validation_out_of_hours || "Outside operating hours";
+            let dayStartsAnyPeriod = false; // Does any period START on this day?
+            let currentPotentialError = dict.validation_out_of_hours || "Outside operating hours";
 
-            for (const period of currentPlaceOpeningHours.periods) {
+            for (const period of periods) {
                 const openDay = period.open.day;
-                const openTime = period.open.time;
-                const openTotal = parseInt(openTime.substring(0, 2)) * 60 + parseInt(openTime.substring(2, 4));
+                const openTime = parseInt(period.open.time);
+                const openTotal = Math.floor(openTime / 100) * 60 + (openTime % 100);
 
-                // Case 1: Period starts on selected day
+                // Check Case A: Period starts on the selected day
                 if (openDay === dayOfWeek) {
-                    foundPeriodForDay = true;
+                    dayStartsAnyPeriod = true;
                     if (!period.close) { isValid = true; break; }
 
                     const closeDay = period.close.day;
-                    const closeTime = period.close.time;
-                    let closeTotal = parseInt(closeTime.substring(0, 2)) * 60 + parseInt(closeTime.substring(2, 4));
+                    const closeTime = parseInt(period.close.time);
+                    let closeTotal = Math.floor(closeTime / 100) * 60 + (closeTime % 100);
 
-                    if (closeDay !== openDay) closeTotal += 1440; // Cross midnight
+                    if (closeDay !== openDay) closeTotal += 1440; // Spans after midnight
 
                     if (resTotalMinutes >= openTotal && resTotalMinutes <= (closeTotal - 30)) {
                         isValid = true;
                         break;
                     } else if (resTotalMinutes > (closeTotal - 30) && resTotalMinutes <= closeTotal) {
-                        errorMsg = dict.validation_too_late;
+                        currentPotentialError = dict.validation_too_late;
                     }
                 }
-                // Case 2: Period started yesterday and ends today (Cross-midnight check)
-                else if (period.close && period.close.day === dayOfWeek && period.close.day !== period.open.day) {
-                    foundPeriodForDay = true;
-                    const closeTime = period.close.time;
-                    const closeTotal = parseInt(closeTime.substring(0, 2)) * 60 + parseInt(closeTime.substring(2, 4));
+                // Check Case B: Period started YESTERDAY and ends TODAY
+                else if (period.close && period.close.day === dayOfWeek) {
+                    const closeTime = parseInt(period.close.time);
+                    const closeTotal = Math.floor(closeTime / 100) * 60 + (closeTime % 100);
 
+                    // User is picking a time in the "morning-after" window
                     if (resTotalMinutes <= (closeTotal - 30)) {
                         isValid = true;
                         break;
                     } else if (resTotalMinutes > (closeTotal - 30) && resTotalMinutes <= closeTotal) {
-                        errorMsg = dict.validation_too_late;
+                        currentPotentialError = dict.validation_too_late;
                     }
                 }
             }
 
+            // Step 6: Final UI Update
             if (isValid) {
                 timeHint.style.display = "none";
                 return true;
             } else {
-                timeHint.innerText = !foundPeriodForDay ? (dict.validation_closed || "Closed on this date") : errorMsg;
+                // If it's Saturday evening and no period START on Saturday, it's CLOSED.
+                // If a period starts but we are outside it, it's "OUT OF HOURS".
+                timeHint.innerText = !dayStartsAnyPeriod && resTotalMinutes > 300 ? (dict.validation_closed || "Closed") : currentPotentialError;
                 timeHint.style.display = "block";
                 return false;
             }
