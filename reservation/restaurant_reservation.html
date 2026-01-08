@@ -361,7 +361,9 @@
             const isTimeValid = validateReservationTime();
 
             // 3. Combined Logic
-            if (credits > 0 && turnstileValidated && isPhoneValid && isTimeValid) {
+            const hasRestaurant = !!selectedRestaurantData;
+
+            if (credits > 0 && turnstileValidated && isPhoneValid && isTimeValid && hasRestaurant) {
                 btn.disabled = false;
                 btn.style.opacity = "1";
             } else {
@@ -370,12 +372,14 @@
             }
         }
 
-        // Listen for all validation-related inputs to ensure immediate UI updates
-        ['input', 'change'].forEach(evt => {
-            document.getElementById('targetPhone')?.addEventListener(evt, validateForm);
-            document.getElementById('resDate')?.addEventListener(evt, validateForm);
-            document.getElementById('resTime')?.addEventListener(evt, validateForm);
-            document.getElementById('countryCode')?.addEventListener(evt, validateForm);
+        // Proactive listeners for all validation-related fields
+        const validationInputs = ['targetPhone', 'resDate', 'resTime', 'countryCode'];
+        validationInputs.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', validateForm);
+                el.addEventListener('change', validateForm);
+            }
         });
 
         function validateReservationTime() {
@@ -464,9 +468,8 @@
                 timeHint.style.display = "none";
                 return true;
             } else {
-                // If it's Saturday evening and no period START on Saturday, it's CLOSED.
-                // If a period starts but we are outside it, it's "OUT OF HOURS".
-                timeHint.innerText = !dayStartsAnyPeriod && resTotalMinutes > 300 ? (dict.validation_closed || "Closed") : currentPotentialError;
+                // If it's a day with no shift starting (like Sat) and not in a hangover window
+                timeHint.innerText = !dayStartsAnyPeriod && resTotalMinutes > 300 ? (dict.validation_closed || "Closed on this date") : currentPotentialError;
                 timeHint.style.display = "block";
                 return false;
             }
