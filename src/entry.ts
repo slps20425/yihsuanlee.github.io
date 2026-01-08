@@ -6,7 +6,7 @@ declare var firebase: any;
 // Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyDMjzdCgNbI9W8pUd6AJoGRQlYDqKNcf_c",
-    authDomain: "wisecat-8df8d.firebaseapp.com",
+    authDomain: "auth.wise-catty.cc",
     projectId: "wisecat-8df8d",
     storageBucket: "wisecat-8df8d.firebasestorage.app",
     messagingSenderId: "1078479155773",
