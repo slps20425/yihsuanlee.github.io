@@ -370,14 +370,13 @@
             }
         }
 
-        // Listen for input changes
-        document.getElementById('targetPhone').addEventListener('input', validateForm);
-        document.getElementById('countryCode').addEventListener('change', validateForm);
-
+        // Listen for input and change events for immediate feedback
         ['input', 'change'].forEach(evt => {
-            document.getElementById('resDate').addEventListener(evt, validateForm);
-            document.getElementById('resTime').addEventListener(evt, validateForm);
+            document.getElementById('targetPhone')?.addEventListener(evt, validateForm);
+            document.getElementById('resDate')?.addEventListener(evt, validateForm);
+            document.getElementById('resTime')?.addEventListener(evt, validateForm);
         });
+        document.getElementById('countryCode')?.addEventListener('change', validateForm);
 
         function validateReservationTime() {
             const resDateVal = document.getElementById('resDate').value;
@@ -385,8 +384,11 @@
             const timeHint = document.getElementById('timeHint');
             const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
 
-            if (!resDateVal || !resTimeVal || !currentPlaceOpeningHours) {
-                if (timeHint) timeHint.style.display = "none";
+            if (!timeHint) return true;
+
+            // Reset UI if missing critical data
+            if (!resDateVal || !resTimeVal || !currentPlaceOpeningHours || !currentPlaceOpeningHours.periods) {
+                timeHint.style.display = "none";
                 return true;
             }
 
@@ -401,72 +403,57 @@
                 return true;
             }
 
-            const periods = currentPlaceOpeningHours.periods.filter(p => p.open.day === dayOfWeek);
-
-            if (periods.length === 0) {
-                // Check if it's open 24 hours (Special Google format)
-                const firstPeriod = currentPlaceOpeningHours.periods[0];
-                const is24Hours = currentPlaceOpeningHours.periods.length === 1 &&
-                    firstPeriod.open.day === 0 &&
-                    firstPeriod.open.time === "0000" &&
-                    !firstPeriod.close;
-
-                if (is24Hours) {
-                    if (timeHint) timeHint.style.display = "none";
-                    return true;
-                }
-
-                if (timeHint) {
-                    timeHint.innerText = dict.validation_closed || "Closed on this date";
-                    timeHint.style.display = "block";
-                }
-                return false;
-            }
-
             const [resHour, resMin] = resTimeVal.split(':').map(Number);
             const resTotalMinutes = resHour * 60 + resMin;
 
             let isValid = false;
+            let foundPeriodForDay = false;
             let errorMsg = dict.validation_out_of_hours || "Outside operating hours";
 
-            for (const period of periods) {
-                const openHour = parseInt(period.open.time.substring(0, 2));
-                const openMin = parseInt(period.open.time.substring(2, 4));
-                const openTotalMinutes = openHour * 60 + openMin;
+            for (const period of currentPlaceOpeningHours.periods) {
+                const openDay = period.open.day;
+                const openTime = period.open.time;
+                const openTotal = parseInt(openTime.substring(0, 2)) * 60 + parseInt(openTime.substring(2, 4));
 
-                if (!period.close) { // Open 24h from this start day
-                    isValid = true;
-                    break;
+                // Case 1: Period starts on selected day
+                if (openDay === dayOfWeek) {
+                    foundPeriodForDay = true;
+                    if (!period.close) { isValid = true; break; }
+
+                    const closeDay = period.close.day;
+                    const closeTime = period.close.time;
+                    let closeTotal = parseInt(closeTime.substring(0, 2)) * 60 + parseInt(closeTime.substring(2, 4));
+
+                    if (closeDay !== openDay) closeTotal += 1440; // Cross midnight
+
+                    if (resTotalMinutes >= openTotal && resTotalMinutes <= (closeTotal - 30)) {
+                        isValid = true;
+                        break;
+                    } else if (resTotalMinutes > (closeTotal - 30) && resTotalMinutes <= closeTotal) {
+                        errorMsg = dict.validation_too_late;
+                    }
                 }
+                // Case 2: Period started yesterday and ends today (Cross-midnight check)
+                else if (period.close && period.close.day === dayOfWeek && period.close.day !== period.open.day) {
+                    foundPeriodForDay = true;
+                    const closeTime = period.close.time;
+                    const closeTotal = parseInt(closeTime.substring(0, 2)) * 60 + parseInt(closeTime.substring(2, 4));
 
-                const closeHour = parseInt(period.close.time.substring(0, 2));
-                const closeMin = parseInt(period.close.time.substring(2, 4));
-                let closeTotalMinutes = closeHour * 60 + closeMin;
-
-                // Handle cross-midnight
-                if (period.close.day !== period.open.day) {
-                    closeTotalMinutes += 24 * 60;
-                }
-
-                // Buffer of 30 mins before closing
-                const lastReservationMinutes = closeTotalMinutes - 30;
-
-                if (resTotalMinutes >= openTotalMinutes && resTotalMinutes <= lastReservationMinutes) {
-                    isValid = true;
-                    break;
-                } else if (resTotalMinutes > lastReservationMinutes && resTotalMinutes <= closeTotalMinutes) {
-                    errorMsg = dict.validation_too_late || "Too late for reservation";
+                    if (resTotalMinutes <= (closeTotal - 30)) {
+                        isValid = true;
+                        break;
+                    } else if (resTotalMinutes > (closeTotal - 30) && resTotalMinutes <= closeTotal) {
+                        errorMsg = dict.validation_too_late;
+                    }
                 }
             }
 
             if (isValid) {
-                if (timeHint) timeHint.style.display = "none";
+                timeHint.style.display = "none";
                 return true;
             } else {
-                if (timeHint) {
-                    timeHint.innerText = errorMsg;
-                    timeHint.style.display = "block";
-                }
+                timeHint.innerText = !foundPeriodForDay ? (dict.validation_closed || "Closed on this date") : errorMsg;
+                timeHint.style.display = "block";
                 return false;
             }
         }
