@@ -391,7 +391,7 @@
 
                 const script = document.createElement('script');
                 const langMap = { 'zh': 'zh-TW', 'jp': 'ja', 'kr': 'ko', 'en': 'en' };
-                const mapsLang = langMap[WiseCatI18n.currentLang] || WiseCatI18n.currentLang;
+                const mapsLang = (window.WiseCatI18n && WiseCatI18n.currentLang && langMap[WiseCatI18n.currentLang]) || 'zh-TW';
                 script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&language=${mapsLang}`;
                 script.async = true;
                 script.defer = true;
@@ -682,9 +682,6 @@
                 document.getElementById('searchResults').classList.remove('show');
             }
         });
-
-        // Initialize
-        initMap();
 
         // ----------------------------------------------------
         // Form Submission Logic
