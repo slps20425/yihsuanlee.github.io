@@ -155,6 +155,8 @@
         </form>
     </div>
 
+    </div>
+
     <!-- Help Buddy -->
     <button class="helper-buddy" id="helperBuddy">🐱</button>
     <div class="helper-panel" id="helperPanel">
@@ -165,15 +167,111 @@
         <!-- Examples are rendered dynamically from i18n.js -->
     </div>
 
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 data-i18n="modal_confirm_title">Confirm Selection</h3>
+            <div id="confirmDetails" class="modal-details">
+                <!-- Details injected here -->
+            </div>
+            <div class="modal-actions">
+                <button id="modalCancel" class="modal-btn cancel" data-i18n="modal_cancel_btn">Cancel</button>
+                <button id="modalConfirm" class="modal-btn confirm" data-i18n="modal_confirm_btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            padding: 25px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid #444;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-details {
+            margin: 20px 0;
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .detail-item {
+            margin-bottom: 15px;
+        }
+
+        .detail-label {
+            display: block;
+            font-weight: bold;
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+
+        .detail-value {
+            color: white;
+            line-height: 1.4;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .modal-btn.cancel {
+            background: #333;
+            color: white;
+        }
+
+        .modal-btn.confirm {
+            background: #2e5482;
+            color: white;
+        }
+
+        .modal-btn:hover {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
+    </style>
+
     <script>
         // const LIFF_ID = '2008812650-lyjR7Z5O'; // Removed
         const N8N_WEBHOOK = 'https://wisecat.app.n8n.cloud/webhook-test/line-reservation';
-        const GOOGLE_MAPS_API_KEY = 'AIzaSyA1ycN9_H2nI_Oh8ZypPtGcqyZ5QQhkLIk';
+        const GOOGLE_MAPS_API_KEY = 'AIzaSyBSWqDNkLh1v29kFEbUod0iaX3v3v8UtT4';
 
         let map;
         let placesService;
         let searchTimeout;
         let currentMarker = null;
+        let selectedRestaurantData = null;
 
         let turnstileValidated = false;
 
@@ -292,7 +390,9 @@
                 }
 
                 const script = document.createElement('script');
-                script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&language=zh-TW`;
+                const langMap = { 'zh': 'zh-TW', 'jp': 'ja', 'kr': 'ko', 'en': 'en' };
+                const mapsLang = langMap[WiseCatI18n.currentLang] || WiseCatI18n.currentLang;
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&language=${mapsLang}`;
                 script.async = true;
                 script.defer = true;
                 script.onload = resolve;
@@ -347,7 +447,7 @@
             return new Promise((resolve, reject) => {
                 const request = {
                     placeId: placeId,
-                    fields: ['name', 'formatted_address', 'formatted_phone_number', 'international_phone_number', 'geometry']
+                    fields: ['name', 'formatted_address', 'formatted_phone_number', 'international_phone_number', 'geometry', 'opening_hours', 'utc_offset_minutes']
                 };
 
                 placesService.getDetails(request, (place, status) => {
@@ -379,6 +479,8 @@
             // If query contains Japanese characters, search in Tokyo
             if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(query)) {
                 location = { lat: 35.6762, lng: 139.6503 }; // Tokyo
+            } else if (WiseCatI18n.currentLang === 'en') {
+                location = { lat: 40.7128, lng: -74.0060 }; // Default to NY for EN if no other bias
             }
 
             const request = {
@@ -437,9 +539,63 @@
             });
         }
 
+        // Show confirmation modal
+        function showConfirmModal(place) {
+            const modal = document.getElementById('confirmModal');
+            const details = document.getElementById('confirmDetails');
+            const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
+
+            let hoursHtml = 'N/A';
+            if (place.opening_hours && place.opening_hours.weekday_text) {
+                hoursHtml = `<ul style="padding-left: 20px; list-style-type: disc;">
+                    ${place.opening_hours.weekday_text.map(day => `<li>${day}</li>`).join('')}
+                </ul>`;
+            }
+
+            details.innerHTML = `
+                <div class="detail-item">
+                    <span class="detail-label">${dict.label_detail_address || '📍 Address'}</span>
+                    <span class="detail-value">${place.formatted_address || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">${dict.label_detail_phone || '📞 Phone'}</span>
+                    <span class="detail-value">${place.international_phone_number || place.formatted_phone_number || 'N/A'}</span>
+                </div>
+                <div class="detail-item" style="max-height: 150px; overflow-y: auto;">
+                    <span class="detail-label">${dict.label_detail_hours || '⏰ Opening Hours'}</span>
+                    <span class="detail-value">${hoursHtml}</span>
+                </div>
+            `;
+
+            modal.style.display = 'flex';
+
+            const onConfirm = () => {
+                applyPlaceSelection(place);
+                modal.style.display = 'none';
+                cleanup();
+            };
+            const onCancel = () => {
+                modal.style.display = 'none';
+                cleanup();
+            };
+            const cleanup = () => {
+                document.getElementById('modalConfirm').removeEventListener('click', onConfirm);
+                document.getElementById('modalCancel').removeEventListener('click', onCancel);
+            };
+
+            document.getElementById('modalConfirm').addEventListener('click', onConfirm);
+            document.getElementById('modalCancel').addEventListener('click', onCancel);
+        }
+
         // Select a place from search results
         function selectPlace(place) {
-            console.log('Selected place:', place);
+            showConfirmModal(place);
+        }
+
+        // Apply a place selection after confirmation
+        function applyPlaceSelection(place) {
+            console.log('Applying selection:', place);
+            selectedRestaurantData = place;
 
             // Fill in phone number
             const phoneNumber = place.international_phone_number || place.formatted_phone_number;
@@ -462,21 +618,16 @@
                 }
                 // Handle local format (starting with 0)
                 else if (cleanPhone.startsWith('0')) {
-                    // Detect if it's Taiwan or Japan based on phone length or context
-                    // Taiwan mobile: 09XX-XXX-XXX (10 digits)
-                    // Japan: 0X-XXXX-XXXX or 03-XXXX-XXXX (9-10 digits)
                     if (cleanPhone.length === 10 && cleanPhone.startsWith('09')) {
-                        // Taiwan mobile
                         document.getElementById('countryCode').value = '+886';
                         document.getElementById('targetPhone').value = cleanPhone.substring(1);
                     } else {
-                        // Assume Japan for other 0-prefix numbers
                         document.getElementById('countryCode').value = '+81';
                         document.getElementById('targetPhone').value = cleanPhone.substring(1);
                     }
                 }
                 else if (cleanPhone.startsWith('+')) {
-                    const countryCodeMatch = cleanPhone.match(/^\+(\d{1, 3})/);
+                    const countryCodeMatch = cleanPhone.match(/^\+(\d{1,3})/);
                     if (countryCodeMatch) {
                         const code = '+' + countryCodeMatch[1];
                         document.getElementById('countryCode').value = code;
@@ -484,7 +635,6 @@
                     }
                 }
                 else {
-                    // Default: Taiwan
                     document.getElementById('countryCode').value = '+886';
                     document.getElementById('targetPhone').value = cleanPhone;
                 }
@@ -498,10 +648,7 @@
                 map.setCenter(place.geometry.location);
                 map.setZoom(17);
 
-                // Clear existing marker
-                if (currentMarker) {
-                    currentMarker.setMap(null);
-                }
+                if (currentMarker) currentMarker.setMap(null);
 
                 currentMarker = new google.maps.Marker({
                     map: map,
@@ -516,6 +663,9 @@
             // Hide search results
             document.getElementById('searchResults').classList.remove('show');
             document.getElementById('restaurantSearch').value = place.name;
+
+            // Re-validate form
+            validateForm();
         }
 
         // Restaurant search with debounce
@@ -572,7 +722,15 @@
                 note: document.getElementById('note').value,
                 language: WiseCatI18n.currentLang,
                 schedulePreference: document.getElementById('schedulePreference').value,
-                retryOneTime: document.getElementById('retryOption').checked
+                retryOneTime: document.getElementById('retryOption').checked,
+                // Enhanced Map Data
+                placeDetails: selectedRestaurantData ? {
+                    name: selectedRestaurantData.name,
+                    address: selectedRestaurantData.formatted_address,
+                    international_phone: selectedRestaurantData.international_phone_number,
+                    opening_hours: selectedRestaurantData.opening_hours ? selectedRestaurantData.opening_hours.weekday_text : null,
+                    utc_offset: selectedRestaurantData.utc_offset_minutes
+                } : null
             };
 
             // i18n Dictionary for script alerts

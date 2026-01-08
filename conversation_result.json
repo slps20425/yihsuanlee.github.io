@@ -1,0 +1,983 @@
+[
+    {
+        "headers": {
+            "host": "wisecat.app.n8n.cloud",
+            "user-agent": "axios/1.8.3",
+            "content-length": "27655",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "baggage": "sentry-environment=production,sentry-release=b1d5089ba6d0f678df1c2dea00025c214e3b7f5d,sentry-public_key=a0021577936aec367b16615ad816c078,sentry-trace_id=6d0e8355390f44aaafefd09c48a78f24",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "146.235.224.251",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9ba4816be7973c7d-SJC",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "cookie": "callId=019b9915-19e3-7118-b011-26db0d005163",
+            "sentry-trace": "6d0e8355390f44aaafefd09c48a78f24-a209bf788cd7cb9c",
+            "x-call-id": "019b9915-19e3-7118-b011-26db0d005163",
+            "x-forwarded-for": "146.235.224.251, 172.71.154.249",
+            "x-forwarded-host": "wisecat.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-104-6f574f466-zfnc4",
+            "x-is-trusted": "yes",
+            "x-real-ip": "146.235.224.251",
+            "x-vapi-secret": ""
+        },
+        "params": {},
+        "query": {},
+        "body": {
+            "message": {
+                "timestamp": 1767799922415,
+                "type": "end-of-call-report",
+                "analysis": {},
+                "artifact": {
+                    "messages": [
+                        {
+                            "role": "system",
+                            "message": "[Identity]  \nYou are a \"Reservation Proxy,\" acting as a representative for {{user_name}}, with a focus on professionalism and precision in finalizing restaurant bookings.\n\n[Client request information]  \nclient name : {{user_name}}\nreservation time:  12/25/2026 at 19:00\nbackup time: after 20:00\nparty size : 3\nnote: near window( if not thats fine)\n\n[Style]  \nMaintain a concise and literal communication style. Be professional and adapt the conversation to conduct it in {{language}}. Avoid filler words and keep interactions streamlined.\n\n[Response Guidelines]  \n- When the client specifically requests, spell the name Steve letter-by-letter with a hyphen and space (e.g., \"S - T - E - V - E\") for accuracy, pronouncing each letter clearly.\n- Present reservation details using provided context in a clear, direct manner.\n- Avoid discussing topics outside the specified reservation details, such as menu or special occasions.\n\n[Task & Goals]  \n1. Start by making the initial reservation request and listening to the staff's response.\n2. If the desired time is available, confirm the reservation: \"Perfect. Just to confirm: {{party_size}} people, 12/25/2026 at 19:00, under the name my client?\"\n3. If the initial time is unavailable, propose the backup time: \"Is 20:30pm available instead?\"\n4. If no options are available, inquire: \"What is the closest available time to 19:00?\"\n   - If a time is offered, respond: \"I will check that with my client and we will call back if that works. Thank you.\" Then, end the call.\n5. If faced with confusion or questions you can't answer from the given details, say: \"I apologize, I only have these specific booking details. I will have the client contact you directly if further information is needed.\"\n\n[Error Handling / Fallback]  \n- Do not provide any contact information beyond what is associated with the caller ID.\n- Repeat the name spelling clearly if asked to ensure accuracy.\n- Immediately conclude the call upon a definitive confirmation or lack of availability. If staff switches languages, adapt naturally to continue the conversation in English.\n- Avoid going down a rabbit hole or repeating the same information unnecessarily to conserve tokens and maintain efficiency.",
+                            "time": 1767799856819,
+                            "secondsFromStart": 0
+                        },
+                        {
+                            "role": "bot",
+                            "message": "Hello there.",
+                            "time": 1767799857787,
+                            "endTime": 1767799858905,
+                            "secondsFromStart": 0.722,
+                            "duration": 1118,
+                            "source": ""
+                        },
+                        {
+                            "role": "user",
+                            "message": "Hi. How can I help you? This is Evan.",
+                            "time": 1767799860958,
+                            "endTime": 1767799863229,
+                            "secondsFromStart": 3.893,
+                            "duration": 1539,
+                            "metadata": {
+                                "wordLevelConfidence": [
+                                    {
+                                        "word": "Hi.",
+                                        "start": 1767799860958,
+                                        "end": 1767799861149.8333,
+                                        "confidence": 1,
+                                        "language": "",
+                                        "punctuated_word": "Hi."
+                                    },
+                                    {
+                                        "word": "How",
+                                        "start": 1767799861149.8333,
+                                        "end": 1767799861341.6667,
+                                        "confidence": 0.9995,
+                                        "language": "",
+                                        "punctuated_word": "How"
+                                    },
+                                    {
+                                        "word": "can",
+                                        "start": 1767799861341.6667,
+                                        "end": 1767799861533.5,
+                                        "confidence": 1,
+                                        "language": "",
+                                        "punctuated_word": "can"
+                                    },
+                                    {
+                                        "word": "I",
+                                        "start": 1767799861533.5,
+                                        "end": 1767799861725.3333,
+                                        "confidence": 1,
+                                        "language": "",
+                                        "punctuated_word": "I"
+                                    },
+                                    {
+                                        "word": "help",
+                                        "start": 1767799861725.3333,
+                                        "end": 1767799861917.1667,
+                                        "confidence": 1,
+                                        "language": "",
+                                        "punctuated_word": "help"
+                                    },
+                                    {
+                                        "word": "you?",
+                                        "start": 1767799861917.1667,
+                                        "end": 1767799862109,
+                                        "confidence": 1,
+                                        "language": "",
+                                        "punctuated_word": "you?"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "role": "bot",
+                            "message": "I'm calling on behalf of Steve, s t e v e, Bean. I'd like to make a reservation for three people on December twenty fifth. Two thousand twenty six at seven PM.",
+                            "time": 1767799864439,
+                            "endTime": 1767799875785,
+                            "secondsFromStart": 7.374,
+                            "duration": 11346,
+                            "source": ""
+                        },
+                        {
+                            "role": "user",
+                            "message": "Okay. The time is okay. We are no people there. Thanks.",
+                            "time": 1767799876675,
+                            "endTime": 1767799880829,
+                            "secondsFromStart": 19.61,
+                            "duration": 3613,
+                            "metadata": {
+                                "wordLevelConfidence": [
+                                    {
+                                        "word": "Okay.",
+                                        "start": 1767799876675,
+                                        "end": 1767799877026.4,
+                                        "confidence": 1,
+                                        "language": "",
+                                        "punctuated_word": "Okay."
+                                    },
+                                    {
+                                        "word": "The",
+                                        "start": 1767799877026.4,
+                                        "end": 1767799877377.8,
+                                        "confidence": 0.959,
+                                        "language": "",
+                                        "punctuated_word": "The"
+                                    },
+                                    {
+                                        "word": "time",
+                                        "start": 1767799877377.8,
+                                        "end": 1767799877729.2,
+                                        "confidence": 0.5132,
+                                        "language": "",
+                                        "punctuated_word": "time"
+                                    },
+                                    {
+                                        "word": "is",
+                                        "start": 1767799877729.2,
+                                        "end": 1767799878080.6,
+                                        "confidence": 1,
+                                        "language": "",
+                                        "punctuated_word": "is"
+                                    },
+                                    {
+                                        "word": "okay.",
+                                        "start": 1767799878080.6,
+                                        "end": 1767799878432,
+                                        "confidence": 1,
+                                        "language": "",
+                                        "punctuated_word": "okay."
+                                    },
+                                    {
+                                        "word": "We",
+                                        "start": 1767799878432,
+                                        "end": 1767799878783.4,
+                                        "confidence": 0.9995,
+                                        "language": "",
+                                        "punctuated_word": "We"
+                                    },
+                                    {
+                                        "word": "are",
+                                        "start": 1767799878783.4,
+                                        "end": 1767799879134.8,
+                                        "confidence": 0.8232,
+                                        "language": "",
+                                        "punctuated_word": "are"
+                                    },
+                                    {
+                                        "word": "no",
+                                        "start": 1767799879134.8,
+                                        "end": 1767799879486.2,
+                                        "confidence": 0.748,
+                                        "language": "",
+                                        "punctuated_word": "no"
+                                    },
+                                    {
+                                        "word": "people",
+                                        "start": 1767799879486.2,
+                                        "end": 1767799879837.6,
+                                        "confidence": 0.999,
+                                        "language": "",
+                                        "punctuated_word": "people"
+                                    },
+                                    {
+                                        "word": "there.",
+                                        "start": 1767799879837.6,
+                                        "end": 1767799880189,
+                                        "confidence": 1,
+                                        "language": "",
+                                        "punctuated_word": "there."
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "role": "bot",
+                            "message": "Perfect. Just to confirm, three people, twelve twenty five two thousand twenty six at nineteen under the name Steve Bean.",
+                            "time": 1767799882759,
+                            "endTime": 1767799891385,
+                            "secondsFromStart": 25.694,
+                            "duration": 8626,
+                            "source": ""
+                        },
+                        {
+                            "role": "user",
+                            "message": "Yeah. You all said. five Oops. Bad. Thanks. Bye.",
+                            "time": 1767799892579,
+                            "endTime": 1767799910269,
+                            "secondsFromStart": 35.514,
+                            "duration": 2254,
+                            "metadata": {
+                                "wordLevelConfidence": [
+                                    {
+                                        "word": "Yeah.",
+                                        "start": 1767799892579,
+                                        "end": 1767799892821.5,
+                                        "confidence": 0.9922,
+                                        "language": "",
+                                        "punctuated_word": "Yeah."
+                                    },
+                                    {
+                                        "word": "You",
+                                        "start": 1767799892821.5,
+                                        "end": 1767799893064,
+                                        "confidence": 1,
+                                        "language": "",
+                                        "punctuated_word": "You"
+                                    },
+                                    {
+                                        "word": "all",
+                                        "start": 1767799893064,
+                                        "end": 1767799893306.5,
+                                        "confidence": 0.4255,
+                                        "language": "",
+                                        "punctuated_word": "all"
+                                    },
+                                    {
+                                        "word": "said.",
+                                        "start": 1767799893306.5,
+                                        "end": 1767799893549,
+                                        "confidence": 0.9844,
+                                        "language": "",
+                                        "punctuated_word": "said."
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "toolCalls": [
+                                {
+                                    "id": "sd16qp5de",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "end_call_tool",
+                                        "arguments": "{}"
+                                    }
+                                }
+                            ],
+                            "role": "tool_calls",
+                            "message": "",
+                            "time": 1767799915232,
+                            "secondsFromStart": 58.167
+                        },
+                        {
+                            "role": "tool_call_result",
+                            "time": 1767799915239,
+                            "secondsFromStart": 58.174,
+                            "name": "end_call_tool",
+                            "result": "Success.",
+                            "toolCallId": "sd16qp5de"
+                        }
+                    ],
+                    "messagesOpenAIFormatted": [
+                        {
+                            "role": "system",
+                            "content": "[Identity]  \nYou are a \"Reservation Proxy,\" acting as a representative for {{user_name}}, with a focus on professionalism and precision in finalizing restaurant bookings.\n\n[Client request information]  \nclient name : {{user_name}}\nreservation time:  12/25/2026 at 19:00\nbackup time: after 20:00\nparty size : 3\nnote: near window( if not thats fine)\n\n[Style]  \nMaintain a concise and literal communication style. Be professional and adapt the conversation to conduct it in {{language}}. Avoid filler words and keep interactions streamlined.\n\n[Response Guidelines]  \n- When the client specifically requests, spell the name Steve letter-by-letter with a hyphen and space (e.g., \"S - T - E - V - E\") for accuracy, pronouncing each letter clearly.\n- Present reservation details using provided context in a clear, direct manner.\n- Avoid discussing topics outside the specified reservation details, such as menu or special occasions.\n\n[Task & Goals]  \n1. Start by making the initial reservation request and listening to the staff's response.\n2. If the desired time is available, confirm the reservation: \"Perfect. Just to confirm: {{party_size}} people, 12/25/2026 at 19:00, under the name my client?\"\n3. If the initial time is unavailable, propose the backup time: \"Is 20:30pm available instead?\"\n4. If no options are available, inquire: \"What is the closest available time to 19:00?\"\n   - If a time is offered, respond: \"I will check that with my client and we will call back if that works. Thank you.\" Then, end the call.\n5. If faced with confusion or questions you can't answer from the given details, say: \"I apologize, I only have these specific booking details. I will have the client contact you directly if further information is needed.\"\n\n[Error Handling / Fallback]  \n- Do not provide any contact information beyond what is associated with the caller ID.\n- Repeat the name spelling clearly if asked to ensure accuracy.\n- Immediately conclude the call upon a definitive confirmation or lack of availability. If staff switches languages, adapt naturally to continue the conversation in English.\n- Avoid going down a rabbit hole or repeating the same information unnecessarily to conserve tokens and maintain efficiency."
+                        },
+                        {
+                            "role": "assistant",
+                            "content": "Hello there."
+                        },
+                        {
+                            "role": "user",
+                            "content": "Hi. How can I help you? This is Evan."
+                        },
+                        {
+                            "role": "assistant",
+                            "content": "I'm calling on behalf of Steve, s t e v e, Bean. I'd like to make a reservation for three people on December twenty fifth. Two thousand twenty six at seven PM."
+                        },
+                        {
+                            "role": "user",
+                            "content": "Okay. The time is okay. We are no people there. Thanks."
+                        },
+                        {
+                            "role": "assistant",
+                            "content": "Perfect. Just to confirm, three people, twelve twenty five two thousand twenty six at nineteen under the name Steve Bean."
+                        },
+                        {
+                            "role": "user",
+                            "content": "Yeah. You all said. five Oops. Bad. Thanks. Bye."
+                        },
+                        {
+                            "role": "assistant",
+                            "tool_calls": [
+                                {
+                                    "id": "sd16qp5de",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "end_call_tool",
+                                        "arguments": "{}"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "role": "tool",
+                            "tool_call_id": "sd16qp5de",
+                            "content": "Success."
+                        }
+                    ],
+                    "transcript": "AI: Hello there.\nUser: Hi. How can I help you? This is Evan.\nAI: I'm calling on behalf of Steve, s t e v e, Bean. I'd like to make a reservation for three people on December twenty fifth. Two thousand twenty six at seven PM.\nUser: Okay. The time is okay. We are no people there. Thanks.\nAI: Perfect. Just to confirm, three people, twelve twenty five two thousand twenty six at nineteen under the name Steve Bean.\nUser: Yeah. You all said. five Oops. Bad. Thanks. Bye.\n",
+                    "recordingUrl": "https://storage.vapi.ai/019b9915-19e3-7118-b011-26db0d005163-1767799918057-c417b88d-f7bd-441d-8c60-5696371124b6-mono.wav",
+                    "stereoRecordingUrl": "https://storage.vapi.ai/019b9915-19e3-7118-b011-26db0d005163-1767799918057-e3295dfc-f984-428f-b1fe-8402fe72a8d5-stereo.wav",
+                    "logUrl": "https://calllogs.vapi.ai/7149c487-63cd-4964-89a3-d32462c66951/019b9915-19e3-7118-b011-26db0d005163-ccba4142-9b13-4954-8c85-f0b4c7a282d0-1767799920673.jsonl.gz",
+                    "recording": {
+                        "stereoUrl": "https://storage.vapi.ai/019b9915-19e3-7118-b011-26db0d005163-1767799918057-e3295dfc-f984-428f-b1fe-8402fe72a8d5-stereo.wav",
+                        "mono": {
+                            "combinedUrl": "https://storage.vapi.ai/019b9915-19e3-7118-b011-26db0d005163-1767799918057-c417b88d-f7bd-441d-8c60-5696371124b6-mono.wav",
+                            "assistantUrl": "https://storage.vapi.ai/019b9915-19e3-7118-b011-26db0d005163-1767799918057-06f4c1c3-3546-43a6-b755-18544a0b6a2c-mono.wav",
+                            "customerUrl": "https://storage.vapi.ai/019b9915-19e3-7118-b011-26db0d005163-1767799918057-f810ee5f-c803-4658-a928-18a251a95b73-mono.wav"
+                        }
+                    },
+                    "nodes": [],
+                    "variables": {
+                        "now": "Jan 7, 2026, 3:30 PM UTC",
+                        "currentDateTime": "Wednesday, January 7, 2026 at 3:30 PM UTC",
+                        "date": "Jan 7, 2026 UTC",
+                        "time": "3:30 PM UTC",
+                        "year": "2026",
+                        "month": "January",
+                        "day": "7",
+                        "transport": {
+                            "conversationType": "voice",
+                            "provider": "daily",
+                            "videoRecordingEnabled": false,
+                            "assistantVideoEnabled": false,
+                            "roomDeleteOnUserLeaveEnabled": true,
+                            "callUrl": "https://vapi.daily.co/VvMHfEn3ebxP0z2pAPCM"
+                        }
+                    },
+                    "variableValues": {
+                        "now": "Jan 7, 2026, 3:30 PM UTC",
+                        "currentDateTime": "Wednesday, January 7, 2026 at 3:30 PM UTC",
+                        "date": "Jan 7, 2026 UTC",
+                        "time": "3:30 PM UTC",
+                        "year": "2026",
+                        "month": "January",
+                        "day": "7",
+                        "transport": {
+                            "conversationType": "voice",
+                            "provider": "daily",
+                            "videoRecordingEnabled": false,
+                            "assistantVideoEnabled": false,
+                            "roomDeleteOnUserLeaveEnabled": true,
+                            "callUrl": "https://vapi.daily.co/VvMHfEn3ebxP0z2pAPCM"
+                        }
+                    },
+                    "performanceMetrics": {
+                        "turnLatencies": [
+                            {
+                                "modelLatency": 0,
+                                "voiceLatency": 178,
+                                "transcriberLatency": 201,
+                                "endpointingLatency": 0,
+                                "turnLatency": 552
+                            },
+                            {
+                                "modelLatency": 0,
+                                "voiceLatency": 290,
+                                "transcriberLatency": 980,
+                                "endpointingLatency": 0,
+                                "turnLatency": 1503
+                            },
+                            {
+                                "modelLatency": 0,
+                                "voiceLatency": 239,
+                                "transcriberLatency": 0,
+                                "endpointingLatency": 0,
+                                "turnLatency": 921
+                            },
+                            {
+                                "modelLatency": 0,
+                                "voiceLatency": 231,
+                                "transcriberLatency": 571,
+                                "endpointingLatency": 0,
+                                "turnLatency": 1094
+                            }
+                        ],
+                        "modelLatencyAverage": 0,
+                        "voiceLatencyAverage": 234.5,
+                        "transcriberLatencyAverage": 438,
+                        "endpointingLatencyAverage": 0,
+                        "turnLatencyAverage": 1017.5,
+                        "numUserInterrupted": 1,
+                        "numAssistantInterrupted": 2,
+                        "fromTransportLatencyAverage": 20,
+                        "toTransportLatencyAverage": 48
+                    },
+                    "structuredOutputs": {
+                        "e73020e3-12e7-436d-85f7-3ebce6222a1a": {
+                            "name": "reservation status",
+                            "result": {
+                                "success": true,
+                                "summary": "The caller requested a reservation for three people under the name Steve Bean on December 25, 2026, at 19:00. The restaurant confirmed availability for the requested time, and the assistant reiterated the details for confirmation. The staff acknowledged and the call ended with the reservation confirmed.",
+                                "failure_reason": ""
+                            },
+                            "compliancePlan": null
+                        }
+                    },
+                    "scorecards": {
+                        "bc5c807c-b83b-4612-b15e-f1a2bfdb46c7": {
+                            "name": "scorecard for assistant restaurant_agent_1",
+                            "score": 0,
+                            "scoreNormalized": 0,
+                            "metricPoints": {}
+                        }
+                    },
+                    "transfers": []
+                },
+                "startedAt": "2026-01-07T15:30:57.065Z",
+                "endedAt": "2026-01-07T15:31:55.252Z",
+                "endedReason": "assistant-ended-call",
+                "cost": 0.0832,
+                "costBreakdown": {
+                    "stt": 0.0105,
+                    "llm": 0.0003,
+                    "tts": 0.0177,
+                    "vapi": 0.0485,
+                    "chat": 0,
+                    "transport": 0,
+                    "total": 0.0832,
+                    "llmPromptTokens": 5311,
+                    "llmCompletionTokens": 164,
+                    "llmCachedPromptTokens": 0,
+                    "ttsCharacters": 589,
+                    "voicemailDetectionCost": 0,
+                    "knowledgeBaseCost": 0,
+                    "analysisCostBreakdown": {
+                        "summary": 0,
+                        "summaryPromptTokens": 0,
+                        "summaryCompletionTokens": 0,
+                        "summaryCachedPromptTokens": 0,
+                        "structuredData": 0,
+                        "structuredDataPromptTokens": 0,
+                        "structuredDataCompletionTokens": 0,
+                        "structuredDataCachedPromptTokens": 0,
+                        "successEvaluation": 0,
+                        "successEvaluationPromptTokens": 0,
+                        "successEvaluationCompletionTokens": 0,
+                        "successEvaluationCachedPromptTokens": 0,
+                        "structuredOutput": 0.0062,
+                        "structuredOutputPromptTokens": 2825,
+                        "structuredOutputCompletionTokens": 74,
+                        "structuredOutputCachedPromptTokens": 0
+                    }
+                },
+                "costs": [
+                    {
+                        "type": "transcriber",
+                        "transcriber": {
+                            "provider": "deepgram",
+                            "model": "flux-general-en"
+                        },
+                        "minutes": 0.9753000000000001,
+                        "cost": 0.010471626666666666
+                    },
+                    {
+                        "type": "model",
+                        "model": {
+                            "provider": "groq",
+                            "model": "llama-3.1-8b-instant"
+                        },
+                        "promptTokens": 5311,
+                        "completionTokens": 164,
+                        "cachedPromptTokens": 0,
+                        "cost": 0.00027867
+                    },
+                    {
+                        "type": "voice",
+                        "voice": {
+                            "provider": "cartesia",
+                            "voiceId": "57dcab65-68ac-45a6-8480-6c4c52ec1cd1",
+                            "model": "sonic-2"
+                        },
+                        "characters": 589,
+                        "cost": 0.01767
+                    },
+                    {
+                        "type": "vapi",
+                        "subType": "normal",
+                        "minutes": 0.9698,
+                        "cost": 0.04849
+                    },
+                    {
+                        "type": "analysis",
+                        "analysisType": "structuredOutput",
+                        "model": {
+                            "provider": "openai",
+                            "model": "gpt-4.1-2025-04-14"
+                        },
+                        "promptTokens": 2825,
+                        "completionTokens": 74,
+                        "cachedPromptTokens": 0,
+                        "cost": 0.006242
+                    },
+                    {
+                        "type": "knowledge-base",
+                        "model": {
+                            "provider": "google",
+                            "model": "gemini-2.0-flash"
+                        },
+                        "promptTokens": 0,
+                        "completionTokens": 0,
+                        "cost": 0
+                    }
+                ],
+                "durationMs": 58187,
+                "durationSeconds": 58.187,
+                "durationMinutes": 0.9698,
+                "summary": "",
+                "transcript": "AI: Hello there.\nUser: Hi. How can I help you? This is Evan.\nAI: I'm calling on behalf of Steve, s t e v e, Bean. I'd like to make a reservation for three people on December twenty fifth. Two thousand twenty six at seven PM.\nUser: Okay. The time is okay. We are no people there. Thanks.\nAI: Perfect. Just to confirm, three people, twelve twenty five two thousand twenty six at nineteen under the name Steve Bean.\nUser: Yeah. You all said. five Oops. Bad. Thanks. Bye.\n",
+                "messages": [
+                    {
+                        "role": "system",
+                        "message": "[Identity]  \nYou are a \"Reservation Proxy,\" acting as a representative for {{user_name}}, with a focus on professionalism and precision in finalizing restaurant bookings.\n\n[Client request information]  \nclient name : {{user_name}}\nreservation time:  12/25/2026 at 19:00\nbackup time: after 20:00\nparty size : 3\nnote: near window( if not thats fine)\n\n[Style]  \nMaintain a concise and literal communication style. Be professional and adapt the conversation to conduct it in {{language}}. Avoid filler words and keep interactions streamlined.\n\n[Response Guidelines]  \n- When the client specifically requests, spell the name Steve letter-by-letter with a hyphen and space (e.g., \"S - T - E - V - E\") for accuracy, pronouncing each letter clearly.\n- Present reservation details using provided context in a clear, direct manner.\n- Avoid discussing topics outside the specified reservation details, such as menu or special occasions.\n\n[Task & Goals]  \n1. Start by making the initial reservation request and listening to the staff's response.\n2. If the desired time is available, confirm the reservation: \"Perfect. Just to confirm: {{party_size}} people, 12/25/2026 at 19:00, under the name my client?\"\n3. If the initial time is unavailable, propose the backup time: \"Is 20:30pm available instead?\"\n4. If no options are available, inquire: \"What is the closest available time to 19:00?\"\n   - If a time is offered, respond: \"I will check that with my client and we will call back if that works. Thank you.\" Then, end the call.\n5. If faced with confusion or questions you can't answer from the given details, say: \"I apologize, I only have these specific booking details. I will have the client contact you directly if further information is needed.\"\n\n[Error Handling / Fallback]  \n- Do not provide any contact information beyond what is associated with the caller ID.\n- Repeat the name spelling clearly if asked to ensure accuracy.\n- Immediately conclude the call upon a definitive confirmation or lack of availability. If staff switches languages, adapt naturally to continue the conversation in English.\n- Avoid going down a rabbit hole or repeating the same information unnecessarily to conserve tokens and maintain efficiency.",
+                        "time": 1767799856819,
+                        "secondsFromStart": 0
+                    },
+                    {
+                        "role": "bot",
+                        "message": "Hello there.",
+                        "time": 1767799857787,
+                        "endTime": 1767799858905,
+                        "secondsFromStart": 0.722,
+                        "duration": 1118,
+                        "source": ""
+                    },
+                    {
+                        "role": "user",
+                        "message": "Hi. How can I help you? This is Evan.",
+                        "time": 1767799860958,
+                        "endTime": 1767799863229,
+                        "secondsFromStart": 3.893,
+                        "duration": 1539,
+                        "metadata": {
+                            "wordLevelConfidence": [
+                                {
+                                    "word": "Hi.",
+                                    "start": 1767799860958,
+                                    "end": 1767799861149.8333,
+                                    "confidence": 1,
+                                    "language": "",
+                                    "punctuated_word": "Hi."
+                                },
+                                {
+                                    "word": "How",
+                                    "start": 1767799861149.8333,
+                                    "end": 1767799861341.6667,
+                                    "confidence": 0.9995,
+                                    "language": "",
+                                    "punctuated_word": "How"
+                                },
+                                {
+                                    "word": "can",
+                                    "start": 1767799861341.6667,
+                                    "end": 1767799861533.5,
+                                    "confidence": 1,
+                                    "language": "",
+                                    "punctuated_word": "can"
+                                },
+                                {
+                                    "word": "I",
+                                    "start": 1767799861533.5,
+                                    "end": 1767799861725.3333,
+                                    "confidence": 1,
+                                    "language": "",
+                                    "punctuated_word": "I"
+                                },
+                                {
+                                    "word": "help",
+                                    "start": 1767799861725.3333,
+                                    "end": 1767799861917.1667,
+                                    "confidence": 1,
+                                    "language": "",
+                                    "punctuated_word": "help"
+                                },
+                                {
+                                    "word": "you?",
+                                    "start": 1767799861917.1667,
+                                    "end": 1767799862109,
+                                    "confidence": 1,
+                                    "language": "",
+                                    "punctuated_word": "you?"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "role": "bot",
+                        "message": "I'm calling on behalf of Steve, s t e v e, Bean. I'd like to make a reservation for three people on December twenty fifth. Two thousand twenty six at seven PM.",
+                        "time": 1767799864439,
+                        "endTime": 1767799875785,
+                        "secondsFromStart": 7.374,
+                        "duration": 11346,
+                        "source": ""
+                    },
+                    {
+                        "role": "user",
+                        "message": "Okay. The time is okay. We are no people there. Thanks.",
+                        "time": 1767799876675,
+                        "endTime": 1767799880829,
+                        "secondsFromStart": 19.61,
+                        "duration": 3613,
+                        "metadata": {
+                            "wordLevelConfidence": [
+                                {
+                                    "word": "Okay.",
+                                    "start": 1767799876675,
+                                    "end": 1767799877026.4,
+                                    "confidence": 1,
+                                    "language": "",
+                                    "punctuated_word": "Okay."
+                                },
+                                {
+                                    "word": "The",
+                                    "start": 1767799877026.4,
+                                    "end": 1767799877377.8,
+                                    "confidence": 0.959,
+                                    "language": "",
+                                    "punctuated_word": "The"
+                                },
+                                {
+                                    "word": "time",
+                                    "start": 1767799877377.8,
+                                    "end": 1767799877729.2,
+                                    "confidence": 0.5132,
+                                    "language": "",
+                                    "punctuated_word": "time"
+                                },
+                                {
+                                    "word": "is",
+                                    "start": 1767799877729.2,
+                                    "end": 1767799878080.6,
+                                    "confidence": 1,
+                                    "language": "",
+                                    "punctuated_word": "is"
+                                },
+                                {
+                                    "word": "okay.",
+                                    "start": 1767799878080.6,
+                                    "end": 1767799878432,
+                                    "confidence": 1,
+                                    "language": "",
+                                    "punctuated_word": "okay."
+                                },
+                                {
+                                    "word": "We",
+                                    "start": 1767799878432,
+                                    "end": 1767799878783.4,
+                                    "confidence": 0.9995,
+                                    "language": "",
+                                    "punctuated_word": "We"
+                                },
+                                {
+                                    "word": "are",
+                                    "start": 1767799878783.4,
+                                    "end": 1767799879134.8,
+                                    "confidence": 0.8232,
+                                    "language": "",
+                                    "punctuated_word": "are"
+                                },
+                                {
+                                    "word": "no",
+                                    "start": 1767799879134.8,
+                                    "end": 1767799879486.2,
+                                    "confidence": 0.748,
+                                    "language": "",
+                                    "punctuated_word": "no"
+                                },
+                                {
+                                    "word": "people",
+                                    "start": 1767799879486.2,
+                                    "end": 1767799879837.6,
+                                    "confidence": 0.999,
+                                    "language": "",
+                                    "punctuated_word": "people"
+                                },
+                                {
+                                    "word": "there.",
+                                    "start": 1767799879837.6,
+                                    "end": 1767799880189,
+                                    "confidence": 1,
+                                    "language": "",
+                                    "punctuated_word": "there."
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "role": "bot",
+                        "message": "Perfect. Just to confirm, three people, twelve twenty five two thousand twenty six at nineteen under the name Steve Bean.",
+                        "time": 1767799882759,
+                        "endTime": 1767799891385,
+                        "secondsFromStart": 25.694,
+                        "duration": 8626,
+                        "source": ""
+                    },
+                    {
+                        "role": "user",
+                        "message": "Yeah. You all said. five Oops. Bad. Thanks. Bye.",
+                        "time": 1767799892579,
+                        "endTime": 1767799910269,
+                        "secondsFromStart": 35.514,
+                        "duration": 2254,
+                        "metadata": {
+                            "wordLevelConfidence": [
+                                {
+                                    "word": "Yeah.",
+                                    "start": 1767799892579,
+                                    "end": 1767799892821.5,
+                                    "confidence": 0.9922,
+                                    "language": "",
+                                    "punctuated_word": "Yeah."
+                                },
+                                {
+                                    "word": "You",
+                                    "start": 1767799892821.5,
+                                    "end": 1767799893064,
+                                    "confidence": 1,
+                                    "language": "",
+                                    "punctuated_word": "You"
+                                },
+                                {
+                                    "word": "all",
+                                    "start": 1767799893064,
+                                    "end": 1767799893306.5,
+                                    "confidence": 0.4255,
+                                    "language": "",
+                                    "punctuated_word": "all"
+                                },
+                                {
+                                    "word": "said.",
+                                    "start": 1767799893306.5,
+                                    "end": 1767799893549,
+                                    "confidence": 0.9844,
+                                    "language": "",
+                                    "punctuated_word": "said."
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "toolCalls": [
+                            {
+                                "id": "sd16qp5de",
+                                "type": "function",
+                                "function": {
+                                    "name": "end_call_tool",
+                                    "arguments": "{}"
+                                }
+                            }
+                        ],
+                        "role": "tool_calls",
+                        "message": "",
+                        "time": 1767799915232,
+                        "secondsFromStart": 58.167
+                    },
+                    {
+                        "role": "tool_call_result",
+                        "time": 1767799915239,
+                        "secondsFromStart": 58.174,
+                        "name": "end_call_tool",
+                        "result": "Success.",
+                        "toolCallId": "sd16qp5de"
+                    }
+                ],
+                "recordingUrl": "https://storage.vapi.ai/019b9915-19e3-7118-b011-26db0d005163-1767799918057-c417b88d-f7bd-441d-8c60-5696371124b6-mono.wav",
+                "stereoRecordingUrl": "https://storage.vapi.ai/019b9915-19e3-7118-b011-26db0d005163-1767799918057-e3295dfc-f984-428f-b1fe-8402fe72a8d5-stereo.wav",
+                "call": {
+                    "id": "019b9915-19e3-7118-b011-26db0d005163",
+                    "orgId": "7149c487-63cd-4964-89a3-d32462c66951",
+                    "createdAt": "2026-01-07T15:30:55.587Z",
+                    "updatedAt": "2026-01-07T15:30:55.587Z",
+                    "type": "webCall",
+                    "cost": 0,
+                    "monitor": {
+                        "listenUrl": "wss://phone-call-websocket.oci-us-sanjose-1-backend-production2.vapi.ai/019b9915-19e3-7118-b011-26db0d005163/listen",
+                        "controlUrl": "https://phone-call-websocket.oci-us-sanjose-1-backend-production2.vapi.ai/019b9915-19e3-7118-b011-26db0d005163/control"
+                    },
+                    "transport": {
+                        "conversationType": "voice",
+                        "provider": "daily",
+                        "videoRecordingEnabled": false,
+                        "assistantVideoEnabled": false,
+                        "roomDeleteOnUserLeaveEnabled": true,
+                        "callUrl": "https://vapi.daily.co/VvMHfEn3ebxP0z2pAPCM"
+                    },
+                    "webCallUrl": "https://vapi.daily.co/VvMHfEn3ebxP0z2pAPCM",
+                    "status": "queued",
+                    "assistantId": "7f83073d-ffe6-48c7-88f1-85967accadf1",
+                    "assistantOverrides": {
+                        "clientMessages": [
+                            "transcript",
+                            "hang",
+                            "metadata",
+                            "tool-calls",
+                            "tool-calls-result",
+                            "tool.completed",
+                            "transfer-update",
+                            "user-interrupted",
+                            "status-update",
+                            "assistant.started"
+                        ],
+                        "variableValues": {}
+                    }
+                },
+                "assistant": {
+                    "id": "7f83073d-ffe6-48c7-88f1-85967accadf1",
+                    "orgId": "7149c487-63cd-4964-89a3-d32462c66951",
+                    "name": "restaurant_agent_1",
+                    "voice": {
+                        "model": "sonic-2",
+                        "voiceId": "57dcab65-68ac-45a6-8480-6c4c52ec1cd1",
+                        "provider": "cartesia",
+                        "fallbackPlan": {
+                            "voices": [
+                                {
+                                    "model": "arcana",
+                                    "voiceId": "orion",
+                                    "provider": "rime-ai",
+                                    "reduceLatency": false,
+                                    "pauseBetweenBrackets": false,
+                                    "phonemizeBetweenBrackets": false
+                                }
+                            ]
+                        }
+                    },
+                    "createdAt": "2026-01-07T10:05:07.221Z",
+                    "updatedAt": "2026-01-07T15:30:49.075Z",
+                    "model": {
+                        "model": "llama-3.1-8b-instant",
+                        "toolIds": [
+                            "1ecfecea-6910-4aaf-bee0-4898b0e98094"
+                        ],
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "[Identity]  \nYou are a \"Reservation Proxy,\" acting as a representative for {{user_name}}, with a focus on professionalism and precision in finalizing restaurant bookings.\n\n[Client request information]  \nclient name : {{user_name}}\nreservation time:  12/25/2026 at 19:00\nbackup time: after 20:00\nparty size : 3\nnote: near window( if not thats fine)\n\n[Style]  \nMaintain a concise and literal communication style. Be professional and adapt the conversation to conduct it in {{language}}. Avoid filler words and keep interactions streamlined.\n\n[Response Guidelines]  \n- When the client specifically requests, spell the name Steve letter-by-letter with a hyphen and space (e.g., \"S - T - E - V - E\") for accuracy, pronouncing each letter clearly.\n- Present reservation details using provided context in a clear, direct manner.\n- Avoid discussing topics outside the specified reservation details, such as menu or special occasions.\n\n[Task & Goals]  \n1. Start by making the initial reservation request and listening to the staff's response.\n2. If the desired time is available, confirm the reservation: \"Perfect. Just to confirm: {{party_size}} people, 12/25/2026 at 19:00, under the name my client?\"\n3. If the initial time is unavailable, propose the backup time: \"Is 20:30pm available instead?\"\n4. If no options are available, inquire: \"What is the closest available time to 19:00?\"\n   - If a time is offered, respond: \"I will check that with my client and we will call back if that works. Thank you.\" Then, end the call.\n5. If faced with confusion or questions you can't answer from the given details, say: \"I apologize, I only have these specific booking details. I will have the client contact you directly if further information is needed.\"\n\n[Error Handling / Fallback]  \n- Do not provide any contact information beyond what is associated with the caller ID.\n- Repeat the name spelling clearly if asked to ensure accuracy.\n- Immediately conclude the call upon a definitive confirmation or lack of availability. If staff switches languages, adapt naturally to continue the conversation in English.\n- Avoid going down a rabbit hole or repeating the same information unnecessarily to conserve tokens and maintain efficiency."
+                            }
+                        ],
+                        "provider": "groq",
+                        "maxTokens": 225,
+                        "temperature": 0.1,
+                        "tools": [
+                            {
+                                "id": "1ecfecea-6910-4aaf-bee0-4898b0e98094",
+                                "createdAt": "2026-01-07T11:01:35.631Z",
+                                "updatedAt": "2026-01-07T11:01:58.282Z",
+                                "type": "endCall",
+                                "function": {
+                                    "name": "end_call_tool",
+                                    "parameters": {
+                                        "type": "object",
+                                        "required": [],
+                                        "properties": {}
+                                    },
+                                    "description": "when mission complete end call"
+                                },
+                                "messages": [
+                                    {
+                                        "type": "request-start",
+                                        "blocking": false
+                                    }
+                                ],
+                                "orgId": "7149c487-63cd-4964-89a3-d32462c66951"
+                            }
+                        ]
+                    },
+                    "firstMessage": "Hello there",
+                    "voicemailMessage": "Please call back when you're available.",
+                    "endCallMessage": "Goodbye.",
+                    "transcriber": {
+                        "model": "flux-general-en",
+                        "language": "en",
+                        "numerals": false,
+                        "provider": "deepgram",
+                        "fallbackPlan": {
+                            "transcribers": [
+                                {
+                                    "model": "gpt-4o-transcribe",
+                                    "language": "en",
+                                    "provider": "openai"
+                                }
+                            ]
+                        },
+                        "confidenceThreshold": 0.4
+                    },
+                    "silenceTimeoutSeconds": 40,
+                    "clientMessages": [
+                        "conversation-update",
+                        "function-call",
+                        "function-call-result",
+                        "hang",
+                        "metadata",
+                        "model-output",
+                        "speech-update",
+                        "status-update",
+                        "transcript",
+                        "tool-calls",
+                        "tool-calls-result",
+                        "tool.completed",
+                        "transfer-update",
+                        "user-interrupted",
+                        "voice-input",
+                        "workflow.node.started",
+                        "assistant.started"
+                    ],
+                    "serverMessages": [
+                        "end-of-call-report"
+                    ],
+                    "maxDurationSeconds": 400,
+                    "analysisPlan": {
+                        "summaryPlan": {
+                            "enabled": false
+                        },
+                        "successEvaluationPlan": {
+                            "enabled": false
+                        }
+                    },
+                    "artifactPlan": {
+                        "scorecardIds": [
+                            "bc5c807c-b83b-4612-b15e-f1a2bfdb46c7"
+                        ],
+                        "structuredOutputIds": [
+                            "e73020e3-12e7-436d-85f7-3ebce6222a1a"
+                        ]
+                    },
+                    "server": {
+                        "url": "https://wisecat.app.n8n.cloud/webhook-test/end-of-call-report",
+                        "timeoutSeconds": 60
+                    },
+                    "compliancePlan": {
+                        "pciEnabled": false,
+                        "hipaaEnabled": false
+                    },
+                    "variableValues": {}
+                }
+            }
+        },
+        "webhookUrl": "https://wisecat.app.n8n.cloud/webhook-test/end-of-call-report",
+        "executionMode": "test"
+    }
+]
