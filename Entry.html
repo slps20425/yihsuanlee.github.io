@@ -49,29 +49,45 @@
         </div>
 
         <!-- Login Prompt (shown when not logged in) -->
-        <div id="loginPrompt" class="login-prompt fade-in delay-1">
-            <div class="social-buttons">
-                <button type="button" class="social-btn" id="googleLoginBtn">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-                    <span data-i18n="btn_google">Continue with Google</span>
-                </button>
-                <button type="button" class="social-btn" id="microsoftLoginBtn">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft">
-                    <span data-i18n="btn_microsoft">Continue with Microsoft</span>
-                </button>
+        <div id="loginPrompt" class="login-prompt fade-in delay-1"
+            style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; margin-top: 20px; backdrop-filter: blur(10px);">
+            <div class="login-header" style="text-align: center; margin-bottom: 25px;">
+                <h3 style="margin: 0; color: #fff; font-size: 1.2rem;" data-i18n="portal_title">WiseCat AI Login</h3>
+                <p style="margin: 5px 0 0; color: #888; font-size: 0.9rem;" data-i18n="login_subtitle">Fast and Secure
+                    Access</p>
+            </div>
+
+            <div class="social-buttons" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Primary Action: LINE -->
                 <button type="button" class="social-btn" id="lineLoginBtn"
-                    style="background: #00b900; color: white; border: none;">
+                    style="background: #00b900; color: white; border: none; width: 100%; height: 55px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: transform 0.2s, background 0.2s; box-shadow: 0 4px 15px rgba(0, 185, 0, 0.3);">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE"
-                        style="width: 20px; margin-right: 10px;">
+                        style="width: 24px; margin-right: 12px; filter: brightness(0) invert(1);">
                     <span data-i18n="btn_line">Continue with LINE</span>
                 </button>
+
+                <!-- Secondary Actions -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                    <button type="button" class="social-btn" id="googleLoginBtn"
+                        style="background: #fff; color: #444; border: 1px solid #ddd; height: 45px; border-radius: 10px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"
+                            style="width: 18px;">
+                        <span>Google</span>
+                    </button>
+                    <button type="button" class="social-btn" id="microsoftLoginBtn"
+                        style="background: #2f2f2f; color: #fff; border: 1px solid #444; height: 45px; border-radius: 10px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg"
+                            alt="Microsoft" style="width: 18px;">
+                        <span>Microsoft</span>
+                    </button>
+                </div>
             </div>
-            <div style="font-size: 10px; color: #888; margin: 10px 0; text-align: left; line-height: 1.4; padding: 0 10px;"
+
+            <div style="font-size: 10px; color: #666; margin-top: 25px; text-align: center; line-height: 1.4; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;"
                 data-i18n="login_privacy_notice">
                 This service (WiseCat) will access your LINE email address solely for account creation, credit
                 management, and service notifications.
             </div>
-            <p class="login-instruction" data-i18n="login_subtitle">Sign in to continue</p>
             <div id="authError" class="auth-error"></div>
         </div>
 
@@ -166,22 +182,24 @@
             try {
                 const result = await auth.signInWithPopup(provider);
                 const user = result.user;
-                console.log('Social login success:', user.email);
+                console.log('Social login success:', user.email || user.uid);
 
-                // Immediate Firestore check/create
-                const userRef = db.collection("users").doc(user.email);
+                // Robust Document ID: Email or UID
+                const userIdentifier = user.email || user.uid;
+                const userRef = db.collection("users").doc(userIdentifier);
                 const doc = await userRef.get();
 
                 if (!doc.exists) {
                     const initialData = {
-                        name: user.displayName || user.email.split('@')[0],
-                        email: user.email,
-                        picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email),
+                        name: user.displayName || "WiseCat User",
+                        email: user.email || "N/A",
+                        uid: user.uid,
+                        picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email || 'User'),
                         credits: 1.00,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     await userRef.set(initialData);
-                    console.log('New user document created with $1.00 bonus');
+                    console.log('New user document created with $1.00 bonus:', userIdentifier);
                 }
             } catch (error) {
                 console.error('Social login error:', error);
@@ -200,14 +218,15 @@
 
             if (user) {
                 // Real-time listener: Priority one
-                unsubscribeUser = db.collection("users").doc(user.email)
+                const userIdentifier = user.email || user.uid;
+                unsubscribeUser = db.collection("users").doc(userIdentifier)
                     .onSnapshot((doc) => {
                         if (doc.exists) {
                             const data = doc.data();
                             const userSession = {
                                 name: data.name || user.displayName || user.email.split('@')[0],
-                                email: user.email,
-                                picture: data.picture || user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email),
+                                email: user.email || "N/A",
+                                picture: data.picture || user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email || 'User'),
                                 sub: user.uid,
                                 credits: data.credits || 0.00
                             };
