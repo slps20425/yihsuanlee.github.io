@@ -1,0 +1,21 @@
+{
+  "name": "yihsuanlee.github.io",
+  "version": "1.0.0",
+  "description": "",
+  "main": "i18n.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/google.maps": "^3.58.1",
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21"
+  }
+}

@@ -207,6 +207,7 @@ textarea {
     color: white;
     transition: border-color 0.3s;
     font-family: inherit;
+    color-scheme: dark;
 }
 
 input:focus,
@@ -675,4 +676,305 @@ button:disabled {
         width: calc(100% - 60px);
         right: 30px;
     }
+}
+
+/* intl-tel-input Dark Mode Overrides */
+.iti__country-list {
+    background-color: var(--card-bg) !important;
+    border: 1px solid #444 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+    color: white !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    max-height: 200px !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+.iti__country {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid #333 !important;
+    color: white !important;
+    padding: 8px 12px !important;
+    cursor: pointer !important;
+}
+
+.iti__country:hover {
+    background-color: #333 !important;
+}
+
+.iti__country:last-child {
+    border-bottom: none !important;
+}
+
+.iti__country.iti__highlight {
+    background-color: #333 !important;
+}
+
+.iti__country-name,
+.iti__dial-code {
+    color: #fff !important;
+}
+
+.iti__selected-dial-code {
+    color: #fff !important;
+}
+
+.iti__selected-flag {
+    background-color: transparent !important;
+}
+
+/* Time Picker Dark Mode */
+input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+input[type="time"]::-webkit-datetime-edit {
+    color: white;
+}
+
+input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+    background-color: transparent;
+}
+
+input[type="time"]::-webkit-datetime-edit-text,
+input[type="time"]::-webkit-datetime-edit-hour-field,
+input[type="time"]::-webkit-datetime-edit-minute-field,
+input[type="time"]::-webkit-datetime-edit-ampm-field {
+    color: white;
+    background-color: transparent;
+}
+
+/* Date Picker Dark Mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+input[type="date"]::-webkit-datetime-edit {
+    color: white;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    background-color: transparent;
+}
+
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field {
+    color: white;
+    background-color: transparent;
+}
+
+/* Custom Time Picker */
+.custom-time-picker {
+    position: relative;
+    width: 100%;
+}
+
+.custom-time-display {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 1px solid #444;
+    border-radius: 12px;
+    box-sizing: border-box;
+    background: #1a1a1a;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.custom-time-display:hover {
+    border-color: var(--primary-color);
+}
+
+.custom-time-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 5px;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: none;
+    padding: 15px;
+}
+
+.custom-time-dropdown.show {
+    display: block;
+}
+
+.time-picker-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.time-picker-select {
+    flex: 1;
+    padding: 8px;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.time-picker-select:hover {
+    border-color: var(--primary-color);
+}
+
+.time-picker-ampm {
+    display: flex;
+    gap: 5px;
+}
+
+.time-picker-ampm button {
+    flex: 1;
+    padding: 8px;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.time-picker-ampm button:hover {
+    border-color: var(--primary-color);
+}
+
+.time-picker-ampm button.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Custom Date Picker */
+.custom-date-picker {
+    position: relative;
+    width: 100%;
+}
+
+.custom-date-display {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 1px solid #444;
+    border-radius: 12px;
+    box-sizing: border-box;
+    background: #1a1a1a;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.custom-date-display:hover {
+    border-color: var(--primary-color);
+}
+
+.custom-date-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 5px;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: none;
+    padding: 15px;
+}
+
+.custom-date-dropdown.show {
+    display: block;
+}
+
+.date-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.date-picker-nav {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.date-picker-nav:hover {
+    border-color: var(--primary-color);
+}
+
+.date-picker-month-year {
+    font-weight: bold;
+    color: white;
+}
+
+.date-picker-calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.date-picker-day-header {
+    text-align: center;
+    font-size: 12px;
+    color: #888;
+    padding: 5px;
+}
+
+.date-picker-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.date-picker-day:hover {
+    border-color: var(--primary-color);
+    background: #333;
+}
+
+.date-picker-day.selected {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.date-picker-day.today {
+    border-color: #4a9eff;
+}
+
+.date-picker-day.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.date-picker-day.disabled:hover {
+    border-color: #444;
+    background: #2a2a2a;
+}
+
+.date-picker-day.other-month {
+    opacity: 0.3;
 }
