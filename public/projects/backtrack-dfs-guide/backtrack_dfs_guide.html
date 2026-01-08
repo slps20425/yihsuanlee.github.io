@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回溯/DFS问题解题指南</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .table-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 20px;
+            text-align: left;
+            font-weight: 600;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        th:last-child {
+            border-right: none;
+        }
+        
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: top;
+        }
+        
+        tbody tr:hover {
+            background-color: #f8f9ff;
+        }
+        
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .problem-name {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 160px;
+        }
+        
+        .dfs-template {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            border-radius: 4px;
+        }
+        
+        .key-point {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 12px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #856404;
+        }
+        
+        .example {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 10px 12px;
+            margin-top: 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #1565c0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .repeat-yes {
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+        
+        .repeat-no {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+        
+        .summary {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            margin-top: 30px;
+        }
+        
+        .summary h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .summary-table th,
+        .summary-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .summary-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .summary-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .center {
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            th, td {
+                padding: 12px;
+                font-size: 13px;
+            }
+            
+            .dfs-template {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 回溯/DFS问题解题指南</h1>
+        
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>问题名称</th>
+                        <th>DFS模板</th>
+                        <th>能否重复</th>
+                        <th>核心要点</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Subsets -->
+                    <tr>
+                        <td class="problem-name">Subsets<br>(子集)</td>
+                        <td>
+                            <div class="dfs-template">dfs(i):
+  if i == len(nums):
+    collect(path)
+  选: path.add(nums[i])
+      dfs(i+1)
+  不选: dfs(i+1)</div>
+                        </td>
+                        <td class="center"><span class="repeat-yes">✗ 不能</span></td>
+                        <td>
+                            <div class="key-point">简单 dfs(i) 模板，逐个位置决策"选"或"不选"</div>
+                            <div class="example">例: [1,2,3] → [[], [1], [2], [1,2], ...]</div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Combination Sum -->
+                    <tr>
+                        <td class="problem-name">Combination Sum<br>(组合求和)</td>
+                        <td>
+                            <div class="dfs-template">dfs(i, path, remaining):
+  if remaining == 0:
+    collect(path)
+  for j in range(i, len):
+    path.add(nums[j])
+    dfs(i, path, ...)
+    path.pop()</div>
+                        </td>
+                        <td class="center"><span class="repeat-yes">✅ 能</span></td>
+                        <td>
+                            <div class="key-point">用 dfs(i, ...) 允许重复使用同个元素</div>
+                            <div class="example">例: [2,3,6], target=7 → [2,2,3], [7]</div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Combination Sum II -->
+                    <tr>
+                        <td class="problem-name">Combination Sum II<br>(组合求和II)</td>
+                        <td>
+                            <div class="dfs-template">dfs(i, path, remaining):
+  if remaining == 0:
+    collect(path)
+  for j in range(i, len):
+    if j > i and nums[j]==nums[j-1]:
+      continue
+    path.add(nums[j])
+    dfs(i+1, path, ...)
+    path.pop()</div>
+                        </td>
+                        <td class="center"><span class="repeat-no">✗ 不能</span></td>
+                        <td>
+                            <div class="key-point">用 dfs(i+1, ...) 每个元素只能用一次</div>
+                            <div class="example">跳过同层重复元素避免重复组合</div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Permutations -->
+                    <tr>
+                        <td class="problem-name">Permutations<br>(排列)</td>
+                        <td>
+                            <div class="dfs-template">dfs(path, used_set):
+  if len(path) == len(nums):
+    collect(path)
+  for i in range(len):
+    if i not in used_set:
+      path.add(nums[i])
+      used_set.add(i)
+      dfs(path, used_set)
+      path.pop()
+      used_set.remove(i)</div>
+                        </td>
+                        <td class="center"><span class="repeat-no">✗ 不能</span></td>
+                        <td>
+                            <div class="key-point">用 used_set 追踪已使用元素，每次尝试所有未使用</div>
+                            <div class="example">例: [1,2,3] → [1,2,3], [1,3,2], ...</div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Subsets II -->
+                    <tr>
+                        <td class="problem-name">Subsets II<br>(子集II)</td>
+                        <td>
+                            <div class="dfs-template">dfs(i):
+  if i == len(nums):
+    collect(path)
+  选: path.add(nums[i])
+      dfs(i+1)
+  跳重复: while i+1 < len and
+         nums[i+1]==nums[i]: i++
+  不选: dfs(i+1)</div>
+                        </td>
+                        <td class="center"><span class="repeat-no">✗ 不能</span></td>
+                        <td>
+                            <div class="key-point">基于 dfs(i) 模板，加上跳过重复逻辑</div>
+                            <div class="example">先排序，不选时跳过所有重复元素</div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Generate Parentheses -->
+                    <tr>
+                        <td class="problem-name">Generate Parentheses<br>(生成括号)</td>
+                        <td>
+                            <div class="dfs-template">dfs(path, left, right):
+  if len(path) == 2*n:
+    collect(path)
+  if left < n:
+    dfs(path+'(', left+1, right)
+  if right < left:
+    dfs(path+')', left, right+1)</div>
+                        </td>
+                        <td class="center"><span class="repeat-yes">✅ 能</span></td>
+                        <td>
+                            <div class="key-point">维护左右括号计数，只有当右<左时才能加右括号</div>
+                            <div class="example">n=2 → "(())", "()()"</div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Word Search -->
+                    <tr>
+                        <td class="problem-name">Word Search<br>(单词搜索)</td>
+                        <td>
+                            <div class="dfs-template">dfs(i, j, idx, visited):
+  if idx == len(word):
+    return True
+  for (di, dj) in 4方向:
+    ni, nj = i+di, j+dj
+    if valid and board[ni][nj]==word[idx]:
+      visited.add((ni,nj))
+      if dfs(ni, nj, idx+1, visited):
+        return True
+      visited.remove((ni,nj))</div>
+                        </td>
+                        <td class="center"><span class="repeat-no">✗ 不能</span></td>
+                        <td>
+                            <div class="key-point">标记访问过的单元格避免重复访问，四个方向尝试</div>
+                            <div class="example">二维网格遍历，需要回溯visited状态</div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Palindrome Partitioning -->
+                    <tr>
+                        <td class="problem-name">Palindrome Partitioning<br>(回文分割)</td>
+                        <td>
+                            <div class="dfs-template">dfs(start, path):
+  if start == len(s):
+    collect(path)
+  for end in range(start, len):
+    if isPalin[start][end]:
+      path.add(s[start:end+1])
+      dfs(end+1, path)
+      path.pop()</div>
+                        </td>
+                        <td class="center"><span class="repeat-no">✗ 不能</span></td>
+                        <td>
+                            <div class="key-point">先用DP预计算回文子串，然后DFS枚举分割</div>
+                            <div class="example">"nitin" → ["n","i","t","i","n"], ["nitin"]</div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Letter Combinations -->
+                    <tr>
+                        <td class="problem-name">Letter Combinations<br>(电话号码字母组合)</td>
+                        <td>
+                            <div class="dfs-template">dfs(idx, path):
+  if idx == len(digits):
+    collect(path)
+  for char in mapping[digits[idx]]:
+    dfs(idx+1, path+char)</div>
+                        </td>
+                        <td class="center"><span class="repeat-no">✗ 不能</span></td>
+                        <td>
+                            <div class="key-point">映射数字到字母，逐个处理每个数字，线性组合</div>
+                            <div class="example">"23" → "ad", "ae", "af", "bd", ...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="summary">
+            <h2>📊 快速对比总结</h2>
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>分类</th>
+                        <th>问题</th>
+                        <th>DFS参数</th>
+                        <th>关键差异</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td rowspan="2" style="font-weight: 600;">🎲 选择型</td>
+                        <td>Subsets</td>
+                        <td><code>dfs(i)</code></td>
+                        <td>简单决策"选/不选"</td>
+                    </tr>
+                    <tr>
+                        <td>Subsets II</td>
+                        <td><code>dfs(i)</code> + 跳重复</td>
+                        <td>处理重复元素</td>
+                    </tr>
+                    
+                    <tr>
+                        <td rowspan="3" style="font-weight: 600;">🔄 组合型</td>
+                        <td>Combination Sum</td>
+                        <td><code>dfs(i, path, remaining)</code></td>
+                        <td>元素可重复用</td>
+                    </tr>
+                    <tr>
+                        <td>Combination Sum II</td>
+                        <td><code>dfs(i+1, path, remaining)</code></td>
+                        <td>元素不可重复用</td>
+                    </tr>
+                    <tr>
+                        <td>Letter Combinations</td>
+                        <td><code>dfs(idx, path)</code></td>
+                        <td>线性映射组合</td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="font-weight: 600;">🔀 排列型</td>
+                        <td>Permutations</td>
+                        <td><code>dfs(path, used_set)</code></td>
+                        <td>追踪已使用元素</td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="font-weight: 600;">🎭 其他</td>
+                        <td>Parentheses / Word Search / Palindrome</td>
+                        <td>根据问题定制</td>
+                        <td>维护特殊约束</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

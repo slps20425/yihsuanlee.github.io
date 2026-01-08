@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DP Problems - Complete Indexing Reference (Mobile)</title>
+<style>
+    * {margin: 0; padding: 0; box-sizing: border-box;}
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #333;
+        padding: 15px 10px;
+        font-size: 15px;
+    }
+    h1 {
+        text-align: center;
+        color: white;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .card {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .scroll-table {
+        width: 100%;
+        overflow-x: auto;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9em;
+    }
+    th, td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+        vertical-align: top;
+        white-space: nowrap;
+    }
+    th {
+        background: #667eea;
+        color: white;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+    }
+    tr:nth-child(even) {
+        background: #f9f9ff;
+    }
+    .section-title {
+        font-size: 1.3em;
+        font-weight: 700;
+        color: white;
+        margin: 25px 0 15px 0;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .dfs-template {
+        background: #1e1e1e;
+        border-left: 4px solid #667eea;
+        border-radius: 8px;
+        padding: 12px;
+        margin: 10px 0;
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 13px;
+        color: #e8e8e8;
+        white-space: pre-wrap;
+        line-height: 1.6;
+        overflow-x: auto;
+    }
+    .key-point {
+        background: #fff3cd;
+        border-left: 3px solid #ffc107;
+        padding: 8px 10px;
+        margin: 8px 0;
+        border-radius: 4px;
+        font-size: 0.9em;
+        color: #856404;
+        line-height: 1.5;
+    }
+    @media (max-width:600px){
+        body{font-size:14px;padding:10px 8px;}
+        h1{font-size:1.3em;margin-bottom:15px;}
+        .dfs-template{font-size:11px;padding:8px;}
+        th,td{padding:6px 8px;}
+    }
+</style>
+</head>
+<body>
+<h1>🧩 DP Problems: Complete Indexing Reference</h1>
+<div class="card scroll-table">
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Array Length</th>
+<th>Loop Range</th>
+<th>Base Cases</th>
+<th>Answer</th>
+<th>Indexing Style</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Coin Change</td><td>amount + 1</td><td>for i in range(1, amount+1)</td><td>dp[0] = 0</td><td>dp[amount]</td><td>0-indexed: dp[0]=base, iterate 1→amount</td></tr>
+<tr><td>Coin Change II</td><td>amount + 1</td><td>for i in range(1, amount+1)</td><td>dp[0] = 1</td><td>dp[amount]</td><td>0-indexed: dp[0]=base, iterate 1→amount</td></tr>
+<tr><td>Perfect Squares</td><td>n + 1</td><td>for i in range(1, n+1)</td><td>dp[0] = 0</td><td>dp[n]</td><td>0-indexed: dp[0]=base, iterate 1→n</td></tr>
+<tr><td>Climbing Stairs (v1)</td><td>n + 1</td><td>for i in range(2, n+1)</td><td>dp[0]=1, dp[1]=1</td><td>dp[n]</td><td>0-indexed: dp[0]=base, iterate 2→n</td></tr>
+<tr><td>Climbing Stairs (v2)</td><td>n</td><td>for i in range(2, n)</td><td>dp[0]=1, dp[1]=2</td><td>dp[n-1]</td><td>1-indexed logic: dp[0]=step1, iterate 2→n-1</td></tr>
+<tr><td>Fibonacci (v1)</td><td>n + 1</td><td>for i in range(2, n+1)</td><td>dp[0]=0, dp[1]=1</td><td>dp[n]</td><td>0-indexed: dp[0]=fib(0), iterate 2→n</td></tr>
+<tr><td>Fibonacci (v2)</td><td>n</td><td>for i in range(2, n)</td><td>dp[0]=1, dp[1]=1</td><td>dp[n-1]</td><td>1-indexed logic: dp[0]=fib(1), iterate 2→n-1</td></tr>
+<tr><td>Decode Ways</td><td>n + 1</td><td>for i in range(1, n+1)</td><td>dp[0] = 1</td><td>dp[n]</td><td>0-indexed: dp[0]=empty, dp[i]=first i chars</td></tr>
+<tr><td>Word Break</td><td>n + 1</td><td>for i in range(1, n+1)</td><td>dp[0] = True</td><td>dp[n]</td><td>0-indexed: dp[0]=empty, dp[i]=first i chars</td></tr>
+<tr><td>Partition Equal Subset</td><td>target + 1</td><td>for i in range(1, target+1)</td><td>dp[0] = True</td><td>dp[target]</td><td>0-indexed: dp[0]=sum of 0, iterate 1→target</td></tr>
+<tr><td>House Robber (v1)</td><td>n</td><td>for i in range(1, n)</td><td>dp[0] = nums[0]</td><td>dp[n-1]</td><td>Array-indexed: dp[i] = max at house i</td></tr>
+<tr><td>House Robber (v2)</td><td>n</td><td>for i in range(2, n)</td><td>dp[0]=nums[0], dp[1]=max(nums[0],nums[1])</td><td>dp[n-1]</td><td>Array-indexed: need both dp[0] and dp[1]</td></tr>
+<tr><td>Longest Increasing Subseq</td><td>n</td><td>for i in range(n)</td><td>dp[i] = 1 for all</td><td>max(dp)</td><td>Array-indexed: dp[i] = LIS ending at i</td></tr>
+<tr><td>Maximum Subarray</td><td>n</td><td>for i in range(1, n)</td><td>dp[0] = nums[0]</td><td>max(dp)</td><td>Array-indexed: dp[i] = max ending at i</td></tr>
+<tr><td>Jump Game</td><td>n</td><td>for i in range(1, n)</td><td>dp[0] = True</td><td>dp[n-1]</td><td>Array-indexed: dp[i] = can reach i</td></tr>
+<tr><td>Jump Game II</td><td>n</td><td>for i in range(n)</td><td>dp[0] = 0</td><td>dp[n-1]</td><td>Array-indexed: dp[i] = min jumps to i</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="section-title">🔹 Common Indexing Patterns Explained</div>
+<div class="dfs-template"># Pattern 1: 0-indexed with Target (n+1 length)
+dp = [float('inf')] * (amount + 1)
+dp[0] = 0
+for i in range(1, amount + 1):
+    for coin in coins:
+        if i >= coin:
+            dp[i] = min(dp[i], dp[i-coin] + 1)
+return dp[amount]</div>
+
+<div class="dfs-template"># Pattern 2: 0-indexed String/Sequence (n+1 length)
+s = "226"
+dp = [0] * (n + 1)
+dp[0] = 1
+for i in range(1, n + 1):
+    if s[i-1] != '0':
+        dp[i] += dp[i-1]
+    if i > 1 and s[i-2:i] in valid:
+        dp[i] += dp[i-2]
+return dp[n]</div>
+
+<div class="dfs-template"># Pattern 3: Array-indexed (n length, start from index 1)
+dp = [0] * n
+dp[0] = nums[0]
+for i in range(1, n):
+    dp[i] = max(dp[i-1], nums[i] + (dp[i-2] if i>=2 else 0))
+return dp[n-1]</div>
+
+<div class="section-title">🔸 Comparison: Same Problem, Different Indexing</div>
+<div class="dfs-template"># Target-style (n+1)
+def climbStairs_v1(n):
+    dp = [0]*(n+1)
+    dp[0],dp[1]=1,1
+    for i in range(2,n+1):
+        dp[i]=dp[i-1]+dp[i-2]
+    return dp[n]
+
+# Array-style (n)
+def climbStairs_v2(n):
+    if n<=2:return n
+    dp=[0]*n
+    dp[0],dp[1]=1,2
+    for i in range(2,n):
+        dp[i]=dp[i-1]+dp[i-2]
+    return dp[n-1]</div>
+
+<div class="section-title">🌳 Decision Tree: Which Pattern to Use?</div>
+<div class="dfs-template">Do you need dp[0] as a meaningful base case?
+├─ YES → use n+1 length
+│   ├─ Loop: for i in range(1, n+1)
+│   ├─ Answer: dp[n]
+│   └─ Example: Coin Change, Word Break
+└─ NO → use n length
+    ├─ Need 1 base case? → Loop range(1,n)
+    └─ Need 2 base cases? → Loop range(2,n)</div>
+
+<div class="section-title">⚠️ Common Mistakes to Avoid</div>
+<div class="dfs-template"># Mistake 1
+dp = [0]*(n+1)
+for i in range(n):  # WRONG
+    dp[i]=...
+return dp[n]  # dp[n] never computed!
+
+# Correct
+for i in range(1,n+1):
+    dp[i]=...
+return dp[n]</div>
+
+</body>
+</html>

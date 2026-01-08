@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>回溯/DFS指南 - 手机版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px 10px;
+            font-size: 15px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .problem-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .template-label {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #666;
+            margin: 10px 0 5px 0;
+            text-transform: uppercase;
+        }
+        
+        .dfs-template {
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: #e8e8e8;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .dfs-template::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .dfs-template::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+        
+        .dfs-template::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 2px;
+        }
+        
+        .ability {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+        
+        .can-repeat {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .cannot-repeat {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .key-point {
+            background: #fff3cd;
+            border-left: 3px solid #ffc107;
+            padding: 8px 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #856404;
+            line-height: 1.5;
+        }
+        
+        .example {
+            background: #e7f3ff;
+            border-left: 3px solid #2196F3;
+            padding: 8px 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #1565c0;
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: white;
+            margin: 25px 0 15px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .quick-summary {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .summary-item {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .summary-label {
+            font-weight: 600;
+            color: #667eea;
+            white-space: nowrap;
+            font-size: 0.9em;
+        }
+        
+        .summary-value {
+            color: #555;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        
+        .category {
+            background: #f0f0f0;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #667eea;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        /* 代码高亮颜色 */
+        .keyword { color: #569cd6; font-weight: 600; }
+        .string { color: #ce9178; }
+        .function { color: #dcdcaa; }
+        .variable { color: #9cdcfe; }
+        .comment { color: #6a9955; font-style: italic; }
+        .number { color: #b5cea8; }
+        
+        @media (max-width: 600px) {
+            body {
+                font-size: 14px;
+                padding: 10px 8px;
+            }
+            
+            h1 {
+                font-size: 1.3em;
+                margin-bottom: 15px;
+            }
+            
+            .card {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+            
+            .problem-title {
+                font-size: 1em;
+                margin-bottom: 8px;
+            }
+            
+            .dfs-template {
+                font-size: 11px;
+                padding: 8px;
+            }
+            
+            .section-title {
+                font-size: 1.2em;
+                margin: 20px 0 12px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 回溯/DFS 解题指南</h1>
+        
+        <!-- Subsets -->
+        <div class="card">
+            <div class="category">选择型</div>
+            <div class="problem-title">Subsets (子集)</div>
+            <div class="template-label">DFS模板</div>
+            <div class="dfs-template"><span class="keyword">dfs</span>(<span class="variable">i</span>):
+  <span class="keyword">if</span> <span class="variable">i</span> == <span class="function">len</span>(<span class="variable">nums</span>):
+    <span class="function">collect</span>(<span class="variable">path</span>)
+  <span class="comment"># 选择</span>
+  <span class="variable">path</span>.<span class="function">add</span>(<span class="variable">nums</span>[<span class="variable">i</span>])
+  <span class="function">dfs</span>(<span class="variable">i</span>+<span class="number">1</span>)
+  <span class="comment"># 不选</span>
+  <span class="function">dfs</span>(<span class="variable">i</span>+<span class="number">1</span>)</div>
+            <div class="ability cannot-repeat">✗ 不能重复</div>
+            <div class="key-point">简单 dfs(i) 模板，逐个位置决策"选"或"不选"</div>
+            <div class="example">例: [1,2,3] → [[], [1], [2], [1,2], ...]</div>
+        </div>
+        
+        <!-- Combination Sum -->
+        <div class="card">
+            <div class="category">组合型</div>
+            <div class="problem-title">Combination Sum (组合求和)</div>
+            <div class="template-label">DFS模板</div>
+            <div class="dfs-template"><span class="keyword">dfs</span>(<span class="variable">i</span>, <span class="variable">path</span>, <span class="variable">remaining</span>):
+  <span class="keyword">if</span> <span class="variable">remaining</span> == <span class="number">0</span>:
+    <span class="function">collect</span>(<span class="variable">path</span>)
+  <span class="keyword">for</span> <span class="variable">j</span> <span class="keyword">in</span> <span class="function">range</span>(<span class="variable">i</span>, <span class="function">len</span>):
+    <span class="variable">path</span>.<span class="function">add</span>(<span class="variable">nums</span>[<span class="variable">j</span>])
+    <span class="function">dfs</span>(<span class="variable">i</span>, <span class="variable">path</span>, ...)
+    <span class="variable">path</span>.<span class="function">pop</span>()</div>
+            <div class="ability can-repeat">✓ 能重复</div>
+            <div class="key-point">用 dfs(i, ...) 允许重复使用同个元素</div>
+            <div class="example">例: [2,3,6], target=7 → [2,2,3], [7]</div>
+        </div>
+        
+        <!-- Combination Sum II -->
+        <div class="card">
+            <div class="category">组合型</div>
+            <div class="problem-title">Combination Sum II (组合求和II)</div>
+            <div class="template-label">DFS模板</div>
+            <div class="dfs-template"><span class="keyword">dfs</span>(<span class="variable">i</span>, <span class="variable">path</span>, <span class="variable">remaining</span>):
+  <span class="keyword">if</span> <span class="variable">remaining</span> == <span class="number">0</span>:
+    <span class="function">collect</span>(<span class="variable">path</span>)
+  <span class="keyword">for</span> <span class="variable">j</span> <span class="keyword">in</span> <span class="function">range</span>(<span class="variable">i</span>, <span class="function">len</span>):
+    <span class="keyword">if</span> <span class="variable">j</span> > <span class="variable">i</span> <span class="keyword">and</span> <span class="variable">nums</span>[<span class="variable">j</span>]==<span class="variable">nums</span>[<span class="variable">j</span>-<span class="number">1</span>]:
+      <span class="keyword">continue</span>
+    <span class="variable">path</span>.<span class="function">add</span>(<span class="variable">nums</span>[<span class="variable">j</span>])
+    <span class="function">dfs</span>(<span class="variable">i</span>+<span class="number">1</span>, <span class="variable">path</span>, ...)
+    <span class="variable">path</span>.<span class="function">pop</span>()</div>
+            <div class="ability cannot-repeat">✗ 不能重复</div>
+            <div class="key-point">用 dfs(i+1, ...) 每个元素只能用一次</div>
+            <div class="example">跳过同层重复元素避免重复组合</div>
+        </div>
+        
+        <!-- Permutations -->
+        <div class="card">
+            <div class="category">排列型</div>
+            <div class="problem-title">Permutations (排列)</div>
+            <div class="template-label">DFS模板</div>
+            <div class="dfs-template">dfs(path, used_set):
+  if len(path) == len(nums):
+    collect(path)
+  for i in range(len):
+    if i not in used_set:
+      path.add(nums[i])
+      used_set.add(i)
+      dfs(path, used_set)
+      path.pop()
+      used_set.remove(i)</div>
+            <div class="ability cannot-repeat">✗ 不能重复</div>
+            <div class="key-point">用 used_set 追踪已使用元素，每次尝试所有未使用</div>
+            <div class="example">例: [1,2,3] → [1,2,3], [1,3,2], ...</div>
+        </div>
+        
+        <!-- Subsets II -->
+        <div class="card">
+            <div class="category">选择型</div>
+            <div class="problem-title">Subsets II (子集II)</div>
+            <div class="template-label">DFS模板</div>
+            <div class="dfs-template">dfs(i):
+  if i == len(nums):
+    collect(path)
+  选: path.add(nums[i])
+      dfs(i+1)
+  跳重复: while i+1 < len and
+         nums[i+1]==nums[i]: i++
+  不选: dfs(i+1)</div>
+            <div class="ability cannot-repeat">✗ 不能重复</div>
+            <div class="key-point">基于 dfs(i) 模板，加上跳过重复逻辑</div>
+            <div class="example">先排序，不选时跳过所有重复元素</div>
+        </div>
+        
+        <!-- Generate Parentheses -->
+        <div class="card">
+            <div class="category">其他</div>
+            <div class="problem-title">Generate Parentheses (生成括号)</div>
+            <div class="template-label">DFS模板</div>
+            <div class="dfs-template">dfs(path, left, right):
+  if len(path) == 2*n:
+    collect(path)
+  if left < n:
+    dfs(path+'(', left+1, right)
+  if right < left:
+    dfs(path+')', left, right+1)</div>
+            <div class="ability can-repeat">✓ 能重复</div>
+            <div class="key-point">维护左右括号计数，只有当右<左时才能加右括号</div>
+            <div class="example">n=2 → "(())", "()()"</div>
+        </div>
+        
+        <!-- Word Search -->
+        <div class="card">
+            <div class="category">其他</div>
+            <div class="problem-title">Word Search (单词搜索)</div>
+            <div class="template-label">DFS模板</div>
+            <div class="dfs-template">dfs(i, j, idx, visited):
+  if idx == len(word):
+    return True
+  for 4方向:
+    if valid and board[ni][nj]==word[idx]:
+      visited.add((ni,nj))
+      if dfs(...):
+        return True
+      visited.remove((ni,nj))</div>
+            <div class="ability cannot-repeat">✗ 不能重复</div>
+            <div class="key-point">标记访问过的单元格避免重复访问，四个方向尝试</div>
+            <div class="example">二维网格遍历，需要回溯visited状态</div>
+        </div>
+        
+        <!-- Palindrome Partitioning -->
+        <div class="card">
+            <div class="category">其他</div>
+            <div class="problem-title">Palindrome Partitioning (回文分割)</div>
+            <div class="template-label">DFS模板</div>
+            <div class="dfs-template">dfs(start, path):
+  if start == len(s):
+    collect(path)
+  for end in range(start, len):
+    if isPalin[start][end]:
+      path.add(s[start:end+1])
+      dfs(end+1, path)
+      path.pop()</div>
+            <div class="ability cannot-repeat">✗ 不能重复</div>
+            <div class="key-point">先用DP预计算回文子串，然后DFS枚举分割</div>
+            <div class="example">"nitin" → ["n","i","t","i","n"], ["nitin"]</div>
+        </div>
+        
+        <!-- Letter Combinations -->
+        <div class="card">
+            <div class="category">组合型</div>
+            <div class="problem-title">Letter Combinations (电话号码字母组合)</div>
+            <div class="template-label">DFS模板</div>
+            <div class="dfs-template">dfs(idx, path):
+  if idx == len(digits):
+    collect(path)
+  for char in mapping[digits[idx]]:
+    dfs(idx+1, path+char)</div>
+            <div class="ability cannot-repeat">✗ 不能重复</div>
+            <div class="key-point">映射数字到字母，逐个处理每个数字，线性组合</div>
+            <div class="example">"23" → "ad", "ae", "af", "bd", ...</div>
+        </div>
+        
+        <!-- Quick Summary -->
+        <div class="section-title">⚡ 快速对比</div>
+        <div class="quick-summary">
+            <div class="summary-item">
+                <div class="summary-label">选择型</div>
+                <div class="summary-value">Subsets: dfs(i)<br>Subsets II: dfs(i) + 跳重复</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">组合型</div>
+                <div class="summary-value">Combination Sum: dfs(i) 可重复<br>Combination Sum II: dfs(i+1) 不重复<br>Letter Combinations: dfs(idx)</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">排列型</div>
+                <div class="summary-value">Permutations: dfs(path, used_set)</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">其他</div>
+                <div class="summary-value">Parentheses / Word Search / Palindrome</div>
+            </div>
+        </div>
+        
+        <div style="height: 30px;"></div>
+    </div>
+</body>
+</html>
