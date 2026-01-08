@@ -9,7 +9,7 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <link rel="stylesheet" href="../styles.css">
-    <script src="../i18n.js" defer></script>
+    <script src="../i18n.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js"></script>
 </head>
@@ -260,6 +260,50 @@
             transform: scale(1.02);
             opacity: 0.9;
         }
+
+        /* Search Results Styles */
+        .search-results.show {
+            display: block !important;
+        }
+
+        .search-result-item {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-result-item:hover {
+            background: #2d2d2d;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-name {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 2px;
+        }
+
+        .result-address {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .result-phone {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .loading {
+            padding: 15px;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+        }
     </style>
 
     <script>
@@ -473,13 +517,19 @@
             resultsContainer.innerHTML = '<div class="loading">搜尋中...</div>';
             resultsContainer.classList.add('show');
 
+            if (!placesService) {
+                console.error('Places service not initialized');
+                resultsContainer.innerHTML = '<div class="loading">服務初始化中，請稍後...</div>';
+                return;
+            }
+
             // Auto-detect location based on query
             let location = { lat: 25.0330, lng: 121.5654 }; // Default: Taipei
 
             // If query contains Japanese characters, search in Tokyo
             if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(query)) {
                 location = { lat: 35.6762, lng: 139.6503 }; // Tokyo
-            } else if (WiseCatI18n.currentLang === 'en') {
+            } else if (window.WiseCatI18n && WiseCatI18n.currentLang === 'en') {
                 location = { lat: 40.7128, lng: -74.0060 }; // Default to NY for EN if no other bias
             }
 
@@ -762,33 +812,35 @@
             }
         });
 
-        // Initialize
-        initMap();
+        // Initialize Everything when DOM is ready
+        window.addEventListener('DOMContentLoaded', () => {
+            initMap();
 
-        // Initialize Vanta Waves
-        VANTA.WAVES({
-            el: "#vanta-bg",
-            mouseControls: true,
-            touchControls: true,
-            gyroControls: false,
-            minHeight: 200.00,
-            minWidth: 200.00,
-            scale: 1.00,
-            scaleMobile: 1.00,
-            color: 0x2e5482,
-            shininess: 30.00,
-            waveHeight: 15.00,
-            waveSpeed: 1.00,
-            zoom: 1.00
+            // Initialize Vanta Waves
+            VANTA.WAVES({
+                el: "#vanta-bg",
+                mouseControls: true,
+                touchControls: true,
+                gyroControls: false,
+                minHeight: 200.00,
+                minWidth: 200.00,
+                scale: 1.00,
+                scaleMobile: 1.00,
+                color: 0x2e5482,
+                shininess: 30.00,
+                waveHeight: 15.00,
+                waveSpeed: 1.00,
+                zoom: 1.00
+            });
+
+            // Helper Buddy Logic
+            const buddy = document.getElementById('helperBuddy');
+            const panel = document.getElementById('helperPanel');
+            const close = document.getElementById('helperClose');
+
+            buddy.addEventListener('click', () => panel.classList.toggle('show'));
+            close.addEventListener('click', () => panel.classList.remove('show'));
         });
-
-        // Helper Buddy Logic
-        const buddy = document.getElementById('helperBuddy');
-        const panel = document.getElementById('helperPanel');
-        const close = document.getElementById('helperClose');
-
-        buddy.addEventListener('click', () => panel.classList.toggle('show'));
-        close.addEventListener('click', () => panel.classList.remove('show'));
     </script>
 </body>
 
