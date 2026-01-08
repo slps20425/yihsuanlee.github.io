@@ -712,6 +712,7 @@
 
             const payload = {
                 type: 'reservation',
+                isTrial: false,
                 mission: document.getElementById('mission').value,
                 preorderBackup: document.getElementById('mission').value === 'reservation_food_preorder' ? document.getElementById('preorderBackupChoice').value : 'n/a',
                 Name: document.getElementById('userName').value,

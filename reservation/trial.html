@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WiseCat Mouthpiece - AI Voice Proxy</title>
+    <title>WiseCat Trial - AI Voice Assistant</title>
     <link rel="icon" href="../favicon.png" type="image/x-icon">
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <link rel="stylesheet" href="../styles.css">
@@ -34,29 +34,13 @@
                 alt="AI Cat" style="width: 100px; border-radius: 50%;">
         </div>
 
-        <h2 data-i18n="mouthpiece_title">📢 AI Mouthpiece</h2>
-        <form id="mouthpieceForm">
-            <label data-i18n="label_your_name">👤 Your Name</label>
+        <h2 data-i18n="trial_title">🎁 Free Trial Call (Beta)</h2>
+        <form id="trialForm">
+            <label data-i18n="label_name">👤 Name (English Only)</label>
             <input type="text" id="userName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
                 data-i18n-placeholder="placeholder_name" placeholder="English name only" required>
 
-            <label data-i18n="label_recipient_name">👤 Recipient Name</label>
-            <input type="text" id="recipientName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
-                data-i18n-placeholder="placeholder_recipient" placeholder="English name only" required>
-
-            <label data-i18n="label_mission" style="margin-top: 20px;">🎯 Choose Mission</label>
-            <select id="mission" required
-                style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;">
-                <option value="deliver_message" data-i18n="opt_mouth_deliver" selected>Deliver Message to Someone
-                </option>
-                <option value="check_info" data-i18n="opt_mouth_check">Check Information with Someone</option>
-                <option value="other" data-i18n="opt_mouth_other">Other (Specify below)</option>
-            </select>
-            <input type="text" id="customMission"
-                style="display: none; margin-top: 10px; width: 100%; padding: 12px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;"
-                data-i18n-placeholder="placeholder_custom_mission" placeholder="Describe your mission...">
-
-            <label data-i18n="label_phone">📞 Recipient Phone</label>
+            <label data-i18n="label_phone">📞 Phone</label>
             <div class="phone-container">
                 <select id="countryCode" required style="width: 35%;">
                     <option value="+886">🇹🇼 +886</option>
@@ -89,106 +73,82 @@
                 Invalid phone format for selected country
             </div>
 
-            <label data-i18n="label_script">📄 AI Message Script</label>
-            <textarea id="scriptContent" rows="4" data-i18n-placeholder="placeholder_script"
+            <label data-i18n="label_trial_script">📄 Trial Message Script (Max 30 words)</label>
+            <textarea id="scriptContent" rows="4" data-i18n-placeholder="placeholder_trial_script"
                 placeholder="What should the AI say?" required></textarea>
-
-            <label data-i18n="label_schedule" style="margin-top: 20px;">Schedule Call Preference</label>
-            <select id="schedulePreference">
-                <option value="asap" data-i18n="option_asap">Call ASAP</option>
-                <option value="open" data-i18n="option_open">Call when available</option>
-            </select>
-
-            <div class="credits-card" style="margin-top: 45px;">
-                <div class="credits-info">
-                    <span id="creditsDisplay" data-i18n="text_credits" style="font-weight: bold; color: #fff;">Current
-                        Credits: $0 USD</span>
-                </div>
-                <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank" data-i18n="btn_refill"
-                    class="refill-btn">Refill</a>
+            <div id="wordCounter" style="text-align: right; font-size: 12px; color: #888; margin-top: 2px;">
+                0 / 30 words
             </div>
 
             <div class="cf-turnstile" data-sitekey="0x4AAAAAACKreG1nTIC_lSzg" data-callback="onTurnstileSuccess"
                 style="margin-top: 20px;"></div>
 
-            <button type="submit" id="submitBtn" data-i18n="btn_submit" disabled>Start AI Call</button>
+            <button type="submit" id="submitBtn" data-i18n="btn_trial" disabled>Try for Free</button>
             <a href="../Entry.html" class="back-link" data-i18n="btn_back">← Back to Portal</a>
             <div class="footer" data-i18n="footer">Automated call service provided by WiseCat AI</div>
         </form>
     </div>
 
-    <!-- Help Buddy -->
-    <button class="helper-buddy" id="helperBuddy">🐱</button>
-    <div class="helper-panel" id="helperPanel">
-        <div class="helper-header">
-            <span data-i18n="helper_title">AI Prompt Helper 🐱</span>
-            <span class="helper-close" id="helperClose">✕</span>
-        </div>
-        <!-- Examples are rendered dynamically from i18n.js -->
-    </div>
-
     <script>
-        const N8N_WEBHOOK = 'https://wisecat.app.n8n.cloud/webhook-test/line-reservation'; // Using same endpoint for now
+        const N8N_WEBHOOK = 'https://wisecat.app.n8n.cloud/webhook-test/line-reservation';
+        const MAX_WORDS = 30;
 
         let turnstileValidated = false;
 
-        // Turnstile Success Callback
         function onTurnstileSuccess(token) {
-            console.log("Turnstile Success, Token:", token);
             turnstileValidated = true;
             validateForm();
+        }
+
+        function countWords(str) {
+            return str.trim().split(/\s+/).filter(word => word.length > 0).length;
         }
 
         function validateForm() {
             const btn = document.getElementById('submitBtn');
             const phoneInput = document.getElementById('targetPhone');
-            const phoneHint = document.getElementById('phoneHint');
+            const scriptInput = document.getElementById('scriptContent');
             const countryCode = document.getElementById('countryCode').value;
             const phoneNumber = phoneInput.value;
 
-            // 1. Credit Check
-            const userSession = localStorage.getItem('wisecat_user');
-            let credits = 0;
-            if (userSession) {
-                try {
-                    const user = JSON.parse(userSession);
-                    credits = parseFloat(user.credits) || 0;
-                } catch (e) {
-                    console.error("Error parsing user session:", e);
-                }
-            }
-
-            // 2. Phone Validation
             const isPhoneValid = WiseCatI18n.validatePhone(countryCode, phoneNumber);
-            if (phoneNumber && !isPhoneValid) {
-                phoneInput.style.borderColor = "#ff4d4d";
-                phoneHint.style.display = "block";
-            } else {
-                phoneInput.style.borderColor = "";
-                phoneHint.style.display = "none";
-            }
+            const wordCount = countWords(scriptInput.value);
+            const isScriptValid = wordCount > 0 && wordCount <= MAX_WORDS;
 
-            // 3. Combined Logic
-            if (credits > 0 && turnstileValidated && isPhoneValid) {
+            if (turnstileValidated && isPhoneValid && isScriptValid) {
                 btn.disabled = false;
                 btn.style.opacity = "1";
             } else {
                 btn.disabled = true;
                 btn.style.opacity = "0.5";
             }
+
+            // UI feedback for phone
+            if (phoneNumber && !isPhoneValid) {
+                phoneInput.style.borderColor = "#ff4d4d";
+                document.getElementById('phoneHint').style.display = "block";
+            } else {
+                phoneInput.style.borderColor = "";
+                document.getElementById('phoneHint').style.display = "none";
+            }
+
+            // Word counter UI
+            const counter = document.getElementById('wordCounter');
+            counter.innerText = `${wordCount} / ${MAX_WORDS} words`;
+            counter.style.color = wordCount > MAX_WORDS ? "#ff4d4d" : "#888";
         }
 
-        // Listen for input changes
         document.getElementById('targetPhone').addEventListener('input', validateForm);
         document.getElementById('countryCode').addEventListener('change', validateForm);
-
-        document.getElementById('mission').addEventListener('change', (e) => {
-            const custom = document.getElementById('customMission');
-            custom.style.display = e.target.value === 'other' ? 'block' : 'none';
-            if (e.target.value === 'other') custom.focus();
+        document.getElementById('scriptContent').addEventListener('input', (e) => {
+            const words = e.target.value.trim().split(/\s+/);
+            if (words.length > MAX_WORDS) {
+                // Optional: truncation logic if preferred over simple validation
+                // e.target.value = words.slice(0, MAX_WORDS).join(' ');
+            }
+            validateForm();
         });
 
-        // Initialize
         window.addEventListener('DOMContentLoaded', () => {
             const userSession = localStorage.getItem('wisecat_user');
             if (userSession) {
@@ -199,35 +159,29 @@
             }
         });
 
-        // ----------------------------------------------------
-        // Form Submission Logic
-        // ----------------------------------------------------
-        document.getElementById('mouthpieceForm').addEventListener('submit', async (e) => {
+        document.getElementById('trialForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
+            const script = document.getElementById('scriptContent').value;
+
+            if (countWords(script) > MAX_WORDS) {
+                const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
+                alert(dict.msg_trial_limit || "Too many words!");
+                return;
+            }
+
             btn.disabled = true;
 
             const payload = {
-                type: 'mouthpiece',
-                isTrial: false,
-                mission: document.getElementById('mission').value,
-                customMission: document.getElementById('mission').value === 'other' ? document.getElementById('customMission').value : '',
-                userName: document.getElementById('userName').value,
-                recipientName: document.getElementById('recipientName').value,
+                type: 'trial',
+                isTrial: true,
+                Name: document.getElementById('userName').value,
                 targetPhoneNumber: document.getElementById('countryCode').value + document.getElementById('targetPhone').value.replace(/^0+/, ''),
-                script: document.getElementById('scriptContent').value,
-                schedulePreference: document.getElementById('schedulePreference').value,
+                script: script,
                 language: WiseCatI18n.currentLang
             };
 
             const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
-
-            const namePattern = /^[a-zA-Z\s\-_]*$/;
-            if (!namePattern.test(payload.userName) || !namePattern.test(payload.recipientName)) {
-                alert(dict.validation_name || "Name must be English letters only");
-                btn.disabled = false;
-                return;
-            }
 
             try {
                 const response = await fetch(N8N_WEBHOOK, {
@@ -248,14 +202,6 @@
                 btn.disabled = false;
             }
         });
-
-        // Helper Buddy Logic
-        const buddy = document.getElementById('helperBuddy');
-        const panel = document.getElementById('helperPanel');
-        const close = document.getElementById('helperClose');
-
-        buddy.addEventListener('click', () => panel.classList.toggle('show'));
-        close.addEventListener('click', () => panel.classList.remove('show'));
     </script>
 </body>
 
