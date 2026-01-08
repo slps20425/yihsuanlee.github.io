@@ -9,6 +9,25 @@
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <link rel="stylesheet" href="../styles.css">
     <script src="../i18n.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <style>
+        .iti {
+            width: 100%;
+            display: block;
+        }
+
+        .iti__flag {
+            background-image: url("https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/img/flags.png");
+        }
+
+        @media (-webkit-min-device-pixel-ratio: 2),
+        (min-resolution: 192dpi) {
+            .iti__flag {
+                background-image: url("https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/img/flags@2x.png");
+            }
+        }
+    </style>
 </head>
 
 <body class="portal-bg">
@@ -42,31 +61,7 @@
 
             <label data-i18n="label_phone">📞 Phone</label>
             <div class="phone-container">
-                <select id="countryCode" required style="width: 35%;">
-                    <option value="+886">🇹🇼 +886</option>
-                    <option value="+1">🇺🇸 +1</option>
-                    <option value="+81">🇯🇵 +81</option>
-                    <option value="+82">🇰🇷 +82</option>
-                    <option value="+86">🇨🇳 +86</option>
-                    <option value="+852">🇭🇰 +852</option>
-                    <option value="+853">🇲🇴 +853</option>
-                    <option value="+65">🇸🇬 +65</option>
-                    <option value="+60">🇲🇾 +60</option>
-                    <option value="+66">🇹🇭 +66</option>
-                    <option value="+84">🇻🇳 +84</option>
-                    <option value="+63">🇵🇭 +63</option>
-                    <option value="+62">🇮🇩 +62</option>
-                    <option value="+61">🇦🇺 +61</option>
-                    <option value="+64">🇳🇿 +64</option>
-                    <option value="+44">🇬🇧 +44</option>
-                    <option value="+33">🇫🇷 +33</option>
-                    <option value="+49">🇩🇪 +49</option>
-                    <option value="+39">🇮🇹 +39</option>
-                    <option value="+34">🇪🇸 +34</option>
-                    <option value="+7">🇷🇺 +7</option>
-                    <option value="+91">🇮🇳 +91</option>
-                </select>
-                <input type="tel" id="targetPhone" placeholder="912345678" required>
+                <input type="tel" id="targetPhone" required style="width: 100%;">
             </div>
             <div id="phoneHint" style="font-size: 11px; color: #ff4d4d; margin-top: 5px; display: none;"
                 data-i18n="validation_phone">
@@ -94,6 +89,24 @@
         const MAX_WORDS = 30;
 
         let turnstileValidated = false;
+        let phoneInputPlugin = null;
+
+        // Initialize intl-tel-input
+        document.addEventListener("DOMContentLoaded", function () {
+            const input = document.querySelector("#targetPhone");
+            phoneInputPlugin = window.intlTelInput(input, {
+                initialCountry: "auto",
+                geoIpLookup: function (callback) {
+                    fetch("https://ipapi.co/json")
+                        .then(res => res.json())
+                        .then(data => callback(data.country_code))
+                        .catch(() => callback("us"));
+                },
+                preferredCountries: ["tw", "us", "jp", "kr", "cn"],
+                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+                separateDialCode: true
+            });
+        });
 
         function onTurnstileSuccess(token) {
             turnstileValidated = true;
@@ -108,10 +121,13 @@
             const btn = document.getElementById('submitBtn');
             const phoneInput = document.getElementById('targetPhone');
             const scriptInput = document.getElementById('scriptContent');
-            const countryCode = document.getElementById('countryCode').value;
-            const phoneNumber = phoneInput.value;
+            const phoneHint = document.getElementById('phoneHint');
 
-            const isPhoneValid = WiseCatI18n.validatePhone(countryCode, phoneNumber);
+            let isPhoneValid = false;
+            if (phoneInputPlugin) {
+                isPhoneValid = phoneInputPlugin.isValidNumber();
+            }
+
             const wordCount = countWords(scriptInput.value);
             const isScriptValid = wordCount > 0 && wordCount <= MAX_WORDS;
 
@@ -124,12 +140,12 @@
             }
 
             // UI feedback for phone
-            if (phoneNumber && !isPhoneValid) {
+            if (phoneInput.value && !isPhoneValid) {
                 phoneInput.style.borderColor = "#ff4d4d";
-                document.getElementById('phoneHint').style.display = "block";
+                if (phoneHint) phoneHint.style.display = "block";
             } else {
                 phoneInput.style.borderColor = "";
-                document.getElementById('phoneHint').style.display = "none";
+                if (phoneHint) phoneHint.style.display = "none";
             }
 
             // Word counter UI
@@ -138,8 +154,10 @@
             counter.style.color = wordCount > MAX_WORDS ? "#ff4d4d" : "#888";
         }
 
-        document.getElementById('targetPhone').addEventListener('input', validateForm);
-        document.getElementById('countryCode').addEventListener('change', validateForm);
+        const phoneInputEl = document.getElementById('targetPhone');
+        phoneInputEl.addEventListener('input', validateForm);
+        phoneInputEl.addEventListener('countrychange', validateForm);
+        phoneInputEl.addEventListener('blur', validateForm);
         document.getElementById('scriptContent').addEventListener('input', (e) => {
             const words = e.target.value.trim().split(/\s+/);
             if (words.length > MAX_WORDS) {
@@ -176,7 +194,7 @@
                 type: 'trial',
                 isTrial: true,
                 Name: document.getElementById('userName').value,
-                targetPhoneNumber: document.getElementById('countryCode').value + document.getElementById('targetPhone').value.replace(/^0+/, ''),
+                targetPhoneNumber: phoneInputPlugin ? phoneInputPlugin.getNumber() : document.getElementById('targetPhone').value,
                 script: script,
                 language: WiseCatI18n.currentLang
             };
