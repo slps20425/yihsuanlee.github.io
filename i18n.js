@@ -64,6 +64,9 @@ const WiseCatI18n = {
             option_open: "Call when available",
             validation_name: "Names must be English letters (hyphens/underscores allowed)",
             validation_phone: "Invalid phone format for selected country",
+            validation_closed: "The restaurant is closed on the selected date",
+            validation_out_of_hours: "The selected time is outside of operating hours",
+            validation_too_late: "Last reservation is 30 minutes before closing",
             trial_title: "🎁 Free Trial Call (Beta)",
             label_trial_script: "📄 Trial Message Script (Max 30 words)",
             placeholder_trial_script: "Enter what the AI should say (keep it brief)...",
@@ -157,6 +160,9 @@ const WiseCatI18n = {
             option_open: "對方有空時撥打",
             validation_name: "姓名限英文 (可含 - 或 _)",
             validation_phone: "手機格式與所選國家不符",
+            validation_closed: "該餐廳在您選擇的日期不營業",
+            validation_out_of_hours: "預約時間不在營業時間內",
+            validation_too_late: "最後預約時間為結束前 30 分鐘",
             trial_title: "🎁 免費試用撥號 (Beta)",
             label_trial_script: "📄 試用語音腳本 (限 30 字內)",
             placeholder_trial_script: "請輸入 AI 說話內容 (請保持簡短)...",
@@ -249,6 +255,9 @@ const WiseCatI18n = {
             option_open: "対応可能な時に電話",
             validation_name: "名前は英語のみ（ハイフン/アンダースコア可）",
             validation_phone: "電話番号の形式が正しくありません",
+            validation_closed: "選択した日は定休日です",
+            validation_out_of_hours: "営業時間外です",
+            validation_too_late: "最終予約は閉店の30分前までです",
             trial_title: "🎁 無料体験通話 (ベータ版)",
             label_trial_script: "📄 体験メッセージスクリプト (最大30語)",
             placeholder_trial_script: "AIに話させたい内容を入力（簡潔に）...",
@@ -339,6 +348,9 @@ const WiseCatI18n = {
             option_open: "가능할 때 통화",
             validation_name: "이름은 영문자만 가능합니다 (하이픈/언더스코어 허용)",
             validation_phone: "전화번호 형식이 올바르지 않습니다",
+            validation_closed: "선택하신 날짜는 휴무일입니다",
+            validation_out_of_hours: "영업 시간 외입니다",
+            validation_too_late: "마지막 예약은 마감 30분 전까지입니다",
             trial_title: "🎁 무료 체험 통화 (베타)",
             label_trial_script: "📄 체험 메시지 스크립트 (최대 30단어)",
             placeholder_trial_script: "AI가 말할 내용을 입력하세요 (간결하게)...",
@@ -428,6 +440,9 @@ const WiseCatI18n = {
             option_open: "Llamar cuando esté disponible",
             validation_name: "Nombres en letras inglesas (se permiten guiones)",
             validation_phone: "Formato de teléfono no válido",
+            validation_closed: "El restaurante está cerrado en la fecha seleccionada",
+            validation_out_of_hours: "La hora seleccionada está fuera del horario de atención",
+            validation_too_late: "La última reserva es 30 minutos antes del cierre",
             trial_title: "🎁 Llamada de Prueba Gratis (Beta)",
             label_trial_script: "📄 Guión de mensaje de prueba (Máx 30 palabras)",
             placeholder_trial_script: "Escriba lo que debe decir la IA (sea breve)...",
@@ -517,6 +532,9 @@ const WiseCatI18n = {
             option_open: "Appeler si disponible",
             validation_name: "Noms en lettres anglaises (tirets autorisés)",
             validation_phone: "Format de téléphone invalide",
+            validation_closed: "Le restaurant est fermé à la date sélectionnée",
+            validation_out_of_hours: "L'heure sélectionnée est en dehors des heures d'ouverture",
+            validation_too_late: "La dernière réservation est 30 minutes avant la fermeture",
             trial_title: "🎁 Appel d'Essai Gratuit (Bêta)",
             label_trial_script: "📄 Script du message d'essai (Max 30 mots)",
             placeholder_trial_script: "Entrez ce que l'IA doit dire (soyez bref)...",
@@ -606,6 +624,9 @@ const WiseCatI18n = {
             option_open: "Chiama se disponibile",
             validation_name: "Nomi in lettere inglesi (trattini consentiti)",
             validation_phone: "Formato telefono non valido",
+            validation_closed: "Il ristorante è chiuso nella data selezionata",
+            validation_out_of_hours: "L'orario selezionato è al di fuori dell'orario di apertura",
+            validation_too_late: "L'ultima prenotazione è 30 minuti prima della chiusura",
             trial_title: "🎁 Chiamata di Prova Gratuita (Beta)",
             label_trial_script: "📄 Script messaggio di prova (Max 30 parole)",
             placeholder_trial_script: "Inserisci cosa dovrebbe dire l'IA (sii breve)...",
@@ -771,7 +792,7 @@ const WiseCatI18n = {
     },
 
     phoneRules: {
-        '+886': /^9\d{8}$/,      // Taiwan: 9 digits starting with 9
+        '+886': /^0?[2-9]\d{6,9}$/,    // Taiwan: Supports 02/2, 06/6 prefix (8-10 digits total) and 09/9 mobile (9-10 digits)
         '+1': /^\d{10}$/,        // USA: 10 digits
         '+81': /^\d{10,11}$/,    // Japan: 10-11 digits
         '+82': /^\d{9,11}$/,     // Korea: 9-11 digits

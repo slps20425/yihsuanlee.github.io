@@ -48,6 +48,9 @@
 
             <label data-i18n="label_time">⏰ Time</label>
             <input type="time" id="resTime" required>
+            <div id="timeHint" style="font-size: 11px; color: #ff4d4d; margin-top: 5px; display: none;">
+                Invalid time for selected restaurant
+            </div>
 
             <label data-i18n="label_search">🔍 Search Restaurant</label>
             <div class="search-container" style="position: relative;">
@@ -316,6 +319,7 @@
         let searchTimeout;
         let currentMarker = null;
         let selectedRestaurantData = null;
+        let currentPlaceOpeningHours = null;
 
         let turnstileValidated = false;
 
@@ -353,8 +357,11 @@
                 phoneHint.style.display = "none";
             }
 
+            // 2.5 Time Validation
+            const isTimeValid = validateReservationTime();
+
             // 3. Combined Logic
-            if (credits > 0 && turnstileValidated && isPhoneValid) {
+            if (credits > 0 && turnstileValidated && isPhoneValid && isTimeValid) {
                 btn.disabled = false;
                 btn.style.opacity = "1";
             } else {
@@ -366,6 +373,94 @@
         // Listen for input changes
         document.getElementById('targetPhone').addEventListener('input', validateForm);
         document.getElementById('countryCode').addEventListener('change', validateForm);
+        document.getElementById('resDate').addEventListener('change', validateForm);
+        document.getElementById('resTime').addEventListener('input', validateForm);
+
+        function validateReservationTime() {
+            const resDateVal = document.getElementById('resDate').value;
+            const resTimeVal = document.getElementById('resTime').value;
+            const timeHint = document.getElementById('timeHint');
+            const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
+
+            if (!resDateVal || !resTimeVal || !currentPlaceOpeningHours) {
+                timeHint.style.display = "none";
+                return true;
+            }
+
+            const selectedDate = new Date(resDateVal);
+            const dayOfWeek = selectedDate.getDay(); // 0 (Sun) to 6 (Sat)
+
+            // Check if restricted by periods
+            if (!currentPlaceOpeningHours.periods) {
+                timeHint.style.display = "none";
+                return true;
+            }
+
+            // Filter periods for this day
+            const periods = currentPlaceOpeningHours.periods.filter(p => p.open.day === dayOfWeek);
+
+            if (periods.length === 0) {
+                // Check if it's open 24 hours (periods[0].open.day === 0 and time === "0000" and close is undefined)
+                const is24Hours = currentPlaceOpeningHours.periods.length === 1 &&
+                    currentPlaceOpeningHours.periods[0].open.day === 0 &&
+                    currentPlaceOpeningHours.periods[0].open.time === "0000" &&
+                    !currentPlaceOpeningHours.periods[0].close;
+
+                if (is24Hours) {
+                    timeHint.style.display = "none";
+                    return true;
+                }
+
+                timeHint.innerText = dict.validation_closed || "Closed on this date";
+                timeHint.style.display = "block";
+                return false;
+            }
+
+            const [resHour, resMin] = resTimeVal.split(':').map(Number);
+            const resTotalMinutes = resHour * 60 + resMin;
+
+            let isValid = false;
+            let errorMsg = dict.validation_out_of_hours || "Outside operating hours";
+
+            for (const period of periods) {
+                const openHour = parseInt(period.open.time.substring(0, 2));
+                const openMin = parseInt(period.open.time.substring(2, 4));
+                const openTotalMinutes = openHour * 60 + openMin;
+
+                if (!period.close) { // Open 24h from this point
+                    isValid = true;
+                    break;
+                }
+
+                const closeHour = parseInt(period.close.time.substring(0, 2));
+                const closeMin = parseInt(period.close.time.substring(2, 4));
+                let closeTotalMinutes = closeHour * 60 + closeMin;
+
+                // Handle cross-midnight
+                if (period.close.day !== period.open.day) {
+                    closeTotalMinutes += 24 * 60;
+                }
+
+                // Buffer of 30 mins before closing
+                const lastReservationMinutes = closeTotalMinutes - 30;
+
+                if (resTotalMinutes >= openTotalMinutes && resTotalMinutes <= lastReservationMinutes) {
+                    isValid = true;
+                    break;
+                } else if (resTotalMinutes > lastReservationMinutes && resTotalMinutes <= closeTotalMinutes) {
+                    errorMsg = dict.validation_too_late || "Too late for reservation";
+                }
+            }
+
+            if (isValid) {
+                timeHint.style.display = "none";
+                return true;
+            } else {
+                timeHint.innerText = errorMsg;
+                timeHint.style.display = "block";
+                return false;
+            }
+        }
 
         // Scam Detector Logic
         const ScamDetector = {
@@ -646,6 +741,7 @@
         function applyPlaceSelection(place) {
             console.log('Applying selection:', place);
             selectedRestaurantData = place;
+            currentPlaceOpeningHours = place.opening_hours || null;
 
             // Fill in phone number
             const phoneNumber = place.international_phone_number || place.formatted_phone_number;
@@ -738,6 +834,11 @@
         // ----------------------------------------------------
         document.getElementById('resForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            // Opening Hours Validation
+            if (!validateReservationTime()) {
+                return;
+            }
 
             // Scam Detection Check
             const name = document.getElementById('userName').value;
