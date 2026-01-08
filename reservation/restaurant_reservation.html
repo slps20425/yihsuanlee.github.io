@@ -45,6 +45,9 @@
             <label data-i18n="label_date">📅 Date</label>
             <input type="text" id="resDate" data-i18n-placeholder="placeholder_date" placeholder="Select Date"
                 onfocus="(this.type='date')" onblur="(this.value ? this.type='date' : this.type='text')" required>
+            <div id="dateHint" style="font-size: 11px; color: #ff4d4d; margin-top: 5px; display: none;">
+                Restaurant is closed on this date
+            </div>
 
             <label data-i18n="label_time">⏰ Time</label>
             <input type="time" id="resTime" required>
@@ -60,6 +63,18 @@
                     Phone number auto-filled after search</div>
                 <div id="searchResults" class="search-results"
                     style="position: absolute; top: 100%; left: 0; right: 0; background: #1a1a1a; border: 1px solid #444; border-radius: 12px; margin-top: 5px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none;">
+                </div>
+            </div>
+
+            <!-- Restaurant Detail Drawer -->
+            <div id="restaurantDrawer" class="drawer" style="display: none; margin-top: 15px;">
+                <div class="drawer-header" onclick="toggleDrawer()">
+                    <span id="drawerTitle" style="font-weight: bold; color: #fff;"
+                        data-i18n="label_drawer_title">Restaurant Details</span>
+                    <span id="drawerIcon">▼</span>
+                </div>
+                <div id="drawerContent" class="drawer-content" style="display: none;">
+                    <!-- Injected details -->
                 </div>
             </div>
 
@@ -155,10 +170,9 @@
             <button type="submit" id="submitBtn" data-i18n="btn_submit" disabled>Start AI Call</button>
             <a href="../Entry.html" class="back-link" data-i18n="btn_back">← Back to Portal</a>
             <div class="footer" data-i18n="footer">Automated call service provided by WiseCat AI</div>
-            <div
-                style="position: fixed; bottom: 10px; right: 10px; font-size: 10px; color: #444; pointer-events: none;">
-                v1.2.5</div>
-        </form>
+            v1.2.6
+    </div>
+    </form>
     </div>
 
     </div>
@@ -310,6 +324,48 @@
             color: #888;
             font-size: 14px;
         }
+
+        /* Drawer Styles */
+        .drawer {
+            border: 1px solid #444;
+            border-radius: 12px;
+            background: #1a1a1a;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .drawer-header {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #252525;
+            transition: background 0.2s;
+        }
+
+        .drawer-header:hover {
+            background: #2d2d2d;
+        }
+
+        .drawer-content {
+            padding: 15px;
+            border-top: 1px solid #333;
+            font-size: 14px;
+            color: #ccc;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        #drawerIcon {
+            transition: transform 0.3s ease;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .drawer.open #drawerIcon {
+            transform: rotate(180deg);
+        }
     </style>
 
     <script>
@@ -386,16 +442,17 @@
         });
 
         function validateReservationTime() {
-            const resDateVal = document.getElementById('resDate').value;
             const resTimeVal = document.getElementById('resTime').value;
             const timeHint = document.getElementById('timeHint');
+            const dateHint = document.getElementById('dateHint');
             const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
 
             if (!timeHint) return true;
 
             // Step 1: Missing Data check
             if (!resDateVal || !resTimeVal || !currentPlaceOpeningHours) {
-                timeHint.style.display = "none";
+                if (timeHint) timeHint.style.display = "none";
+                if (dateHint) dateHint.style.display = "none";
                 return true;
             }
 
@@ -418,9 +475,16 @@
 
             // Step 5: Handle 24/7 Special Case
             const periods = currentPlaceOpeningHours.periods;
+            if (!periods || periods.length === 0) {
+                if (timeHint) timeHint.style.display = "none";
+                if (dateHint) dateHint.style.display = "none";
+                return true;
+            }
+
             const is24h = periods.length === 1 && periods[0].open.day === 0 && periods[0].open.time === "0000" && !periods[0].close;
             if (is24h) {
-                timeHint.style.display = "none";
+                if (timeHint) timeHint.style.display = "none";
+                if (dateHint) dateHint.style.display = "none";
                 return true;
             }
 
@@ -468,14 +532,33 @@
 
             // Step 6: Final UI Update
             if (isValid) {
-                timeHint.style.display = "none";
+                if (timeHint) timeHint.style.display = "none";
+                if (dateHint) dateHint.style.display = "none";
                 return true;
             } else {
-                // If it's a day with no shift starting (like Sat) and not in a hangover window
-                timeHint.innerText = !dayStartsAnyPeriod && resTotalMinutes > 300 ? (dict.validation_closed || "Closed on this date") : currentPotentialError;
-                timeHint.style.display = "block";
+                // Determine which hint to show
+                if (!dayStartsAnyPeriod && resTotalMinutes > 300) {
+                    if (dateHint) {
+                        dateHint.innerText = dict.validation_closed || "Closed on this date";
+                        dateHint.style.display = "block";
+                    }
+                    if (timeHint) timeHint.style.display = "none";
+                } else {
+                    if (timeHint) {
+                        timeHint.innerText = currentPotentialError;
+                        timeHint.style.display = "block";
+                    }
+                    if (dateHint) dateHint.style.display = "none";
+                }
                 return false;
             }
+        }
+
+        function toggleDrawer() {
+            const drawer = document.getElementById('restaurantDrawer');
+            const content = document.getElementById('drawerContent');
+            const isOpen = drawer.classList.toggle('open');
+            content.style.display = isOpen ? 'block' : 'none';
         }
 
         // Scam Detector Logic
@@ -821,6 +904,38 @@
 
                 document.getElementById('mapContainer').classList.add('show');
             }
+
+            // Populate Restaurant Drawer
+            const drawer = document.getElementById('restaurantDrawer');
+            const drawerContent = document.getElementById('drawerContent');
+            const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
+
+            let hoursHtml = 'N/A';
+            if (place.opening_hours && place.opening_hours.weekday_text) {
+                hoursHtml = `<ul style="padding-left: 20px; list-style-type: disc;">
+                    ${place.opening_hours.weekday_text.map(day => `<li>${day}</li>`).join('')}
+                </ul>`;
+            }
+
+            drawerContent.innerHTML = `
+                <div class="detail-item" style="margin-bottom: 10px;">
+                    <div style="font-weight: bold; color: #888; font-size: 11px;">${dict.label_detail_address || '📍 Address'}</div>
+                    <div style="color: #fff;">${place.formatted_address || 'N/A'}</div>
+                </div>
+                <div class="detail-item" style="margin-bottom: 10px;">
+                    <div style="font-weight: bold; color: #888; font-size: 11px;">${dict.label_detail_phone || '📞 Phone'}</div>
+                    <div style="color: #fff;">${place.international_phone_number || place.formatted_phone_number || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div style="font-weight: bold; color: #888; font-size: 11px;">${dict.label_detail_hours || '⏰ Opening Hours'}</div>
+                    <div style="color: #ccc;">${hoursHtml}</div>
+                </div>
+            `;
+            drawer.style.display = 'block';
+
+            // Auto open drawer on selection
+            drawer.classList.add('open');
+            drawerContent.style.display = 'block';
 
             // Hide search results
             document.getElementById('searchResults').classList.remove('show');

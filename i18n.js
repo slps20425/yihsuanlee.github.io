@@ -49,6 +49,7 @@ const WiseCatI18n = {
             label_detail_address: "📍 Address",
             label_detail_phone: "📞 Phone",
             label_detail_hours: "⏰ Opening Hours",
+            label_drawer_title: "Restaurant Details",
 
             // Mouthpiece Specific
             mouthpiece_title: "📢 AI Mouthpiece",
@@ -146,6 +147,7 @@ const WiseCatI18n = {
             label_detail_address: "📍 地址",
             label_detail_phone: "📞 電話",
             label_detail_hours: "⏰ 營業時間",
+            label_drawer_title: "餐廳詳細資訊",
 
             mouthpiece_title: "📢 WiseCat 傳聲筒",
             label_your_name: "👤 您的姓名",
