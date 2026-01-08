@@ -160,18 +160,42 @@
             authError.textContent = '';
             try {
                 const result = await auth.signInWithPopup(provider);
-                console.log('Social login success:', result.user);
+                const user = result.user;
+                console.log('Social login success:', user.email);
+
+                // Immediate Firestore check/create
+                const userRef = db.collection("users").doc(user.email);
+                const doc = await userRef.get();
+
+                if (!doc.exists) {
+                    const initialData = {
+                        name: user.displayName || user.email.split('@')[0],
+                        email: user.email,
+                        picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email),
+                        credits: 1.00,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    await userRef.set(initialData);
+                    console.log('New user document created with $1.00 bonus');
+                }
             } catch (error) {
                 console.error('Social login error:', error);
                 authError.textContent = 'Auth error: ' + error.message;
             }
         }
 
-        // Listen for auth state changes
+        // Listen for auth state changes and sync with Firestore real-time
+        let unsubscribeUser = null;
+
         auth.onAuthStateChanged((user) => {
+            if (unsubscribeUser) {
+                unsubscribeUser();
+                unsubscribeUser = null;
+            }
+
             if (user) {
-                // User is signed in - set up Firestore listener
-                db.collection("users").doc(user.email)
+                // Real-time listener: Priority one
+                unsubscribeUser = db.collection("users").doc(user.email)
                     .onSnapshot((doc) => {
                         if (doc.exists) {
                             const data = doc.data();
@@ -183,28 +207,12 @@
                                 credits: data.credits || 0.00
                             };
 
+                            // Sync to localStorage as a cache for other pages
                             localStorage.setItem('wisecat_user', JSON.stringify(userSession));
                             displayUserProfile(userSession);
-                        } else {
-                            // New user - initialize Firestore document
-                            const initialData = {
-                                name: user.displayName || user.email.split('@')[0],
-                                email: user.email,
-                                picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email),
-                                credits: 1.00,
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                            };
-
-                            db.collection("users").doc(user.email).set(initialData)
-                                .then(() => {
-                                    console.log('User document created in Firestore');
-                                })
-                                .catch((error) => {
-                                    console.error('Error creating user document:', error);
-                                });
                         }
                     }, (error) => {
-                        console.error('Error listening to user document:', error);
+                        console.error('Firestore snapshot error:', error);
                     });
             } else {
                 // User is signed out
