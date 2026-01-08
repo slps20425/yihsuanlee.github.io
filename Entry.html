@@ -59,6 +59,12 @@
                     <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft">
                     <span data-i18n="btn_microsoft">Continue with Microsoft</span>
                 </button>
+                <button type="button" class="social-btn" id="lineLoginBtn"
+                    style="background: #00b900; color: white; border: none;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE"
+                        style="width: 20px; margin-right: 10px;">
+                    <span data-i18n="btn_line">Continue with LINE</span>
+                </button>
             </div>
             <p class="login-instruction" data-i18n="login_subtitle">Sign in to continue</p>
             <div id="authError" class="auth-error"></div>
@@ -139,11 +145,16 @@
         // DOM Elements
         const googleLoginBtn = document.getElementById('googleLoginBtn');
         const microsoftLoginBtn = document.getElementById('microsoftLoginBtn');
+        const lineLoginBtn = document.getElementById('lineLoginBtn');
         const authError = document.getElementById('authError');
 
         // Social Login Handlers
         googleLoginBtn.addEventListener('click', () => handleSocialLogin(googleProvider));
         microsoftLoginBtn.addEventListener('click', () => handleSocialLogin(microsoftProvider));
+
+        // Line Login (OAuth Provider)
+        const lineProvider = new firebase.auth.OAuthProvider('oidc.line');
+        lineLoginBtn.addEventListener('click', () => handleSocialLogin(lineProvider));
 
         async function handleSocialLogin(provider) {
             authError.textContent = '';
@@ -180,7 +191,7 @@
                                 name: user.displayName || user.email.split('@')[0],
                                 email: user.email,
                                 picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email),
-                                credits: 0.00,
+                                credits: 1.00,
                                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
                             };
 
