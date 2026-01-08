@@ -55,32 +55,32 @@
                 <h3 style="margin: 0; color: #fff; font-size: 1.1rem;" data-i18n="portal_title">WiseCat AI Login</h3>
             </div>
 
-            <div class="social-buttons" style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="social-buttons" style="display: flex; flex-direction: column; gap: 10px;">
                 <!-- Primary Action: LINE -->
                 <button type="button" class="social-btn" id="lineLoginBtn"
                     style="background: #00b900; color: white; border: none; width: 100%; height: 48px; border-radius: 12px; font-weight: bold; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: transform 0.2s, background 0.2s; box-shadow: 0 4px 12px rgba(0, 185, 0, 0.2);">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; margin-right: 10px; fill: white;">
+                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; margin-right: 10px; fill: white;">
                         <path
                             d="M24 10.304c0-5.232-5.328-9.5-11.895-9.5-6.568 0-11.895 4.268-11.895 9.5 0 4.69 4.238 8.604 9.96 9.351.388.084.916.256 1.047.584.12.3.078.77.038 1.074l-.166 1a.398.398 0 0 0 .584.422c.45-.264 2.428-1.428 3.315-2.222.062-.056.126-.11.18-.17 4.544-1.04 8.832-4.665 8.832-9.539z" />
                     </svg>
                     <span data-i18n="btn_line">Sign in with LINE</span>
                 </button>
 
-                <!-- Microsoft (Prominent Secondary) -->
-                <button type="button" class="social-btn" id="microsoftLoginBtn"
-                    style="background: #2f2f2f; color: #fff; border: 1px solid #444; height: 48px; border-radius: 12px; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500;">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft"
-                        style="width: 20px;">
-                    <span data-i18n="btn_microsoft">Sign in with Microsoft</span>
-                </button>
-
-                <!-- Google (Standard Secondary) -->
-                <button type="button" class="social-btn" id="googleLoginBtn"
-                    style="background: #fff; color: #444; border: 1px solid #ddd; height: 48px; border-radius: 12px; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500;">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"
-                        style="width: 20px;">
-                    <span data-i18n="btn_google">Sign in with Google</span>
-                </button>
+                <!-- Secondary Actions -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button type="button" class="social-btn" id="googleLoginBtn"
+                        style="background: #fff; color: #444; border: 1px solid #ddd; height: 40px; border-radius: 10px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"
+                            style="width: 16px;">
+                        <span data-i18n="btn_google">Sign in with Google</span>
+                    </button>
+                    <button type="button" class="social-btn" id="microsoftLoginBtn"
+                        style="background: #2f2f2f; color: #fff; border: 1px solid #444; height: 40px; border-radius: 10px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg"
+                            alt="Microsoft" style="width: 16px;">
+                        <span data-i18n="btn_microsoft">Sign in with Microsoft</span>
+                    </button>
+                </div>
             </div>
 
             <div style="font-size: 10px; color: #666; margin-top: 25px; text-align: center; line-height: 1.4; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;"

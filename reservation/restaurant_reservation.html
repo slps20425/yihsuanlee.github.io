@@ -12,6 +12,26 @@
     <script src="../i18n.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js"></script>
+    <!-- intl-tel-input -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <style>
+        .iti {
+            width: 100%;
+            display: block;
+        }
+
+        .iti__flag {
+            background-image: url("https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/img/flags.png");
+        }
+
+        @media (-webkit-min-device-pixel-ratio: 2),
+        (min-resolution: 192dpi) {
+            .iti__flag {
+                background-image: url("https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/img/flags@2x.png");
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -99,32 +119,9 @@
             </div>
 
             <label data-i18n="label_phone" style="margin-top: 20px;">📞 Phone</label>
-            <div class="phone-container" style="display: flex; gap: 10px; margin-top: 5px;">
-                <select id="countryCode" required style="width: 35%;">
-                    <option value="+886">🇹🇼 +886</option>
-                    <option value="+1">🇺🇸 +1</option>
-                    <option value="+81">🇯🇵 +81</option>
-                    <option value="+82">🇰🇷 +82</option>
-                    <option value="+86">🇨🇳 +86</option>
-                    <option value="+852">🇭🇰 +852</option>
-                    <option value="+853">🇲🇴 +853</option>
-                    <option value="+65">🇸🇬 +65</option>
-                    <option value="+60">🇲🇾 +60</option>
-                    <option value="+66">🇹🇭 +66</option>
-                    <option value="+84">🇻🇳 +84</option>
-                    <option value="+63">🇵🇭 +63</option>
-                    <option value="+62">🇮🇩 +62</option>
-                    <option value="+61">🇦🇺 +61</option>
-                    <option value="+64">🇳🇿 +64</option>
-                    <option value="+44">🇬🇧 +44</option>
-                    <option value="+33">🇫🇷 +33</option>
-                    <option value="+49">🇩🇪 +49</option>
-                    <option value="+39">🇮🇹 +39</option>
-                    <option value="+34">🇪🇸 +34</option>
-                    <option value="+7">🇷🇺 +7</option>
-                    <option value="+91">🇮🇳 +91</option>
-                </select>
-                <input type="tel" id="targetPhone" placeholder="912345678" required style="width: 65%;">
+            <label data-i18n="label_phone" style="margin-top: 20px;">📞 Phone</label>
+            <div class="phone-container" style="margin-top: 5px;">
+                <input type="tel" id="targetPhone" required style="width: 100%;">
             </div>
             <div id="phoneHint" style="font-size: 11px; color: #ff4d4d; margin-top: 5px; display: none;"
                 data-i18n="validation_phone">
@@ -379,6 +376,24 @@
         let currentMarker = null;
         let selectedRestaurantData = null;
         let currentPlaceOpeningHours = null;
+        let phoneInputPlugin = null;
+
+        // Initialize intl-tel-input
+        document.addEventListener("DOMContentLoaded", function () {
+            const input = document.querySelector("#targetPhone");
+            phoneInputPlugin = window.intlTelInput(input, {
+                initialCountry: "auto",
+                geoIpLookup: function (callback) {
+                    fetch("https://ipapi.co/json")
+                        .then(res => res.json())
+                        .then(data => callback(data.country_code))
+                        .catch(() => callback("us"));
+                },
+                preferredCountries: ["tw", "us", "jp", "kr", "cn"],
+                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+                separateDialCode: true
+            });
+        });
 
         let turnstileValidated = false;
 
@@ -393,8 +408,6 @@
             const btn = document.getElementById('submitBtn');
             const phoneInput = document.getElementById('targetPhone');
             const phoneHint = document.getElementById('phoneHint');
-            const countryCode = document.getElementById('countryCode').value;
-            const phoneNumber = phoneInput.value;
 
             // 1. Credit Check
             const userSession = localStorage.getItem('wisecat_user');
@@ -406,14 +419,19 @@
                 } catch (e) { }
             }
 
-            // 2. Phone Validation
-            const isPhoneValid = WiseCatI18n.validatePhone(countryCode, phoneNumber);
-            if (phoneNumber && !isPhoneValid) {
+            // 2. Phone Validation (using intl-tel-input)
+            let isPhoneValid = false;
+            if (phoneInputPlugin) {
+                isPhoneValid = phoneInputPlugin.isValidNumber();
+                const errorCode = phoneInputPlugin.getValidationError();
+            }
+
+            if (phoneInput.value && !isPhoneValid) {
                 phoneInput.style.borderColor = "#ff4d4d";
-                phoneHint.style.display = "block";
+                if (phoneHint) phoneHint.style.display = "block";
             } else {
                 phoneInput.style.borderColor = "";
-                phoneHint.style.display = "none";
+                if (phoneHint) phoneHint.style.display = "none";
             }
 
             // 2.5 Time Validation
@@ -432,10 +450,15 @@
         }
 
         // Proactive listeners for all validation-related fields
-        const validationInputs = ['targetPhone', 'resDate', 'resTime', 'countryCode'];
+        const validationInputs = ['targetPhone', 'resDate', 'resTime'];
         validationInputs.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
+                // For phone input, we listen to countrychange too
+                if (id === 'targetPhone') {
+                    el.addEventListener('countrychange', validateForm);
+                    el.addEventListener('blur', validateForm);
+                }
                 el.addEventListener('input', validateForm);
                 el.addEventListener('change', validateForm);
             }
