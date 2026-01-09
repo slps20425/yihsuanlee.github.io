@@ -11,7 +11,7 @@ const googleProvider = new GoogleAuthProvider();
 
 (window as any).firebaseInitialized = true;
 
-const googleProvider = new GoogleAuthProvider();
+
 const microsoftProvider = new OAuthProvider('microsoft.com');
 
 // State
