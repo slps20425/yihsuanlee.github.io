@@ -17,7 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
         storageBucket: "wisecat-8df8d.firebasestorage.app",
         messagingSenderId: "1078479155773",
         appId: "1:1078479155773:web:cd62907516951aa47db054",
-        measurementId: "G-30M228G3VP"
+        measurementId: "G-30M228G3VP",
+        databaseId: "reservation"
     };
 
     if (!firebase.apps.length) {

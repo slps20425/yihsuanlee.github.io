@@ -11,7 +11,8 @@ const firebaseConfig = {
     storageBucket: "wisecat-8df8d.firebasestorage.app",
     messagingSenderId: "1078479155773",
     appId: "1:1078479155773:web:cd62907516951aa47db054",
-    measurementId: "G-30M228G3VP"
+    measurementId: "G-30M228G3VP",
+    databaseId: "reservation"
 };
 
 // Initialize Firebase
@@ -64,8 +65,8 @@ async function handleSocialLogin(provider: any) {
         const user = result.user;
         console.log('Social login success:', user.email || user.uid);
 
-        // Robust Document ID: Email or UID
-        const userIdentifier = user.email || user.uid;
+        // Robust Document ID: Always use UID as requested
+        const userIdentifier = user.uid;
         const userRef = db.collection("users").doc(userIdentifier);
         const doc = await userRef.get();
 
@@ -120,7 +121,7 @@ auth.onAuthStateChanged((user: any) => {
 
     if (user) {
         // Real-time listener: Priority one
-        const userIdentifier = user.email || user.uid;
+        const userIdentifier = user.uid;
         unsubscribeUser = db.collection("users").doc(userIdentifier)
             .onSnapshot((doc: any) => {
                 if (doc.exists) {
