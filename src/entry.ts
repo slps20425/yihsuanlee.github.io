@@ -1,7 +1,7 @@
 import WiseCatI18n from './i18n';
-
-// Global declarations for Firebase CDN
-declare var firebase: any;
+import { initializeApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, serverTimestamp } from "firebase/firestore";
 
 // Configuration
 const firebaseConfig = {
@@ -11,22 +11,20 @@ const firebaseConfig = {
     storageBucket: "wisecat-8df8d.firebasestorage.app",
     messagingSenderId: "1078479155773",
     appId: "1:1078479155773:web:cd62907516951aa47db054",
-    measurementId: "G-30M228G3VP",
-    databaseId: "reservation"
+    measurementId: "G-30M228G3VP"
 };
 
 // Initialize Firebase
-if (!(window as any).firebaseInitialized) {
-    firebase.initializeApp(firebaseConfig);
-    (window as any).firebaseInitialized = true;
-}
-const auth = firebase.auth();
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+// Connect to the specific "reservation" database
+const db = getFirestore(app, "reservation");
+
+(window as any).firebaseInitialized = true;
 
 // Auth Providers
-const googleProvider = new firebase.auth.GoogleAuthProvider();
-const microsoftProvider = new firebase.auth.OAuthProvider('microsoft.com');
-// const lineProvider = new firebase.auth.OAuthProvider('oidc.line'); // Disabled in favor of custom flow
+const googleProvider = new GoogleAuthProvider();
+const microsoftProvider = new OAuthProvider('microsoft.com');
 
 // State
 let unsubscribeUser: any = null;
@@ -61,25 +59,25 @@ async function handleSocialLogin(provider: any) {
     if (authError) authError.textContent = '';
 
     try {
-        const result = await auth.signInWithPopup(provider);
+        const result = await signInWithPopup(auth, provider);
         const user = result.user;
-        console.log('Social login success:', user.email || user.uid);
+        console.log('Social login success:', user.uid);
 
         // Robust Document ID: Always use UID as requested
         const userIdentifier = user.uid;
-        const userRef = db.collection("users").doc(userIdentifier);
-        const doc = await userRef.get();
+        const userRef = doc(db, "users", userIdentifier);
+        const docSnap = await getDoc(userRef);
 
-        if (!doc.exists) {
+        if (!docSnap.exists()) {
             const initialData = {
                 name: user.displayName || "WiseCat User",
                 email: user.email || "N/A",
                 uid: user.uid,
                 picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email || 'User'),
                 credits: 1.00,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                createdAt: serverTimestamp()
             };
-            await userRef.set(initialData);
+            await setDoc(userRef, initialData);
             console.log('New user document created with $1.00 bonus:', userIdentifier);
         }
     } catch (error: any) {
@@ -100,7 +98,7 @@ function handleLineLogin() {
 }
 
 function logout() {
-    auth.signOut()
+    signOut(auth)
         .then(() => {
             console.log('User signed out.');
             localStorage.removeItem('wisecat_user');
@@ -113,7 +111,7 @@ function logout() {
 
 // --- Auth State Listener ---
 
-auth.onAuthStateChanged((user: any) => {
+onAuthStateChanged(auth, (user) => {
     if (unsubscribeUser) {
         unsubscribeUser();
         unsubscribeUser = null;
@@ -122,25 +120,26 @@ auth.onAuthStateChanged((user: any) => {
     if (user) {
         // Real-time listener: Priority one
         const userIdentifier = user.uid;
-        unsubscribeUser = db.collection("users").doc(userIdentifier)
-            .onSnapshot((doc: any) => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    const userSession = {
-                        name: data.name || user.displayName || (user.email ? user.email.split('@')[0] : 'User'),
-                        email: user.email || "N/A",
-                        picture: data.picture || user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email || 'User'),
-                        sub: user.uid,
-                        credits: data.credits || 0.00
-                    };
+        const userRef = doc(db, "users", userIdentifier);
 
-                    // Sync to localStorage as a cache for other pages
-                    localStorage.setItem('wisecat_user', JSON.stringify(userSession));
-                    displayUserProfile(userSession);
-                }
-            }, (error: any) => {
-                console.error('Firestore snapshot error:', error);
-            });
+        unsubscribeUser = onSnapshot(userRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const userSession = {
+                    name: data.name || user.displayName || (user.email ? user.email.split('@')[0] : 'User'),
+                    email: user.email || "N/A",
+                    picture: data.picture || user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email || 'User'),
+                    sub: user.uid,
+                    credits: data.credits || 0.00
+                };
+
+                // Sync to localStorage as a cache for other pages
+                localStorage.setItem('wisecat_user', JSON.stringify(userSession));
+                displayUserProfile(userSession);
+            }
+        }, (error) => {
+            console.error('Firestore snapshot error:', error);
+        });
     } else {
         // User is signed out
         localStorage.removeItem('wisecat_user');
