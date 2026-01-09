@@ -1037,6 +1037,8 @@ async function handleFormSubmit(e: Event) {
         type: 'reservation',
         isTrial: false,
         state: 'pending',
+        priority: 4, // High priority
+        reservation_utc: serverTimestamp(), // Run now (Book ASAP)
         mission: missionSelect.value,
         preorderBackup: missionSelect.value === 'reservation_food_preorder' ? preorderBackupSelect.value : 'n/a',
         Name: name,

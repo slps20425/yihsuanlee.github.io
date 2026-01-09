@@ -187,6 +187,8 @@ async function handleFormSubmit(e: Event) {
         type: 'mouthpiece',
         isTrial: false,
         state: 'pending',
+        priority: 5, // Highest priority (ASAP)
+        reservation_utc: serverTimestamp(), // Run now
         mission: missionEl.value,
         customMission: missionEl.value === 'other' ? customMissionEl.value : '',
         userName: userNameEl.value,

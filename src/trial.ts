@@ -183,6 +183,8 @@ async function handleFormSubmit(e: Event) {
         type: 'trial',
         isTrial: true,
         state: 'pending',
+        priority: 3, // Normal priority
+        reservation_utc: serverTimestamp(), // Run now
         Name: nameInput.value,
         targetPhoneNumber: phoneInputPlugin ? phoneInputPlugin.getNumber() : phoneInput.value,
         userEmail: userEmail,
