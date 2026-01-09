@@ -9,14 +9,33 @@ admin.initializeApp();
 const lineChannelId = defineSecret("LINE_CHANNEL_ID");
 const lineChannelSecret = defineSecret("LINE_CHANNEL_SECRET");
 
+// Simple in-memory cache to prevent double-invocation (debounce)
+const processedCodes = new Map();
+
 exports.lineCallback = onRequest(
     { secrets: [lineChannelId, lineChannelSecret] },
     async (req, res) => {
-        const code = req.query.code; // Adjusted: Remove trim as requested
+        const code = req.query.code;
         const state = req.query.state;
 
         if (!code) {
             return res.status(400).send("Missing authorization code");
+        }
+
+        // Debounce check: If code seen in last 5 seconds, ignore this request
+        const now = Date.now();
+        if (processedCodes.has(code)) {
+            const lastTime = processedCodes.get(code);
+            if (now - lastTime < 5000) {
+                console.log("Duplicate request detected (Debounced):", code);
+                return res.status(200).send("Request already processed.");
+            }
+        }
+        processedCodes.set(code, now);
+
+        // Clean up old cache entries occasionally (simple approach)
+        if (processedCodes.size > 100) {
+            processedCodes.clear();
         }
 
         const cId = lineChannelId.value().trim();
