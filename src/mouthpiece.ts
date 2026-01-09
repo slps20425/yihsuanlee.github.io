@@ -1,4 +1,5 @@
 import WiseCatI18n from './i18n';
+import { auth } from './firebase-config';
 
 // Global declarations
 declare var intlTelInput: any;
@@ -173,7 +174,15 @@ async function handleFormSubmit(e: Event) {
     const scriptContentEl = document.getElementById('scriptContent') as HTMLTextAreaElement;
     const schedulePreferenceEl = document.getElementById('schedulePreference') as HTMLSelectElement;
 
+    const { doc, collection, setDoc, serverTimestamp } = await import("firebase/firestore");
+    const { db } = await import("./firebase-config");
+
+    const tasksCol = collection(db, 'tasks');
+    const taskRef = doc(tasksCol);
+    const taskId = `task_${taskRef.id}`;
+
     const payload = {
+        taskId: taskId,
         type: 'mouthpiece',
         isTrial: false,
         mission: missionEl.value,
@@ -183,7 +192,8 @@ async function handleFormSubmit(e: Event) {
         targetPhoneNumber: phoneInputPlugin ? phoneInputPlugin.getNumber() : targetPhoneEl.value,
         script: scriptContentEl.value,
         schedulePreference: schedulePreferenceEl.value,
-        language: WiseCatI18n.currentLang
+        language: WiseCatI18n.currentLang,
+        createdAt: new Date().toISOString()
     };
 
     const dict = (WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en']) as any;
@@ -196,6 +206,14 @@ async function handleFormSubmit(e: Event) {
     }
 
     try {
+        // 1. Log to Firestore
+        await setDoc(taskRef, {
+            ...payload,
+            createdAt: serverTimestamp(),
+            userId: (auth.currentUser ? auth.currentUser.uid : 'n/a')
+        });
+        console.log("Task logged to Firestore:", taskId);
+
         const response = await fetch(N8N_WEBHOOK, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

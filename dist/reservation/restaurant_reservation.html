@@ -33,7 +33,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/reservation-B9qFDpY1.js"></script>
+  <script type="module" crossorigin src="/assets/reservation-DSdRPXMR.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
   <link rel="modulepreload" crossorigin href="/assets/i18n-Ckh14mha.js">
   <link rel="stylesheet" crossorigin href="/assets/i18n-CscEOELR.css">
@@ -65,6 +65,15 @@
             <label data-i18n="label_name">👤 Name (English Only)</label>
             <input type="text" id="userName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
                 data-i18n-placeholder="placeholder_name" placeholder="English name only" required>
+
+            <label data-i18n="label_your_phone" style="margin-top: 15px;">📱 Your Phone Number (Confirmation)</label>
+            <div class="phone-container">
+                <input type="tel" id="userPhone" required style="width: 100%;">
+            </div>
+            <div id="userPhoneHint" style="font-size: 11px; color: #ff4d4d; margin-top: 5px; display: none;"
+                data-i18n="validation_phone">
+                Invalid phone format for selected country
+            </div>
 
             <label data-i18n="label_party">👥 Party Size</label>
             <input type="number" id="partySize" value="2" min="1" max="50" step="1" required>

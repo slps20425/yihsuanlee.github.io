@@ -1,4 +1,5 @@
 import WiseCatI18n from './i18n';
+import { auth } from './firebase-config';
 
 // Declare globals from CDNs
 declare var google: any;
@@ -1023,7 +1024,15 @@ async function handleFormSubmit(e: Event) {
     const schedulePrefSelect = document.getElementById('schedulePreference') as HTMLSelectElement;
     const retryCheck = document.getElementById('retryOption') as HTMLInputElement;
 
+    const { doc, collection, setDoc, serverTimestamp } = await import("firebase/firestore");
+    const { db } = await import("./firebase-config");
+
+    const tasksCol = collection(db, 'tasks');
+    const taskRef = doc(tasksCol);
+    const taskId = `task_${taskRef.id}`;
+
     const payload = {
+        taskId: taskId,
         type: 'reservation',
         isTrial: false,
         mission: missionSelect.value,
@@ -1039,6 +1048,7 @@ async function handleFormSubmit(e: Event) {
         language: WiseCatI18n.currentLang,
         schedulePreference: schedulePrefSelect.value,
         retryOneTime: retryCheck.checked,
+        createdAt: new Date().toISOString(), // Client-side time for webhook
         // Enhanced Map Data
         placeDetails: selectedRestaurantData ? {
             name: selectedRestaurantData.name,
@@ -1061,6 +1071,14 @@ async function handleFormSubmit(e: Event) {
     }
 
     try {
+        // 1. Log to Firestore
+        await setDoc(taskRef, {
+            ...payload,
+            createdAt: serverTimestamp(),
+            userId: (auth.currentUser ? auth.currentUser.uid : 'n/a')
+        });
+        console.log("Task logged to Firestore:", taskId);
+
         const response = await fetch(N8N_WEBHOOK, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
