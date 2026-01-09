@@ -9,127 +9,71 @@ admin.initializeApp();
 const lineChannelId = defineSecret("LINE_CHANNEL_ID");
 const lineChannelSecret = defineSecret("LINE_CHANNEL_SECRET");
 
-// Request Coalescing Cache
-// Map<code, Promise<string>> -> Stores the ongoing promise that resolves to the Custom Token
-const ongoingRequests = new Map();
+// Global set for debouncing duplicate requests
+const processedCodes = new Set();
 
 exports.lineCallback = onRequest(
     { secrets: [lineChannelId, lineChannelSecret] },
     async (req, res) => {
-        const code = req.query.code;
-        const state = req.query.state;
+        const rawCode = req.query.code;
+        if (!rawCode) return res.status(400).send("No code");
 
-        if (!code) {
-            return res.status(400).send("Missing authorization code");
+        // --- 核心修復 1: 防止重複請求 (Race Condition) ---
+        if (processedCodes.has(rawCode)) {
+            console.log("Skipping duplicate request for code:", rawCode.substring(0, 5));
+            return res.end(); // Prevent timeout by ending response
         }
+        processedCodes.add(rawCode);
+        setTimeout(() => processedCodes.delete(rawCode), 10000); // Clear after 10s
 
-        const cId = lineChannelId.value().trim();
-        const cSecret = lineChannelSecret.value().trim();
+        const cId = String(lineChannelId.value()).trim();
+        const cSecret = String(lineChannelSecret.value()).trim();
         const rUri = "https://wise-catty.cc/api/auth/line/callback";
 
-        // DEBUG: Check secret integrity (safely)
-        console.log("DEBUG SECRET:", {
-            cIdLen: cId.length,
-            cSecretLen: cSecret.length,
-            cSecretStart: cSecret.substring(0, 3),
-            cSecretEnd: cSecret.substring(cSecret.length - 3)
-        });
-
         try {
-            // Check if this code is already being processed
-            if (ongoingRequests.has(code)) {
-                console.log("Duplicate request joined (Coalescing):", code);
-                const customToken = await ongoingRequests.get(code);
-                return res.redirect(`https://wise-catty.cc/login-success.html?token=${customToken}`);
-            }
+            // --- 核心修復 2: 使用 URLSearchParams 確保編碼正確 ---
+            const params = new URLSearchParams();
+            params.append('grant_type', 'authorization_code');
+            params.append('code', rawCode);
+            params.append('redirect_uri', rUri);
+            params.append('client_id', cId);
+            params.append('client_secret', cSecret);
 
-            // Define the logic as a promise
-            const processPromise = (async () => {
-                console.log("Exchanging code:", { code: (code || "").toString().substring(0, 5) + "...", rUri });
+            const response = await axios.post(
+                "https://api.line.me/oauth2/v2.1/token",
+                params,
+                { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+            );
 
-                // 1. Exchange
-                const tokenResponse = await axios.post(
-                    "https://api.line.me/oauth2/v2.1/token",
-                    new URLSearchParams({
-                        grant_type: "authorization_code",
-                        code: code,
-                        redirect_uri: rUri,
-                        client_id: cId,
-                        client_secret: cSecret,
-                    }),
-                    { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-                );
+            // 解析 id_token (這裡最穩，不需再打 verify API)
+            const decoded = require("jsonwebtoken").decode(response.data.id_token);
+            const uid = `line:${decoded.sub}`;
 
-                const { id_token } = tokenResponse.data;
-
-                // 2. Verify
-                const verifyResponse = await axios.post(
-                    "https://api.line.me/oauth2/v2.1/verify",
-                    new URLSearchParams({
-                        id_token: id_token,
-                        client_id: cId,
-                    }),
-                    { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-                );
-
-                const lineUser = verifyResponse.data;
-                const uid = `line:${lineUser.sub}`;
-                const email = lineUser.email;
-                const displayName = lineUser.name;
-                const photoURL = lineUser.picture;
-
-                // 3. User Sync
-                try {
-                    await admin.auth().updateUser(uid, {
-                        email: email,
-                        displayName: displayName,
-                        photoURL: photoURL,
-                        emailVerified: true
+            // Firebase 同步與產生 Token
+            await admin.auth().updateUser(uid, {
+                displayName: decoded.name,
+                photoURL: decoded.picture,
+                email: decoded.email
+            }).catch(async (e) => {
+                if (e.code === 'auth/user-not-found') {
+                    await admin.auth().createUser({
+                        uid,
+                        displayName: decoded.name,
+                        photoURL: decoded.picture,
+                        email: decoded.email
                     });
-                } catch (error) {
-                    if (error.code === 'auth/user-not-found') {
-                        await admin.auth().createUser({
-                            uid: uid,
-                            email: email,
-                            displayName: displayName,
-                            photoURL: photoURL,
-                            emailVerified: true
-                        });
-                    }
                 }
+            });
 
-                // 4. Mint Token
-                return await admin.auth().createCustomToken(uid);
-            })();
-
-            // Store the promise in cache
-            ongoingRequests.set(code, processPromise);
-
-            // Wait for it to finish and handle cleanup
-            try {
-                const customToken = await processPromise;
-                res.redirect(`https://wise-catty.cc/login-success.html?token=${customToken}`);
-            } finally {
-                // Keep the result in cache briefly for any straggling late requests (e.g. 5s), then clear
-                setTimeout(() => ongoingRequests.delete(code), 5000);
-                // Oops, 'ongoingRequests', let me fix variable name in finally block logic
-                // Actually, if we delete immediately, a very late request might re-trigger invalid_grant.
-                // Keeping it populated with the *resolved* value or just letting it expire is better.
-                // But we can't await a resolved promise forever if memory is tight. 
-                // Let's clear it after 10s.
-                setTimeout(() => ongoingRequests.delete(code), 10000);
-            }
+            const customToken = await admin.auth().createCustomToken(uid);
+            res.redirect(`https://wise-catty.cc/login-success.html?token=${customToken}`);
 
         } catch (error) {
-            ongoingRequests.delete(code); // Clean up on error
-            console.error("LINE Exchange Error Data:", error.response?.data);
-            console.error("LINE Exchange Error Full:", error);
-            res.status(500).json({
-                debug: "LINE_ERROR",
-                detail: error.response?.data || "No response data",
-                message: error.message,
-                sent_redirect_uri: rUri
-            });
+            // Clean up code from set on error so user can retry if needed? 
+            // Actually, if it's invalid_grant, retrying won't help. 
+            // If it's network error, maybe. But for safety let's leave it in Set to prevent spam.
+            console.error("EXCHANGE_ERROR:", error.response?.data || error.message);
+            res.status(500).json({ detail: error.response?.data || error.message });
         }
     }
 );
