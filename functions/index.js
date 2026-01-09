@@ -20,7 +20,12 @@ exports.lineCallback = onRequest(
         }
 
         try {
-            console.log("Exchanging code for token:", { code: code.substring(0, 5) + "...", redirect_uri: "https://wise-catty.cc/api/auth/line/callback" });
+            console.log("Config Check:", {
+                clientIdStart: lineChannelId.value().substring(0, 3) + "...",
+                clientSecretLength: lineChannelSecret.value() ? lineChannelSecret.value().length : 0,
+                redirectUri: "https://wise-catty.cc/api/auth/line/callback"
+            });
+            console.log("Exchanging code for token:", { code: code.substring(0, 5) + "..." });
 
             // 1. Exchange code for access token
             const tokenResponse = await axios.post(
