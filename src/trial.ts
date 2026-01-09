@@ -174,8 +174,9 @@ async function handleFormSubmit(e: Event) {
     const { db } = await import("./firebase-config");
 
     const tasksCol = collection(db, 'tasks');
-    const taskRef = doc(tasksCol);
-    const taskId = `task_${taskRef.id}`;
+    const randomId = doc(tasksCol).id;
+    const taskId = `task_${randomId}`;
+    const taskRef = doc(db, 'tasks', taskId);
 
     const payload = {
         taskId: taskId,
