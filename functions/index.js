@@ -12,20 +12,19 @@ const lineChannelSecret = defineSecret("LINE_CHANNEL_SECRET");
 exports.lineCallback = onRequest(
     { secrets: [lineChannelId, lineChannelSecret] },
     async (req, res) => {
-        const code = req.query.code;
-        const state = req.query.state; // Not currently verified but good practice
+        const code = (req.query.code || "").toString().trim();
+        const state = req.query.state;
 
         if (!code) {
             return res.status(400).send("Missing authorization code");
         }
 
+        const cId = lineChannelId.value().trim();
+        const cSecret = lineChannelSecret.value().trim();
+        const rUri = "https://wise-catty.cc/api/auth/line/callback";
+
         try {
-            console.log("Config Check:", {
-                clientIdStart: lineChannelId.value().substring(0, 3) + "...",
-                clientSecretLength: lineChannelSecret.value() ? lineChannelSecret.value().length : 0,
-                redirectUri: "https://wise-catty.cc/api/auth/line/callback"
-            });
-            console.log("Exchanging code for token:", { code: code.substring(0, 5) + "..." });
+            console.log("Exchanging code:", { code: code.substring(0, 5) + "...", rUri });
 
             // 1. Exchange code for access token
             const tokenResponse = await axios.post(
@@ -33,40 +32,40 @@ exports.lineCallback = onRequest(
                 new URLSearchParams({
                     grant_type: "authorization_code",
                     code: code,
-                    redirect_uri: "https://wise-catty.cc/api/auth/line/callback",
-                    client_id: lineChannelId.value(),
-                    client_secret: lineChannelSecret.value(),
+                    redirect_uri: rUri,
+                    client_id: cId,
+                    client_secret: cSecret,
                 }),
                 { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
             );
 
+            // ... (rest of logic) ...
+
             const { id_token } = tokenResponse.data;
 
-            // 2. Verify ID Token and get user profile
+            // 2. Verify ID Token
             const verifyResponse = await axios.post(
                 "https://api.line.me/oauth2/v2.1/verify",
                 new URLSearchParams({
                     id_token: id_token,
-                    client_id: lineChannelId.value(),
+                    client_id: cId,
                 }),
                 { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
             );
 
+            // ... (rest of user logic as before) ...
             const lineUser = verifyResponse.data;
             const uid = `line:${lineUser.sub}`;
-            const email = lineUser.email; // Requires 'email' scope in LINE Console
+            const email = lineUser.email;
             const displayName = lineUser.name;
             const photoURL = lineUser.picture;
 
-            // 3. Create or update user in Firebase Auth?
-            // Actually, createCustomToken will work even if user doesn't exist (it creates them)
-            // But we might want to update their profile.
             try {
                 await admin.auth().updateUser(uid, {
                     email: email,
                     displayName: displayName,
                     photoURL: photoURL,
-                    emailVerified: true // Trust LINE verified emails
+                    emailVerified: true
                 });
             } catch (error) {
                 if (error.code === 'auth/user-not-found') {
@@ -80,15 +79,13 @@ exports.lineCallback = onRequest(
                 }
             }
 
-            // 4. Create Custom Token
             const customToken = await admin.auth().createCustomToken(uid);
-
-            // 5. Redirect back to frontend
             res.redirect(`https://wise-catty.cc/login-success.html?token=${customToken}`);
 
         } catch (error) {
-            console.error("LINE Login Error:", error.response?.data || error.message);
-            res.status(500).send("Login failed: " + (error.response?.data?.error_description || error.message));
+            console.error("LINE Login Error Full:", error.response ? JSON.stringify(error.response.data) : error.message);
+            const errorData = error.response ? error.response.data : {};
+            res.status(500).send(`Login failed details: ${JSON.stringify(errorData)} | Message: ${error.message}`);
         }
     }
 );
