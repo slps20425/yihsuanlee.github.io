@@ -197,6 +197,8 @@ async function handleFormSubmit(e: Event) {
         script: scriptContentEl.value,
         schedulePreference: schedulePreferenceEl.value,
         language: WiseCatI18n.currentLang,
+        userEmail: (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email :
+            (localStorage.getItem('wisecat_user') ? (JSON.parse(localStorage.getItem('wisecat_user') || '{}').email || 'N/A') : 'N/A'),
         createdAt: new Date().toISOString()
     };
 

@@ -1008,12 +1008,16 @@ async function handleFormSubmit(e: Event) {
 
     // Get User Email
     let userEmail = "N/A";
-    const userSession = localStorage.getItem('wisecat_user');
-    if (userSession) {
-        try {
-            const parsed = JSON.parse(userSession);
-            if (parsed.email) userEmail = parsed.email;
-        } catch (e) { }
+    if (auth.currentUser && auth.currentUser.email) {
+        userEmail = auth.currentUser.email;
+    } else {
+        const userSession = localStorage.getItem('wisecat_user');
+        if (userSession) {
+            try {
+                const parsed = JSON.parse(userSession);
+                if (parsed.email) userEmail = parsed.email;
+            } catch (e) { }
+        }
     }
 
     const missionSelect = document.getElementById('mission') as HTMLSelectElement;
