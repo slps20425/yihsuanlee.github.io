@@ -16,7 +16,7 @@
         "function": "lineCallback"
       },
       {
-        "source": "/",
+        "source": "**",
         "destination": "/entry.html"
       }
     ],
