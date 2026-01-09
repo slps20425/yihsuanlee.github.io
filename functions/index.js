@@ -97,7 +97,11 @@ exports.lineCallback = onRequest(
 
 // --- New Trigger: Priority Queue Dispatcher ---
 exports.triggerN8nWebhook = onDocumentCreated(
-    "tasks/{taskId}",
+    {
+        document: "tasks/{taskId}",
+        database: "reservation", // Explicitly target "reservation" database
+        secrets: [lineChannelId, lineChannelSecret] // (Optional if needed, but safe to include)
+    },
     async (event) => {
         const snapshot = event.data;
         if (!snapshot) return; // No data
@@ -114,7 +118,10 @@ exports.triggerN8nWebhook = onDocumentCreated(
 
         try {
             // 1. Find the winner
-            const tasksRef = db.collection('tasks');
+            // Important: We must query the SAME database "reservation"
+            // The global 'db' above might be default. Let's ensure we use the right one.
+            const reservationDb = admin.app().firestore('reservation');
+            const tasksRef = reservationDb.collection('tasks');
             const querySnapshot = await tasksRef
                 .where('state', '==', 'pending')
                 .orderBy('priority', 'desc')       // 5 -> 3
