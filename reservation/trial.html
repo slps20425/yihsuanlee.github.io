@@ -67,7 +67,17 @@
             <input type="text" id="userName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
                 data-i18n-placeholder="placeholder_name" placeholder="English name only" required>
 
-            <label data-i18n="label_phone">📞 Phone</label>
+            <!-- Your Phone Number (New Field) -->
+            <label data-i18n="label_your_phone" style="margin-top: 15px;">📱 Your Phone Number (Reservation Use)</label>
+            <div class="phone-container">
+                <input type="tel" id="userPhone" required style="width: 100%;">
+            </div>
+            <div id="userPhoneHint" style="font-size: 11px; color: #ff4d4d; margin-top: 5px; display: none;"
+                data-i18n="validation_phone">
+                Invalid phone format for selected country
+            </div>
+
+            <label data-i18n="label_phone" style="margin-top: 15px;">📞 Target Phone (Recipient)</label>
             <div class="phone-container">
                 <input type="tel" id="targetPhone" required style="width: 100%;">
             </div>
@@ -76,7 +86,8 @@
                 Invalid phone format for selected country
             </div>
 
-            <label data-i18n="label_trial_script">📄 Trial Message Script (Max 30 words)</label>
+            <label data-i18n="label_trial_script" style="margin-top: 15px;">📄 Trial Message Script (Max 30
+                words)</label>
             <textarea id="scriptContent" rows="4" data-i18n-placeholder="placeholder_trial_script"
                 placeholder="What should the AI say?" required></textarea>
             <div id="wordCounter" style="text-align: right; font-size: 12px; color: #888; margin-top: 2px;">
