@@ -27,6 +27,14 @@ exports.lineCallback = onRequest(
         const cSecret = lineChannelSecret.value().trim();
         const rUri = "https://wise-catty.cc/api/auth/line/callback";
 
+        // DEBUG: Check secret integrity (safely)
+        console.log("DEBUG SECRET:", {
+            cIdLen: cId.length,
+            cSecretLen: cSecret.length,
+            cSecretStart: cSecret.substring(0, 3),
+            cSecretEnd: cSecret.substring(cSecret.length - 3)
+        });
+
         try {
             // Check if this code is already being processed
             if (ongoingRequests.has(code)) {
