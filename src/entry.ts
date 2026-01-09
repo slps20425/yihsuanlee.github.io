@@ -63,9 +63,11 @@ async function handleSocialLogin(provider: any) {
         const user = result.user;
         console.log('Social login success:', user.uid);
 
-        // Robust Document ID: Always use UID as requested
-        const userIdentifier = user.uid;
+        // Robust Document ID: Always use UID as requested with prefix
+        const userIdentifier = `uid_${user.uid}`;
         const userRef = doc(db, "users", userIdentifier);
+
+        console.log(`Connecting to DB: ${db.app.options.projectId}, DB ID: ${(db as any)._databaseId?.database || 'default'}`);
         const docSnap = await getDoc(userRef);
 
         if (!docSnap.exists()) {
@@ -119,7 +121,7 @@ onAuthStateChanged(auth, (user) => {
 
     if (user) {
         // Real-time listener: Priority one
-        const userIdentifier = user.uid;
+        const userIdentifier = `uid_${user.uid}`;
         const userRef = doc(db, "users", userIdentifier);
 
         unsubscribeUser = onSnapshot(userRef, (docSnap) => {
