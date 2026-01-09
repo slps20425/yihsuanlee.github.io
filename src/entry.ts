@@ -25,7 +25,7 @@ const db = firebase.firestore();
 // Auth Providers
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 const microsoftProvider = new firebase.auth.OAuthProvider('microsoft.com');
-const lineProvider = new firebase.auth.OAuthProvider('oidc.line');
+// const lineProvider = new firebase.auth.OAuthProvider('oidc.line'); // Disabled in favor of custom flow
 
 // State
 let unsubscribeUser: any = null;
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (googleLoginBtn) googleLoginBtn.addEventListener('click', () => handleSocialLogin(googleProvider));
     if (microsoftLoginBtn) microsoftLoginBtn.addEventListener('click', () => handleSocialLogin(microsoftProvider));
-    if (lineLoginBtn) lineLoginBtn.addEventListener('click', () => handleSocialLogin(lineProvider));
+    if (lineLoginBtn) lineLoginBtn.addEventListener('click', handleLineLogin);
 
     // Expose logout globally for the inline onclick handler in HTML (or we can bind it here)
     (window as any).logout = logout;
@@ -85,6 +85,17 @@ async function handleSocialLogin(provider: any) {
         console.error('Social login error:', error);
         if (authError) authError.textContent = 'Auth error: ' + error.message;
     }
+}
+
+function handleLineLogin() {
+    const channelId = "2008812650"; // Provided by user
+    const redirectUri = encodeURIComponent("https://wise-catty.cc/api/auth/line/callback");
+    const state = "random_string_for_security_" + Date.now(); // Should be better
+    const scope = "openid%20profile%20email";
+
+    const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${channelId}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}`;
+
+    window.location.href = lineAuthUrl;
 }
 
 function logout() {

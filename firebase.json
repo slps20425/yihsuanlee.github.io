@@ -8,6 +8,10 @@
     ],
     "rewrites": [
       {
+        "source": "/api/auth/line/callback",
+        "function": "lineCallback"
+      },
+      {
         "source": "/",
         "destination": "/entry.html"
       }
