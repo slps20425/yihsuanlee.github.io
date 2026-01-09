@@ -7,7 +7,7 @@ const N8N_WEBHOOK = 'https://wisecat.app.n8n.cloud/webhook-test/line-reservation
 const MAX_WORDS = 30;
 
 let turnstileValidated = false;
-let turnstileValidated = false;
+
 let phoneInputPlugin: any = null;
 let userPhonePlugin: any = null;
 
@@ -133,6 +133,15 @@ function validateForm() {
         if (phoneHint) phoneHint.style.display = "none";
     }
 
+    // UI for user phone
+    if (userPhoneInput && userPhoneInput.value && !isUserPhoneValid) {
+        userPhoneInput.style.borderColor = "#ff4d4d";
+        if (userPhoneHint) userPhoneHint.style.display = "block";
+    } else if (userPhoneInput) {
+        userPhoneInput.style.borderColor = "";
+        if (userPhoneHint) userPhoneHint.style.display = "none";
+    }
+
     // Word counter UI
     const counter = document.getElementById('wordCounter');
     if (counter) {
@@ -141,14 +150,7 @@ function validateForm() {
     }
 }
 
-// UI for user phone
-if (userPhoneInput && userPhoneInput.value && !isUserPhoneValid) {
-    userPhoneInput.style.borderColor = "#ff4d4d";
-    if (userPhoneHint) userPhoneHint.style.display = "block";
-} else if (userPhoneInput) {
-    userPhoneInput.style.borderColor = "";
-    if (userPhoneHint) userPhoneHint.style.display = "none";
-}
+
 
 // Bind listeners
 function bindValidationListeners() {
