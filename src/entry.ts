@@ -135,9 +135,25 @@ onAuthStateChanged(auth, (user) => {
                     credits: data.credits || 0.00
                 };
 
-                // Sync to localStorage as a cache for other pages
+                // Sync to localStorage
                 localStorage.setItem('wisecat_user', JSON.stringify(userSession));
                 displayUserProfile(userSession);
+            } else {
+                // Document missing (e.g. first time LINE login) -> Create it
+                console.log("User document missing, creating new one with prefix:", userIdentifier);
+                const initialData = {
+                    name: user.displayName || "WiseCat User",
+                    email: user.email || "N/A",
+                    uid: user.uid,
+                    picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email || 'User'),
+                    credits: 1.00,
+                    createdAt: serverTimestamp()
+                };
+                // We can't use await here easily inside onSnapshot, but setDoc is async.
+                // onSnapshot doesn't wait, but that's fine.
+                setDoc(userRef, initialData).then(() => {
+                    console.log("Created missing user doc");
+                }).catch(err => console.error("Error creating missing doc:", err));
             }
         }, (error) => {
             console.error('Firestore snapshot error:', error);
