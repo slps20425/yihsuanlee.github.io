@@ -17,6 +17,7 @@ let currentMarker: any = null;
 let selectedRestaurantData: any = null;
 let currentPlaceOpeningHours: any = null;
 let phoneInputPlugin: any = null;
+let userPhonePlugin: any = null;
 let turnstileValidated = false;
 
 // Cache
@@ -42,6 +43,23 @@ const ScamDetector = {
 document.addEventListener("DOMContentLoaded", function () {
     // Initialize i18n explicitly
     WiseCatI18n.init();
+
+    // Initialize userPhone (Confirmation)
+    const userPhoneInput = document.querySelector("#userPhone");
+    if (userPhoneInput) {
+        userPhonePlugin = intlTelInput(userPhoneInput, {
+            initialCountry: "auto",
+            geoIpLookup: function (callback: (code: string) => void) {
+                fetch("https://ipapi.co/json")
+                    .then(res => res.json())
+                    .then(data => callback(data.country_code))
+                    .catch(() => callback("us"));
+            },
+            preferredCountries: [],
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+            separateDialCode: true
+        });
+    }
 
     const input = document.querySelector("#targetPhone");
     if (input) {
@@ -389,11 +407,11 @@ document.addEventListener("DOMContentLoaded", function () {
 // --- Validation Logic ---
 
 function bindValidationListeners() {
-    const validationInputs = ['targetPhone', 'resDate', 'resTime'];
+    const validationInputs = ['targetPhone', 'userPhone', 'resDate', 'resTime'];
     validationInputs.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            if (id === 'targetPhone') {
+            if (id === 'targetPhone' || id === 'userPhone') {
                 el.addEventListener('countrychange', validateForm);
                 el.addEventListener('blur', validateForm);
             }
@@ -448,13 +466,34 @@ function validateForm() {
         if (phoneHint) phoneHint.style.display = "none";
     }
 
+    // 2.1 User Phone Validation (New)
+    let isUserPhoneValid = false;
+    const userPhoneInput = document.getElementById('userPhone') as HTMLInputElement;
+    const userPhoneHint = document.getElementById('userPhoneHint');
+
+    if (userPhonePlugin && userPhoneInput && userPhoneInput.value) {
+        const validCharsOnly = /^[\d\s\-\(\)\+]+$/.test(userPhoneInput.value);
+        const digitsOnly = userPhoneInput.value.replace(/\D/g, '');
+        isUserPhoneValid = validCharsOnly && digitsOnly.length >= 5;
+    }
+
+    // UI for User Phone
+    if (userPhoneInput && userPhoneInput.value && !isUserPhoneValid) {
+        userPhoneInput.style.borderColor = "#ff4d4d";
+        if (userPhoneHint) userPhoneHint.style.display = "block";
+    } else if (userPhoneInput) {
+        userPhoneInput.style.borderColor = "";
+        if (userPhoneHint) userPhoneHint.style.display = "none";
+    }
+
     // 2.5 Time Validation
     const isTimeValid = validateReservationTime();
 
     // 3. Combined Logic
     const hasRestaurant = !!selectedRestaurantData;
 
-    if (credits > 0 && turnstileValidated && isPhoneValid && isTimeValid && hasRestaurant) {
+    // Check isUserPhoneValid as well
+    if (credits > 0 && turnstileValidated && isPhoneValid && isUserPhoneValid && isTimeValid && hasRestaurant) {
         btn.disabled = false;
         btn.style.opacity = "1";
     } else {
@@ -960,6 +999,22 @@ async function handleFormSubmit(e: Event) {
         fullPhoneNumber = phoneInputPlugin.getNumber(); // Get full global number including country code
     }
 
+    const userPhoneInput = document.getElementById('userPhone') as HTMLInputElement;
+    let userPhoneNumberFull = userPhoneInput.value;
+    if (userPhonePlugin) {
+        userPhoneNumberFull = userPhonePlugin.getNumber();
+    }
+
+    // Get User Email
+    let userEmail = "N/A";
+    const userSession = localStorage.getItem('wisecat_user');
+    if (userSession) {
+        try {
+            const parsed = JSON.parse(userSession);
+            if (parsed.email) userEmail = parsed.email;
+        } catch (e) { }
+    }
+
     const missionSelect = document.getElementById('mission') as HTMLSelectElement;
     const preorderBackupSelect = document.getElementById('preorderBackupChoice') as HTMLSelectElement;
     const partySizeInput = document.getElementById('partySize') as HTMLInputElement;
@@ -978,6 +1033,8 @@ async function handleFormSubmit(e: Event) {
         'date/month/year': resDateInput.value,
         time: resTimeInput.value,
         targetPhoneNumber: fullPhoneNumber,
+        userPhoneNumber: userPhoneNumberFull,
+        userEmail: userEmail,
         note: note,
         language: WiseCatI18n.currentLang,
         schedulePreference: schedulePrefSelect.value,

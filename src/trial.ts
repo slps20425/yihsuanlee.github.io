@@ -9,7 +9,6 @@ const MAX_WORDS = 30;
 let turnstileValidated = false;
 
 let phoneInputPlugin: any = null;
-let userPhonePlugin: any = null;
 
 // --- Initialization ---
 
@@ -17,22 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initialize i18n explicitly
     WiseCatI18n.init();
 
-    // Initialize userPhone
-    const userPhoneInput = document.querySelector("#userPhone");
-    if (userPhoneInput) {
-        userPhonePlugin = intlTelInput(userPhoneInput, {
-            initialCountry: "auto",
-            geoIpLookup: function (callback: (code: string) => void) {
-                fetch("https://ipapi.co/json")
-                    .then(res => res.json())
-                    .then(data => callback(data.country_code))
-                    .catch(() => callback("us"));
-            },
-            preferredCountries: [],
-            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
-            separateDialCode: true
-        });
-    }
+
 
     const input = document.querySelector("#targetPhone");
     if (input) {
@@ -49,9 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
             separateDialCode: true
         });
 
-        // Add dial code search feature
-        let dialCodeBuffer = "";
-        let dialCodeTimeout: number | null = null;
+
 
         // Helper specifically for target phone dropdown but we can generalize if needed
         // For now let's keep it simple or duplicate/abstract. 
@@ -95,6 +77,7 @@ function validateForm() {
 
     if (!btn || !phoneInput || !scriptInput) return;
 
+    let isPhoneValid = false;
     // Validate Target Phone
     if (phoneInputPlugin && phoneInput.value) {
         const validCharsOnly = /^[\d\s\-\(\)\+]+$/.test(phoneInput.value);
@@ -102,21 +85,12 @@ function validateForm() {
         isPhoneValid = validCharsOnly && digitsOnly.length >= 5;
     }
 
-    // Validate User Phone
-    let isUserPhoneValid = false;
-    const userPhoneInput = document.getElementById('userPhone') as HTMLInputElement;
-    const userPhoneHint = document.getElementById('userPhoneHint');
 
-    if (userPhonePlugin && userPhoneInput && userPhoneInput.value) {
-        const validCharsOnly = /^[\d\s\-\(\)\+]+$/.test(userPhoneInput.value);
-        const digitsOnly = userPhoneInput.value.replace(/\D/g, '');
-        isUserPhoneValid = validCharsOnly && digitsOnly.length >= 5;
-    }
 
     const wordCount = countWords(scriptInput.value);
     const isScriptValid = wordCount > 0 && wordCount <= MAX_WORDS;
 
-    if (turnstileValidated && isPhoneValid && isUserPhoneValid && isScriptValid) {
+    if (turnstileValidated && isPhoneValid && isScriptValid) {
         btn.disabled = false;
         btn.style.opacity = "1";
     } else {
@@ -134,13 +108,7 @@ function validateForm() {
     }
 
     // UI for user phone
-    if (userPhoneInput && userPhoneInput.value && !isUserPhoneValid) {
-        userPhoneInput.style.borderColor = "#ff4d4d";
-        if (userPhoneHint) userPhoneHint.style.display = "block";
-    } else if (userPhoneInput) {
-        userPhoneInput.style.borderColor = "";
-        if (userPhoneHint) userPhoneHint.style.display = "none";
-    }
+
 
     // Word counter UI
     const counter = document.getElementById('wordCounter');
@@ -161,12 +129,7 @@ function bindValidationListeners() {
         phoneInputEl.addEventListener('blur', validateForm);
     }
 
-    const userPhoneInputEl = document.getElementById('userPhone');
-    if (userPhoneInputEl) {
-        userPhoneInputEl.addEventListener('input', validateForm);
-        userPhoneInputEl.addEventListener('countrychange', validateForm);
-        userPhoneInputEl.addEventListener('blur', validateForm);
-    }
+
 
     const scriptInput = document.getElementById('scriptContent');
     if (scriptInput) {
@@ -194,7 +157,7 @@ async function handleFormSubmit(e: Event) {
 
     btn.disabled = true;
 
-    const userPhoneInput = document.getElementById('userPhone') as HTMLInputElement;
+
 
     let userEmail = "N/A";
     const userSession = localStorage.getItem('wisecat_user');
@@ -210,7 +173,6 @@ async function handleFormSubmit(e: Event) {
         isTrial: true,
         Name: nameInput.value,
         targetPhoneNumber: phoneInputPlugin ? phoneInputPlugin.getNumber() : phoneInput.value,
-        userPhoneNumber: userPhonePlugin ? userPhonePlugin.getNumber() : userPhoneInput.value,
         userEmail: userEmail,
         script: script,
         language: WiseCatI18n.currentLang
