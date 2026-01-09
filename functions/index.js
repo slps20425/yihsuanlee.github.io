@@ -118,10 +118,9 @@ exports.triggerN8nWebhook = onDocumentCreated(
 
         try {
             // 1. Find the winner
-            // Important: We must query the SAME database "reservation"
-            // The global 'db' above might be default. Let's ensure we use the right one.
-            const reservationDb = admin.app().firestore('reservation');
-            const tasksRef = reservationDb.collection('tasks');
+            // Use the Firestore instance from the event itself to ensure correct DB connection
+            const db = event.data.ref.firestore;
+            const tasksRef = db.collection('tasks');
             const querySnapshot = await tasksRef
                 .where('state', '==', 'pending')
                 .orderBy('priority', 'desc')       // 5 -> 3
