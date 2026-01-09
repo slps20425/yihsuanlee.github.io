@@ -103,7 +103,7 @@ exports.lineCallback = onRequest(
                 res.redirect(`https://wise-catty.cc/login-success.html?token=${customToken}`);
             } finally {
                 // Keep the result in cache briefly for any straggling late requests (e.g. 5s), then clear
-                setTimeout(() => runningRequests.delete(code), 5000);
+                setTimeout(() => ongoingRequests.delete(code), 5000);
                 // Oops, 'ongoingRequests', let me fix variable name in finally block logic
                 // Actually, if we delete immediately, a very late request might re-trigger invalid_grant.
                 // Keeping it populated with the *resolved* value or just letting it expire is better.
@@ -114,10 +114,11 @@ exports.lineCallback = onRequest(
 
         } catch (error) {
             ongoingRequests.delete(code); // Clean up on error
-            console.error("LINE Exchange Error:", error.response?.data);
+            console.error("LINE Exchange Error Data:", error.response?.data);
+            console.error("LINE Exchange Error Full:", error);
             res.status(500).json({
                 debug: "LINE_ERROR",
-                detail: error.response?.data,
+                detail: error.response?.data || "No response data",
                 message: error.message,
                 sent_redirect_uri: rUri
             });
