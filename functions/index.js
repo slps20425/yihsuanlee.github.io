@@ -20,6 +20,8 @@ exports.lineCallback = onRequest(
         }
 
         try {
+            console.log("Exchanging code for token:", { code: code.substring(0, 5) + "...", redirect_uri: "https://wise-catty.cc/api/auth/line/callback" });
+
             // 1. Exchange code for access token
             const tokenResponse = await axios.post(
                 "https://api.line.me/oauth2/v2.1/token",
