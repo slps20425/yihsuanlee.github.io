@@ -12,7 +12,7 @@ const lineChannelSecret = defineSecret("LINE_CHANNEL_SECRET");
 exports.lineCallback = onRequest(
     { secrets: [lineChannelId, lineChannelSecret] },
     async (req, res) => {
-        const code = (req.query.code || "").toString().trim();
+        const code = req.query.code; // Adjusted: Remove trim as requested
         const state = req.query.state;
 
         if (!code) {
@@ -24,7 +24,8 @@ exports.lineCallback = onRequest(
         const rUri = "https://wise-catty.cc/api/auth/line/callback";
 
         try {
-            console.log("Exchanging code:", { code: code.substring(0, 5) + "...", rUri });
+            // Log for debugging
+            console.log("Exchanging code:", { code: (code || "").toString().substring(0, 5) + "...", rUri });
 
             // 1. Exchange code for access token
             const tokenResponse = await axios.post(
@@ -39,8 +40,6 @@ exports.lineCallback = onRequest(
                 { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
             );
 
-            // ... (rest of logic) ...
-
             const { id_token } = tokenResponse.data;
 
             // 2. Verify ID Token
@@ -53,7 +52,6 @@ exports.lineCallback = onRequest(
                 { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
             );
 
-            // ... (rest of user logic as before) ...
             const lineUser = verifyResponse.data;
             const uid = `line:${lineUser.sub}`;
             const email = lineUser.email;
@@ -83,9 +81,13 @@ exports.lineCallback = onRequest(
             res.redirect(`https://wise-catty.cc/login-success.html?token=${customToken}`);
 
         } catch (error) {
-            console.error("LINE Login Error Full:", error.response ? JSON.stringify(error.response.data) : error.message);
-            const errorData = error.response ? error.response.data : {};
-            res.status(500).send(`Login failed details: ${JSON.stringify(errorData)} | Message: ${error.message}`);
+            console.error("LINE Exchange Error:", error.response?.data);
+            res.status(500).json({
+                debug: "LINE_ERROR",
+                detail: error.response?.data,
+                message: error.message,
+                sent_redirect_uri: rUri
+            });
         }
     }
 );
