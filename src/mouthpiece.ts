@@ -4,7 +4,7 @@ import { auth } from './firebase-config';
 // Global declarations
 declare var intlTelInput: any;
 
-const N8N_WEBHOOK = 'https://wisecat.app.n8n.cloud/webhook-test/line-reservation';
+
 
 let turnstileValidated = false;
 let phoneInputPlugin: any = null;
@@ -186,6 +186,7 @@ async function handleFormSubmit(e: Event) {
         taskId: taskId,
         type: 'mouthpiece',
         isTrial: false,
+        state: 'pending',
         mission: missionEl.value,
         customMission: missionEl.value === 'other' ? customMissionEl.value : '',
         userName: userNameEl.value,
@@ -215,19 +216,23 @@ async function handleFormSubmit(e: Event) {
         });
         console.log("Task logged to Firestore:", taskId);
 
-        const response = await fetch(N8N_WEBHOOK, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        // 2. Success UI (No Webhook)
+        btn.innerText = dict.msg_success;
 
-        if (response.ok) {
-            btn.innerText = dict.msg_success;
-            alert(dict.msg_calling);
-        } else {
-            throw new Error();
+        // Need userEmail. In mouthpiece.ts we parse localStorage earlier.
+        // Let's re-parse or use a variable if we had one. 
+        // Looking at the view_file (1421), 'userSession' is parsed in DOMContentLoaded.
+        // We should move that parsing to top of handleFormSubmit or rely on localStorage again.
+        let userEmail = "you";
+        const stored = localStorage.getItem('wisecat_user');
+        if (stored) {
+            try { const u = JSON.parse(stored); if (u.email) userEmail = u.email; } catch (e) { }
         }
+
+        alert(`We've received your task. Will email to here ${userEmail} to you when ready.\n\nWe will start call within 5 minutes.`);
+
     } catch (error) {
+        console.error("Error submitting mouthpiece:", error);
         btn.innerText = dict.msg_failed;
         alert(dict.msg_fail_alert);
         btn.disabled = false;

@@ -7,7 +7,7 @@ declare var intlTelInput: any;
 declare var VANTA: any;
 
 // Configuration
-const N8N_WEBHOOK = 'https://wisecat.app.n8n.cloud/webhook-test/line-reservation';
+
 const GOOGLE_MAPS_API_KEY = 'AIzaSyBSWqDNkLh1v29kFEbUod0iaX3v3v8UtT4';
 
 // State
@@ -1036,6 +1036,7 @@ async function handleFormSubmit(e: Event) {
         taskId: taskId,
         type: 'reservation',
         isTrial: false,
+        state: 'pending',
         mission: missionSelect.value,
         preorderBackup: missionSelect.value === 'reservation_food_preorder' ? preorderBackupSelect.value : 'n/a',
         Name: name,
@@ -1080,21 +1081,16 @@ async function handleFormSubmit(e: Event) {
         });
         console.log("Task logged to Firestore:", taskId);
 
-        const response = await fetch(N8N_WEBHOOK, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        // 2. Success UI (No Webhook)
+        btn.innerText = (dict as any).msg_success;
+        alert(`We've received your task. Will email to here ${userEmail} to you when ready`);
 
-        if (response.ok) {
-            btn.innerText = (dict as any).msg_success;
-            alert((dict as any).msg_calling);
-        } else {
-            throw new Error();
-        }
     } catch (error) {
-        btn.innerText = (dict as any).msg_failed;
-        alert((dict as any).msg_fail_alert);
+        console.error("Error submitting reservation:", error);
+        // Restore button state
+        const originalText = (dict as any).btn_submit_reservation || "Submit Reservation";
+        btn.innerText = originalText;
+        alert((dict as any).msg_failed || "Submission failed. Please try again.");
         btn.disabled = false;
     }
 }

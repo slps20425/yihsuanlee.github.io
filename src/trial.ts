@@ -4,7 +4,7 @@ import { auth } from './firebase-config';
 // Global declarations
 declare var intlTelInput: any;
 
-const N8N_WEBHOOK = 'https://wisecat.app.n8n.cloud/webhook-test/line-reservation';
+
 const MAX_WORDS = 30;
 
 let turnstileValidated = false;
@@ -182,6 +182,7 @@ async function handleFormSubmit(e: Event) {
         taskId: taskId,
         type: 'trial',
         isTrial: true,
+        state: 'pending',
         Name: nameInput.value,
         targetPhoneNumber: phoneInputPlugin ? phoneInputPlugin.getNumber() : phoneInput.value,
         userEmail: userEmail,
@@ -201,20 +202,12 @@ async function handleFormSubmit(e: Event) {
         });
         console.log("Task logged to Firestore:", taskId);
 
-        // 2. Call Webhook
-        const response = await fetch(N8N_WEBHOOK, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        // 2. Success UI (No Webhook)
+        btn.innerText = dict.msg_success;
+        alert(`We've received your task. Will email to here ${userEmail} to you when ready.\n\nWe will start call within 5 minutes, please carefully check your phone number.`);
 
-        if (response.ok) {
-            btn.innerText = dict.msg_success;
-            alert(dict.msg_calling);
-        } else {
-            throw new Error();
-        }
     } catch (error) {
+        console.error("Error submitting trial:", error);
         btn.innerText = dict.msg_failed;
         alert(dict.msg_fail_alert);
         btn.disabled = false;
