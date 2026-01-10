@@ -173,6 +173,15 @@ async function handleFormSubmit(e: Event) {
         }
     }
 
+    let userCredits = 0;
+    const sessionStr = localStorage.getItem('wisecat_user');
+    if (sessionStr) {
+        try {
+            const parsed = JSON.parse(sessionStr);
+            if (parsed.credits) userCredits = Number(parsed.credits);
+        } catch (e) { }
+    }
+
     // Generate Task ID
     const { doc, collection, setDoc, serverTimestamp } = await import("firebase/firestore");
     const { db } = await import("./firebase-config");
@@ -192,6 +201,7 @@ async function handleFormSubmit(e: Event) {
         Name: nameInput.value,
         targetPhoneNumber: phoneInputPlugin ? phoneInputPlugin.getNumber() : phoneInput.value,
         userEmail: userEmail,
+        userCredits: userCredits,
         script: script,
         language: WiseCatI18n.currentLang,
         createdAt: new Date().toISOString() // Client-side time for n8n

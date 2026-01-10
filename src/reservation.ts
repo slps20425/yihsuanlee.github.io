@@ -1020,6 +1020,15 @@ async function handleFormSubmit(e: Event) {
         }
     }
 
+    let userCredits = 0;
+    const sessionStr = localStorage.getItem('wisecat_user');
+    if (sessionStr) {
+        try {
+            const parsed = JSON.parse(sessionStr);
+            if (parsed.credits) userCredits = Number(parsed.credits);
+        } catch (e) { }
+    }
+
     const missionSelect = document.getElementById('mission') as HTMLSelectElement;
     const preorderBackupSelect = document.getElementById('preorderBackupChoice') as HTMLSelectElement;
     const partySizeInput = document.getElementById('partySize') as HTMLInputElement;
@@ -1042,6 +1051,7 @@ async function handleFormSubmit(e: Event) {
         isTrial: false,
         state: 'pending',
         priority: 4, // High priority
+        userCredits: userCredits,
         reservation_utc: serverTimestamp(), // Run now (Book ASAP)
         mission: missionSelect.value,
         preorderBackup: missionSelect.value === 'reservation_food_preorder' ? preorderBackupSelect.value : 'n/a',
