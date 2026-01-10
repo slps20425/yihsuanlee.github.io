@@ -70,8 +70,8 @@ const renderTurnstile = () => {
     }
 };
 
-// Expose render function to global scope for the script onload callback
-(window as any).onloadTurnstileCallback = renderTurnstile;
+// Expose render function for the inline script to call if it loads later
+(window as any).renderAppTurnstile = renderTurnstile;
 
 // --- Initialization ---
 
@@ -79,7 +79,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initialize i18n explicitly
     WiseCatI18n.init();
 
-    // Check Turnstile immediately
+    // Check if script already loaded before us
+    if ((window as any).isTurnstileLoaded) {
+        renderTurnstile();
+    }
+    // Fallback check immediately (just in case)
     renderTurnstile();
 
     // Initialize userPhone (Confirmation)

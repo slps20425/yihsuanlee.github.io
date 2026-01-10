@@ -32,10 +32,14 @@ const renderTurnstile = () => {
     }
 };
 
-// Expose render function to global scope for the script onload callback
-(window as any).onloadTurnstileCallback = renderTurnstile;
+// Expose render function for the inline script to call if it loads later
+(window as any).renderAppTurnstile = renderTurnstile;
 
-// Check immediately (in case script loaded before DOMContentLoaded)
+// Check if script already loaded before us
+if ((window as any).isTurnstileLoaded) {
+    renderTurnstile();
+}
+// Fallback check immediately (just in case)
 renderTurnstile();
 
 function validateForm() {

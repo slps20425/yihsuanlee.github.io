@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WiseCat Mouthpiece - AI Voice Proxy</title>
     <link rel="icon" href="/assets/favicon-DEQwk45s.png" type="image/x-icon">
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit"
+        async defer></script>
 
 
 
@@ -18,7 +19,7 @@
             display: block;
         }
     </style>
-  <script type="module" crossorigin src="/assets/mouthpiece-BK8_AVSH.js"></script>
+  <script type="module" crossorigin src="/assets/mouthpiece-Fr3t1zg_.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-D7nX8qgn.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-2W8p5oYf.js">
   <link rel="stylesheet" crossorigin href="/assets/index-CscEOELR.css">
@@ -99,8 +100,7 @@
                     class="refill-btn">Refill</a>
             </div>
 
-            <div class="cf-turnstile" data-sitekey="0x4AAAAAACKreG1nTIC_lSzg" data-callback="onTurnstileSuccess"
-                style="margin-top: 20px;"></div>
+            <div id="turnstile-widget" style="margin-top: 20px;"></div>
 
             <button type="submit" id="submitBtn" data-i18n="btn_submit" disabled>Start AI Call</button>
             <a href="https://wise-catty.cc/" class="back-link" data-i18n="btn_back">← Back to Portal</a>
