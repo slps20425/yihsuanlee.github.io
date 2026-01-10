@@ -26,12 +26,25 @@ document.addEventListener("DOMContentLoaded", function () {
     WiseCatI18n.init();
 
     // Explicitly render Turnstile to avoid race conditions
-    if ((window as any).turnstile) {
-        (window as any).turnstile.render('#turnstile-widget', {
-            sitekey: '0x4AAAAAACKreG1nTIC_lSzg',
-            callback: (window as any).onTurnstileSuccess,
-        });
-    }
+    // Strategy: Check if already loaded, OR wait for onload callback.
+    let isTurnstileRendered = false;
+
+    const renderTurnstile = () => {
+        if (isTurnstileRendered) return; // Prevent double render
+        if ((window as any).turnstile) {
+            (window as any).turnstile.render('#turnstile-widget', {
+                sitekey: '0x4AAAAAACKreG1nTIC_lSzg',
+                callback: (window as any).onTurnstileSuccess,
+            });
+            isTurnstileRendered = true;
+        }
+    };
+
+    // Expose render function to global scope for the script onload callback
+    (window as any).onloadTurnstileCallback = renderTurnstile;
+
+    // Check immediately (in case script loaded before DOMContentLoaded)
+    renderTurnstile();
 
     const input = document.querySelector("#targetPhone");
     if (input) {

@@ -10,11 +10,33 @@ let turnstileValidated = false;
 let phoneInputPlugin: any = null;
 
 // --- Turnstile Callback ---
+// --- Turnstile Integration ---
+
+// Define callback globally so Turnstile can find it
 (window as any).onTurnstileSuccess = function (token: string) {
     console.log("Turnstile Success, Token:", token);
     turnstileValidated = true;
     validateForm();
 };
+
+let isTurnstileRendered = false;
+
+const renderTurnstile = () => {
+    if (isTurnstileRendered) return; // Prevent double render
+    if ((window as any).turnstile) {
+        (window as any).turnstile.render('#turnstile-widget', {
+            sitekey: '0x4AAAAAACKreG1nTIC_lSzg',
+            callback: (window as any).onTurnstileSuccess,
+        });
+        isTurnstileRendered = true;
+    }
+};
+
+// Expose render function to global scope for the script onload callback
+(window as any).onloadTurnstileCallback = renderTurnstile;
+
+// Check immediately (in case script loaded before DOMContentLoaded)
+renderTurnstile();
 
 function validateForm() {
     const btn = document.getElementById('submitBtn') as HTMLButtonElement;

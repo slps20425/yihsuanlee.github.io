@@ -41,9 +41,46 @@ const ScamDetector = {
 
 // --- Initialization ---
 
+// --- Turnstile Integration ---
+
+// Define callback globally so Turnstile can find it
+(window as any).onTurnstileSuccess = function (_token: string) {
+    turnstileValidated = true;
+    // Potentially re-validate form here if needed, but reservation form enables button only on validation check usually
+    // We can trigger a validation check if there's a function for it, or just rely on state
+    console.log("Turnstile Verified");
+    // Ensure button state is updated if all other conditions met
+    const dateInput = document.getElementById('resDate') as HTMLInputElement;
+    if (dateInput) {
+        // Trigger validation indirectly or directly
+        // For now just set state. The form submit check will see turnstileValidated=true
+    }
+};
+
+let isTurnstileRendered = false;
+
+const renderTurnstile = () => {
+    if (isTurnstileRendered) return; // Prevent double render
+    if ((window as any).turnstile) {
+        (window as any).turnstile.render('#turnstile-widget', {
+            sitekey: '0x4AAAAAACKreG1nTIC_lSzg',
+            callback: (window as any).onTurnstileSuccess,
+        });
+        isTurnstileRendered = true;
+    }
+};
+
+// Expose render function to global scope for the script onload callback
+(window as any).onloadTurnstileCallback = renderTurnstile;
+
+// --- Initialization ---
+
 document.addEventListener("DOMContentLoaded", function () {
     // Initialize i18n explicitly
     WiseCatI18n.init();
+
+    // Check Turnstile immediately
+    renderTurnstile();
 
     // Initialize userPhone (Confirmation)
     const userPhoneInput = document.querySelector("#userPhone");
