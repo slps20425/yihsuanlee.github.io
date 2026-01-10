@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WiseCat Trial - AI Voice Assistant</title>
     <link rel="icon" href="../favicon.png" type="image/x-icon">
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
     <link rel="stylesheet" href="../styles.css">
 
 
@@ -82,8 +82,7 @@
                 0 / 30 words
             </div>
 
-            <div class="cf-turnstile" data-sitekey="0x4AAAAAACKreG1nTIC_lSzg" data-callback="onTurnstileSuccess"
-                style="margin-top: 20px;"></div>
+            <div id="turnstile-widget" style="margin-top: 20px;"></div>
 
             <button type="submit" id="submitBtn" data-i18n="btn_trial" disabled>Try for Free</button>
             <a href="https://wise-catty.cc/" class="back-link" data-i18n="btn_back">← Back to Portal</a>

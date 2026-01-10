@@ -13,11 +13,25 @@ let phoneInputPlugin: any = null;
 
 // --- Initialization ---
 
+// --- Turnstile Integration ---
+
+// Define callback globally so Turnstile can find it
+(window as any).onTurnstileSuccess = function (_token: string) {
+    turnstileValidated = true;
+    validateForm();
+};
+
 document.addEventListener("DOMContentLoaded", function () {
     // Initialize i18n explicitly
     WiseCatI18n.init();
 
-
+    // Explicitly render Turnstile to avoid race conditions
+    if ((window as any).turnstile) {
+        (window as any).turnstile.render('#turnstile-widget', {
+            sitekey: '0x4AAAAAACKreG1nTIC_lSzg',
+            callback: (window as any).onTurnstileSuccess,
+        });
+    }
 
     const input = document.querySelector("#targetPhone");
     if (input) {
@@ -60,11 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
     bindValidationListeners();
 });
 
-// --- Turnstile Callback ---
-(window as any).onTurnstileSuccess = function (_token: string) {
-    turnstileValidated = true;
-    validateForm();
-};
+
 
 function countWords(str: string): number {
     return str.trim().split(/\s+/).filter(word => word.length > 0).length;
