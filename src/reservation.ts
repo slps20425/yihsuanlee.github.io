@@ -75,9 +75,45 @@ const renderTurnstile = () => {
 
 // --- Initialization ---
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
     // Initialize i18n explicitly
     WiseCatI18n.init();
+
+    // --- Remote Config Listener ---
+    const { doc, onSnapshot } = await import("firebase/firestore");
+    const { db } = await import("./firebase-config");
+
+    const configRef = doc(db, 'configuration', 'settings');
+    const resBtn = document.getElementById('submitBtn') as HTMLButtonElement | null;
+    const configAlert = document.createElement('div');
+    configAlert.style.cssText = "display: none; background: #ff4444; color: white; padding: 10px; border-radius: 8px; margin-top: 10px; text-align: center; font-weight: bold;";
+    configAlert.innerHTML = "⚠️ This service is currently under maintenance.";
+
+    if (resBtn && resBtn.parentNode) {
+        resBtn.parentNode.insertBefore(configAlert, resBtn);
+    }
+
+    onSnapshot(configRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            const isEnabled = data.enable_reservation !== false; // Default true if field missing
+
+            if (resBtn) {
+                if (!isEnabled) {
+                    resBtn.disabled = true;
+                    resBtn.style.opacity = "0.5";
+                    resBtn.style.cursor = "not-allowed";
+                    configAlert.style.display = "block";
+                } else {
+                    configAlert.style.display = "none";
+                    resBtn.style.opacity = "1";
+                    resBtn.style.cursor = "pointer";
+                    // Validation logic elsewhere handles the specific disabled state for inputs
+                    // We just lift the "maintenance" lock
+                }
+            }
+        }
+    });
 
     // Check if script already loaded before us
     if ((window as any).isTurnstileLoaded) {

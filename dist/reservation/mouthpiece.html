@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WiseCat Mouthpiece - AI Voice Proxy</title>
     <link rel="icon" href="/assets/favicon-DEQwk45s.png" type="image/x-icon">
+    <script>
+        // Inline Handshake Script for Turnstile Reliability
+        window.isTurnstileLoaded = false;
+        window.onloadTurnstileCallback = function () {
+            window.isTurnstileLoaded = true;
+            if (window.renderAppTurnstile) {
+                window.renderAppTurnstile();
+            }
+        };
+    </script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit"
         async defer></script>
 
@@ -19,7 +29,7 @@
             display: block;
         }
     </style>
-  <script type="module" crossorigin src="/assets/mouthpiece-Fr3t1zg_.js"></script>
+  <script type="module" crossorigin src="/assets/mouthpiece-gmotsgQp.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-D7nX8qgn.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-2W8p5oYf.js">
   <link rel="stylesheet" crossorigin href="/assets/index-CscEOELR.css">

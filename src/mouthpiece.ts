@@ -88,13 +88,49 @@ function validateForm() {
 }
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Initialize i18n explicitly
     try {
         WiseCatI18n.init();
     } catch (e) {
         console.error("i18n init failed:", e);
     }
+
+    // --- Remote Config Listener ---
+    const { doc, onSnapshot } = await import("firebase/firestore");
+    const { db } = await import("./firebase-config");
+
+    const configRef = doc(db, 'configuration', 'settings');
+    const mouthBtn = document.getElementById('submitBtn') as HTMLButtonElement | null;
+    const configAlert = document.createElement('div');
+    // Styles for mouthpiece (dark theme context)
+    configAlert.style.cssText = "display: none; background: #ff4444; color: white; padding: 10px; border-radius: 8px; margin-top: 10px; text-align: center; font-weight: bold;";
+    configAlert.innerHTML = "⚠️ This service is currently under maintenance.";
+
+    if (mouthBtn && mouthBtn.parentNode) {
+        mouthBtn.parentNode.insertBefore(configAlert, mouthBtn);
+    }
+
+    onSnapshot(configRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            const isEnabled = data.enable_mouthpiece !== false; // Default true
+
+            if (mouthBtn) {
+                if (!isEnabled) {
+                    mouthBtn.disabled = true;
+                    mouthBtn.style.opacity = "0.5";
+                    mouthBtn.style.cursor = "not-allowed";
+                    configAlert.style.display = "block";
+                } else {
+                    configAlert.style.display = "none";
+                    mouthBtn.style.opacity = "1";
+                    mouthBtn.style.cursor = "pointer";
+                    validateForm(); // Re-check
+                }
+            }
+        }
+    });
 
     // Initialize intl-tel-input
     const input = document.querySelector("#targetPhone");

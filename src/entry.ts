@@ -19,7 +19,7 @@ let unsubscribeUser: any = null;
 
 // --- Initialization ---
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Initialize i18n explicitly
     WiseCatI18n.init();
 
@@ -37,6 +37,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.querySelector('.logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', logout);
+    }
+    // --- Config Seeder (Auto-create if missing) ---
+    const { doc, getDoc, setDoc } = await import("firebase/firestore");
+    const { db } = await import("./firebase-config");
+
+    try {
+        const configRef = doc(db, 'configuration', 'settings');
+        const configSnap = await getDoc(configRef);
+        if (!configSnap.exists()) {
+            await setDoc(configRef, {
+                enable_trial: true,
+                enable_reservation: true,
+                enable_mouthpiece: true,
+                description: "Global Feature Flags. Set to false to disable features."
+            });
+            console.log("Configuration document initialized.");
+        }
+    } catch (e) {
+        console.warn("Config seed check failed (likely permission):", e);
     }
 });
 

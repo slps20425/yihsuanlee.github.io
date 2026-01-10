@@ -21,9 +21,52 @@ let phoneInputPlugin: any = null;
     validateForm();
 };
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
     // Initialize i18n explicitly
     WiseCatI18n.init();
+
+    // --- Remote Config Listener ---
+    const { doc, onSnapshot } = await import("firebase/firestore");
+    const { db } = await import("./firebase-config");
+
+    const configRef = doc(db, 'configuration', 'settings');
+    const trialBtn = document.getElementById('submitBtn') as HTMLButtonElement | null;
+    const configAlert = document.createElement('div');
+    configAlert.style.cssText = "display: none; background: #ff4444; color: white; padding: 10px; border-radius: 8px; margin-top: 10px; text-align: center; font-weight: bold;";
+    configAlert.innerHTML = "⚠️ This service is currently under maintenance.";
+
+    if (trialBtn && trialBtn.parentNode) {
+        trialBtn.parentNode.insertBefore(configAlert, trialBtn);
+    }
+
+    onSnapshot(configRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            const isEnabled = data.enable_trial !== false; // Default true if field missing
+
+            if (trialBtn) {
+                if (!isEnabled) {
+                    trialBtn.disabled = true;
+                    trialBtn.style.opacity = "0.5";
+                    trialBtn.style.cursor = "not-allowed";
+                    configAlert.style.display = "block";
+                } else {
+                    // Only re-enable if valid (we let validation logic handle the rest, but we should remove the 'maintenance' block)
+                    // The validation logic sets disabled based on inputs, so we just reset opacity/cursor mainly
+                    // But if maintenance is over, we should trigger a re-validation or just hide the alert.
+                    // The simplest is to reload or just hide alert. 
+                    // Let's just hide the alert and let validation take over.
+                    configAlert.style.display = "none";
+                    if (turnstileValidated) { // Optimistic check
+                        trialBtn.disabled = false;
+                        trialBtn.style.opacity = "1";
+                        trialBtn.style.cursor = "pointer";
+                        validateForm(); // Re-run full validation
+                    }
+                }
+            }
+        }
+    });
 
     // Explicitly render Turnstile to avoid race conditions
     // Strategy: Handshake with inline script in HTML.

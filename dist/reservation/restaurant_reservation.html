@@ -7,6 +7,16 @@
     <title>WiseCat Reservation Assistant</title>
     <link rel="icon" href="/assets/favicon-DEQwk45s.png" type="image/x-icon">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        // Inline Handshake Script for Turnstile Reliability
+        window.isTurnstileLoaded = false;
+        window.onloadTurnstileCallback = function () {
+            window.isTurnstileLoaded = true;
+            if (window.renderAppTurnstile) {
+                window.renderAppTurnstile();
+            }
+        };
+    </script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit"
         async defer></script>
 
@@ -34,7 +44,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/reservation-Cekgn9SU.js"></script>
+  <script type="module" crossorigin src="/assets/reservation-CWb2qfNd.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-D7nX8qgn.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-2W8p5oYf.js">
   <link rel="stylesheet" crossorigin href="/assets/index-CscEOELR.css">
