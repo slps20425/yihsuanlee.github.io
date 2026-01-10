@@ -994,6 +994,11 @@ async function handleFormSubmit(e: Event) {
     const btn = document.getElementById('submitBtn') as HTMLButtonElement;
     btn.disabled = true;
 
+    // TEMPORARY DISABLE
+    alert("This service is currently disabled/under maintenance.");
+    btn.disabled = false;
+    return;
+
     // Get number from plugin if possible for E.164 format
     let fullPhoneNumber = phoneInput.value;
     if (phoneInputPlugin) {

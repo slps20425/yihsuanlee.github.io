@@ -193,7 +193,7 @@ async function handleFormSubmit(e: Event) {
     }
 
     // Generate Task ID
-    const { doc, collection, setDoc, serverTimestamp } = await import("firebase/firestore");
+    const { doc, collection, setDoc, serverTimestamp, runTransaction } = await import("firebase/firestore");
     const { db } = await import("./firebase-config");
 
     const tasksCol = collection(db, 'tasks');
@@ -219,23 +219,56 @@ async function handleFormSubmit(e: Event) {
 
     const dict = (WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en']) as any;
 
+    // 1. Transaction: Check Credits -> Deduct -> Create Task
     try {
-        // 1. Log to Firestore
-        await setDoc(taskRef, {
-            ...payload,
-            createdAt: serverTimestamp(), // Server-side time for Firestore
-            userId: (auth.currentUser ? auth.currentUser.uid : 'n/a')
+        if (!auth.currentUser) {
+            alert("Please log in to submit a trial task.");
+            btn.disabled = false;
+            return;
+        }
+
+        const userDocRef = doc(db, 'users', `uid_${auth.currentUser.uid}`);
+
+        await runTransaction(db, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+            if (!userDoc.exists()) {
+                throw "User document does not exist!";
+            }
+
+            const userData = userDoc.data();
+            const currentCredits = Number(userData.credits || 0);
+
+            if (currentCredits < 1) {
+                throw "Insufficient credits! You need at least 1 credit.";
+            }
+
+            // Deduct Credit
+            transaction.update(userDocRef, { credits: currentCredits - 1 });
+
+            // Create Task
+            transaction.set(taskRef, {
+                ...payload,
+                userCredits: currentCredits - 1, // Store the NEW balance
+                createdAt: serverTimestamp(),
+                userId: auth.currentUser!.uid
+            });
         });
-        console.log("Task logged to Firestore:", taskId);
+
+        console.log("Task logged to Firestore via Transaction:", taskId);
 
         // 2. Success UI (No Webhook)
         btn.innerText = dict.msg_success;
         alert(`We've received your task. Will email to here ${userEmail} to you when ready.\n\nWe will start call within 5 minutes, please carefully check your phone number.`);
-
     } catch (error) {
         console.error("Error submitting trial:", error);
-        btn.innerText = dict.msg_failed;
-        alert(dict.msg_fail_alert);
+
+        // Handle specific credit error
+        if (typeof error === 'string' && error.includes("Insufficient credits")) {
+            alert(dict.msg_no_credit || "Insufficient credits! Please top up.");
+        } else {
+            btn.innerText = dict.msg_failed;
+            alert(dict.msg_fail_alert || "Submission failed. Please try again.");
+        }
         btn.disabled = false;
     }
 }

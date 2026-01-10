@@ -134,7 +134,7 @@ onAuthStateChanged(auth, (user) => {
                     email: user.email || "N/A",
                     uid: user.uid,
                     picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email || 'User'),
-                    credits: 1.00,
+                    credits: 10.00,
                     createdAt: serverTimestamp()
                 };
                 // We can't use await here easily inside onSnapshot, but setDoc is async.

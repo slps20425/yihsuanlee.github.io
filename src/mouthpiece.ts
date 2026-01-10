@@ -165,6 +165,11 @@ async function handleFormSubmit(e: Event) {
     const btn = document.getElementById('submitBtn') as HTMLButtonElement;
     btn.disabled = true;
 
+    // TEMPORARY DISABLE
+    alert("This service is currently disabled/under maintenance.");
+    btn.disabled = false;
+    return;
+
     // Elements
     const missionEl = document.getElementById('mission') as HTMLSelectElement;
     const customMissionEl = document.getElementById('customMission') as HTMLInputElement;
