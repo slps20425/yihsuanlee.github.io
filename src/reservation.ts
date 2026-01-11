@@ -538,26 +538,20 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     // Timezone Mapping (Expanded)
-    const countryToTz: Record<string, string> = {
-        'tw': 'Asia/Taipei', 'jp': 'Asia/Tokyo', 'kr': 'Asia/Seoul',
-        'cn': 'Asia/Shanghai', 'HK': 'Asia/Hong_Kong', 'sg': 'Asia/Singapore',
-        'us': 'America/New_York', 'ca': 'America/Toronto', 'gb': 'Europe/London', 'uk': 'Europe/London',
-        'au': 'Australia/Sydney', 'th': 'Asia/Bangkok', 'vn': 'Asia/Ho_Chi_Minh',
-        'fr': 'Europe/Paris', 'de': 'Europe/Berlin', 'it': 'Europe/Rome', 'es': 'Europe/Madrid',
-        'my': 'Asia/Kuala_Lumpur', 'ph': 'Asia/Manila', 'id': 'Asia/Jakarta'
-    };
-
-    const updateTimezone = () => {
+    const updateTimezone = async () => {
         if (!phoneInputPlugin) return; // Target phone plugin
         const countryData = phoneInputPlugin.getSelectedCountryData();
         const countryCode = countryData.iso2;
         const tzDisplay = document.getElementById('detectedTimezone');
 
+        // Dynamic import to ensure comprehensive coverage
+        const { countryTimezones } = await import('./timezones');
+
         let tz = '';
         let source = '';
 
-        if (countryCode && countryToTz[countryCode]) {
-            tz = countryToTz[countryCode];
+        if (countryCode && countryTimezones[countryCode]) {
+            tz = countryTimezones[countryCode];
             source = `based on ${countryCode.toUpperCase()}`;
         } else {
             try {
