@@ -516,17 +516,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     bindSearchListeners();
 
     // --- Scheduler UI Logic ---
-    const enableSchedule = document.getElementById('enableSchedule');
     const scheduleContainer = document.getElementById('scheduleContainer');
     const schedulePreference = document.getElementById('schedulePreference');
 
-    if (enableSchedule && scheduleContainer && schedulePreference) {
-        enableSchedule.addEventListener('change', (e) => {
-            const isChecked = (e.target as HTMLInputElement).checked;
-            scheduleContainer.style.display = isChecked ? 'block' : 'none';
-            schedulePreference.style.display = isChecked ? 'none' : 'block';
+    if (scheduleContainer && schedulePreference) {
+        schedulePreference.addEventListener('change', (e) => {
+            const val = (e.target as HTMLSelectElement).value;
+            const isScheduled = val === 'scheduled';
+            scheduleContainer.style.display = isScheduled ? 'block' : 'none';
 
-            if (isChecked) {
+            if (isScheduled) {
                 const timeInput = document.getElementById('scheduleTime') as HTMLInputElement;
                 if (timeInput) {
                     const now = new Date();
@@ -1256,8 +1255,8 @@ async function handleFormSubmit(e: Event) {
     };
 
     // --- Schedule Logic ---
-    const enableSchedule = (document.getElementById('enableSchedule') as HTMLInputElement).checked;
-    if (enableSchedule) {
+    const schedulePreferenceVal = (document.getElementById('schedulePreference') as HTMLSelectElement).value;
+    if (schedulePreferenceVal === 'scheduled') {
         const scheduleTimeInput = document.getElementById('scheduleTime') as HTMLInputElement;
         const scheduleVal = scheduleTimeInput.value;
 
