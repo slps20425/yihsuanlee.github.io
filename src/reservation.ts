@@ -525,6 +525,16 @@ document.addEventListener("DOMContentLoaded", async function () {
             const isChecked = (e.target as HTMLInputElement).checked;
             scheduleContainer.style.display = isChecked ? 'block' : 'none';
             schedulePreference.style.display = isChecked ? 'none' : 'block';
+
+            if (isChecked) {
+                const timeInput = document.getElementById('scheduleTime') as HTMLInputElement;
+                if (timeInput) {
+                    const now = new Date();
+                    // ISO string is UTC, so we need to offset it to match local time for the input
+                    const localIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                    timeInput.min = localIso;
+                }
+            }
         });
     }
 
@@ -1287,6 +1297,12 @@ async function handleFormSubmit(e: Event) {
             const finalDate = new Date(trueTimestamp);
 
             (payload as any).scheduleCallTime = finalDate.toISOString();
+
+            if (finalDate.getTime() < Date.now()) {
+                (window as any).showToast("Scheduled time cannot be in the past.", "error");
+                btn.disabled = false;
+                return;
+            }
             (payload as any).scheduleTimeZone = tz;
         } catch (e) {
             console.error("Timezone conversion error:", e);

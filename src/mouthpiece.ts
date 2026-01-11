@@ -265,6 +265,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isChecked = (e.target as HTMLInputElement).checked;
             scheduleContainer.style.display = isChecked ? 'block' : 'none';
             schedulePreference.style.display = isChecked ? 'none' : 'block';
+
+            if (isChecked) {
+                const timeInput = document.getElementById('scheduleTime') as HTMLInputElement;
+                if (timeInput) {
+                    const now = new Date();
+                    // ISO string is UTC, so we need to offset it to match local time for the input
+                    const localIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                    timeInput.min = localIso;
+                }
+            }
         });
     }
 
@@ -432,6 +442,12 @@ async function handleFormSubmit(e: Event) {
             // e.g. We want 10:00 Taipei. Offset is +8h. True UTC = 10:00 - 8h = 02:00.
             const trueTimestamp = probeUTC.getTime() - offsetMs;
             const finalDate = new Date(trueTimestamp);
+
+            if (finalDate.getTime() < Date.now()) {
+                (window as any).showToast("Scheduled time cannot be in the past.", "error");
+                btn.disabled = false;
+                return;
+            }
 
             (payload as any).scheduleCallTime = finalDate.toISOString();
             (payload as any).scheduleTimeZone = tz; // Keep for reference
