@@ -107,24 +107,29 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
 
             // Update UI Icon
-            const icon = document.getElementById('costIcon');
-            if (icon) {
-                icon.setAttribute('title', `Cost: ${currentCost} Credit(s)`);
-                icon.onclick = () => alert(`This task costs ${currentCost} credit(s).`);
-            } else if (resBtn && resBtn.parentNode) {
-                // Create icon if not exists
-                const newIcon = document.createElement('span');
-                newIcon.id = 'costIcon';
-                newIcon.innerText = 'ⓘ';
-                newIcon.style.cssText = "display:block; text-align:center; margin-top:5px; margin-left: 10px; cursor: pointer; color: #aaa; font-size: 18px;";
-                newIcon.innerText = `ⓘ Cost: ${currentCost} Credit(s)`;
-                newIcon.onclick = () => alert(`This task costs ${currentCost} credit(s).`);
+            const iconContainerId = 'costIconContainer';
+            let iconContainer = document.getElementById(iconContainerId);
 
-                // Append after button
-                resBtn.parentNode.insertBefore(newIcon, resBtn.nextSibling);
+            if (!iconContainer) {
+                // Find Header or Title to append near
+                const header = document.querySelector('.header h2') || document.querySelector('h2');
+
+                if (header) {
+                    iconContainer = document.createElement('div');
+                    iconContainer.id = iconContainerId;
+                    iconContainer.className = 'info-icon-container';
+                    iconContainer.innerHTML = `
+                        <div class="info-icon">i</div>
+                        <div class="cost-tooltip">
+                            <strong>Cost Information</strong><br>
+                            This task costs <span id="dynamicCostDisplay">${currentCost}</span> credit(s).
+                        </div>
+                    `;
+                    header.parentNode?.insertBefore(iconContainer, header.nextSibling);
+                }
             } else {
-                const existingIcon = document.getElementById('costIcon');
-                if (existingIcon) existingIcon.innerText = `ⓘ Cost: ${currentCost} Credit(s)`;
+                const display = document.getElementById('dynamicCostDisplay');
+                if (display) display.innerText = String(currentCost);
             }
 
             if (resBtn) {
@@ -1194,7 +1199,7 @@ async function handleFormSubmit(e: Event) {
     // Validation for Name
     const namePattern = /^[a-zA-Z\s\-_]*$/;
     if (!namePattern.test(payload.Name)) {
-        alert((dict as any).validation_name || "Name must be English letters only");
+        (window as any).showToast((dict as any).validation_name || "Name must be English letters only", "error");
         btn.disabled = false;
         return;
     }
@@ -1203,7 +1208,7 @@ async function handleFormSubmit(e: Event) {
     // 1. Transaction: Check Credits -> Deduct -> Create Task
     try {
         if (!auth.currentUser) {
-            alert("Please log in to submit a reservation.");
+            (window as any).showToast("Please log in to submit a reservation.", "error");
             btn.disabled = false;
             return;
         }
@@ -1242,7 +1247,7 @@ async function handleFormSubmit(e: Event) {
 
         // 2. Success UI (No Webhook)
         btn.innerText = (dict as any).msg_success;
-        alert(`We've received your task. Will email to here ${userEmail} to you when ready`);
+        (window as any).showToast(`We've received your task. Will email to ${userEmail} when ready`, "success");
 
     } catch (error) {
         console.error("Error submitting reservation:", error);
@@ -1254,7 +1259,7 @@ async function handleFormSubmit(e: Event) {
 
         const originalText = (dict as any).btn_submit_reservation || "Submit Reservation";
         btn.innerText = originalText;
-        alert(msg);
+        (window as any).showToast(msg, "error");
         btn.disabled = false;
     }
 }

@@ -51,38 +51,31 @@ document.addEventListener("DOMContentLoaded", async function () {
                 currentCost = Number(data.cost_trial);
             }
             // Update UI Icon
-            const icon = document.getElementById('costIcon');
-            if (icon) {
-                icon.setAttribute('title', `Cost: ${currentCost} Credit(s)`);
-                icon.onclick = () => alert(`This task costs ${currentCost} credit(s).`);
-            } else if (trialBtn && trialBtn.parentNode) {
-                // Create icon if not exists
-                const newIcon = document.createElement('span');
-                newIcon.id = 'costIcon';
-                newIcon.innerText = 'ⓘ';
-                newIcon.style.cssText = "margin-left: 10px; cursor: pointer; color: #aaa; font-size: 18px;";
-                newIcon.setAttribute('title', `Cost: ${currentCost} Credit(s)`);
-                newIcon.onclick = () => alert(`This task costs ${currentCost} credit(s).`);
+            const iconContainerId = 'costIconContainer';
+            let iconContainer = document.getElementById(iconContainerId);
 
-                // Append after button (or before? usually next to)
-                // trialBtn is block usually, so maybe append to parent but make sure flow is right.
-                // trialBtn usually width 100%. Let's append to button's container or adjust styles.
-                // For simplicity, let's insert after button.
-                trialBtn.parentNode.insertBefore(newIcon, trialBtn.nextSibling);
+            if (!iconContainer) {
+                // Find Header or Title to append near
+                const header = document.querySelector('.header h2') || document.querySelector('h2');
 
-                // Adjust button width if needed or wrap them. 
-                // Given existing CSS, button is 100%. Let's just place it under or float it. 
-                // Actually, let's put it inside the button text? No.
-                // Let's create a small text below the button.
-                newIcon.style.display = 'block';
-                newIcon.style.textAlign = 'center';
-                newIcon.style.marginTop = '5px';
-                newIcon.innerText = `ⓘ Cost: ${currentCost} Credit(s)`;
+                if (header) {
+                    iconContainer = document.createElement('div');
+                    iconContainer.id = iconContainerId;
+                    iconContainer.className = 'info-icon-container';
+                    iconContainer.innerHTML = `
+                        <div class="info-icon">i</div>
+                        <div class="cost-tooltip">
+                            <strong>Cost Information</strong><br>
+                            This task costs <span id="dynamicCostDisplay">${currentCost}</span> credit(s).
+                        </div>
+                    `;
+                    header.parentNode?.insertBefore(iconContainer, header.nextSibling);
+                }
             } else {
-                // Update text if element exists
-                const existingIcon = document.getElementById('costIcon');
-                if (existingIcon) existingIcon.innerText = `ⓘ Cost: ${currentCost} Credit(s)`;
+                const display = document.getElementById('dynamicCostDisplay');
+                if (display) display.innerText = String(currentCost);
             }
+
 
             if (trialBtn) {
                 if (!isEnabled) {
@@ -318,7 +311,7 @@ async function handleFormSubmit(e: Event) {
     // 1. Transaction: Check Credits -> Deduct -> Create Task
     try {
         if (!auth.currentUser) {
-            alert("Please log in to submit a trial task.");
+            (window as any).showToast("Please log in to submit a trial task.", "error");
             btn.disabled = false;
             return;
         }
@@ -367,17 +360,52 @@ async function handleFormSubmit(e: Event) {
 
         // 2. Success UI (No Webhook)
         btn.innerText = dict.msg_success;
-        alert(`We've received your task. Will email to here ${userEmail} to you when ready.\n\nWe will start call within 5 minutes, please carefully check your phone number.`);
+        (window as any).showToast(dict.msg_success_toast || `We've received your task. Will email to ${userEmail} when ready.`, "success");
     } catch (error) {
         console.error("Error submitting trial:", error);
 
         // Handle specific credit error
         if (typeof error === 'string' && error.includes("Insufficient credits")) {
-            alert(dict.msg_no_credit || `Insufficient credits! This task requires ${currentCost} credits.`);
+            (window as any).showToast(dict.msg_no_credit || `Insufficient credits! This task requires ${currentCost} credits.`, "error");
         } else {
             btn.innerText = dict.msg_failed;
-            alert(dict.msg_fail_alert || "Submission failed. Please try again.");
+            (window as any).showToast(dict.msg_fail_alert || "Submission failed. Please try again.", "error");
         }
         btn.disabled = false;
     }
+}
+
+// Helper: Toast Notification
+(window as any).showToast = function (message: string, type: 'success' | 'error' | 'info' = 'info') {
+    const container = document.getElementById('toast-container') || createToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    let icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    if (type === 'error') icon = '⚠️';
+
+    toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+    container.appendChild(toast);
+
+    // Trigger animation
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            container.removeChild(toast);
+        }, 300);
+    }, 3000);
+};
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+    return container;
 }

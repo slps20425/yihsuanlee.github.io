@@ -125,24 +125,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Update UI Icon
-            const icon = document.getElementById('costIcon');
-            if (icon) {
-                icon.setAttribute('title', `Cost: ${currentCost} Credit(s)`);
-                icon.onclick = () => alert(`This task costs ${currentCost} credit(s).`);
-            } else if (mouthBtn && mouthBtn.parentNode) {
-                // Create icon if not exists
-                const newIcon = document.createElement('span');
-                newIcon.id = 'costIcon';
-                newIcon.innerText = 'ⓘ';
-                newIcon.style.cssText = "display:block; text-align:center; margin-top:5px; margin-left: 10px; cursor: pointer; color: #aaa; font-size: 18px;";
-                newIcon.innerText = `ⓘ Cost: ${currentCost} Credit(s)`;
-                newIcon.onclick = () => alert(`This task costs ${currentCost} credit(s).`);
+            const iconContainerId = 'costIconContainer';
+            let iconContainer = document.getElementById(iconContainerId);
 
-                // Append after button
-                mouthBtn.parentNode.insertBefore(newIcon, mouthBtn.nextSibling);
+            if (!iconContainer) {
+                // Find Header or Title to append near
+                const header = document.querySelector('.header h2') || document.querySelector('h2');
+
+                if (header) {
+                    iconContainer = document.createElement('div');
+                    iconContainer.id = iconContainerId;
+                    iconContainer.className = 'info-icon-container';
+                    iconContainer.innerHTML = `
+                        <div class="info-icon">i</div>
+                        <div class="cost-tooltip">
+                            <strong>Cost Information</strong><br>
+                            This task costs <span id="dynamicCostDisplay">${currentCost}</span> credit(s).
+                        </div>
+                    `;
+                    header.parentNode?.insertBefore(iconContainer, header.nextSibling);
+                }
             } else {
-                const existingIcon = document.getElementById('costIcon');
-                if (existingIcon) existingIcon.innerText = `ⓘ Cost: ${currentCost} Credit(s)`;
+                const display = document.getElementById('dynamicCostDisplay');
+                if (display) display.innerText = String(currentCost);
             }
 
             if (mouthBtn) {
@@ -303,7 +308,7 @@ async function handleFormSubmit(e: Event) {
 
     const namePattern = /^[a-zA-Z\s\-_]*$/;
     if (!namePattern.test(payload.userName) || !namePattern.test(payload.recipientName)) {
-        alert(dict.validation_name || "Name must be English letters only");
+        (window as any).showToast(dict.validation_name || "Name must be English letters only", "error");
         btn.disabled = false;
         return;
     }
@@ -312,7 +317,7 @@ async function handleFormSubmit(e: Event) {
     // 1. Transaction: Check Credits -> Deduct -> Create Task
     try {
         if (!auth.currentUser) {
-            alert("Please log in to submit a mouthpiece task.");
+            (window as any).showToast("Please log in to submit a mouthpiece task.", "error");
             btn.disabled = false;
             return;
         }
@@ -359,7 +364,7 @@ async function handleFormSubmit(e: Event) {
             try { const u = JSON.parse(stored); if (u.email) userEmail = u.email; } catch (e) { }
         }
 
-        alert(`We've received your task. Will email to here ${userEmail} to you when ready.\n\nWe will start call within 5 minutes.`);
+        (window as any).showToast(`We've received your task. Will email to ${userEmail} when ready.`, "success");
 
     } catch (error) {
         console.error("Error submitting mouthpiece:", error);
@@ -370,7 +375,42 @@ async function handleFormSubmit(e: Event) {
         }
 
         btn.innerText = dict.msg_failed;
-        alert(msg);
+        (window as any).showToast(msg, "error");
         btn.disabled = false;
     }
+}
+
+// Helper: Toast Notification
+(window as any).showToast = function (message: string, type: 'success' | 'error' | 'info' = 'info') {
+    const container = document.getElementById('toast-container') || createToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    let icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    if (type === 'error') icon = '⚠️';
+
+    toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+    container.appendChild(toast);
+
+    // Trigger animation
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            container.removeChild(toast);
+        }, 300);
+    }, 3000);
+};
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+    return container;
 }
