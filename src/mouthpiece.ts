@@ -8,6 +8,7 @@ declare var intlTelInput: any;
 
 let turnstileValidated = false;
 let phoneInputPlugin: any = null;
+let currentCost = 3; // Default cost for mouthpiece
 
 // --- Turnstile Callback ---
 // --- Turnstile Integration ---
@@ -97,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- Remote Config Listener ---
-    const { doc, onSnapshot } = await import("firebase/firestore");
+    const { doc, onSnapshot, runTransaction } = await import("firebase/firestore"); // Added runTransaction
     const { db } = await import("./firebase-config");
 
     const configRef = doc(db, 'configuration', 'settings');
@@ -111,10 +112,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         mouthBtn.parentNode.insertBefore(configAlert, mouthBtn);
     }
 
+
+
     onSnapshot(configRef, (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
             const isEnabled = data.enable_mouthpiece !== false; // Default true
+
+            // Dynamic Cost
+            if (data.cost_mouthpiece !== undefined) {
+                currentCost = Number(data.cost_mouthpiece);
+            }
+
+            // Update UI Icon
+            const icon = document.getElementById('costIcon');
+            if (icon) {
+                icon.setAttribute('title', `Cost: ${currentCost} Credit(s)`);
+                icon.onclick = () => alert(`This task costs ${currentCost} credit(s).`);
+            } else if (mouthBtn && mouthBtn.parentNode) {
+                // Create icon if not exists
+                const newIcon = document.createElement('span');
+                newIcon.id = 'costIcon';
+                newIcon.innerText = 'ⓘ';
+                newIcon.style.cssText = "display:block; text-align:center; margin-top:5px; margin-left: 10px; cursor: pointer; color: #aaa; font-size: 18px;";
+                newIcon.innerText = `ⓘ Cost: ${currentCost} Credit(s)`;
+                newIcon.onclick = () => alert(`This task costs ${currentCost} credit(s).`);
+
+                // Append after button
+                mouthBtn.parentNode.insertBefore(newIcon, mouthBtn.nextSibling);
+            } else {
+                const existingIcon = document.getElementById('costIcon');
+                if (existingIcon) existingIcon.innerText = `ⓘ Cost: ${currentCost} Credit(s)`;
+            }
 
             if (mouthBtn) {
                 if (!isEnabled) {
@@ -241,7 +270,7 @@ async function handleFormSubmit(e: Event) {
     const scriptContentEl = document.getElementById('scriptContent') as HTMLTextAreaElement;
     const schedulePreferenceEl = document.getElementById('schedulePreference') as HTMLSelectElement;
 
-    const { doc, collection, setDoc, serverTimestamp } = await import("firebase/firestore");
+    const { doc, collection, serverTimestamp, runTransaction } = await import("firebase/firestore");
     const { db } = await import("./firebase-config");
 
     const tasksCol = collection(db, 'tasks');
@@ -279,22 +308,51 @@ async function handleFormSubmit(e: Event) {
         return;
     }
 
+
+    // 1. Transaction: Check Credits -> Deduct -> Create Task
     try {
-        // 1. Log to Firestore
-        await setDoc(taskRef, {
-            ...payload,
-            createdAt: serverTimestamp(),
-            userId: (auth.currentUser ? auth.currentUser.uid : 'n/a')
+        if (!auth.currentUser) {
+            alert("Please log in to submit a mouthpiece task.");
+            btn.disabled = false;
+            return;
+        }
+
+        const userDocRef = doc(db, 'users', `uid_${auth.currentUser.uid}`);
+        const cost = currentCost;
+
+        await runTransaction(db, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+            if (!userDoc.exists()) {
+                throw "User document does not exist!";
+            }
+
+            const userData = userDoc.data();
+            const currentCredits = Number(userData.credits || 0);
+
+            if (currentCredits < cost) {
+                // Throwing simple string to be caught below
+                throw `Insufficient credits! This task requires ${cost} credits.`;
+            }
+
+            // Deduct Credit
+            transaction.update(userDocRef, { credits: currentCredits - cost });
+
+            // Create Task
+            transaction.set(taskRef, {
+                ...payload,
+                userCredits: currentCredits - cost, // Store NEW balance
+                cost: cost,
+                createdAt: serverTimestamp(),
+                userId: auth.currentUser!.uid
+            });
         });
-        console.log("Task logged to Firestore:", taskId);
+
+        console.log("Task logged to Firestore via Transaction:", taskId);
 
         // 2. Success UI (No Webhook)
         btn.innerText = dict.msg_success;
 
         // Need userEmail. In mouthpiece.ts we parse localStorage earlier.
-        // Let's re-parse or use a variable if we had one. 
-        // Looking at the view_file (1421), 'userSession' is parsed in DOMContentLoaded.
-        // We should move that parsing to top of handleFormSubmit or rely on localStorage again.
         let userEmail = "you";
         const stored = localStorage.getItem('wisecat_user');
         if (stored) {
@@ -305,8 +363,14 @@ async function handleFormSubmit(e: Event) {
 
     } catch (error) {
         console.error("Error submitting mouthpiece:", error);
+
+        let msg = (dict.msg_fail_alert || "Submission failed. Please try again.");
+        if (typeof error === 'string' && error.includes("Insufficient credits")) {
+            msg = error;
+        }
+
         btn.innerText = dict.msg_failed;
-        alert(dict.msg_fail_alert);
+        alert(msg);
         btn.disabled = false;
     }
 }

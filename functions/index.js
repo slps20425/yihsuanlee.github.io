@@ -149,7 +149,7 @@ exports.triggerN8nWebhook = onDocumentCreated(
                 const payload = { ...winnerData, taskId: winnerId };
 
                 await axios.post(
-                    "https://wisecat.app.n8n.cloud/webhook-test/tasker",
+                    "https://wisecat.app.n8n.cloud/webhook/tasker",
                     payload
                 );
                 console.log(`Task ${winnerId} dispatched to N8N successfully.`);

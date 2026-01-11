@@ -20,6 +20,7 @@ let currentPlaceOpeningHours: any = null;
 let phoneInputPlugin: any = null;
 let userPhonePlugin: any = null;
 let turnstileValidated = false;
+let currentCost = 5; // Default cost for reservation
 
 // Cache
 const placeDetailsCache: Record<string, any> = {};
@@ -80,7 +81,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     WiseCatI18n.init();
 
     // --- Remote Config Listener ---
-    const { doc, onSnapshot } = await import("firebase/firestore");
+    const { doc, onSnapshot, runTransaction } = await import("firebase/firestore"); // Added runTransaction
     const { db } = await import("./firebase-config");
 
     const configRef = doc(db, 'configuration', 'settings');
@@ -93,10 +94,38 @@ document.addEventListener("DOMContentLoaded", async function () {
         resBtn.parentNode.insertBefore(configAlert, resBtn);
     }
 
+
+
     onSnapshot(configRef, (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
             const isEnabled = data.enable_reservation !== false; // Default true if field missing
+
+            // Dynamic Cost
+            if (data.cost_reservation !== undefined) {
+                currentCost = Number(data.cost_reservation);
+            }
+
+            // Update UI Icon
+            const icon = document.getElementById('costIcon');
+            if (icon) {
+                icon.setAttribute('title', `Cost: ${currentCost} Credit(s)`);
+                icon.onclick = () => alert(`This task costs ${currentCost} credit(s).`);
+            } else if (resBtn && resBtn.parentNode) {
+                // Create icon if not exists
+                const newIcon = document.createElement('span');
+                newIcon.id = 'costIcon';
+                newIcon.innerText = 'ⓘ';
+                newIcon.style.cssText = "display:block; text-align:center; margin-top:5px; margin-left: 10px; cursor: pointer; color: #aaa; font-size: 18px;";
+                newIcon.innerText = `ⓘ Cost: ${currentCost} Credit(s)`;
+                newIcon.onclick = () => alert(`This task costs ${currentCost} credit(s).`);
+
+                // Append after button
+                resBtn.parentNode.insertBefore(newIcon, resBtn.nextSibling);
+            } else {
+                const existingIcon = document.getElementById('costIcon');
+                if (existingIcon) existingIcon.innerText = `ⓘ Cost: ${currentCost} Credit(s)`;
+            }
 
             if (resBtn) {
                 if (!isEnabled) {
@@ -1119,7 +1148,7 @@ async function handleFormSubmit(e: Event) {
     const schedulePrefSelect = document.getElementById('schedulePreference') as HTMLSelectElement;
     const retryCheck = document.getElementById('retryOption') as HTMLInputElement;
 
-    const { doc, collection, setDoc, serverTimestamp } = await import("firebase/firestore");
+    const { doc, collection, serverTimestamp, runTransaction } = await import("firebase/firestore");
     const { db } = await import("./firebase-config");
 
     const tasksCol = collection(db, 'tasks');
@@ -1170,14 +1199,46 @@ async function handleFormSubmit(e: Event) {
         return;
     }
 
+
+    // 1. Transaction: Check Credits -> Deduct -> Create Task
     try {
-        // 1. Log to Firestore
-        await setDoc(taskRef, {
-            ...payload,
-            createdAt: serverTimestamp(),
-            userId: (auth.currentUser ? auth.currentUser.uid : 'n/a')
+        if (!auth.currentUser) {
+            alert("Please log in to submit a reservation.");
+            btn.disabled = false;
+            return;
+        }
+
+        const userDocRef = doc(db, 'users', `uid_${auth.currentUser.uid}`);
+        const cost = currentCost;
+
+        await runTransaction(db, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+            if (!userDoc.exists()) {
+                throw "User document does not exist!";
+            }
+
+            const userData = userDoc.data();
+            const currentCredits = Number(userData.credits || 0);
+
+            if (currentCredits < cost) {
+                // Throwing simple string to be caught below
+                throw `Insufficient credits! This task requires ${cost} credits.`;
+            }
+
+            // Deduct Credit
+            transaction.update(userDocRef, { credits: currentCredits - cost });
+
+            // Create Task
+            transaction.set(taskRef, {
+                ...payload,
+                userCredits: currentCredits - cost, // Store NEW balance
+                cost: cost,
+                createdAt: serverTimestamp(),
+                userId: auth.currentUser!.uid
+            });
         });
-        console.log("Task logged to Firestore:", taskId);
+
+        console.log("Task logged to Firestore via Transaction:", taskId);
 
         // 2. Success UI (No Webhook)
         btn.innerText = (dict as any).msg_success;
@@ -1185,10 +1246,15 @@ async function handleFormSubmit(e: Event) {
 
     } catch (error) {
         console.error("Error submitting reservation:", error);
-        // Restore button state
+
+        let msg = (dict as any).msg_failed || "Submission failed. Please try again.";
+        if (typeof error === 'string' && error.includes("Insufficient credits")) {
+            msg = error;
+        }
+
         const originalText = (dict as any).btn_submit_reservation || "Submit Reservation";
         btn.innerText = originalText;
-        alert((dict as any).msg_failed || "Submission failed. Please try again.");
+        alert(msg);
         btn.disabled = false;
     }
 }
