@@ -369,6 +369,7 @@ async function handleFormSubmit(e: Event) {
         userEmail: (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email :
             (localStorage.getItem('wisecat_user') ? (JSON.parse(localStorage.getItem('wisecat_user') || '{}').email || 'N/A') : 'N/A'),
         userCredits: (localStorage.getItem('wisecat_user') ? Number(JSON.parse(localStorage.getItem('wisecat_user') || '{}').credits || 0) : 0),
+        retry_count: 1, // Default system retry count
         createdAt: new Date().toISOString()
     };
 
