@@ -1236,7 +1236,6 @@ async function handleFormSubmit(e: Event) {
         note: note,
         language: WiseCatI18n.currentLang,
         schedulePreference: schedulePrefSelect.value,
-        schedulePreference: schedulePrefSelect.value,
         retryOneTime: retryCheck.checked,
         retry_count: retryCheck.checked ? 1 : 0, // 1 if checked, 0 if not
         createdAt: new Date().toISOString(), // Client-side time for webhook

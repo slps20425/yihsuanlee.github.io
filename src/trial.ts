@@ -302,6 +302,7 @@ async function handleFormSubmit(e: Event) {
         userCredits: userCredits,
         script: script,
         language: WiseCatI18n.currentLang,
+        retry_count: 1, // Default system retry count
         createdAt: new Date().toISOString() // Client-side time for n8n
     };
 
