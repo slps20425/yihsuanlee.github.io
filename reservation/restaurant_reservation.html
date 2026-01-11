@@ -190,10 +190,26 @@
             </div>
 
             <label data-i18n="label_schedule" style="margin-top: 20px;">Schedule Call Preference</label>
-            <select id="schedulePreference">
-                <option value="open" data-i18n="option_open">Call when restaurant open</option>
-                <option value="asap" data-i18n="option_asap">Call ASAP</option>
-            </select>
+            <div class="schedule-options" style="margin-bottom: 15px;">
+                <div class="checkbox-wrapper" style="margin-bottom: 10px;">
+                    <input type="checkbox" id="enableSchedule" style="width: auto; margin-right: 10px;">
+                    <label for="enableSchedule" style="display: inline;" data-i18n="label_enable_schedule">Schedule a
+                        specific time for this call</label>
+                </div>
+
+                <div id="scheduleContainer" style="display: none; padding-left: 10px; border-left: 2px solid #555;">
+                    <label data-i18n="label_call_time">Call Time</label>
+                    <input type="datetime-local" id="scheduleTime" style="width: 100%; margin-bottom: 5px;">
+                    <div id="timezoneInfo" style="font-size: 12px; color: #aaa; margin-bottom: 15px;">
+                        Timezone: <span id="detectedTimezone">Auto-detecting...</span>
+                    </div>
+                </div>
+
+                <select id="schedulePreference">
+                    <option value="open" data-i18n="option_open">Call when restaurant open</option>
+                    <option value="asap" data-i18n="option_asap">Call ASAP</option>
+                </select>
+            </div>
 
             <div class="retry-container">
                 <input type="checkbox" id="retryOption">

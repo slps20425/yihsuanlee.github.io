@@ -514,6 +514,53 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Bind event listeners using the centralized bind function
     bindValidationListeners();
     bindSearchListeners();
+
+    // --- Scheduler UI Logic ---
+    const enableSchedule = document.getElementById('enableSchedule');
+    const scheduleContainer = document.getElementById('scheduleContainer');
+    const schedulePreference = document.getElementById('schedulePreference');
+
+    if (enableSchedule && scheduleContainer && schedulePreference) {
+        enableSchedule.addEventListener('change', (e) => {
+            const isChecked = (e.target as HTMLInputElement).checked;
+            scheduleContainer.style.display = isChecked ? 'block' : 'none';
+            schedulePreference.style.display = isChecked ? 'none' : 'block';
+        });
+    }
+
+    // Timezone Mapping (Simple)
+    const countryToTz: Record<string, string> = {
+        'tw': 'Asia/Taipei', 'jp': 'Asia/Tokyo', 'kr': 'Asia/Seoul',
+        'cn': 'Asia/Shanghai', 'us': 'America/New_York', 'uk': 'Europe/London',
+        'au': 'Australia/Sydney', 'th': 'Asia/Bangkok', 'vn': 'Asia/Ho_Chi_Minh'
+    };
+
+    const updateTimezone = () => {
+        if (!phoneInputPlugin) return; // Target phone plugin
+        const countryData = phoneInputPlugin.getSelectedCountryData();
+        const countryCode = countryData.iso2;
+        const tzDisplay = document.getElementById('detectedTimezone');
+
+        let tz = 'UTC';
+        if (countryCode && countryToTz[countryCode]) {
+            tz = countryToTz[countryCode];
+        } else if (countryCode) {
+            try {
+                tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            } catch (e) { }
+        }
+
+        if (tzDisplay) {
+            tzDisplay.innerText = `${tz} (based on ${countryCode.toUpperCase()})`;
+            tzDisplay.setAttribute('data-tz', tz);
+        }
+    };
+
+    const phoneInputForTimezone = document.querySelector("#targetPhone");
+    if (phoneInputForTimezone) {
+        phoneInputForTimezone.addEventListener('countrychange', updateTimezone);
+        setTimeout(updateTimezone, 1000);
+    }
 });
 
 // --- Validation Logic ---

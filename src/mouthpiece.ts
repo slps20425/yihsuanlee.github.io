@@ -254,6 +254,56 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (buddy && panel) buddy.addEventListener('click', () => panel.classList.toggle('show'));
     if (close && panel) close.addEventListener('click', () => panel.classList.remove('show'));
+
+    // --- Scheduler UI Logic ---
+    const enableSchedule = document.getElementById('enableSchedule');
+    const scheduleContainer = document.getElementById('scheduleContainer');
+    const schedulePreference = document.getElementById('schedulePreference');
+
+    if (enableSchedule && scheduleContainer && schedulePreference) {
+        enableSchedule.addEventListener('change', (e) => {
+            const isChecked = (e.target as HTMLInputElement).checked;
+            scheduleContainer.style.display = isChecked ? 'block' : 'none';
+            schedulePreference.style.display = isChecked ? 'none' : 'block';
+        });
+    }
+
+    // Timezone Mapping (Simple)
+    const countryToTz: Record<string, string> = {
+        'tw': 'Asia/Taipei', 'jp': 'Asia/Tokyo', 'kr': 'Asia/Seoul',
+        'cn': 'Asia/Shanghai', 'us': 'America/New_York', 'uk': 'Europe/London',
+        'au': 'Australia/Sydney', 'th': 'Asia/Bangkok', 'vn': 'Asia/Ho_Chi_Minh'
+        // Add more as needed, fallback to UTC
+    };
+
+    const updateTimezone = () => {
+        if (!phoneInputPlugin) return;
+        const countryData = phoneInputPlugin.getSelectedCountryData();
+        const countryCode = countryData.iso2;
+        const tzDisplay = document.getElementById('detectedTimezone');
+
+        let tz = 'UTC'; // Fallback
+        if (countryCode && countryToTz[countryCode]) {
+            tz = countryToTz[countryCode];
+        } else if (countryCode) {
+            // Generic attempt? No, just default
+            try {
+                // If browser supports it, we could try map common ones
+                tz = Intl.DateTimeFormat().resolvedOptions().timeZone; // Default to user's browser if unknown
+            } catch (e) { }
+        }
+
+        if (tzDisplay) {
+            tzDisplay.innerText = `${tz} (based on ${countryCode.toUpperCase()})`;
+            tzDisplay.setAttribute('data-tz', tz);
+        }
+    };
+
+    if (input) {
+        input.addEventListener('countrychange', updateTimezone);
+        // Initial update
+        setTimeout(updateTimezone, 1000);
+    }
 });
 
 async function handleFormSubmit(e: Event) {
@@ -303,6 +353,74 @@ async function handleFormSubmit(e: Event) {
         userCredits: (localStorage.getItem('wisecat_user') ? Number(JSON.parse(localStorage.getItem('wisecat_user') || '{}').credits || 0) : 0),
         createdAt: new Date().toISOString()
     };
+
+    // --- Schedule Logic ---
+    const enableSchedule = (document.getElementById('enableSchedule') as HTMLInputElement).checked;
+    if (enableSchedule) {
+        const scheduleTimeInput = document.getElementById('scheduleTime') as HTMLInputElement;
+        const scheduleVal = scheduleTimeInput.value;
+
+        if (!scheduleVal) {
+            (window as any).showToast("Please select a time for the scheduled call.", "error");
+            btn.disabled = false;
+            return;
+        }
+
+        // Calculate UTC time
+        const targetDate = new Date(scheduleVal); // This parses as local time of the browser usually
+        // But we want to interpret it in the TARGET timezone?
+        // Actually, datetime-local IS just a string "YYYY-MM-DDTHH:mm".
+        // Use logic to interpret this string as belonging to the detected timezone.
+
+        // Simple approach: Use detected offset
+        const tzInfo = document.getElementById('detectedTimezone');
+        let tz = tzInfo ? tzInfo.getAttribute('data-tz') : null; // We will store tz in attribute
+
+        if (!tz) tz = Intl.DateTimeFormat().resolvedOptions().timeZone; // Fallback to browser
+
+        // Create date object treating the input string as being in 'tz'
+        // Using a library like luxon is best, but to keep it light/vanilla:
+        // We will construct a string with offset if possible, or just Convert via Date
+        // "2023-10-27T10:30" -> we need to find what UTC that is given 'tz'.
+
+        // Allow browser to handle it simply for now: presume user enters time in THEIR local time relative to that country?
+        // Actually, user is entering time. If user is in US but target is TW, user might be confused.
+        // Alert says: "Timezone: Asia/Taipei". So user enters 10:00. This implies 10:00 Taipei time.
+        // We need to convert "10:00 Taipei" to UTC.
+
+        const targetTime = new Date(new Date(scheduleVal).toLocaleString("en-US", { timeZone: tz }));
+        // Wait, standard Date parsing is browser local.
+        // Hack: Create a date object that represents that absolute moment if it were UTC, then shift it.
+        // Or better: pass the raw string and timezone to Backend/N8N?
+        // N8N prefers ISO UTC.
+
+        // Let's try to approximate offset
+        try {
+            // Helper to get offset in minutes for a timezone at a specific date
+            const getOffset = (timeZone: string, date: Date) => {
+                const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+                const tzDate = new Date(date.toLocaleString('en-US', { timeZone }));
+                return (tzDate.getTime() - utcDate.getTime()) / 60000;
+            };
+
+            const localDate = new Date(scheduleVal); // Treated as browser local by default behavior, but we just want components
+            // We can't easily parse "2023-10-20T10:00" as "Asia/Taipei" natively without heavy lifting.
+            // Compromise: We will send the ISODate string AND the Target Timezone to Firestore.
+            // N8N can handle the conversion or we just rely on "scheduleCallTime" being ISO with offset?
+
+            // Let's store two fields:
+            // scheduleCallTimeLocal: "2023-10-20T10:00"
+            // scheduleTimeZone: "Asia/Taipei"
+            (payload as any).scheduleCallTimeLocal = scheduleVal;
+            (payload as any).scheduleTimeZone = tz;
+
+            // Also try to calc UTC for sorting if possible (Best Effort)
+            // For now, sending local + TZ is safest for N8N to process correctly.
+        } catch (e) {
+            console.error(e);
+        }
+    }
+    // ----------------------
 
     const dict = (WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en']) as any;
 

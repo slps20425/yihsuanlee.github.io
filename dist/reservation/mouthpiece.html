@@ -29,7 +29,7 @@
             display: block;
         }
     </style>
-  <script type="module" crossorigin src="/assets/mouthpiece-CjKWlEH0.js"></script>
+  <script type="module" crossorigin src="/assets/mouthpiece-D5FXEBCf.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-D7nX8qgn.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-Cw6tXCG8.js">
   <link rel="stylesheet" crossorigin href="/assets/index-DwYp1Inp.css">
@@ -96,10 +96,26 @@
                 placeholder="What should the AI say?" required></textarea>
 
             <label data-i18n="label_schedule" style="margin-top: 20px;">Schedule Call Preference</label>
-            <select id="schedulePreference">
-                <option value="asap" data-i18n="option_asap">Call ASAP</option>
-                <option value="open" data-i18n="option_open">Call when available</option>
-            </select>
+            <div class="schedule-options" style="margin-bottom: 15px;">
+                <div class="checkbox-wrapper" style="margin-bottom: 10px;">
+                    <input type="checkbox" id="enableSchedule" style="width: auto; margin-right: 10px;">
+                    <label for="enableSchedule" style="display: inline;" data-i18n="label_enable_schedule">Schedule a
+                        specific time for this call</label>
+                </div>
+
+                <div id="scheduleContainer" style="display: none; padding-left: 10px; border-left: 2px solid #555;">
+                    <label data-i18n="label_call_time">Call Time</label>
+                    <input type="datetime-local" id="scheduleTime" style="width: 100%; margin-bottom: 5px;">
+                    <div id="timezoneInfo" style="font-size: 12px; color: #aaa; margin-bottom: 15px;">
+                        Timezone: <span id="detectedTimezone">Auto-detecting...</span>
+                    </div>
+                </div>
+
+                <select id="schedulePreference">
+                    <option value="asap" data-i18n="option_asap">Call ASAP</option>
+                    <option value="open" data-i18n="option_open">Call when available</option>
+                </select>
+            </div>
 
             <div class="credits-card" style="margin-top: 45px;">
                 <div class="credits-info">
