@@ -269,11 +269,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Timezone Mapping (Simple)
+    // Timezone Mapping (Expanded)
     const countryToTz: Record<string, string> = {
         'tw': 'Asia/Taipei', 'jp': 'Asia/Tokyo', 'kr': 'Asia/Seoul',
-        'cn': 'Asia/Shanghai', 'us': 'America/New_York', 'uk': 'Europe/London',
-        'au': 'Australia/Sydney', 'th': 'Asia/Bangkok', 'vn': 'Asia/Ho_Chi_Minh'
-        // Add more as needed, fallback to UTC
+        'cn': 'Asia/Shanghai', 'HK': 'Asia/Hong_Kong', 'sg': 'Asia/Singapore',
+        'us': 'America/New_York', 'ca': 'America/Toronto', 'gb': 'Europe/London', 'uk': 'Europe/London',
+        'au': 'Australia/Sydney', 'th': 'Asia/Bangkok', 'vn': 'Asia/Ho_Chi_Minh',
+        'fr': 'Europe/Paris', 'de': 'Europe/Berlin', 'it': 'Europe/Rome', 'es': 'Europe/Madrid',
+        'my': 'Asia/Kuala_Lumpur', 'ph': 'Asia/Manila', 'id': 'Asia/Jakarta'
     };
 
     const updateTimezone = () => {
