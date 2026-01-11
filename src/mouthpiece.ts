@@ -366,60 +366,71 @@ async function handleFormSubmit(e: Event) {
             return;
         }
 
-        // Calculate UTC time
-        const targetDate = new Date(scheduleVal); // This parses as local time of the browser usually
-        // But we want to interpret it in the TARGET timezone?
-        // Actually, datetime-local IS just a string "YYYY-MM-DDTHH:mm".
-        // Use logic to interpret this string as belonging to the detected timezone.
-
-        // Simple approach: Use detected offset
         const tzInfo = document.getElementById('detectedTimezone');
-        let tz = tzInfo ? tzInfo.getAttribute('data-tz') : null; // We will store tz in attribute
+        let tz = tzInfo ? tzInfo.getAttribute('data-tz') : null;
 
         if (!tz) tz = Intl.DateTimeFormat().resolvedOptions().timeZone; // Fallback to browser
 
-        // Create date object treating the input string as being in 'tz'
-        // Using a library like luxon is best, but to keep it light/vanilla:
-        // We will construct a string with offset if possible, or just Convert via Date
-        // "2023-10-27T10:30" -> we need to find what UTC that is given 'tz'.
-
-        // Allow browser to handle it simply for now: presume user enters time in THEIR local time relative to that country?
-        // Actually, user is entering time. If user is in US but target is TW, user might be confused.
-        // Alert says: "Timezone: Asia/Taipei". So user enters 10:00. This implies 10:00 Taipei time.
-        // We need to convert "10:00 Taipei" to UTC.
-
-        const targetTime = new Date(new Date(scheduleVal).toLocaleString("en-US", { timeZone: tz }));
-        // Wait, standard Date parsing is browser local.
-        // Hack: Create a date object that represents that absolute moment if it were UTC, then shift it.
-        // Or better: pass the raw string and timezone to Backend/N8N?
-        // N8N prefers ISO UTC.
-
-        // Let's try to approximate offset
         try {
-            // Helper to get offset in minutes for a timezone at a specific date
-            const getOffset = (timeZone: string, date: Date) => {
-                const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
-                const tzDate = new Date(date.toLocaleString('en-US', { timeZone }));
-                return (tzDate.getTime() - utcDate.getTime()) / 60000;
+            // Robust Local -> UTC Conversion
+            // We want to treat 'scheduleVal' (e.g., "2023-10-27T10:00") as if it is in 'tz'
+            // and get the corresponding UTC timestamp.
+
+            // 1. Parse the local components
+            const d = new Date(scheduleVal);
+            // Note: 'd' corresponds to the browser's interpretation of that string in LOCAL system time.
+            // We strip the components:
+            const year = d.getFullYear();
+            const month = d.getMonth();
+            const day = d.getDate();
+            const hours = d.getHours();
+            const minutes = d.getMinutes();
+
+            // 2. Create a date object that generates these exact components when formatted in the target 'tz'
+            // This is non-trivial without a library. 
+            // Heuristic: We calculate the offset of 'tz' at that approximate time and apply it.
+
+            // Get a probe date (UTC) with the same components
+            const probeUTC = new Date(Date.UTC(year, month, day, hours, minutes));
+
+            // Format this probe in the target TZ to see what time it *thinks* it is
+            // e.g. Probe is 10:00 UTC. In Taipei (+8), it formats as "18:00".
+            // We want the RESULT to be "10:00". So we need to shift.
+
+            const formatInTz = (date: Date, timeZone: string) => {
+                return new Date(date.toLocaleString('en-US', { timeZone }));
             };
 
-            const localDate = new Date(scheduleVal); // Treated as browser local by default behavior, but we just want components
-            // We can't easily parse "2023-10-20T10:00" as "Asia/Taipei" natively without heavy lifting.
-            // Compromise: We will send the ISODate string AND the Target Timezone to Firestore.
-            // N8N can handle the conversion or we just rely on "scheduleCallTime" being ISO with offset?
+            // Binary search / Shift approach to find the UTC moment that = 10:00 in Taipei
+            // Initial guess: ProbeUTC - (Standard Offset?)
+            // Let's just iterate.
 
-            // Let's store two fields:
-            // scheduleCallTimeLocal: "2023-10-20T10:00"
-            // scheduleTimeZone: "Asia/Taipei"
+            // Better: Get offset of the formatted string
+            const getTzOffsetInMs = (date: Date, timeZone: string) => {
+                const tzDate = formatInTz(date, timeZone);
+                const utcDate = formatInTz(date, 'UTC');
+                return tzDate.getTime() - utcDate.getTime();
+            };
+
+            // Estimate offset using current time (usually safe enough for near future)
+            // or better, use the probe date to get offset
+            const offsetMs = getTzOffsetInMs(probeUTC, tz);
+
+            // True UTC = Local Nominal - Offset
+            // e.g. We want 10:00 Taipei. Offset is +8h. True UTC = 10:00 - 8h = 02:00.
+            const trueTimestamp = probeUTC.getTime() - offsetMs;
+            const finalDate = new Date(trueTimestamp);
+
+            (payload as any).scheduleCallTime = finalDate.toISOString();
+            (payload as any).scheduleTimeZone = tz; // Keep for reference
+        } catch (e) {
+            console.error("Timezone conversion error:", e);
+            // Fallback: send local string
             (payload as any).scheduleCallTimeLocal = scheduleVal;
             (payload as any).scheduleTimeZone = tz;
-
-            // Also try to calc UTC for sorting if possible (Best Effort)
-            // For now, sending local + TZ is safest for N8N to process correctly.
-        } catch (e) {
-            console.error(e);
         }
     }
+    // ----------------------
     // ----------------------
 
     const dict = (WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en']) as any;

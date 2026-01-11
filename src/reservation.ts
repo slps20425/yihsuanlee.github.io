@@ -541,14 +541,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         const countryCode = countryData.iso2;
         const tzDisplay = document.getElementById('detectedTimezone');
 
-        let tz = 'UTC';
-        if (countryCode && countryToTz[countryCode]) {
-            tz = countryToTz[countryCode];
-        } else if (countryCode) {
-            try {
-                tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            } catch (e) { }
-        }
+        const tzInfo = document.getElementById('detectedTimezone');
+        let tz = tzInfo ? tzInfo.getAttribute('data-tz') : null;
+
+        if (!tz) tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
         if (tzDisplay) {
             tzDisplay.innerText = `${tz} (based on ${countryCode.toUpperCase()})`;
@@ -1152,11 +1148,6 @@ async function handleFormSubmit(e: Event) {
     const btn = document.getElementById('submitBtn') as HTMLButtonElement;
     btn.disabled = true;
 
-    // TEMPORARY DISABLE
-    alert("This service is currently disabled/under maintenance.");
-    btn.disabled = false;
-    return;
-
     // Get number from plugin if possible for E.164 format
     let fullPhoneNumber = phoneInput.value;
     if (phoneInputPlugin) {
@@ -1239,6 +1230,57 @@ async function handleFormSubmit(e: Event) {
             utc_offset: selectedRestaurantData.utc_offset_minutes
         } : null
     };
+
+    // --- Schedule Logic ---
+    const enableSchedule = (document.getElementById('enableSchedule') as HTMLInputElement).checked;
+    if (enableSchedule) {
+        const scheduleTimeInput = document.getElementById('scheduleTime') as HTMLInputElement;
+        const scheduleVal = scheduleTimeInput.value;
+
+        if (!scheduleVal) {
+            (window as any).showToast("Please select a time for the scheduled call.", "error");
+            btn.disabled = false;
+            return;
+        }
+
+        const tzInfo = document.getElementById('detectedTimezone');
+        let tz = tzInfo ? tzInfo.getAttribute('data-tz') : null;
+        if (!tz) tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        try {
+            // Robust Local -> UTC Conversion
+            const d = new Date(scheduleVal);
+            const year = d.getFullYear();
+            const month = d.getMonth();
+            const day = d.getDate();
+            const hours = d.getHours();
+            const minutes = d.getMinutes();
+
+            const probeUTC = new Date(Date.UTC(year, month, day, hours, minutes));
+
+            const formatInTz = (date: Date, timeZone: string) => {
+                return new Date(date.toLocaleString('en-US', { timeZone }));
+            };
+
+            const getTzOffsetInMs = (date: Date, timeZone: string) => {
+                const tzDate = formatInTz(date, timeZone);
+                const utcDate = formatInTz(date, 'UTC');
+                return tzDate.getTime() - utcDate.getTime();
+            };
+
+            const offsetMs = getTzOffsetInMs(probeUTC, tz);
+            const trueTimestamp = probeUTC.getTime() - offsetMs;
+            const finalDate = new Date(trueTimestamp);
+
+            (payload as any).scheduleCallTime = finalDate.toISOString();
+            (payload as any).scheduleTimeZone = tz;
+        } catch (e) {
+            console.error("Timezone conversion error:", e);
+            (payload as any).scheduleCallTimeLocal = scheduleVal;
+            (payload as any).scheduleTimeZone = tz;
+        }
+    }
+    // ----------------------
 
     // i18n Dictionary for script alerts
     const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
