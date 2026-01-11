@@ -269,38 +269,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Timezone Mapping (Simple)
-    // Timezone Mapping (Expanded)
-    const countryToTz: Record<string, string> = {
-        'tw': 'Asia/Taipei', 'jp': 'Asia/Tokyo', 'kr': 'Asia/Seoul',
-        'cn': 'Asia/Shanghai', 'HK': 'Asia/Hong_Kong', 'sg': 'Asia/Singapore',
-        'us': 'America/New_York', 'ca': 'America/Toronto', 'gb': 'Europe/London', 'uk': 'Europe/London',
-        'au': 'Australia/Sydney', 'th': 'Asia/Bangkok', 'vn': 'Asia/Ho_Chi_Minh',
-        'fr': 'Europe/Paris', 'de': 'Europe/Berlin', 'it': 'Europe/Rome', 'es': 'Europe/Madrid',
-        'my': 'Asia/Kuala_Lumpur', 'ph': 'Asia/Manila', 'id': 'Asia/Jakarta'
-    };
+    // Import full timezone map
+    // Note: We need a dynamic import or top-level import. Since this is inside DOMContentLoaded, we should move the import to top of file
+    // But for now, we can dynamically import it or assume it's available if we change the structure.
+    // Actually, `mouthpiece.ts` is likely an ES module. I should add the import at the top.
 
-    const updateTimezone = () => {
+    // Changing strategy: I will add the import at the very top of the file first.
+    // This step only DELETES the local map.
+    const updateTimezone = async () => {
         if (!phoneInputPlugin) return;
         const countryData = phoneInputPlugin.getSelectedCountryData();
         const countryCode = countryData.iso2;
         const tzDisplay = document.getElementById('detectedTimezone');
 
-        let tz = 'UTC'; // Fallback
-        if (countryCode && countryToTz[countryCode]) {
-            tz = countryToTz[countryCode];
-        } else if (countryCode) {
-            // Generic attempt? No, just default
+        // Dynamic import to avoid breaking changes at top level if build config is strict
+        // But standard import is better. I will add import at top in next step.
+        const { countryTimezones } = await import('./timezones');
+
+        let tz = '';
+        let source = '';
+
+        if (countryCode && countryTimezones[countryCode]) {
+            tz = countryTimezones[countryCode];
+            source = `based on ${countryCode.toUpperCase()}`;
+        } else {
+            // Fallback
             try {
-                // If browser supports it, we could try map common ones
-                tz = Intl.DateTimeFormat().resolvedOptions().timeZone; // Default to user's browser if unknown
-            } catch (e) { }
+                tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                source = 'your browser time';
+            } catch (e) {
+                tz = 'UTC';
+                source = 'default';
+            }
         }
 
         if (tzDisplay) {
-            tzDisplay.innerText = `${tz} (based on ${countryCode.toUpperCase()})`;
+            tzDisplay.innerText = `${tz} (${source})`;
             tzDisplay.setAttribute('data-tz', tz);
         }
     };
+
+
 
     if (input) {
         input.addEventListener('countrychange', updateTimezone);
