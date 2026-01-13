@@ -231,33 +231,8 @@ function bindValidationListeners() {
 
 
     const scriptInput = document.getElementById('scriptContent');
-    const scriptLang = document.getElementById('scriptLanguage') as HTMLSelectElement;
-    const langWarning = document.getElementById('languageWarning') as HTMLElement;
-
-    function checkLanguageMismatch() {
-        if (!scriptLang || !scriptInput || !langWarning) return;
-        const selected = scriptLang.value;
-        const text = (scriptInput as HTMLTextAreaElement).value;
-        if (!text || text.length < 2) {
-            langWarning.style.display = 'none';
-            return;
-        }
-
-        const detected = WiseCatI18n.detectLanguage(text);
-        if (selected !== 'auto' && detected !== 'en' && selected !== detected) {
-            langWarning.style.display = 'block';
-        } else {
-            langWarning.style.display = 'none';
-        }
-    }
-
     if (scriptInput) {
         scriptInput.addEventListener('input', validateForm);
-        scriptInput.addEventListener('input', checkLanguageMismatch);
-    }
-
-    if (scriptLang) {
-        scriptLang.addEventListener('change', checkLanguageMismatch);
     }
 
     const form = document.getElementById('trialForm');
@@ -315,6 +290,25 @@ async function handleFormSubmit(e: Event) {
     const taskId = `task_${randomId}`;
     const taskRef = doc(db, 'tasks', taskId);
 
+    // Determine Language: Manual > Country > Fallback (EN)
+    let finalLang = 'en';
+    if (scriptLanguageEl && scriptLanguageEl.value !== 'auto') {
+        finalLang = scriptLanguageEl.value;
+    } else if (phoneInputPlugin) {
+        const countryData = phoneInputPlugin.getSelectedCountryData();
+        const dialCode = countryData.dialCode;
+
+        switch (dialCode) {
+            case "886": finalLang = "zh"; break;
+            case "81": finalLang = "jp"; break;
+            case "82": finalLang = "kr"; break;
+            case "34": finalLang = "es"; break;
+            case "33": finalLang = "fr"; break;
+            case "39": finalLang = "it"; break;
+            default: finalLang = "en"; break;
+        }
+    }
+
     const payload = {
         taskId: taskId,
         type: 'trial',
@@ -327,7 +321,7 @@ async function handleFormSubmit(e: Event) {
         userEmail: userEmail,
         userCredits: userCredits,
         script: script,
-        language: (scriptLanguageEl && scriptLanguageEl.value !== 'auto') ? scriptLanguageEl.value : WiseCatI18n.detectLanguage(script),
+        language: finalLang,
         retry_count: 1, // Default system retry count
         createdAt: new Date().toISOString() // Client-side time for n8n
     };
