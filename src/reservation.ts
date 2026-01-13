@@ -112,6 +112,11 @@ document.addEventListener("DOMContentLoaded", async function () {
                 currentCost = Number(data.cost_reservation);
             }
 
+            // Dynamic Retry Count
+            if (data.default_retry_count !== undefined) {
+                defaultRetryCount = Number(data.default_retry_count);
+            }
+
             // Update UI Icon
             const iconContainerId = 'costIconContainer';
             let iconContainer = document.getElementById(iconContainerId);
