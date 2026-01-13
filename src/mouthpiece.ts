@@ -392,53 +392,52 @@ async function handleFormSubmit(e: Event) {
 
         try {
             // Robust Local -> UTC Conversion
-            // We want to treat 'scheduleVal' (e.g., "2023-10-27T10:00") as if it is in 'tz'
+            // We want 'scheduleVal' (e.g., "2023-10-27T10:00") to be treated as time IN 'tz'
             // and get the corresponding UTC timestamp.
 
-            // 1. Parse the local components
+            // 1. Parse the local components requested by user
             const d = new Date(scheduleVal);
-            // Note: 'd' corresponds to the browser's interpretation of that string in LOCAL system time.
-            // We strip the components:
             const year = d.getFullYear();
             const month = d.getMonth();
             const day = d.getDate();
             const hours = d.getHours();
             const minutes = d.getMinutes();
 
-            // 2. Create a date object that generates these exact components when formatted in the target 'tz'
-            // This is non-trivial without a library. 
-            // Heuristic: We calculate the offset of 'tz' at that approximate time and apply it.
+            // 2. Initial Guess: Treat inputs as UTC
+            let guessUTC = new Date(Date.UTC(year, month, day, hours, minutes));
 
-            // Get a probe date (UTC) with the same components
-            const probeUTC = new Date(Date.UTC(year, month, day, hours, minutes));
-
-            // Format this probe in the target TZ to see what time it *thinks* it is
-            // e.g. Probe is 10:00 UTC. In Taipei (+8), it formats as "18:00".
-            // We want the RESULT to be "10:00". So we need to shift.
-
-            const formatInTz = (date: Date, timeZone: string) => {
-                return new Date(date.toLocaleString('en-US', { timeZone }));
+            // 3. Helper to format a UTC date as parts in the Target Zone
+            const getPartsInTz = (date: Date, timeZone: string) => {
+                const formatter = new Intl.DateTimeFormat('en-US', {
+                    timeZone,
+                    year: 'numeric', month: 'numeric', day: 'numeric',
+                    hour: 'numeric', minute: 'numeric', second: 'numeric',
+                    hour12: false
+                });
+                const parts = formatter.formatToParts(date);
+                const get = (type: string) => parseInt(parts.find(p => p.type === type)?.value || '0');
+                const y = get('year');
+                const m = get('month') - 1; // 0-indexed
+                const d = get('day');
+                const h = get('hour') === 24 ? 0 : get('hour'); // some browsers return 24
+                const min = get('minute');
+                return { y, m, d, h, min };
             };
 
-            // Binary search / Shift approach to find the UTC moment that = 10:00 in Taipei
-            // Initial guess: ProbeUTC - (Standard Offset?)
-            // Let's just iterate.
+            // 4. Iteratively Refine
+            // Calculate error between "What time is it in TZ at guessUTC?" vs "Target Time"
+            for (let i = 0; i < 3; i++) {
+                const p = getPartsInTz(guessUTC, tz);
+                const currentInTz = new Date(Date.UTC(p.y, p.m, p.d, p.h, p.min));
+                const targetInUtcScale = new Date(Date.UTC(year, month, day, hours, minutes));
 
-            // Better: Get offset of the formatted string
-            const getTzOffsetInMs = (date: Date, timeZone: string) => {
-                const tzDate = formatInTz(date, timeZone);
-                const utcDate = formatInTz(date, 'UTC');
-                return tzDate.getTime() - utcDate.getTime();
-            };
+                const diff = targetInUtcScale.getTime() - currentInTz.getTime();
+                if (Math.abs(diff) < 1000) break; // Close enough
 
-            // Estimate offset using current time (usually safe enough for near future)
-            // or better, use the probe date to get offset
-            const offsetMs = getTzOffsetInMs(probeUTC, tz);
+                guessUTC = new Date(guessUTC.getTime() + diff);
+            }
 
-            // True UTC = Local Nominal - Offset
-            // e.g. We want 10:00 Taipei. Offset is +8h. True UTC = 10:00 - 8h = 02:00.
-            const trueTimestamp = probeUTC.getTime() - offsetMs;
-            const finalDate = new Date(trueTimestamp);
+            const finalDate = guessUTC;
 
             if (finalDate.getTime() < Date.now()) {
                 (window as any).showToast("Scheduled time cannot be in the past.", "error");
@@ -447,10 +446,10 @@ async function handleFormSubmit(e: Event) {
             }
 
             (payload as any).scheduleCallTime = finalDate.toISOString();
-            (payload as any).scheduleTimeZone = tz; // Keep for reference
+            (payload as any).scheduleTimeZone = tz;
         } catch (e) {
             console.error("Timezone conversion error:", e);
-            // Fallback: send local string
+            // Fallback: send local string if complex logic fails (e.g. invalid timezone)
             (payload as any).scheduleCallTimeLocal = scheduleVal;
             (payload as any).scheduleTimeZone = tz;
         }

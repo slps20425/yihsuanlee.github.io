@@ -1267,6 +1267,10 @@ async function handleFormSubmit(e: Event) {
 
         try {
             // Robust Local -> UTC Conversion
+            // We want 'scheduleVal' (e.g., "2023-10-27T10:00") to be treated as time IN 'tz'
+            // and get the corresponding UTC timestamp.
+
+            // 1. Parse the local components requested by user
             const d = new Date(scheduleVal);
             const year = d.getFullYear();
             const month = d.getMonth();
@@ -1274,32 +1278,53 @@ async function handleFormSubmit(e: Event) {
             const hours = d.getHours();
             const minutes = d.getMinutes();
 
-            const probeUTC = new Date(Date.UTC(year, month, day, hours, minutes));
+            // 2. Initial Guess: Treat inputs as UTC
+            let guessUTC = new Date(Date.UTC(year, month, day, hours, minutes));
 
-            const formatInTz = (date: Date, timeZone: string) => {
-                return new Date(date.toLocaleString('en-US', { timeZone }));
+            // 3. Helper to format a UTC date as parts in the Target Zone
+            const getPartsInTz = (date: Date, timeZone: string) => {
+                const formatter = new Intl.DateTimeFormat('en-US', {
+                    timeZone,
+                    year: 'numeric', month: 'numeric', day: 'numeric',
+                    hour: 'numeric', minute: 'numeric', second: 'numeric',
+                    hour12: false
+                });
+                const parts = formatter.formatToParts(date);
+                const get = (type: string) => parseInt(parts.find(p => p.type === type)?.value || '0');
+                const y = get('year');
+                const m = get('month') - 1; // 0-indexed
+                const d = get('day');
+                const h = get('hour') === 24 ? 0 : get('hour'); // some browsers return 24
+                const min = get('minute');
+                return { y, m, d, h, min };
             };
 
-            const getTzOffsetInMs = (date: Date, timeZone: string) => {
-                const tzDate = formatInTz(date, timeZone);
-                const utcDate = formatInTz(date, 'UTC');
-                return tzDate.getTime() - utcDate.getTime();
-            };
+            // 4. Iteratively Refine
+            // Calculate error between "What time is it in TZ at guessUTC?" vs "Target Time"
+            for (let i = 0; i < 3; i++) {
+                const p = getPartsInTz(guessUTC, tz);
+                const currentInTz = new Date(Date.UTC(p.y, p.m, p.d, p.h, p.min));
+                const targetInUtcScale = new Date(Date.UTC(year, month, day, hours, minutes));
 
-            const offsetMs = getTzOffsetInMs(probeUTC, tz);
-            const trueTimestamp = probeUTC.getTime() - offsetMs;
-            const finalDate = new Date(trueTimestamp);
+                const diff = targetInUtcScale.getTime() - currentInTz.getTime();
+                if (Math.abs(diff) < 1000) break; // Close enough
 
-            (payload as any).scheduleCallTime = finalDate.toISOString();
+                guessUTC = new Date(guessUTC.getTime() + diff);
+            }
+
+            const finalDate = guessUTC;
 
             if (finalDate.getTime() < Date.now()) {
                 (window as any).showToast("Scheduled time cannot be in the past.", "error");
                 btn.disabled = false;
                 return;
             }
+
+            (payload as any).scheduleCallTime = finalDate.toISOString();
             (payload as any).scheduleTimeZone = tz;
         } catch (e) {
             console.error("Timezone conversion error:", e);
+            // Fallback: send local string if complex logic fails (e.g. invalid timezone)
             (payload as any).scheduleCallTimeLocal = scheduleVal;
             (payload as any).scheduleTimeZone = tz;
         }

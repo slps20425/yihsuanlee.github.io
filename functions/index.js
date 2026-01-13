@@ -148,8 +148,17 @@ exports.triggerN8nWebhook = onDocumentCreated(
                 // Ensure payload has taskId
                 const payload = { ...winnerData, taskId: winnerId };
 
+                // Backfill retry_count if missing (e.g. old tasks in queue)
+                if (payload.retry_count === undefined) {
+                    if (payload.type === 'reservation') {
+                        payload.retry_count = 0;
+                    } else {
+                        payload.retry_count = 1;
+                    }
+                }
+
                 await axios.post(
-                    "https://wisecat.app.n8n.cloud/webhook/tasker",
+                    "https://n8n-1078479155773.asia-east1.run.app/webhook/tasker",
                     payload
                 );
                 console.log(`Task ${winnerId} dispatched to N8N successfully.`);
