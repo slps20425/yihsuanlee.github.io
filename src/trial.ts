@@ -1,3 +1,4 @@
+import "./version";
 import WiseCatI18n from './i18n';
 import { auth } from './firebase-config';
 

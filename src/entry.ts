@@ -1,3 +1,4 @@
+import "./version";
 import WiseCatI18n from './i18n';
 
 import { GoogleAuthProvider, OAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
