@@ -20,7 +20,13 @@ let currentPlaceOpeningHours: any = null;
 let phoneInputPlugin: any = null;
 let userPhonePlugin: any = null;
 let turnstileValidated = false;
-let currentCost = 5; // Default cost for reservation
+let currentCost = 5; // Default cost
+let defaultRetryCount = 5; // Default retry count if config missing
+
+
+// ...
+
+
 
 // Cache
 const placeDetailsCache: Record<string, any> = {};
@@ -1467,3 +1473,5 @@ function createToastContainer() {
     document.body.appendChild(container);
     return container;
 }
+
+
