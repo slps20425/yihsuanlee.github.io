@@ -231,8 +231,33 @@ function bindValidationListeners() {
 
 
     const scriptInput = document.getElementById('scriptContent');
+    const scriptLang = document.getElementById('scriptLanguage') as HTMLSelectElement;
+    const langWarning = document.getElementById('languageWarning') as HTMLElement;
+
+    function checkLanguageMismatch() {
+        if (!scriptLang || !scriptInput || !langWarning) return;
+        const selected = scriptLang.value;
+        const text = (scriptInput as HTMLTextAreaElement).value;
+        if (!text || text.length < 2) {
+            langWarning.style.display = 'none';
+            return;
+        }
+
+        const detected = WiseCatI18n.detectLanguage(text);
+        if (selected !== 'auto' && detected !== 'en' && selected !== detected) {
+            langWarning.style.display = 'block';
+        } else {
+            langWarning.style.display = 'none';
+        }
+    }
+
     if (scriptInput) {
         scriptInput.addEventListener('input', validateForm);
+        scriptInput.addEventListener('input', checkLanguageMismatch);
+    }
+
+    if (scriptLang) {
+        scriptLang.addEventListener('change', checkLanguageMismatch);
     }
 
     const form = document.getElementById('trialForm');
@@ -245,6 +270,7 @@ async function handleFormSubmit(e: Event) {
     const scriptInput = document.getElementById('scriptContent') as HTMLTextAreaElement;
     const nameInput = document.getElementById('userName') as HTMLInputElement;
     const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
+    const scriptLanguageEl = document.getElementById('scriptLanguage') as HTMLSelectElement;
 
     const script = scriptInput.value;
 
@@ -301,7 +327,7 @@ async function handleFormSubmit(e: Event) {
         userEmail: userEmail,
         userCredits: userCredits,
         script: script,
-        language: WiseCatI18n.detectLanguage(script),
+        language: (scriptLanguageEl && scriptLanguageEl.value !== 'auto') ? scriptLanguageEl.value : WiseCatI18n.detectLanguage(script),
         retry_count: 1, // Default system retry count
         createdAt: new Date().toISOString() // Client-side time for n8n
     };

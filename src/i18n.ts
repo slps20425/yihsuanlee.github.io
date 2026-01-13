@@ -126,6 +126,9 @@ const WiseCatI18n: WiseCatI18nType = {
             warning_retry: "(This will charge you twice, careful)",
             option_res_open: "Call when restaurant open",
             placeholder_date: "Select Date",
+            label_script_language: "🗣️ Speaking Language",
+            option_auto: "✨ Auto-Detect",
+            warning_language_mismatch: "⚠️ Warning: You selected English but the text seems to be in another language.",
             helper_title: "AI Prompt Helper 🐱",
             helper_examples: {
                 res: [

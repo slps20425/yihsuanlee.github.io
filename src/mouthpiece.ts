@@ -218,6 +218,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     const phoneInput = document.getElementById('targetPhone');
     const mission = document.getElementById('mission');
     const form = document.getElementById('mouthpieceForm');
+    const scriptLang = document.getElementById('scriptLanguage') as HTMLSelectElement;
+    const scriptContent = document.getElementById('scriptContent') as HTMLTextAreaElement;
+    const langWarning = document.getElementById('languageWarning') as HTMLElement;
+
+    function checkLanguageMismatch() {
+        if (!scriptLang || !scriptContent || !langWarning) return;
+        const selected = scriptLang.value;
+        const text = scriptContent.value;
+        if (!text || text.length < 2) {
+            langWarning.style.display = 'none';
+            return;
+        }
+
+        const detected = WiseCatI18n.detectLanguage(text);
+        // User Logic: if select en, then description in chinese should pop up a warning
+        // Generic Logic: If manual selection (not auto) does not match detected (and detected is not default 'en' which might be false positive for short text)
+        // We only warn if we are SURE it's a different language (e.g. ZH, JP, KR, etc.)
+        if (selected !== 'auto' && detected !== 'en' && selected !== detected) {
+            langWarning.style.display = 'block';
+        } else {
+            langWarning.style.display = 'none';
+        }
+    }
+
+    if (scriptLang && scriptContent) {
+        scriptLang.addEventListener('change', checkLanguageMismatch);
+        scriptContent.addEventListener('input', checkLanguageMismatch);
+    }
 
     if (phoneInput) {
         phoneInput.addEventListener('input', validateForm);
@@ -342,6 +370,7 @@ async function handleFormSubmit(e: Event) {
     const targetPhoneEl = document.getElementById('targetPhone') as HTMLInputElement;
     const scriptContentEl = document.getElementById('scriptContent') as HTMLTextAreaElement;
     const schedulePreferenceEl = document.getElementById('schedulePreference') as HTMLSelectElement;
+    const scriptLanguageEl = document.getElementById('scriptLanguage') as HTMLSelectElement;
 
     const { doc, collection, serverTimestamp, runTransaction } = await import("firebase/firestore");
     const { db } = await import("./firebase-config");
@@ -365,7 +394,7 @@ async function handleFormSubmit(e: Event) {
         targetPhoneNumber: phoneInputPlugin ? phoneInputPlugin.getNumber() : targetPhoneEl.value,
         script: scriptContentEl.value,
         schedulePreference: schedulePreferenceEl.value,
-        language: WiseCatI18n.detectLanguage(scriptContentEl.value),
+        language: (scriptLanguageEl && scriptLanguageEl.value !== 'auto') ? scriptLanguageEl.value : WiseCatI18n.detectLanguage(scriptContentEl.value),
         userEmail: (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email :
             (localStorage.getItem('wisecat_user') ? (JSON.parse(localStorage.getItem('wisecat_user') || '{}').email || 'N/A') : 'N/A'),
         userCredits: (localStorage.getItem('wisecat_user') ? Number(JSON.parse(localStorage.getItem('wisecat_user') || '{}').credits || 0) : 0),
