@@ -150,7 +150,7 @@ exports.triggerN8nWebhook = onDocumentCreated(
 
                 // Backfill retry_count if missing (e.g. old tasks in queue)
                 if (payload.retry_count === undefined) {
-                    if (payload.type === 'reservation') {
+                    if (payload.type === 'restaurant' || payload.type === 'reservation') {
                         payload.retry_count = 0;
                     } else {
                         payload.retry_count = 1;

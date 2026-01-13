@@ -1220,7 +1220,7 @@ async function handleFormSubmit(e: Event) {
 
     const payload = {
         taskId: taskId,
-        type: 'reservation',
+        type: 'restaurant',
         isTrial: false,
         state: 'pending',
         priority: 4, // High priority
