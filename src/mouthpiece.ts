@@ -218,11 +218,58 @@ document.addEventListener('DOMContentLoaded', async () => {
     const phoneInput = document.getElementById('targetPhone');
     const mission = document.getElementById('mission');
     const form = document.getElementById('mouthpieceForm');
+    const scriptLang = document.getElementById('scriptLanguage') as HTMLSelectElement;
+
+    function updateAutoDetectLabel() {
+        if (!phoneInputPlugin || !scriptLang) return;
+        const countryData = phoneInputPlugin.getSelectedCountryData();
+        const dialCode = countryData.dialCode;
+        let langName = "English";
+
+        // Simple mapping for display
+        switch (dialCode) {
+            case "886": langName = "Traditional Chinese"; break;
+            case "81": langName = "Japanese"; break;
+            case "82": langName = "Korean"; break;
+            case "34": langName = "Spanish"; break;
+            case "33": langName = "French"; break;
+            case "39": langName = "Italian"; break;
+            default: langName = "English"; break;
+        }
+
+        const autoOption = scriptLang.querySelector('option[value="auto"]');
+        if (autoOption) {
+            // Get the current text (which might be localized)
+            // We assume the verified structure "Something (Something)"
+            // If we want to be safe, we just prepend/append.
+            // User asked for "Auto-Detect (English)"
+            // Current i18n is "Auto-Detect (Based on Country)"
+            // We can replace the content within the last parentheses, or just append if none.
+            let text = autoOption.getAttribute('data-i18n-original') || autoOption.textContent || "";
+
+            // Store original if not stored yet (hack to keep localization base)
+            if (!autoOption.getAttribute('data-i18n-original')) {
+                autoOption.setAttribute('data-i18n-original', text);
+            }
+
+            // Extract base part (before parenthesis)
+            const parts = text.split('(');
+            const base = parts[0].trim();
+
+            autoOption.textContent = `${base} (${langName})`;
+        }
+    }
 
     if (phoneInput) {
         phoneInput.addEventListener('input', validateForm);
-        phoneInput.addEventListener('countrychange', validateForm);
+        phoneInput.addEventListener('countrychange', () => {
+            validateForm();
+            updateAutoDetectLabel();
+        });
         phoneInput.addEventListener('blur', validateForm);
+
+        // Initial call
+        setTimeout(updateAutoDetectLabel, 1000); // Wait for plugin init
     }
 
     if (mission) {

@@ -130,7 +130,7 @@ const WiseCatI18n: WiseCatI18nType = {
             option_res_open: "Call when restaurant open",
             placeholder_date: "Select Date",
             label_script_language: "🗣️ Speaking Language",
-            option_auto: "Auto-Detect (Based on Country)",
+            option_auto: "Auto-Detect",
             helper_title: "AI Prompt Helper 🐱",
             helper_examples: {
                 res: [
@@ -234,7 +234,7 @@ const WiseCatI18n: WiseCatI18nType = {
             option_res_open: "餐廳營業時撥打",
             placeholder_date: "選擇預約日期",
             label_script_language: "🗣️ 通話語言",
-            option_auto: "自動偵測 (依據國碼)",
+            option_auto: "自動偵測",
             helper_title: "AI 範例語法 🐱",
             helper_examples: {
                 res: [
@@ -332,7 +332,7 @@ const WiseCatI18n: WiseCatI18nType = {
             option_res_open: "開店時に電話",
             placeholder_date: "日付を選択",
             label_script_language: "🗣️ 通話言語",
-            option_auto: "自動検出 (国番号に基づく)",
+            option_auto: "自動検出",
             helper_title: "AIプロンプトヘルパー 🐱",
             helper_examples: {
                 res: [
@@ -430,7 +430,7 @@ const WiseCatI18n: WiseCatI18nType = {
             option_res_open: "영업 시 통화",
             placeholder_date: "날짜 선택",
             label_script_language: "🗣️ 통화 언어",
-            option_auto: "자동 감지 (국가 번호 기준)",
+            option_auto: "자동 감지",
             helper_title: "AI 프롬프트 도우미 🐱",
             helper_examples: {
                 res: [
@@ -528,7 +528,7 @@ const WiseCatI18n: WiseCatI18nType = {
             option_res_open: "Llamar cuando esté abierto",
             placeholder_date: "Seleccionar fecha",
             label_script_language: "🗣️ Idioma de llamada",
-            option_auto: "Detección automática (basada en el país)",
+            option_auto: "Detección automática",
             helper_title: "Ayudante de IA 🐱",
             helper_examples: {
                 res: [
@@ -626,7 +626,7 @@ const WiseCatI18n: WiseCatI18nType = {
             option_res_open: "Appeler si ouvert",
             placeholder_date: "Choisir la date",
             label_script_language: "🗣️ Langue d'appel",
-            option_auto: "Détection automatique (selon le pays)",
+            option_auto: "Détection automatique",
             helper_title: "Assistant de Prompt IA 🐱",
             helper_examples: {
                 res: [
@@ -724,7 +724,7 @@ const WiseCatI18n: WiseCatI18nType = {
             option_res_open: "Chiama se aperto",
             placeholder_date: "Seleziona data",
             label_script_language: "🗣️ Lingua chiamata",
-            option_auto: "Rilevamento automatico (basato sul paese)",
+            option_auto: "Rilevamento automatico",
             helper_title: "Assistente Prompt IA 🐱",
             helper_examples: {
                 res: [

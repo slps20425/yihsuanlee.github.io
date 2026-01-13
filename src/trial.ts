@@ -235,6 +235,46 @@ function bindValidationListeners() {
         scriptInput.addEventListener('input', validateForm);
     }
 
+    // Dynamic Label Logic
+    function updateAutoDetectLabel() {
+        if (!phoneInputPlugin) return;
+        const scriptLang = document.getElementById('scriptLanguage') as HTMLSelectElement;
+        if (!scriptLang) return;
+
+        const countryData = phoneInputPlugin.getSelectedCountryData();
+        const dialCode = countryData.dialCode;
+        let langName = "English";
+
+        // Simple mapping for display
+        switch (dialCode) {
+            case "886": langName = "Traditional Chinese"; break;
+            case "81": langName = "Japanese"; break;
+            case "82": langName = "Korean"; break;
+            case "34": langName = "Spanish"; break;
+            case "33": langName = "French"; break;
+            case "39": langName = "Italian"; break;
+            default: langName = "English"; break;
+        }
+
+        const autoOption = scriptLang.querySelector('option[value="auto"]');
+        if (autoOption) {
+            let text = autoOption.getAttribute('data-i18n-original') || autoOption.textContent || "";
+            if (!autoOption.getAttribute('data-i18n-original')) {
+                autoOption.setAttribute('data-i18n-original', text);
+            }
+            const parts = text.split('(');
+            const base = parts[0].trim();
+            autoOption.textContent = `${base} (${langName})`;
+        }
+    }
+
+    const targetPhoneInput = document.getElementById('targetPhone');
+    if (targetPhoneInput) {
+        targetPhoneInput.addEventListener('countrychange', updateAutoDetectLabel);
+        // Initial setup
+        setTimeout(updateAutoDetectLabel, 1000);
+    }
+
     const form = document.getElementById('trialForm');
     if (form) form.addEventListener('submit', handleFormSubmit);
 }
