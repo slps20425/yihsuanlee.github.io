@@ -125,7 +125,7 @@ const WiseCatI18n: WiseCatI18nType = {
             info_search: "Phone number auto-filled after search",
             label_note: "📝 Special Requests (Optional)",
             placeholder_note: "Any special requests?",
-            label_retry: "Re-try 1 time",
+            label_retry: "Re-try {n} time(s)",
             warning_retry: "(This will charge you twice, careful)",
             label_food_name: "Food Name",
             label_food_quantity: "Quantity (Max 4)",

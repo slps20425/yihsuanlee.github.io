@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- Remote Config Listener ---
-    const { doc, onSnapshot, runTransaction } = await import("firebase/firestore"); // Added runTransaction
+    const { doc, onSnapshot } = await import("firebase/firestore");
     const { db } = await import("./firebase-config");
 
     const configRef = doc(db, 'configuration', 'settings');
@@ -133,6 +133,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Dynamic Retry Count
             if (data.default_retry_count !== undefined) {
                 defaultRetryCount = Number(data.default_retry_count);
+            }
+
+            // Update Retry Label UI
+            const retryLabel = document.querySelector('label[for="retryOption"] span[data-i18n="label_retry"]');
+            if (retryLabel) {
+                retryLabel.textContent = `Re-try ${defaultRetryCount} time(s)`;
             }
 
             // Update UI Icon

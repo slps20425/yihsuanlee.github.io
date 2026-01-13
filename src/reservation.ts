@@ -117,6 +117,22 @@ document.addEventListener("DOMContentLoaded", async function () {
                 defaultRetryCount = Number(data.default_retry_count);
             }
 
+            // Update Retry Label UI
+            const retryLabel = document.querySelector('label[for="retryOption"] span[data-i18n="label_retry"]');
+            if (retryLabel) {
+                // We need to wait for i18n to potentially run or just set text directly if i18n already ran
+                // But since i18n replaces textcontent, we should update the translation or manually set it.
+                // Simple approach: manually set text content for now, assuming English as base or handling i18n later?
+                // Wait, WiseCatI18n replaces text based on key. If we change text content here, it might be overwritten if language changes.
+                // However, language change triggers re-translation.
+                // Let's just update the text content directly for now as a quick fix, realizing it might be tricky with i18n.
+                // Actually, best way is to update the text content.
+                retryLabel.textContent = `Re-try ${defaultRetryCount} time(s)`;
+                // Better: Check if we have a translation key and replace {n}
+                // But for simplicity and speed:
+                retryLabel.textContent = `Re-try ${defaultRetryCount} time(s)`;
+            }
+
             // Update UI Icon
             const iconContainerId = 'costIconContainer';
             let iconContainer = document.getElementById(iconContainerId);
