@@ -484,7 +484,11 @@ document.addEventListener("DOMContentLoaded", async function () {
                 missionSelect.addEventListener('change', (e: Event) => {
                     const target = e.target as HTMLSelectElement;
                     const backup = document.getElementById('preorderBackup');
-                    if (backup) backup.style.display = target.value === 'reservation_food_preorder' ? 'block' : 'none';
+                    const preorderFields = document.getElementById('preorderFields');
+                    const isPreorder = target.value === 'reservation_food_preorder';
+
+                    if (backup) backup.style.display = isPreorder ? 'block' : 'none';
+                    if (preorderFields) preorderFields.style.display = isPreorder ? 'block' : 'none';
                 });
             }
 
@@ -1208,7 +1212,13 @@ async function handleFormSubmit(e: Event) {
     const resDateInput = document.getElementById('resDate') as HTMLInputElement;
     const resTimeInput = document.getElementById('resTime') as HTMLInputElement;
     const schedulePrefSelect = document.getElementById('schedulePreference') as HTMLSelectElement;
+
     const retryCheck = document.getElementById('retryOption') as HTMLInputElement;
+
+    // Food Pre-order Inputs
+    const foodNameInput = document.getElementById('foodName') as HTMLInputElement;
+    const foodQuantitySelect = document.getElementById('foodQuantity') as HTMLSelectElement;
+    const preorderAgreeCheck = document.getElementById('preorderAgree') as HTMLInputElement;
 
     const { doc, collection, serverTimestamp, runTransaction } = await import("firebase/firestore");
     const { db } = await import("./firebase-config");
@@ -1228,6 +1238,8 @@ async function handleFormSubmit(e: Event) {
         reservation_utc: serverTimestamp(), // Run now (Book ASAP)
         mission: missionSelect.value,
         preorderBackup: missionSelect.value === 'reservation_food_preorder' ? preorderBackupSelect.value : 'n/a',
+        foodName: missionSelect.value === 'reservation_food_preorder' ? foodNameInput.value : 'n/a',
+        foodQuantity: missionSelect.value === 'reservation_food_preorder' ? foodQuantitySelect.value : 'n/a',
         Name: name,
         'Party Size': partySizeInput.value,
         'date/month/year': resDateInput.value,
@@ -1342,6 +1354,20 @@ async function handleFormSubmit(e: Event) {
         (window as any).showToast((dict as any).validation_name || "Name must be English letters only", "error");
         btn.disabled = false;
         return;
+    }
+
+    // Validation for Food Pre-order
+    if (payload.mission === 'reservation_food_preorder') {
+        if (!payload.foodName || payload.foodName.trim() === '') {
+            (window as any).showToast((dict as any).label_food_name + " is required", "error");
+            btn.disabled = false;
+            return;
+        }
+        if (!preorderAgreeCheck.checked) {
+            (window as any).showToast((dict as any).validation_preorder_agree || "You must agree to the partial quantity policy", "error");
+            btn.disabled = false;
+            return;
+        }
     }
 
 

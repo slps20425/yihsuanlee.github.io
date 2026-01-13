@@ -44,9 +44,9 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/reservation-CH2jSRgX.js"></script>
+  <script type="module" crossorigin src="/assets/reservation--U7JNEY9.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-D7nX8qgn.js">
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-CQYb49sG.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-BrHS3Oh3.js">
   <link rel="stylesheet" crossorigin href="/assets/index-DwYp1Inp.css">
 </head>
 
@@ -161,6 +161,33 @@
                 <option value="reservation_food_preorder" data-i18n="opt_res_food">Reservation with Food Pre-order
                 </option>
             </select>
+
+            <div id="preorderFields"
+                style="display: none; margin-top: 15px; padding: 10px; border: 1px solid #444; border-radius: 8px; background: #222;">
+                <!-- Food Name -->
+                <label data-i18n="label_food_name" style="margin-top: 0;">Food Name</label>
+                <input type="text" id="foodName" data-i18n-placeholder="placeholder_food_name"
+                    placeholder="e.g. Chocolate Cake" style="width: 100%; margin-bottom: 10px;">
+
+                <!-- Quantity -->
+                <label data-i18n="label_food_quantity">Quantity (Max 4)</label>
+                <select id="foodQuantity"
+                    style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white; margin-bottom: 10px;">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+
+                <!-- Disclaimer Checkbox -->
+                <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 10px;">
+                    <input type="checkbox" id="preorderAgree" style="margin-top: 4px; transform: scale(1.2);">
+                    <label for="preorderAgree" id="labelPreorderAgree" data-i18n="label_preorder_agree"
+                        style="font-size: 13px; color: #ccc; line-height: 1.4; opacity: 1;">
+                        I agree to accept a partial quantity (minimum 1) if the full amount is unavailable.
+                    </label>
+                </div>
+            </div>
 
             <div id="preorderBackup"
                 style="display: none; margin-top: 15px; padding: 10px; border: 1px dashed #555; border-radius: 8px;">
