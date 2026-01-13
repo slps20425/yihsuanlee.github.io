@@ -136,10 +136,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 defaultRetryCount = Number(data.default_retry_count);
             }
 
-            // Update Retry Label UI
+            // Update Retry Label & Warning UI
             const retryLabel = document.querySelector('label[for="retryOption"] span[data-i18n="label_retry"]');
+            const retryWarning = document.querySelector('label[for="retryOption"] span.warning-text');
+
             if (retryLabel) {
                 retryLabel.textContent = `Re-try ${defaultRetryCount} time(s)`;
+            }
+            if (retryWarning) {
+                const totalMaxCost = currentCost + defaultRetryCount;
+                retryWarning.textContent = `(Max cost: ${totalMaxCost} credits if all retries used)`;
+                retryWarning.style.color = "#ff4444";
             }
 
             // Update UI Icon

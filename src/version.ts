@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v1.1.0-retry-ui';
+export const APP_VERSION = 'v1.1.4-logic-fix';
 export const BUILD_TIMESTAMP = new Date().toISOString();
 
 export function displayVersion() {
