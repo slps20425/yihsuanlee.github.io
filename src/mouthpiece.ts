@@ -365,7 +365,7 @@ async function handleFormSubmit(e: Event) {
         targetPhoneNumber: phoneInputPlugin ? phoneInputPlugin.getNumber() : targetPhoneEl.value,
         script: scriptContentEl.value,
         schedulePreference: schedulePreferenceEl.value,
-        language: WiseCatI18n.currentLang,
+        language: WiseCatI18n.detectLanguage(scriptContentEl.value),
         userEmail: (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email :
             (localStorage.getItem('wisecat_user') ? (JSON.parse(localStorage.getItem('wisecat_user') || '{}').email || 'N/A') : 'N/A'),
         userCredits: (localStorage.getItem('wisecat_user') ? Number(JSON.parse(localStorage.getItem('wisecat_user') || '{}').credits || 0) : 0),

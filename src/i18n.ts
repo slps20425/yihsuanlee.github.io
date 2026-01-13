@@ -13,9 +13,33 @@ interface WiseCatI18nType {
     refreshCredits: () => void;
     phoneRules: { [key: string]: RegExp };
     validatePhone: (code: string, number: string) => boolean;
+    detectLanguage: (text: string) => string;
 }
 
 const WiseCatI18n: WiseCatI18nType = {
+    detectLanguage: (text: string) => {
+        // 1. East Asian Scripts (Unambiguous)
+        if (/[\u4e00-\u9fa5]/.test(text)) return 'zh'; // Chinese
+        if (/[\u3040-\u30ff\u3400-\u4dbf]/.test(text)) return 'jp'; // Japanese
+        if (/[\uac00-\ud7af]/.test(text)) return 'kr'; // Korean
+
+        // 2. European Languages (Latin Script Heuristics)
+        // We look for unique characters or common words to distinguish
+        const lower = text.toLowerCase();
+
+        // French: à, â, ç, é, è, ê, ë, î, ï, ô, û, ù, ü (Common: " c'est ", " le ", " la ", " les ")
+        if (/[àâçéèêëîïôûùü]/.test(lower) || /\b(est|le|la|les|un|une)\b/.test(lower)) return 'fr';
+
+        // Spanish: á, é, í, ñ, ó, ú, ü, ¡, ¿ (Common: " el ", " la ", " los ", " las ", " es ")
+        if (/[áéíñóúü¡¿]/.test(lower) || /\b(el|la|los|las|es|y)\b/.test(lower)) return 'es';
+
+        // Italian: à, è, é, ì, ò, ù (Common: " il ", " lo ", " la ", " i ", " gli ", " sono ")
+        if (/[àèéìòù]/.test(lower) || /\b(il|lo|la|gli|sono|per)\b/.test(lower)) return 'it';
+
+        // 3. Fallback
+        // If mostly Latin but not clearly FR/ES/IT, assume English or current UI language
+        return 'en';
+    },
     currentLang: 'en',
     initialized: false,
     translations: {
