@@ -1072,6 +1072,8 @@ function applyPlaceSelection(place: any) {
             const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
             if (phoneInput) phoneInput.value = phoneNumber;
         }
+    } else {
+        (window as any).showToast("⚠️ Phone number not found for this location. Please enter it manually.", "warning");
     }
     validateForm();
 
