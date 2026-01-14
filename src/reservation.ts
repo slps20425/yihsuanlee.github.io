@@ -192,32 +192,51 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const positionTooltip = () => {
                     if (!tooltip || !icon) return;
 
+                    // Force visibility temporarily to get accurate dimensions
+                    tooltip.style.visibility = 'visible';
+                    tooltip.style.opacity = '0';
+                    tooltip.style.display = 'block';
+
                     const iconRect = icon.getBoundingClientRect();
                     const tooltipRect = tooltip.getBoundingClientRect();
                     const viewportWidth = window.innerWidth;
+                    const viewportHeight = window.innerHeight;
+                    const padding = 15;
 
-                    // Default: position above
-                    let top = iconRect.top - tooltipRect.height - 10;
+                    // Calculate centered position
                     let left = iconRect.left + (iconRect.width / 2) - (tooltipRect.width / 2);
 
-                    // Check if tooltip goes off top
-                    if (top < 10) {
-                        // Position below instead
-                        top = iconRect.bottom + 10;
+                    // Adjust if going off left edge
+                    if (left < padding) {
+                        left = padding;
                     }
 
-                    // Check if tooltip goes off left
-                    if (left < 10) {
-                        left = 10;
+                    // Adjust if going off right edge
+                    if (left + tooltipRect.width > viewportWidth - padding) {
+                        left = viewportWidth - tooltipRect.width - padding;
                     }
 
-                    // Check if tooltip goes off right
-                    if (left + tooltipRect.width > viewportWidth - 10) {
-                        left = viewportWidth - tooltipRect.width - 10;
+                    // Try to position above first
+                    let top = iconRect.top - tooltipRect.height - 15;
+
+                    // If it goes off top, position below instead
+                    if (top < padding) {
+                        top = iconRect.bottom + 15;
+                    }
+
+                    // If still going off bottom (rare), force it to fit
+                    if (top + tooltipRect.height > viewportHeight - padding) {
+                        top = viewportHeight - tooltipRect.height - padding;
                     }
 
                     tooltip.style.top = `${top}px`;
                     tooltip.style.left = `${left}px`;
+                    tooltip.style.maxWidth = `${viewportWidth - (padding * 2)}px`;
+
+                    // Restore display state
+                    tooltip.style.visibility = '';
+                    tooltip.style.opacity = '';
+                    tooltip.style.display = '';
                 };
 
                 // Mobile & Desktop: Toggle tooltip on click/hover

@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v1.1.6-tooltip-fix';
+export const APP_VERSION = 'v1.1.7-tooltip-mobile-fix';
 export const BUILD_TIMESTAMP = new Date().toISOString();
 
 export function displayVersion() {

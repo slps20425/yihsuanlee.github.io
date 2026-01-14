@@ -27,6 +27,32 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Initialize i18n explicitly
     WiseCatI18n.init();
 
+    // --- Initialize Cost Icon Container immediately ---
+    const initCostIcon = () => {
+        const iconContainerId = 'costIconContainer';
+        let iconContainer = document.getElementById(iconContainerId);
+
+        if (!iconContainer) {
+            const header = document.querySelector('.header h2') || document.querySelector('h2');
+            if (header) {
+                iconContainer = document.createElement('div');
+                iconContainer.id = iconContainerId;
+                iconContainer.className = 'info-icon-container';
+                iconContainer.innerHTML = `
+                    <div class="info-icon">i</div>
+                    <div class="cost-tooltip">
+                        <strong>Cost Information</strong><br>
+                        This task costs <span id="dynamicCostDisplay">${currentCost}</span> credit(s).
+                    </div>
+                `;
+                header.parentNode?.insertBefore(iconContainer, header.nextSibling);
+            }
+        }
+    };
+
+    // Call immediately to show icon on page load
+    initCostIcon();
+
     // --- Remote Config Listener ---
     const { doc, onSnapshot } = await import("firebase/firestore");
     const { db } = await import("./firebase-config");
@@ -75,6 +101,98 @@ document.addEventListener("DOMContentLoaded", async function () {
             } else {
                 const display = document.getElementById('dynamicCostDisplay');
                 if (display) display.innerText = String(currentCost);
+            }
+
+            // Setup tooltip positioning and interaction (runs on every update)
+            if (iconContainer) {
+                const tooltip = iconContainer.querySelector('.cost-tooltip') as HTMLElement;
+                const icon = iconContainer.querySelector('.info-icon') as HTMLElement;
+
+                // Position tooltip dynamically to prevent off-screen
+                const positionTooltip = () => {
+                    if (!tooltip || !icon) return;
+
+                    // Force visibility temporarily to get accurate dimensions
+                    tooltip.style.visibility = 'visible';
+                    tooltip.style.opacity = '0';
+                    tooltip.style.display = 'block';
+
+                    const iconRect = icon.getBoundingClientRect();
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    const viewportWidth = window.innerWidth;
+                    const viewportHeight = window.innerHeight;
+                    const padding = 15;
+
+                    // Calculate centered position
+                    let left = iconRect.left + (iconRect.width / 2) - (tooltipRect.width / 2);
+
+                    // Adjust if going off left edge
+                    if (left < padding) {
+                        left = padding;
+                    }
+
+                    // Adjust if going off right edge
+                    if (left + tooltipRect.width > viewportWidth - padding) {
+                        left = viewportWidth - tooltipRect.width - padding;
+                    }
+
+                    // Try to position above first
+                    let top = iconRect.top - tooltipRect.height - 15;
+
+                    // If it goes off top, position below instead
+                    if (top < padding) {
+                        top = iconRect.bottom + 15;
+                    }
+
+                    // If still going off bottom (rare), force it to fit
+                    if (top + tooltipRect.height > viewportHeight - padding) {
+                        top = viewportHeight - tooltipRect.height - padding;
+                    }
+
+                    tooltip.style.top = `${top}px`;
+                    tooltip.style.left = `${left}px`;
+                    tooltip.style.maxWidth = `${viewportWidth - (padding * 2)}px`;
+
+                    // Restore display state
+                    tooltip.style.visibility = '';
+                    tooltip.style.opacity = '';
+                    tooltip.style.display = '';
+                };
+
+                // Mobile & Desktop: Toggle tooltip on click/hover
+                let isOpen = false;
+                const showTooltip = (e: Event) => {
+                    e.stopPropagation();
+                    isOpen = true;
+                    tooltip.classList.add('show');
+                    positionTooltip();
+                };
+
+                const hideTooltip = () => {
+                    isOpen = false;
+                    tooltip.classList.remove('show');
+                };
+
+                // Click for mobile
+                iconContainer.onclick = showTooltip;
+
+                // Hover for desktop
+                iconContainer.onmouseenter = showTooltip;
+                iconContainer.onmouseleave = hideTooltip;
+
+                // Close tooltip when clicking elsewhere
+                const closeOnClickOutside = (e: MouseEvent) => {
+                    if (isOpen && !iconContainer.contains(e.target as Node)) {
+                        hideTooltip();
+                    }
+                };
+
+                document.addEventListener('click', closeOnClickOutside);
+
+                // Reposition on window resize
+                window.addEventListener('resize', () => {
+                    if (isOpen) positionTooltip();
+                });
             }
 
 
