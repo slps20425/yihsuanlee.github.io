@@ -87,6 +87,32 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Initialize i18n explicitly
     WiseCatI18n.init();
 
+    // --- Initialize Cost Icon Container immediately ---
+    const initCostIcon = () => {
+        const iconContainerId = 'costIconContainer';
+        let iconContainer = document.getElementById(iconContainerId);
+
+        if (!iconContainer) {
+            const header = document.querySelector('.header h2') || document.querySelector('h2');
+            if (header) {
+                iconContainer = document.createElement('div');
+                iconContainer.id = iconContainerId;
+                iconContainer.className = 'info-icon-container';
+                iconContainer.innerHTML = `
+                    <div class="info-icon">i</div>
+                    <div class="cost-tooltip">
+                        <strong>Cost Information</strong><br>
+                        This task costs <span id="dynamicCostDisplay">${currentCost}</span> credit(s).
+                    </div>
+                `;
+                header.parentNode?.insertBefore(iconContainer, header.nextSibling);
+            }
+        }
+    };
+
+    // Call immediately to show icon on page load
+    initCostIcon();
+
     // --- Remote Config Listener ---
     const { doc, onSnapshot, runTransaction } = await import("firebase/firestore"); // Added runTransaction
     const { db } = await import("./firebase-config");
@@ -155,6 +181,79 @@ document.addEventListener("DOMContentLoaded", async function () {
             } else {
                 const display = document.getElementById('dynamicCostDisplay');
                 if (display) display.innerText = String(currentCost);
+            }
+
+            // Setup tooltip positioning and interaction (runs on every update)
+            if (iconContainer) {
+                const tooltip = iconContainer.querySelector('.cost-tooltip') as HTMLElement;
+                const icon = iconContainer.querySelector('.info-icon') as HTMLElement;
+
+                // Position tooltip dynamically to prevent off-screen
+                const positionTooltip = () => {
+                    if (!tooltip || !icon) return;
+
+                    const iconRect = icon.getBoundingClientRect();
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    const viewportWidth = window.innerWidth;
+
+                    // Default: position above
+                    let top = iconRect.top - tooltipRect.height - 10;
+                    let left = iconRect.left + (iconRect.width / 2) - (tooltipRect.width / 2);
+
+                    // Check if tooltip goes off top
+                    if (top < 10) {
+                        // Position below instead
+                        top = iconRect.bottom + 10;
+                    }
+
+                    // Check if tooltip goes off left
+                    if (left < 10) {
+                        left = 10;
+                    }
+
+                    // Check if tooltip goes off right
+                    if (left + tooltipRect.width > viewportWidth - 10) {
+                        left = viewportWidth - tooltipRect.width - 10;
+                    }
+
+                    tooltip.style.top = `${top}px`;
+                    tooltip.style.left = `${left}px`;
+                };
+
+                // Mobile & Desktop: Toggle tooltip on click/hover
+                let isOpen = false;
+                const showTooltip = (e: Event) => {
+                    e.stopPropagation();
+                    isOpen = true;
+                    tooltip.classList.add('show');
+                    positionTooltip();
+                };
+
+                const hideTooltip = () => {
+                    isOpen = false;
+                    tooltip.classList.remove('show');
+                };
+
+                // Click for mobile
+                iconContainer.onclick = showTooltip;
+
+                // Hover for desktop
+                iconContainer.onmouseenter = showTooltip;
+                iconContainer.onmouseleave = hideTooltip;
+
+                // Close tooltip when clicking elsewhere
+                const closeOnClickOutside = (e: MouseEvent) => {
+                    if (isOpen && !iconContainer.contains(e.target as Node)) {
+                        hideTooltip();
+                    }
+                };
+
+                document.addEventListener('click', closeOnClickOutside);
+
+                // Reposition on window resize
+                window.addEventListener('resize', () => {
+                    if (isOpen) positionTooltip();
+                });
             }
 
             if (resBtn) {

@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v1.1.4-logic-fix';
+export const APP_VERSION = 'v1.1.6-tooltip-fix';
 export const BUILD_TIMESTAMP = new Date().toISOString();
 
 export function displayVersion() {

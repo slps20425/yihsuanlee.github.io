@@ -62,12 +62,8 @@ body {
     text-align: center;
     border-radius: 8px;
     padding: 10px;
-    position: absolute;
+    position: fixed;
     z-index: 1000;
-    bottom: 125%;
-    /* Position above */
-    left: 50%;
-    margin-left: -100px;
     opacity: 0;
     transition: opacity 0.3s, transform 0.3s;
     transform: translateY(10px);
@@ -76,20 +72,21 @@ body {
     font-size: 14px;
     font-weight: normal;
     pointer-events: none;
+    /* Dynamic positioning will be handled by JS */
 }
 
 .cost-tooltip::after {
     content: "";
     position: absolute;
-    top: 100%;
     left: 50%;
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: #333 transparent transparent transparent;
+    /* Arrow direction will be set dynamically by JS */
 }
 
-.info-icon-container:hover .cost-tooltip {
+.info-icon-container:hover .cost-tooltip,
+.cost-tooltip.show {
     visibility: visible;
     opacity: 1;
     transform: translateY(0);
