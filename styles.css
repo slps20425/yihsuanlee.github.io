@@ -89,6 +89,9 @@ body {
     border-style: solid;
     border-color: #333 transparent transparent transparent;
     bottom: -10px;
+    top: auto;
+    width: 0;
+    height: 0;
 }
 
 .info-icon-container:hover .cost-tooltip,
