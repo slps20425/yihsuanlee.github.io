@@ -136,7 +136,7 @@ const WiseCatI18n: WiseCatI18nType = {
             placeholder_date: "Select Date",
             label_script_language: "🗣️ Speaking Language",
             option_auto: "Auto-Detect",
-            helper_title: "AI Prompt Helper 🐱",
+            helper_title: "Scenarios Template Helper 🐱",
             helper_examples: {
                 res: [
                     { t: "Simple Reservation", v: "Reserve a table for 4 at [Restaurant Name] for tonight." },
@@ -245,7 +245,7 @@ const WiseCatI18n: WiseCatI18nType = {
             placeholder_date: "選擇預約日期",
             label_script_language: "🗣️ 通話語言",
             option_auto: "自動偵測",
-            helper_title: "AI 範例語法 🐱",
+            helper_title: "情境範本小幫手 🐱",
             helper_examples: {
                 res: [
                     { t: "簡單預約", v: "今晚在 [餐廳名稱] 預訂一桌 4 人位。" },
@@ -348,7 +348,7 @@ const WiseCatI18n: WiseCatI18nType = {
             placeholder_date: "日付を選択",
             label_script_language: "🗣️ 通話言語",
             option_auto: "自動検出",
-            helper_title: "AIプロンプトヘルパー 🐱",
+            helper_title: "シナリオテンプレートヘルパー 🐱",
             helper_examples: {
                 res: [
                     { t: "簡単な予約", v: "今夜、[レストラン名]で4人のテーブルを予約してください。" },
@@ -451,7 +451,7 @@ const WiseCatI18n: WiseCatI18nType = {
             placeholder_date: "날짜 선택",
             label_script_language: "🗣️ 통화 언어",
             option_auto: "자동 감지",
-            helper_title: "AI 프롬프트 도우미 🐱",
+            helper_title: "시나리오 템플릿 도우미 🐱",
             helper_examples: {
                 res: [
                     { t: "간단한 예약", v: "오늘 밤 [식당 이름]에 4인 테이블을 예약해 주세요." },
@@ -554,7 +554,7 @@ const WiseCatI18n: WiseCatI18nType = {
             placeholder_date: "Seleccionar fecha",
             label_script_language: "🗣️ Idioma de llamada",
             option_auto: "Detección automática",
-            helper_title: "Ayudante de IA 🐱",
+            helper_title: "Ayudante de Plantillas de Escenarios 🐱",
             helper_examples: {
                 res: [
                     { t: "Reserva Simple", v: "Reserva una mesa para 4 en [Nombre del Restaurante] para esta noche." },
@@ -657,7 +657,7 @@ const WiseCatI18n: WiseCatI18nType = {
             placeholder_date: "Choisir la date",
             label_script_language: "🗣️ Langue d'appel",
             option_auto: "Détection automatique",
-            helper_title: "Assistant de Prompt IA 🐱",
+            helper_title: "Assistant de Modèles de Scénarios 🐱",
             helper_examples: {
                 res: [
                     { t: "Réservation Simple", v: "Réservez une table pour 4 à [Nom du Restaurant] pour ce soir." },
@@ -760,7 +760,7 @@ const WiseCatI18n: WiseCatI18nType = {
             placeholder_date: "Seleziona data",
             label_script_language: "🗣️ Lingua chiamata",
             option_auto: "Rilevamento automatico",
-            helper_title: "Assistente Prompt IA 🐱",
+            helper_title: "Assistente Modelli di Scenari 🐱",
             helper_examples: {
                 res: [
                     { t: "Prenotazione Semplice", v: "Prenota un tavolo per 4 a [Nome Ristorante] per stasera." },

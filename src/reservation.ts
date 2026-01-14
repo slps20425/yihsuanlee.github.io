@@ -1378,7 +1378,8 @@ async function handleFormSubmit(e: Event) {
         state: 'pending',
         priority: 4, // High priority
         userCredits: userCredits,
-        reservation_utc: serverTimestamp(), // Run now (Book ASAP)
+        userCredits: userCredits,
+        reservation_utc: calculateReservationUTC(resDateInput.value, resTimeInput.value, selectedRestaurantData?.utc_offset_minutes),
         mission: missionSelect.value,
         preorderBackup: missionSelect.value === 'reservation_food_preorder' ? preorderBackupSelect.value : 'n/a',
         foodName: missionSelect.value === 'reservation_food_preorder' ? foodNameInput.value : 'n/a',
@@ -1405,6 +1406,8 @@ async function handleFormSubmit(e: Event) {
             utc_offset: selectedRestaurantData.utc_offset_minutes
         } : null
     };
+
+    console.log("Calculated UTC Payload:", payload.reservation_utc);
 
     // --- Schedule Logic ---
     const schedulePreferenceVal = (document.getElementById('schedulePreference') as HTMLSelectElement).value;
@@ -1612,3 +1615,25 @@ function createToastContainer() {
 }
 
 
+
+function calculateReservationUTC(dateStr: string, timeStr: string, utcOffsetMinutes: number | undefined): Date | null {
+    if (!dateStr || !timeStr) return null;
+
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const [hour, minute] = timeStr.split(':').map(Number);
+
+    // Create a Date object representing the time in the restaurant's timezone
+    // We treat it as UTC first to get the components straight without browser TZ
+    const localTimeRef = new Date(Date.UTC(year, month - 1, day, hour, minute));
+
+    let targetUtcTime = localTimeRef.getTime();
+
+    if (utcOffsetMinutes !== undefined) {
+        // UTC = Local - Offset
+        targetUtcTime -= (utcOffsetMinutes * 60 * 1000);
+    } else {
+        console.warn("No UTC offset found for restaurant, using time as-is (UTC)");
+    }
+
+    return new Date(targetUtcTime);
+}
