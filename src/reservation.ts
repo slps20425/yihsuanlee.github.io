@@ -1594,6 +1594,17 @@ async function handleFormSubmit(e: Event) {
     }
 
 
+    // 4. Force Final Safety Check (Note)
+    if (payload.note) {
+        const safetyResult = await ScamCheck.validate(payload.note);
+        if (!safetyResult.safe) {
+            btn.disabled = true;
+            btn.innerText = "⚠️ Content Unsafe";
+            (window as any).showToast("Content blocked by security policy.", "error");
+            return;
+        }
+    }
+
     // 1. Transaction: Check Credits -> Deduct -> Create Task
     try {
         if (!auth.currentUser) {

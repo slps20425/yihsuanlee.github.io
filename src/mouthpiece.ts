@@ -724,7 +724,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
 
-        // 1. Transaction: Check Credits -> Deduct -> Create Task
+        // 4. Force Final Safety Check
+        const scriptContent = document.getElementById('scriptContent') as HTMLTextAreaElement;
+        if (scriptContent && scriptContent.value) {
+            const safetyResult = await ScamCheck.validate(scriptContent.value);
+            if (!safetyResult.safe) {
+                btn.disabled = true;
+                btn.innerText = "⚠️ Content Unsafe";
+                (window as any).showToast("Content blocked by security policy.", "error");
+                return;
+            }
+        }
+
+        // 1. Transaction...
         try {
             if (!auth.currentUser) {
                 (window as any).showToast("Please log in to submit a mouthpiece task.", "error");
