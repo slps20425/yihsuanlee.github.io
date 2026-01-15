@@ -23,10 +23,10 @@
 - [x] [JQyKbEfDmJhOspkQq2PE] Feature: Partial Quantity Acceptance
   - Default "Agree to partial quantity" to enabled.
   - If disabled, disallow reservation with food-preorder.
-- [/] [EhmQowE8UVc0g5Ti9Nev] Bug: Login Unstable (Session Lost)
+- [x] [EhmQowE8UVc0g5Ti9Nev] Bug: Login Unstable (Session Lost)
   - Login lost when switching tabs.
   - Increase session timeout.
-- [ ] [jUqXhbjuhvx7t76psGnP] Feature: Session Timeout Popup
+- [/] [jUqXhbjuhvx7t76psGnP] Feature: Session Timeout Popup
   - Change browser default popup to centered toaster.
 - [ ] [1kyakEzZmNXTBLlof6Bj] Bug: Fix able to delete other user task
   - "not allow to delete other user task"

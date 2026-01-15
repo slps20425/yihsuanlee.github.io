@@ -138,8 +138,99 @@ function checkSessionTimeout() {
     if (elapsedMinutes >= sessionTimeoutMinutes) {
         console.log(`Session timed out after ${elapsedMinutes.toFixed(1)} minutes of inactivity.`);
         logout();
-        alert("Your session has expired due to inactivity.");
+        showCenteredToast("Your session has expired due to inactivity.");
     }
+}
+
+// --- UI Helper: Centered Toast ---
+function showCenteredToast(message: string) {
+    // 1. Create or get container
+    let container = document.getElementById('centered-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'centered-toast-container';
+        container.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        `;
+        document.body.appendChild(container);
+    }
+
+    // 2. Create Toast
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        background: rgba(40, 40, 40, 0.95);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        font-family: inherit;
+        font-size: 16px;
+        text-align: center;
+        opacity: 0;
+        transform: scale(0.9);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    `;
+
+    // Icon
+    const icon = document.createElement('div');
+    icon.textContent = "⏳";
+    icon.style.fontSize = "32px";
+    icon.style.marginBottom = "10px";
+
+    // Text
+    const text = document.createElement('div');
+    text.textContent = message;
+
+    // Close Button (optional, but good for UX)
+    const btn = document.createElement('button');
+    btn.textContent = "OK";
+    btn.style.cssText = `
+        margin-top: 15px;
+        padding: 8px 20px;
+        background: white;
+        color: black;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        pointer-events: auto;
+    `;
+    btn.onclick = () => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+            if (container && container.contains(toast)) container.removeChild(toast);
+            if (container && container.childNodes.length === 0) document.body.removeChild(container);
+        }, 300);
+    };
+
+    toast.appendChild(icon);
+    toast.appendChild(text);
+    toast.appendChild(btn);
+
+    // Make container interactive for button
+    container.style.pointerEvents = 'auto';
+    container.appendChild(toast);
+
+    // Animate In
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'scale(1)';
+    });
+
+    // Auto-dismiss after 5 seconds if not clicked? Maybe not for session timeout.
+    // Let's force user to click OK or just leave it.
 }
 
 // --- Auth Logic ---
