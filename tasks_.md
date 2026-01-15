@@ -43,6 +43,10 @@
 - [x] [VekLP5lAdUq2A7IU26xA] bug fix: Infinite URL Redirection
 - [x] [sOguqwdjXXewt2IAY3I7] feature dev_task adding new field
 - [x] [Nb677QYLmAYmapGgbh6f] Create Task Entry Page (/admin/tasks)
+- [x] [ADMIN_PROFILE] Feature: Improve Admin Profile Display
+- [ ] [INTL_TEL_BUG] Bug: Fix Intl-Tel-Input Initialization
+  - "phone number country code not display required a refresh"
+  - Investigate `onload` race condition.
 
 ## Backlog
 - [ ] Example Task 1

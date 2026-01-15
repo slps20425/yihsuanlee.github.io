@@ -314,74 +314,87 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Fallback check immediately (just in case)
     renderTurnstile();
 
-    // Initialize userPhone (Confirmation)
-    const userPhoneInput = document.querySelector("#userPhone");
-    if (userPhoneInput) {
-        userPhonePlugin = intlTelInput(userPhoneInput, {
-            initialCountry: "auto",
-            geoIpLookup: function (callback: (code: string) => void) {
-                fetch("https://ipapi.co/json")
-                    .then(res => res.json())
-                    .then(data => callback(data.country_code))
-                    .catch(() => callback("us"));
-            },
-            preferredCountries: [],
-            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
-            separateDialCode: true
-        });
-    }
+    // Robust Initialization for intl-tel-input
+    const initPhoneInputs = () => {
+        if (typeof intlTelInput === 'undefined') {
+            console.warn("intlTelInput not loaded yet, retrying...");
+            setTimeout(initPhoneInputs, 100);
+            return;
+        }
 
-    const input = document.querySelector("#targetPhone");
-    if (input) {
-        phoneInputPlugin = intlTelInput(input, {
-            initialCountry: "auto",
-            geoIpLookup: function (callback: (code: string) => void) {
-                fetch("https://ipapi.co/json")
-                    .then(res => res.json())
-                    .then(data => callback(data.country_code))
-                    .catch(() => callback("us"));
-            },
-            preferredCountries: [],
-            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
-            separateDialCode: true
-        });
+        // Initialize userPhone (Confirmation)
+        const userPhoneInput = document.querySelector("#userPhone");
+        if (userPhoneInput && !userPhonePlugin) {
+            userPhonePlugin = intlTelInput(userPhoneInput, {
+                initialCountry: "auto",
+                geoIpLookup: function (callback: (code: string) => void) {
+                    fetch("https://ipapi.co/json")
+                        .then(res => res.json())
+                        .then(data => callback(data.country_code))
+                        .catch(() => callback("us"));
+                },
+                preferredCountries: [],
+                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+                separateDialCode: true
+            });
+        }
 
-        // Add dial code search feature
-        let dialCodeBuffer = "";
-        let dialCodeTimeout: number | null = null;
+        const input = document.querySelector("#targetPhone");
+        if (input && !phoneInputPlugin) {
+            phoneInputPlugin = intlTelInput(input, {
+                initialCountry: "auto",
+                geoIpLookup: function (callback: (code: string) => void) {
+                    fetch("https://ipapi.co/json")
+                        .then(res => res.json())
+                        .then(data => callback(data.country_code))
+                        .catch(() => callback("us"));
+                },
+                preferredCountries: [],
+                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+                separateDialCode: true
+            });
+        }
+    };
 
-        document.addEventListener("keydown", (e: KeyboardEvent) => {
-            const dropdown = document.querySelector(".iti__country-list");
-            if (!dropdown || dropdown.classList.contains("iti__hide")) return;
+    // Attempt init
+    initPhoneInputs();
 
-            // Only handle number keys
-            if (e.key >= "0" && e.key <= "9") {
-                e.preventDefault();
-                dialCodeBuffer += e.key;
+    // Add dial code search feature
+    let dialCodeBuffer = "";
+    let dialCodeTimeout: number | null = null;
 
-                // Clear previous timeout
-                if (dialCodeTimeout) clearTimeout(dialCodeTimeout);
+    document.addEventListener("keydown", (e: KeyboardEvent) => {
+        const dropdown = document.querySelector(".iti__country-list");
+        if (!dropdown || dropdown.classList.contains("iti__hide")) return;
 
-                // Search for country with matching dial code
-                const countries = dropdown.querySelectorAll(".iti__country");
-                for (const country of countries) {
-                    const dialCode = country.querySelector(".iti__dial-code")?.textContent?.replace("+", "");
-                    if (dialCode && dialCode.startsWith(dialCodeBuffer)) {
-                        country.scrollIntoView({ block: "nearest", behavior: "smooth" });
-                        // Highlight the country
-                        countries.forEach(c => c.classList.remove("iti__highlight"));
-                        country.classList.add("iti__highlight");
-                        break;
-                    }
+        // Only handle number keys
+        if (e.key >= "0" && e.key <= "9") {
+            e.preventDefault();
+            dialCodeBuffer += e.key;
+
+            // Clear previous timeout
+            if (dialCodeTimeout) clearTimeout(dialCodeTimeout);
+
+            // Search for country with matching dial code
+            const countries = dropdown.querySelectorAll(".iti__country");
+            for (const country of countries) {
+                const dialCode = country.querySelector(".iti__dial-code")?.textContent?.replace("+", "");
+                if (dialCode && dialCode.startsWith(dialCodeBuffer)) {
+                    country.scrollIntoView({ block: "nearest", behavior: "smooth" });
+                    // Highlight the country
+                    countries.forEach(c => c.classList.remove("iti__highlight"));
+                    country.classList.add("iti__highlight");
+                    break;
                 }
-
-                // Reset buffer after 1 second
-                dialCodeTimeout = window.setTimeout(() => {
-                    dialCodeBuffer = "";
-                }, 1000);
             }
-        });
-    }
+
+            // Reset buffer after 1 second
+            dialCodeTimeout = window.setTimeout(() => {
+                dialCodeBuffer = "";
+            }, 1000);
+        }
+    });
+
 
     // Initialize Custom Time Picker
     const timeDisplay = document.getElementById('resTimeDisplay');

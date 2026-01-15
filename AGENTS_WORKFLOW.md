@@ -3,12 +3,12 @@
 ## Current Task
 ## Current Task
 ## Current Task
-- **Task Name**: Feature: Improve Admin Profile Display
+- **Task Name**: Bug Fix: Intl-Tel-Input Initialization
 - **Assignee**: Claude
 - **Status**: IN_PROGRESS
-- **Deploy URL**: https://wisecat-8df8d.web.app/admin/tasks.html
-- **Scope**: Frontend (Admin)
-- **Task ID**: ADMIN_PROFILE
+- **Deploy URL**: https://wisecat-8df8d.web.app/reservation/restaurant_reservation.html
+- **Scope**: Frontend (Reservation)
+- **Task ID**: INTL_TEL_BUG
 
 ## Workflow History
 *(Empty)*
