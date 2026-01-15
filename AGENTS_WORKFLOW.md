@@ -3,12 +3,12 @@
 ## Current Task
 ## Current Task
 ## Current Task
-- **Task Name**: Feature: Allow admin dev task to be editable (& Fix Sorting)
+- **Task Name**: Feature: Partial Quantity Acceptance & Admin Fixes
 - **Assignee**: Claude
 - **Status**: READY_FOR_QA
-- **Deploy URL**: https://wisecat-8df8d.web.app/admin/tasks.html
-- **Scope**: Frontend (Admin)
-- **Task ID**: t7UZtginqdVTuIlyYcmm
+- **Deploy URL**: https://wisecat-8df8d.web.app
+- **Scope**: Frontend (Reservation, Admin)
+- **Task ID**: nenaHHEf6AbmNncCJzTi
 
 ## Workflow History
 *(Empty)*

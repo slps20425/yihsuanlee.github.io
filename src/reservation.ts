@@ -637,6 +637,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
 
             // Mission Logic
+            const missionSelect = document.getElementById('mission') as HTMLSelectElement;
             if (missionSelect) {
                 missionSelect.addEventListener('change', (e: Event) => {
                     const target = e.target as HTMLSelectElement;
