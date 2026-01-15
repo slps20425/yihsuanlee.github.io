@@ -1,14 +1,12 @@
 # Tasks
 
 ## High Priority
-- [x] [sOguqwdjXXewt2IAY3I7] feature dev_task adding new field
-  - Add `attachment_url` field to `dev_task` collection.
-  - Implement file upload in Admin Task Page:
-    - Upload to Firebase Storage.
-    - Get `getDownloadURL`.
-    - Save URL to Firestore.
+- [x] [VekLP5lAdUq2A7IU26xA] bug fix: Infinite URL Redirection
+  - Issue: Clicking mouthpiece/trial/restaurant service buttons causes nested URL redirection (e.g., `/reservation/reservation/reservation...`).
+  - Investigation High Priority.
 
 ## Completed
+- [x] [sOguqwdjXXewt2IAY3I7] feature dev_task adding new field
 - [x] [Nb677QYLmAYmapGgbh6f] Create Task Entry Page (/admin/tasks)
 
 ## Backlog
