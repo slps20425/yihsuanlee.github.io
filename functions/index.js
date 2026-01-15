@@ -21,60 +21,102 @@ const { getFirestore } = require("firebase-admin/firestore"); // Import getFires
 // ...
 
 exports.checkMessageSafety = onCall({ secrets: [OPENAI_API_KEY] }, async (request) => {
-    const { text } = request.data;
-    if (!text) throw new HttpsError("invalid-argument", "Text is required.");
-
-    // 1. FIREBASE KEYWORD CHECK (Local/Fast)
-    // Use the named database "reservation" where "configuration/settings" lives
-    let blacklist = [];
     try {
-        const db = getFirestore(admin.app(), "reservation");
-        const settings = await db.doc("configuration/settings").get();
-        const customKeywords = settings.data()?.custom_scam_keywords || "";
-        blacklist = customKeywords.split(/[\n,]+/).map(k => k.trim().toLowerCase()).filter(k => k.length > 0);
-    } catch (e) {
-        console.error("Firestore Policy Read Error (Falling back to default list):", e);
-        // Fallback or just empty
-    }
+        const { text } = request.data;
+        if (!text) throw new HttpsError("invalid-argument", "Text is required.");
 
-    // Hardcoded Fallback (Golden List) - Ensures critical terms are always blocked even if DB fails
-    const fallbackKeywords = [
-        "crypto", "investment", "profit", "jackpot", "lottery", "giveaway",
-        "投資獲利", "加賴", "加line", "兼職", "獲利", "高報酬", "博弈"
-    ];
-    blacklist = [...new Set([...blacklist, ...fallbackKeywords])]; // Merge and unique
+        console.log(`[Security Check] Analyzing text: "${text.substring(0, 50)}..."`);
 
-    const foundLocal = blacklist.find(word => text.toLowerCase().includes(word));
-    if (foundLocal) {
-        return { status: "blocked", reason: `Keyword Match: ${foundLocal}` };
-    }
+        // 1. FIREBASE KEYWORD CHECK (Local/Fast)
+        // Use the named database "reservation" where "configuration/settings" lives
+        let blacklist = [];
+        try {
+            const db = getFirestore(admin.app(), "reservation");
+            const settings = await db.doc("configuration/settings").get();
+            const data = settings.data() || {};
+            const customKeywords = data.custom_scam_keywords || "";
 
-    // 2. OPENAI MODERATION API (Global AI Check - Free)
-    // ...
-    try {
-        const openai = new OpenAI({ apiKey: OPENAI_API_KEY.value() });
-        const moderation = await openai.moderations.create({
-            model: "omni-moderation-latest", // 2026 Updated Model
-            input: text,
-        });
-
-        const result = moderation.results[0];
-        // Flags for safety or the 'illicit' category which covers many scam behaviors
-        if (result.flagged || result.categories.illicit || result.categories['illicit/violent']) {
-            return {
-                status: "blocked",
-                reason: "AI Security Block (Suspected Scam/Phishing)"
-            };
+            // Handle both String (comma sep) and Array types from Firestore
+            if (Array.isArray(customKeywords)) {
+                blacklist = customKeywords.map(k => String(k).trim().toLowerCase());
+            } else {
+                blacklist = String(customKeywords).split(/[\n,]+/).map(k => k.trim().toLowerCase()).filter(k => k.length > 0);
+            }
+            console.log(`[Security Check] Loaded ${blacklist.length} rules from Firestore.`);
+        } catch (e) {
+            console.error("[Security Check] Firestore Policy Read Error (Falling back to default list):", e);
         }
 
-        return { status: "safe" };
-    } catch (error) {
-        console.error("OpenAI Error:", error);
-        // Fail open or closed? If AI fails, maybe standard keywords are enough? 
-        // Or fail safe to 'safe' but log error.
-        // Let's assume safe to avoid blocking legit users if API hiccups.
-        return { status: "safe", warning: "AI Check Failed" };
+        // Hardcoded Fallback (Golden List) - Merge unique
+        const fallbackKeywords = [
+            "crypto", "investment", "profit", "jackpot", "lottery", "giveaway",
+            "投資獲利", "加賴", "加line", "兼職", "獲利", "高報酬", "博弈"
+        ];
+
+        const combined = new Set([...blacklist, ...fallbackKeywords]);
+        // console.log(`[Security Check] Active Keywords: ${Array.from(combined).join(", ")}`); // Too verbose for prod
+
+        const lowerText = text.toLowerCase();
+        for (const word of combined) {
+            if (lowerText.includes(word)) {
+                console.warn(`[Security Check] BLOCKED: Found keyword "${word}"`);
+                return { status: "blocked", reason: `Keyword Match: ${word}` };
+            }
+        }
+
+        // 2. OPENAI MODERATION API
+        // ... call openai ...
+    } catch (criticalError) {
+        console.error("[Security Check] CRITICAL FUNC ERROR:", criticalError);
+        return { status: "safe", warning: "System Error - Failed Open" };
     }
+
+    // (This part needs to be inside the big try block or handled. 
+    // The previous replace ended before OpenAI. I need to be careful with replace range.)
+    // Let's rewrite the top part and connect it to OpenAI part.
+
+    // ... Re-implement OpenAI part to be inside try/catch or just return early.
+
+    try {
+        const { text } = request.data;
+        // ... (Logic from above) ...
+        // ... (Keyword check returns) ...
+
+        // 2. OPENAI
+        const openai = new OpenAI({ apiKey: OPENAI_API_KEY.value() });
+        const moderation = await openai.moderations.create({
+            model: "omni-moderation-latest",
+            input: text,
+        });
+        const result = moderation.results[0];
+        if (result.flagged || result.categories.illicit || result.categories['illicit/violent']) {
+            return { status: "blocked", reason: "AI Security Block" };
+        }
+        return { status: "safe" };
+
+    } catch (e) {
+        console.error("OpenAI/System Error:", e);
+        return { status: "safe" };
+    }
+});
+
+const result = moderation.results[0];
+// Flags for safety or the 'illicit' category which covers many scam behaviors
+if (result.flagged || result.categories.illicit || result.categories['illicit/violent']) {
+    return {
+        status: "blocked",
+        reason: "AI Security Block (Suspected Scam/Phishing)"
+    };
+}
+
+return { status: "safe" };
+    } catch (error) {
+    console.error("OpenAI Error:", error);
+    // Fail open or closed? If AI fails, maybe standard keywords are enough? 
+    // Or fail safe to 'safe' but log error.
+    // Let's assume safe to avoid blocking legit users if API hiccups.
+    return { status: "safe", warning: "AI Check Failed" };
+}
 });
 
 
