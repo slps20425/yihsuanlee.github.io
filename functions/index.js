@@ -84,19 +84,7 @@ exports.checkMessageSafety = onCall({ secrets: [OPENAI_API_KEY] }, async (reques
         console.error("[Security Check] CRITICAL FUNC ERROR:", criticalError);
         return { status: "safe", warning: "System Error - Failed Open" };
     }
-};
-}
-
-return { status: "safe" };
-    } catch (error) {
-    console.error("OpenAI Error:", error);
-    // Fail open or closed? If AI fails, maybe standard keywords are enough? 
-    // Or fail safe to 'safe' but log error.
-    // Let's assume safe to avoid blocking legit users if API hiccups.
-    return { status: "safe", warning: "AI Check Failed" };
-}
 });
-
 
 // Global set for debouncing duplicate requests
 const processedCodes = new Set();
