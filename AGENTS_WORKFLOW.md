@@ -1,12 +1,12 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-- **Task Name**: Bug: Task Description Truncation
+- **Task Name**: Feature: Limit Delete to Owner
 - **Assignee**: Claude
 - **Status**: READY_FOR_QA
 - **Deploy URL**: N/A
-- **Scope**: Admin Interface
-- **Task ID**: yS9l5F3BObN6lUm12ufo
+- **Scope**: Admin Interface / Security
+- **Task ID**: 9RAUQv9hE2YHUqBK2EZa
 
 ## Workflow History
 *(Empty)*

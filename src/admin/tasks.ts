@@ -150,8 +150,10 @@ function renderTable() {
             <td class="action-cell"></td>
         `;
 
-        // Add delete button only for pending tasks
-        if (!isDone) {
+        // Add delete button only for pending tasks created by the current user
+        const isOwner = currentUser && data.createdBy && currentUser.uid === data.createdBy.uid;
+
+        if (!isDone && isOwner) {
             const deleteBtn = document.createElement('button');
             deleteBtn.textContent = '🗑️';
             deleteBtn.style.background = 'transparent';
