@@ -44,6 +44,8 @@ const itemsPerPage = 10;
 
 // --- Auth & Init ---
 
+// --- Auth & Init ---
+
 onAuthStateChanged(auth, (user) => {
     if (authCheckEl) authCheckEl.hidden = true;
 
@@ -51,6 +53,20 @@ onAuthStateChanged(auth, (user) => {
         currentUser = user;
         if (mainContentEl) mainContentEl.hidden = false;
         if (loginContentEl) loginContentEl.hidden = true;
+
+        // Update Profile Display
+        const profileEl = document.getElementById('userProfileDisplay');
+        if (profileEl) {
+            const name = user.displayName || user.email || 'Admin';
+            const photo = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+            profileEl.innerHTML = `
+                <img src="${photo}" style="width: 24px; height: 24px; border-radius: 50%;">
+                <span style="color: var(--text-secondary);">${name}</span>
+                <button onclick="(window as any).firebase.auth().signOut()" style="background:none; border:none; cursor:pointer; font-size:0.8em; color: var(--danger);">✕</button>
+            `;
+            // Quick inline signout hack or just let them go home
+        }
+
         loadTasks();
     } else {
         currentUser = null;
@@ -58,6 +74,25 @@ onAuthStateChanged(auth, (user) => {
         if (loginContentEl) loginContentEl.hidden = false;
     }
 });
+
+// ... inside renderTable loop ...
+
+// Robust Owner Check: handle generic objects 
+// Note: createdBy might be an object { uid: "...", name: "..." } or missing
+const taskUid = data.createdBy?.uid;
+const isOwner = currentUser && taskUid && currentUser.uid === taskUid;
+
+if (!isDone && isOwner) {
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '🗑️';
+    deleteBtn.style.background = 'transparent';
+    deleteBtn.style.border = 'none';
+    deleteBtn.style.cursor = 'pointer';
+    deleteBtn.style.fontSize = '1.2rem';
+    deleteBtn.title = 'Delete Task (Only Owner)';
+    deleteBtn.onclick = () => deleteTask(data.id);
+    row.querySelector('.action-cell')?.appendChild(deleteBtn);
+}
 
 // --- Tasks Logic ---
 

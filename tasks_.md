@@ -28,7 +28,7 @@
   - Increase session timeout.
 - [x] [jUqXhbjuhvx7t76psGnP] Feature: Session Timeout Popup
   - Change browser default popup to centered toaster.
-- [ ] [1kyakEzZmNXTBLlof6Bj] Bug: Fix able to delete other user task
+- [/] [1kyakEzZmNXTBLlof6Bj] Bug: Fix able to delete other user task
   - "not allow to delete other user task"
 - [ ] [t7UZtginqdVTuIlyYcmm] Feature: Allow admin dev task to be editable
   - "allow admin dev task is editable for pending task"
