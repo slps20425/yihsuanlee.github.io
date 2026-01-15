@@ -14,7 +14,8 @@ const keywords = "crypto, transfer, deposit, winner, prize, investment, bank acc
 async function seed() {
     console.log('Seeding configuration/settings...');
     await db.doc('configuration/settings').set({
-        custom_scam_keywords: keywords
+        custom_scam_keywords: keywords,
+        session_timeout_minutes: 60
     }, { merge: true });
     console.log('Done.');
 }

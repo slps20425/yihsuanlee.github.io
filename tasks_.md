@@ -20,10 +20,10 @@
   - Phase 2: Backend (Cloud Function `checkMessageSafety`).
   - Phase 3: Frontend UX (Validation, Toaster, Alarm).
   - Phase 4: Trial Message Copy.
-- [/] [JQyKbEfDmJhOspkQq2PE] Feature: Partial Quantity Acceptance
+- [x] [JQyKbEfDmJhOspkQq2PE] Feature: Partial Quantity Acceptance
   - Default "Agree to partial quantity" to enabled.
   - If disabled, disallow reservation with food-preorder.
-- [ ] [EhmQowE8UVc0g5Ti9Nev] Bug: Login Unstable (Session Lost)
+- [/] [EhmQowE8UVc0g5Ti9Nev] Bug: Login Unstable (Session Lost)
   - Login lost when switching tabs.
   - Increase session timeout.
 - [ ] [jUqXhbjuhvx7t76psGnP] Feature: Session Timeout Popup

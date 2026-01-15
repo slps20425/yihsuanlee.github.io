@@ -65,11 +65,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // --- Session Timeout Implementation ---
-let sessionTimeoutMinutes = 30; // Default
-let lastActivityTime = Date.now();
+let sessionTimeoutMinutes = 60; // Default increased to 60
+// We don't use a local variable for time anymore, we purely rely on localStorage
+// let lastActivityTime = Date.now(); 
 let sessionCheckInterval: any = null;
 
+const ACTIVITY_KEY = 'wisecat_last_activity';
+
+function updateActivity() {
+    localStorage.setItem(ACTIVITY_KEY, Date.now().toString());
+}
+
 function setupSessionTimeout() {
+    // 0. Initialize activity if missing
+    if (!localStorage.getItem(ACTIVITY_KEY)) {
+        updateActivity();
+    }
+
     // 1. Listen for dynamic config updates
     try {
         const configRef = doc(db, 'configuration', 'settings');
@@ -77,8 +89,11 @@ function setupSessionTimeout() {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 if (data.session_timeout_minutes) {
-                    sessionTimeoutMinutes = Number(data.session_timeout_minutes);
-                    console.log(`Session timeout updated to ${sessionTimeoutMinutes} minutes`);
+                    const newTimeout = Number(data.session_timeout_minutes);
+                    if (!isNaN(newTimeout) && newTimeout > 0) {
+                        sessionTimeoutMinutes = newTimeout;
+                        console.log(`Session timeout updated to ${sessionTimeoutMinutes} minutes`);
+                    }
                 }
             }
         });
@@ -86,11 +101,19 @@ function setupSessionTimeout() {
         console.error("Error setting up config listener:", error);
     }
 
-    // 2. Track Activity
+    // 2. Track Activity (debounced slightly or just set logic)
+    // Writing to localStorage on every mousemove is expensive. Let's throttle it.
+    let throttleTimer: any = null;
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+
     events.forEach(event => {
         document.addEventListener(event, () => {
-            lastActivityTime = Date.now();
+            if (!throttleTimer) {
+                updateActivity();
+                throttleTimer = setTimeout(() => {
+                    throttleTimer = null;
+                }, 5000); // Update at most every 5 seconds
+            }
         }, { passive: true });
     });
 
@@ -104,7 +127,13 @@ function checkSessionTimeout() {
     if (!user) return; // Only check if logged in
 
     const now = Date.now();
+    const storedActivity = localStorage.getItem(ACTIVITY_KEY);
+    const lastActivityTime = storedActivity ? Number(storedActivity) : now;
+
     const elapsedMinutes = (now - lastActivityTime) / (1000 * 60);
+
+    // Debug log (can be removed in prod)
+    // console.log(`Session check: ${elapsedMinutes.toFixed(1)} / ${sessionTimeoutMinutes} mins elapsed.`);
 
     if (elapsedMinutes >= sessionTimeoutMinutes) {
         console.log(`Session timed out after ${elapsedMinutes.toFixed(1)} minutes of inactivity.`);

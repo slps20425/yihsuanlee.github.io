@@ -16,6 +16,13 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+
+// Explicitly set persistence to LOCAL (default, but good for clarity/robustness)
+import { setPersistence, browserLocalPersistence } from "firebase/auth";
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+    console.error("Auth Persistence Error:", error);
+});
+
 // Connect to the specific "reservation" database
 const db = getFirestore(app, "reservation");
 
