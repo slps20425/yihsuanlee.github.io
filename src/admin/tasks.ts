@@ -39,6 +39,8 @@ const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
 let currentUser: any = null;
 let allTasks: any[] = [];
 let currentSort: { field: string, dir: 'asc' | 'desc' } = { field: 'priority', dir: 'desc' };
+let currentPage = 1;
+const itemsPerPage = 10;
 
 // --- Auth & Init ---
 
@@ -93,14 +95,22 @@ function renderTable() {
             valB = b.createdBy?.name || '';
         }
 
-        if (valA < valB) return currentSort.dir === 'asc' ? -1 : 1;
         if (valA > valB) return currentSort.dir === 'asc' ? 1 : -1;
         return 0;
     });
 
-    // Render
-    allTasks.forEach((data) => {
+    // Pagination
+    const totalPages = Math.ceil(allTasks.length / itemsPerPage);
+    if (currentPage > totalPages) currentPage = totalPages || 1;
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedTasks = allTasks.slice(startIndex, endIndex);
+
+    // Render Rows
+    paginatedTasks.forEach((data, index) => {
         const row = document.createElement('tr');
+        const rowNumber = startIndex + index + 1; // Continuous numbering
 
         // Priority
         const pClass = `p-${data.priority || 3}`;
@@ -132,6 +142,7 @@ function renderTable() {
         }
 
         row.innerHTML = `
+            <td style="color: var(--text-secondary); font-size: 0.8em;">${rowNumber}</td>
             <td><span class="priority-badge ${pClass}">P${pLabel}</span></td>
             <td style="font-weight: 500;">
                 ${title}
@@ -167,6 +178,36 @@ function renderTable() {
 
         tableBody.appendChild(row);
     });
+
+    renderPagination(totalPages);
+}
+
+function renderPagination(totalPages: number) {
+    const prevBtn = document.getElementById('prevPageBtn') as HTMLButtonElement;
+    const nextBtn = document.getElementById('nextPageBtn') as HTMLButtonElement;
+    const indicator = document.getElementById('pageIndicator');
+
+    if (indicator) indicator.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+
+    if (prevBtn) {
+        prevBtn.disabled = currentPage <= 1;
+        prevBtn.onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        };
+    }
+
+    if (nextBtn) {
+        nextBtn.disabled = currentPage >= totalPages;
+        nextBtn.onclick = () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        };
+    }
 }
 
 // Bind Sort Headers

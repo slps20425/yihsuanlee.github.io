@@ -212,7 +212,7 @@
             display: none !important;
         }
     </style>
-  <script type="module" crossorigin src="/assets/admin_tasks-Bap4iYAv.js"></script>
+  <script type="module" crossorigin src="/assets/admin_tasks-5ixEqLO-.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-Drz8edDF.js">
 </head>
 
@@ -236,6 +236,7 @@
             <table>
                 <thead>
                     <tr>
+                        <th style="width: 50px;">No.</th>
                         <th style="width: 60px; cursor: pointer;" data-sort="priority">Pri ↕</th>
                         <th style="cursor: pointer;" data-sort="title">Title ↕</th>
                         <th style="cursor: pointer;" data-sort="content">Description ↕</th>
@@ -251,6 +252,13 @@
                     </tr>
                 </tbody>
             </table>
+
+            <div id="paginationControls"
+                style="display: flex; justify-content: flex-end; align-items: center; padding: 1rem; gap: 1rem; border-top: 1px solid var(--border);">
+                <button id="prevPageBtn" class="btn btn-ghost" disabled>Previous</button>
+                <span id="pageIndicator" style="color: var(--text-secondary); font-size: 0.9em;">Page 1 of 1</span>
+                <button id="nextPageBtn" class="btn btn-ghost" disabled>Next</button>
+            </div>
         </div>
     </div>
 

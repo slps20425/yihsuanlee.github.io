@@ -12,7 +12,7 @@
   - Fix inability to see full content of description in dev task (admin/tasks).
 - [x] [9RAUQv9hE2YHUqBK2EZa] Feature: Limit Delete to Owner
   - Restrict delete action in admin/tasks to the task creator.
-- [ ] [fZJDQD3vJY0Wx9IHmJyc] Feature: Admin Page Pagination & Numbers
+- [x] [fZJDQD3vJY0Wx9IHmJyc] Feature: Admin Page Pagination & Numbers
   - Add No. column.
   - Add pagination.
 - [ ] [nenaHHEf6AbmNncCJzTi] Feature: Partial Quantity Acceptance
