@@ -20,9 +20,18 @@
   - Phase 2: Backend (Cloud Function `checkMessageSafety`).
   - Phase 3: Frontend UX (Validation, Toaster, Alarm).
   - Phase 4: Trial Message Copy.
-- [ ] [nenaHHEf6AbmNncCJzTi] Feature: Partial Quantity Acceptance
+- [/] [JQyKbEfDmJhOspkQq2PE] Feature: Partial Quantity Acceptance
   - Default "Agree to partial quantity" to enabled.
   - If disabled, disallow reservation with food-preorder.
+- [ ] [EhmQowE8UVc0g5Ti9Nev] Bug: Login Unstable (Session Lost)
+  - Login lost when switching tabs.
+  - Increase session timeout.
+- [ ] [jUqXhbjuhvx7t76psGnP] Feature: Session Timeout Popup
+  - Change browser default popup to centered toaster.
+- [ ] [1kyakEzZmNXTBLlof6Bj] Bug: Fix able to delete other user task
+  - "not allow to delete other user task"
+- [ ] [t7UZtginqdVTuIlyYcmm] Feature: Allow admin dev task to be editable
+  - "allow admin dev task is editable for pending task"
 
 ## Completed
 - [x] [Ex2Sn0N8oTrc5ZlZAUD5] Feature: Admin Page Improvements

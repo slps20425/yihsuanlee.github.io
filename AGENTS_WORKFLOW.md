@@ -1,12 +1,13 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-- **Task Name**: Feature: Scam Detector Enhancement
+## Current Task
+- **Task Name**: Feature: Partial Quantity Acceptance
 - **Assignee**: Claude
-- **Status**: READY_FOR_QA
+- **Status**: IN_PROGRESS
 - **Deploy URL**: https://wisecat-8df8d.web.app
-- **Scope**: Backend / Frontend / Security
-- **Task ID**: izTTdOpGx6bpCmm6P5HX
+- **Scope**: Frontend (Reservation Logic)
+- **Task ID**: JQyKbEfDmJhOspkQq2PE
 
 ## Workflow History
 *(Empty)*
