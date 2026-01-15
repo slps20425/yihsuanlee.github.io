@@ -893,8 +893,14 @@ function validateReservationTime(): boolean {
         if (selectedDate < minDate) {
             if (preorderDateHint) {
                 const hintTemplate = (dict as any).validation_preorder_date || `Pre-orders require booking at least ${minPreorderDays} days in advance.`;
-                preorderDateHint.innerText = hintTemplate.replace('{N}', minPreorderDays.toString());
+                const msg = hintTemplate.replace('{N}', minPreorderDays.toString());
+                preorderDateHint.innerText = msg;
                 preorderDateHint.style.display = "block";
+
+                // Show Popup using the same message
+                if ((window as any).showToast) {
+                    (window as any).showToast(`⚠️ ${msg}`, "error");
+                }
             }
             if (dateHint) dateHint.style.display = "none"; // Hide standard close hint
             return false;
