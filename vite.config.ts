@@ -10,7 +10,8 @@ export default defineConfig({
                 trial: resolve(__dirname, 'reservation/trial.html'),
                 resume: resolve(__dirname, 'resume/index.html'),
                 login_success: resolve(__dirname, 'login-success.html'),
-                admin_tasks: resolve(__dirname, 'admin/tasks.html')
+                admin_tasks: resolve(__dirname, 'admin/tasks.html'),
+                mouthpiece: resolve(__dirname, 'reservation/mouthpiece.html')
             },
         },
         outDir: 'dist',

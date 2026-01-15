@@ -1,6 +1,7 @@
 import "./version";
 import WiseCatI18n from './i18n';
 import { auth } from './firebase-config';
+import { countryTimezones } from './timezones';
 
 // Global declarations
 declare var intlTelInput: any;
@@ -483,8 +484,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Dynamic import to avoid breaking changes at top level if build config is strict
         // But standard import is better. I will add import at top in next step.
-        const { countryTimezones } = await import('./timezones');
-
         let tz = '';
         let source = '';
 
