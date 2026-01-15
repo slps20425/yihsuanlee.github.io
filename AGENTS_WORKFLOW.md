@@ -1,12 +1,12 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-- **Task Name**: Create Task Entry Page
+- **Task Name**: Add Attachment URL to Dev Tasks
 - **Assignee**: Claude
 - **Status**: READY_FOR_QA
-- **Deploy URL**: /admin/tasks.html
-- **Scope**: Frontend (/admin/tasks) + Firebase Write
-- **Task ID**: Nb677QYLmAYmapGgbh6f
+- **Deploy URL**: N/A
+- **Scope**: Admin Task Page + Firebase Storage
+- **Task ID**: sOguqwdjXXewt2IAY3I7
 
 ## Workflow History
 *(Empty)*

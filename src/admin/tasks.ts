@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDMjzdCgNbI9W8pUd6AJoGRQlYDqKNcf_c",
@@ -16,6 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app, "reservation");
+const storage = getStorage(app);
 
 // Elements
 const authCheckEl = document.getElementById('authCheck');
@@ -31,6 +33,7 @@ const taskForm = document.getElementById('taskForm') as HTMLFormElement;
 const titleInput = document.getElementById('titleInput') as HTMLInputElement;
 const priorityInput = document.getElementById('priorityInput') as HTMLSelectElement;
 const descInput = document.getElementById('descInput') as HTMLTextAreaElement;
+const fileInput = document.getElementById('fileInput') as HTMLInputElement;
 const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
 
 let currentUser: any = null;
@@ -85,9 +88,18 @@ function loadTasks() {
             const desc = escapeHtml((data.content || '').substring(0, 60) + (data.content?.length > 60 ? '...' : ''));
             const author = escapeHtml(data.createdBy?.name || data.createdBy?.email || 'Unknown');
 
+            // Attachment Link
+            let attachmentHtml = '';
+            if (data.attachment_url) {
+                attachmentHtml = `<br><a href="${data.attachment_url}" target="_blank" style="font-size: 0.8em; color: var(--accent);">📎 View Attachment</a>`;
+            }
+
             row.innerHTML = `
                 <td><span class="priority-badge ${pClass}">P${pLabel}</span></td>
-                <td style="font-weight: 500;">${title}</td>
+                <td style="font-weight: 500;">
+                    ${title}
+                    ${attachmentHtml}
+                </td>
                 <td style="color: #94a3b8; font-size: 0.9em;">${desc}</td>
                 <td style="font-size: 0.9em;">${author}</td>
                 <td>${statusHtml}</td>
@@ -119,24 +131,37 @@ if (cancelBtn) {
 
 if (taskForm) {
     taskForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Prevent default dialog submission
+        e.preventDefault(); // Prevent default submission
         if (!currentUser) return;
 
         const title = titleInput.value.trim();
         const content = descInput.value.trim();
         const priority = parseInt(priorityInput.value, 10);
+        const file = fileInput.files ? fileInput.files[0] : null;
 
         if (!title || !content) return;
 
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Saving...';
+        submitBtn.textContent = 'Uploading...';
 
         try {
+            let attachmentUrl = null;
+
+            // 1. Upload File (if exists)
+            if (file) {
+                const timestamp = Date.now();
+                const storageRef = ref(storage, `task_attachments/${timestamp}_${file.name}`);
+                const snapshot = await uploadBytes(storageRef, file);
+                attachmentUrl = await getDownloadURL(snapshot.ref);
+            }
+
+            // 2. Write to Firestore
             await addDoc(collection(db, "dev_task"), {
                 title: title,
                 content: content,
                 priority: priority,
                 completed: false,
+                attachment_url: attachmentUrl, // Save URL or null
                 createdAt: serverTimestamp(),
                 createdBy: {
                     uid: currentUser.uid,
@@ -144,11 +169,12 @@ if (taskForm) {
                     name: currentUser.displayName || 'Unknown'
                 }
             });
+
             modal.close();
             taskForm.reset();
         } catch (error) {
             console.error("Error creating task:", error);
-            alert("Failed to create task");
+            alert("Failed to create task (Check console for permission details)");
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Create Task';

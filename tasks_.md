@@ -1,12 +1,15 @@
 # Tasks
 
 ## High Priority
+- [x] [sOguqwdjXXewt2IAY3I7] feature dev_task adding new field
+  - Add `attachment_url` field to `dev_task` collection.
+  - Implement file upload in Admin Task Page:
+    - Upload to Firebase Storage.
+    - Get `getDownloadURL`.
+    - Save URL to Firestore.
+
+## Completed
 - [x] [Nb677QYLmAYmapGgbh6f] Create Task Entry Page (/admin/tasks)
-  - Create a hidden route `/admin/tasks`
-  - Add a form with Dropdown (Section A / Section B) and Text Area (Task Description)
-  - Use Firebase Web SDK to write to `dev_task` collection in Firestore
-  - Ensure basic auth/protection
 
 ## Backlog
 - [ ] Example Task 1
-- [ ] Example Task 2
