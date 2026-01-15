@@ -15,6 +15,11 @@
 - [x] [fZJDQD3vJY0Wx9IHmJyc] Feature: Admin Page Pagination & Numbers
   - Add No. column.
   - Add pagination.
+- [x] [izTTdOpGx6bpCmm6P5HX] Feature: Scam Detector Enhancement
+  - Phase 1: Firestore Config (Golden List).
+  - Phase 2: Backend (Cloud Function `checkMessageSafety`).
+  - Phase 3: Frontend UX (Validation, Toaster, Alarm).
+  - Phase 4: Trial Message Copy.
 - [ ] [nenaHHEf6AbmNncCJzTi] Feature: Partial Quantity Acceptance
   - Default "Agree to partial quantity" to enabled.
   - If disabled, disallow reservation with food-preorder.

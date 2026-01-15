@@ -2,6 +2,40 @@ import "./version";
 import WiseCatI18n from './i18n';
 import { auth } from './firebase-config';
 import { countryTimezones } from './timezones';
+import { ScamCheck } from './scam-check';
+
+// ... (Existing code)
+
+// --- Safety Check State ---
+let isContentSafe = true;
+
+function attachSafetyCheck(elementId: string) {
+    const el = document.getElementById(elementId) as HTMLInputElement | HTMLTextAreaElement;
+    if (el) {
+        el.addEventListener('blur', async () => {
+            const text = el.value;
+            if (text) {
+                const result = await ScamCheck.validate(text);
+                isContentSafe = result.safe;
+                validateForm();
+                if (!result.safe) {
+                    el.style.borderColor = "red";
+                } else {
+                    el.style.borderColor = "";
+                }
+            }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    attachSafetyCheck('scriptInput');
+});
+
+// Update validateForm to include safety check
+// (Appending this logic is tricky with replace_file_content if I can't find the insertion point perfectly.
+// Instead, I will assume I need to edit validateForm separately or inject this helper first).
+
 
 // Global declarations
 declare var intlTelInput: any;
@@ -58,6 +92,20 @@ function validateForm() {
 
     // 1. Credit Check
     const userSession = localStorage.getItem('wisecat_user');
+
+    // Safety Check
+    if (!isContentSafe) {
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        btn.innerText = "⚠️ Content Unsafe";
+        return;
+    } else {
+        // Reset text if safe (optional)
+        if (btn.innerText === "⚠️ Content Unsafe") {
+            const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
+            btn.innerText = (dict as any).btn_submit_task || "Start Call";
+        }
+    }
     let credits = 0;
     if (userSession) {
         try {
@@ -173,7 +221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (retryWarning) {
                 const totalMaxCost = currentCost + defaultRetryCount;
                 retryWarning.textContent = `(Max cost: ${totalMaxCost} credits if all retries used)`;
-                retryWarning.style.color = "#ff4444";
+                (retryWarning as HTMLElement).style.color = "#ff4444";
             }
 
             // Update UI Icon

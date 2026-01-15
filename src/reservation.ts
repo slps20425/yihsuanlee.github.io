@@ -1,6 +1,7 @@
 import "./version";
 import WiseCatI18n from './i18n';
 import { auth } from './firebase-config';
+import { ScamCheck } from './scam-check';
 
 // Declare globals from CDNs
 declare var google: any;
@@ -840,6 +841,20 @@ function validateForm() {
 
     // 2.5 Time Validation
     const isTimeValid = validateReservationTime();
+
+
+    // 2.6 Safety Check
+    if (!isContentSafe) {
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        btn.innerText = "⚠️ Content Unsafe";
+        return;
+    } else {
+        // Reset text if safe (optional, but good for UX)
+        if (btn.innerText === "⚠️ Content Unsafe") {
+            btn.innerText = (document.getElementById('i18n-btn_submit_reservation') as HTMLElement)?.innerText || "Submit Reservation";
+        }
+    }
 
     // 3. Combined Logic
     const hasRestaurant = !!selectedRestaurantData;
@@ -1699,3 +1714,36 @@ function calculateReservationUTC(dateStr: string, timeStr: string, utcOffsetMinu
 
     return new Date(targetUtcTime);
 }
+
+// --- Safety Check State ---
+let isContentSafe = true;
+
+// Add generic safety check listener to input fields
+function attachSafetyCheck(elementId: string) {
+    const el = document.getElementById(elementId) as HTMLInputElement | HTMLTextAreaElement;
+    if (el) {
+        el.addEventListener('blur', async () => {
+            const text = el.value;
+            if (text) {
+                // Show checking state? 
+                const result = await ScamCheck.validate(text);
+                isContentSafe = result.safe;
+
+                // Re-validate submit button
+                validateForm();
+
+                if (!result.safe) {
+                    el.style.borderColor = "red";
+                } else {
+                    el.style.borderColor = "";
+                }
+            }
+        });
+    }
+}
+
+// Attach to note field
+document.addEventListener('DOMContentLoaded', () => {
+    attachSafetyCheck('note');
+});
+

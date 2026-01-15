@@ -1,6 +1,7 @@
 import "./version";
 import WiseCatI18n from './i18n';
 import { auth } from './firebase-config';
+import { ScamCheck } from './scam-check';
 
 // Global declarations
 declare var intlTelInput: any;
@@ -279,9 +280,42 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Bind Listeners
     bindValidationListeners();
+    attachSafetyCheck('scriptContent');
 });
 
 
+let isContentSafe = true;
+
+function attachSafetyCheck(elementId: string) {
+    const el = document.getElementById(elementId) as HTMLInputElement | HTMLTextAreaElement;
+    if (el) {
+        el.addEventListener('blur', async () => {
+            const text = el.value;
+            if (text) {
+                const result = await ScamCheck.validate(text);
+                isContentSafe = result.safe;
+
+                // Special UX for Blocked Trial
+                if (!isContentSafe) {
+                    const msg = "Request Blocked: Potential scam detected. Our AI only processes standard restaurant requests. Please remove financial instructions or suspicious links and try again. Thank you for your cooperation.";
+                    if ((window as any).showToast) {
+                        (window as any).showToast(msg, "error");
+                    } else {
+                        alert(msg);
+                    }
+                }
+
+                validateForm();
+
+                if (!result.safe) {
+                    el.style.borderColor = "red";
+                } else {
+                    el.style.borderColor = "";
+                }
+            }
+        });
+    }
+}
 
 function countWords(str: string): number {
     return str.trim().split(/\s+/).filter(word => word.length > 0).length;
@@ -294,6 +328,19 @@ function validateForm() {
     const phoneHint = document.getElementById('phoneHint');
 
     if (!btn || !phoneInput || !scriptInput) return;
+
+    // Safety Block
+    if (!isContentSafe) {
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        btn.innerText = "Content Unsafe";
+        return;
+    } else {
+        if (btn.innerText === "Content Unsafe") {
+            const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
+            btn.innerText = (dict as any).btn_submit_trial || "Start Trial Call";
+        }
+    }
 
     let isPhoneValid = false;
     // Validate Target Phone

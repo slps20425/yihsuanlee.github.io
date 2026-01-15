@@ -1,7 +1,8 @@
-const { onRequest } = require("firebase-functions/v2/https");
+const { onRequest, onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
+const OpenAI = require("openai");
 const axios = require("axios");
 
 admin.initializeApp();
@@ -10,6 +11,52 @@ const db = admin.firestore();
 // Define secrets
 const lineChannelId = defineSecret("LINE_CHANNEL_ID");
 const lineChannelSecret = defineSecret("LINE_CHANNEL_SECRET");
+const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
+
+// ... (Existing code remains the same until exports.checkMessageSafety)
+
+exports.checkMessageSafety = onCall({ secrets: [OPENAI_API_KEY] }, async (request) => {
+    const { text } = request.data;
+    if (!text) throw new HttpsError("invalid-argument", "Text is required.");
+
+    // 1. FIREBASE KEYWORD CHECK (Local/Fast)
+    const settings = await admin.firestore().doc("configuration/settings").get();
+    const customKeywords = settings.data()?.custom_scam_keywords || "";
+    // Robust splitting: comma or newline, then trim
+    const blacklist = customKeywords.split(/[\n,]+/).map(k => k.trim().toLowerCase()).filter(k => k.length > 0);
+
+    const foundLocal = blacklist.find(word => text.toLowerCase().includes(word));
+    if (foundLocal) {
+        return { status: "blocked", reason: `Keyword Match: ${foundLocal}` };
+    }
+
+    // 2. OPENAI MODERATION API (Global AI Check - Free)
+    try {
+        const openai = new OpenAI({ apiKey: OPENAI_API_KEY.value() });
+        const moderation = await openai.moderations.create({
+            model: "omni-moderation-latest", // 2026 Updated Model
+            input: text,
+        });
+
+        const result = moderation.results[0];
+        // Flags for safety or the 'illicit' category which covers many scam behaviors
+        if (result.flagged || result.categories.illicit || result.categories['illicit/violent']) {
+            return {
+                status: "blocked",
+                reason: "AI Security Block (Suspected Scam/Phishing)"
+            };
+        }
+
+        return { status: "safe" };
+    } catch (error) {
+        console.error("OpenAI Error:", error);
+        // Fail open or closed? If AI fails, maybe standard keywords are enough? 
+        // Or fail safe to 'safe' but log error.
+        // Let's assume safe to avoid blocking legit users if API hiccups.
+        return { status: "safe", warning: "AI Check Failed" };
+    }
+});
+
 
 // Global set for debouncing duplicate requests
 const processedCodes = new Set();
