@@ -4,7 +4,7 @@
 - [x] [6XnvNW9fYT9kRrL0kE2D] Bug: Fix not able to access mouthpiece page
   - Priority: 5 (Critical)
   - Content: Bug - fix not able to access mouthpiece page
-- [ ] [Hp5FtA9AHQEAKzSoedUM] Task: Check Retry Mechanism
+- [x] [Hp5FtA9AHQEAKzSoedUM] Task: Check Retry Mechanism
   - Verify if current retry default is 5.
   - Check if it's taken from `configuration/settings`.
   - Implement if missing.

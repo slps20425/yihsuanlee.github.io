@@ -1,12 +1,12 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-- **Task Name**: Bug: Fix not able to access mouthpiece page
+- **Task Name**: Task: Check Retry Mechanism
 - **Assignee**: Claude
 - **Status**: READY_FOR_QA
 - **Deploy URL**: N/A
-- **Scope**: Mouthpiece / Routing
-- **Task ID**: 6XnvNW9fYT9kRrL0kE2D
+- **Scope**: Configuration / Logic
+- **Task ID**: Hp5FtA9AHQEAKzSoedUM
 
 ## Workflow History
 *(Empty)*
