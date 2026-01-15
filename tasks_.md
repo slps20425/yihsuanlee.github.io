@@ -8,6 +8,10 @@
   - Verify if current retry default is 5.
   - Check if it's taken from `configuration/settings`.
   - Implement if missing.
+- [x] [yS9l5F3BObN6lUm12ufo] Bug: Task Description Truncation
+  - Fix inability to see full content of description in dev task (admin/tasks).
+- [ ] [9RAUQv9hE2YHUqBK2EZa] Feature: Limit Delete to Owner
+  - Restrict delete action in admin/tasks to the task creator.
 - [ ] [fZJDQD3vJY0Wx9IHmJyc] Feature: Admin Page Pagination & Numbers
   - Add No. column.
   - Add pagination.

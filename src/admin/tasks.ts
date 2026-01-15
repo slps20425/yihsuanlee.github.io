@@ -1,7 +1,7 @@
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, serverTimestamp, query, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
@@ -114,7 +114,7 @@ function renderTable() {
 
         // Safe content
         const title = escapeHtml(data.title || '(No Title)');
-        const desc = escapeHtml((data.content || '').substring(0, 60) + (data.content?.length > 60 ? '...' : ''));
+        const descFull = escapeHtml(data.content || '');
         const author = escapeHtml(data.createdBy?.name || data.createdBy?.email || 'Unknown');
 
         // Date
@@ -137,7 +137,13 @@ function renderTable() {
                 ${title}
                 ${attachmentHtml}
             </td>
-            <td style="color: #94a3b8; font-size: 0.9em;">${desc}</td>
+            <td style="color: #94a3b8; font-size: 0.9em; max-width: 300px;">
+                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;" 
+                     onclick="this.style.whiteSpace=this.style.whiteSpace==='nowrap'?'pre-wrap':'nowrap'"
+                     title="Click to expand/collapse">
+                    ${descFull}
+                </div>
+            </td>
             <td style="font-size: 0.85em; color: #ccc;">${dateHtml}</td>
             <td style="font-size: 0.9em;">${author}</td>
             <td>${statusHtml}</td>
@@ -179,7 +185,7 @@ document.querySelectorAll('th[data-sort]').forEach(th => {
 });
 
 function updateHeaderIcons() {
-    document.querySelectorAll('th[data-sort]').forEach(th => {
+    document.querySelectorAll('th[data-sort]').forEach((th: any) => {
         const field = th.getAttribute('data-sort');
         let text = th.textContent?.replace(/[↕↑↓]/g, '').trim() || '';
 
