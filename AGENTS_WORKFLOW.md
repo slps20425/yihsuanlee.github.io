@@ -1,12 +1,12 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-- **Task Name**: Fix Infinite URL Redirection
+- **Task Name**: New Feature: Delete Dev Task
 - **Assignee**: Claude
 - **Status**: READY_FOR_QA
 - **Deploy URL**: N/A
-- **Scope**: Navigation / Routing Logic
-- **Task ID**: VekLP5lAdUq2A7IU26xA
+- **Scope**: Admin Dashboard
+- **Task ID**: qD0bKDvf7jL0pdTLFz0i
 
 ## Workflow History
 *(Empty)*

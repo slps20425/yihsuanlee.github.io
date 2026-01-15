@@ -1,7 +1,7 @@
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "firebase/firestore";
+import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
@@ -65,7 +65,7 @@ function loadTasks() {
         tableBody.innerHTML = '';
 
         if (snapshot.empty) {
-            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem; color: #64748b;">No tasks found. Create one!</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color: #64748b;">No tasks found. Create one!</td></tr>';
             return;
         }
 
@@ -103,10 +103,37 @@ function loadTasks() {
                 <td style="color: #94a3b8; font-size: 0.9em;">${desc}</td>
                 <td style="font-size: 0.9em;">${author}</td>
                 <td>${statusHtml}</td>
+                <td class="action-cell"></td>
             `;
+
+            // Add delete button only for pending tasks
+            if (!isDone) {
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '🗑️';
+                deleteBtn.style.background = 'transparent';
+                deleteBtn.style.border = 'none';
+                deleteBtn.style.cursor = 'pointer';
+                deleteBtn.style.fontSize = '1.2rem';
+                deleteBtn.title = 'Delete Task';
+                deleteBtn.onclick = () => deleteTask(doc.id);
+                row.querySelector('.action-cell')?.appendChild(deleteBtn);
+            }
+
             tableBody.appendChild(row);
         });
     });
+}
+
+async function deleteTask(taskId: string) {
+    if (!confirm("Are you sure you want to delete this task? This cannot be undone.")) return;
+
+    try {
+        await deleteDoc(doc(db, "dev_task", taskId));
+        // No need to manually refresh - onSnapshot triggers update.
+    } catch (error) {
+        console.error("Error deleting task:", error);
+        alert("Failed to delete task. Check console for details.");
+    }
 }
 
 function escapeHtml(text: string) {
