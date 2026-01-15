@@ -15,15 +15,34 @@ const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 
 // ... (Existing code remains the same until exports.checkMessageSafety)
 
+// ... Imports
+const { getFirestore } = require("firebase-admin/firestore"); // Import getFirestore
+
+// ...
+
 exports.checkMessageSafety = onCall({ secrets: [OPENAI_API_KEY] }, async (request) => {
     const { text } = request.data;
     if (!text) throw new HttpsError("invalid-argument", "Text is required.");
 
     // 1. FIREBASE KEYWORD CHECK (Local/Fast)
-    const settings = await admin.firestore().doc("configuration/settings").get();
-    const customKeywords = settings.data()?.custom_scam_keywords || "";
-    // Robust splitting: comma or newline, then trim
-    const blacklist = customKeywords.split(/[\n,]+/).map(k => k.trim().toLowerCase()).filter(k => k.length > 0);
+    // Use the named database "reservation" where "configuration/settings" lives
+    let blacklist = [];
+    try {
+        const db = getFirestore(admin.app(), "reservation");
+        const settings = await db.doc("configuration/settings").get();
+        const customKeywords = settings.data()?.custom_scam_keywords || "";
+        blacklist = customKeywords.split(/[\n,]+/).map(k => k.trim().toLowerCase()).filter(k => k.length > 0);
+    } catch (e) {
+        console.error("Firestore Policy Read Error (Falling back to default list):", e);
+        // Fallback or just empty
+    }
+
+    // Hardcoded Fallback (Golden List) - Ensures critical terms are always blocked even if DB fails
+    const fallbackKeywords = [
+        "crypto", "investment", "profit", "jackpot", "lottery", "giveaway",
+        "投資獲利", "加賴", "加line", "兼職", "獲利", "高報酬", "博弈"
+    ];
+    blacklist = [...new Set([...blacklist, ...fallbackKeywords])]; // Merge and unique
 
     const foundLocal = blacklist.find(word => text.toLowerCase().includes(word));
     if (foundLocal) {
@@ -31,6 +50,7 @@ exports.checkMessageSafety = onCall({ secrets: [OPENAI_API_KEY] }, async (reques
     }
 
     // 2. OPENAI MODERATION API (Global AI Check - Free)
+    // ...
     try {
         const openai = new OpenAI({ apiKey: OPENAI_API_KEY.value() });
         const moderation = await openai.moderations.create({
