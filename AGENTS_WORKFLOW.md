@@ -1,4 +1,11 @@
-Step 1: Dev 階段 (Claude)
-任務：Fix AI prompt helper mapping & rename to Scenarios template helper
-STATUS: IN_PROGRESS DEPLOY_URL: https://wisecat-8df8d.web.app SCOPE: Fix AI prompt helper mapping & rename to Scenarios template helper
-...
+# AGENTS_WORKFLOW
+
+## Current Task
+- **Task Name**: Enhance Session Logout (Dynamic Duration)
+- **Assignee**: Claude
+- **Status**: IN_PROGRESS
+- **Deploy URL**: N/A
+- **Scope**: Frontend (Session Logic) + Firebase Config
+
+## Workflow History
+*(Empty)*

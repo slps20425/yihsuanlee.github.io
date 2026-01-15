@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 enable_trial: true,
                 enable_reservation: true,
                 enable_mouthpiece: true,
+                session_timeout_minutes: 30,
                 description: "Global Feature Flags. Set to false to disable features."
             });
             console.log("Configuration document initialized.");
@@ -58,7 +59,59 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {
         console.warn("Config seed check failed (likely permission):", e);
     }
+
+    // --- Session Timeout Logic ---
+    setupSessionTimeout();
 });
+
+// --- Session Timeout Implementation ---
+let sessionTimeoutMinutes = 30; // Default
+let lastActivityTime = Date.now();
+let sessionCheckInterval: any = null;
+
+function setupSessionTimeout() {
+    // 1. Listen for dynamic config updates
+    try {
+        const configRef = doc(db, 'configuration', 'settings');
+        onSnapshot(configRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.session_timeout_minutes) {
+                    sessionTimeoutMinutes = Number(data.session_timeout_minutes);
+                    console.log(`Session timeout updated to ${sessionTimeoutMinutes} minutes`);
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error setting up config listener:", error);
+    }
+
+    // 2. Track Activity
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    events.forEach(event => {
+        document.addEventListener(event, () => {
+            lastActivityTime = Date.now();
+        }, { passive: true });
+    });
+
+    // 3. Periodic Check (every 1 minute)
+    if (sessionCheckInterval) clearInterval(sessionCheckInterval);
+    sessionCheckInterval = setInterval(checkSessionTimeout, 60 * 1000);
+}
+
+function checkSessionTimeout() {
+    const user = auth.currentUser;
+    if (!user) return; // Only check if logged in
+
+    const now = Date.now();
+    const elapsedMinutes = (now - lastActivityTime) / (1000 * 60);
+
+    if (elapsedMinutes >= sessionTimeoutMinutes) {
+        console.log(`Session timed out after ${elapsedMinutes.toFixed(1)} minutes of inactivity.`);
+        logout();
+        alert("Your session has expired due to inactivity.");
+    }
+}
 
 // --- Auth Logic ---
 
