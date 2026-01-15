@@ -1,12 +1,12 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-- **Task Name**: New Feature: Delete Dev Task
+- **Task Name**: Pre-order Date Logic
 - **Assignee**: Claude
 - **Status**: READY_FOR_QA
 - **Deploy URL**: N/A
-- **Scope**: Admin Dashboard
-- **Task ID**: qD0bKDvf7jL0pdTLFz0i
+- **Scope**: Reservation Validation
+- **Task ID**: xp3T5gfbXd4pEtknJn5z
 
 ## Workflow History
 *(Empty)*

@@ -21,8 +21,12 @@ let currentPlaceOpeningHours: any = null;
 let phoneInputPlugin: any = null;
 let userPhonePlugin: any = null;
 let turnstileValidated = false;
+// let turnstileValidated = false; // Already declared at line 23
+
 let currentCost = 5; // Default cost
 let defaultRetryCount = 5; // Default retry count if config missing
+let minPreorderDays = 3; // Default 3 days
+
 
 
 // ...
@@ -87,6 +91,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Initialize i18n explicitly
     WiseCatI18n.init();
 
+    // Global Config Variables
+    // Variable shadowing removed to ensure onSnapshot updates the global state.
+    // let minPreorderDays = 3; // Default 3 days
+
     // --- Initialize Cost Icon Container immediately ---
     const initCostIcon = () => {
         const iconContainerId = 'costIconContainer';
@@ -114,7 +122,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     initCostIcon();
 
     // --- Remote Config Listener ---
-    const { doc, onSnapshot, runTransaction } = await import("firebase/firestore"); // Added runTransaction
+    const { doc, onSnapshot } = await import("firebase/firestore");
     const { db } = await import("./firebase-config");
 
     const configRef = doc(db, 'configuration', 'settings');
@@ -138,6 +146,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             if (data.cost_reservation !== undefined) {
                 currentCost = Number(data.cost_reservation);
             }
+
+            // Min Preorder Days
+            if (data.min_preorder_days !== undefined) {
+                minPreorderDays = Number(data.min_preorder_days);
+            }
+            updatePreorderHint(); // Update dynamic hint manually if config changes
 
             // Dynamic Retry Count
             if (data.default_retry_count !== undefined) {
@@ -632,6 +646,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                     if (backup) backup.style.display = isPreorder ? 'block' : 'none';
                     if (preorderFields) preorderFields.style.display = isPreorder ? 'block' : 'none';
+
+                    updatePreorderHint();
+                    validateForm(); // Re-validate date when mode changes
                 });
             }
 
@@ -744,6 +761,22 @@ function bindValidationListeners() {
     if (form) form.addEventListener('submit', handleFormSubmit);
 }
 
+function updatePreorderHint() {
+    const missionSelect = document.getElementById('mission') as HTMLSelectElement;
+    const preorderDateHint = document.getElementById('preorderDateHint');
+    const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
+
+    if (missionSelect && missionSelect.value === 'reservation_food_preorder' && preorderDateHint) {
+        // Show hint proactively
+        const hintTemplate = (dict as any).validation_preorder_date_hint || `Note: Pre-orders must be booked at least ${minPreorderDays} days in advance.`;
+        preorderDateHint.innerText = hintTemplate.replace('{N}', minPreorderDays.toString());
+
+        // Use a neutral color for the proactive hint (vs error red)
+        preorderDateHint.style.color = "#4a90e2";
+        preorderDateHint.style.display = "block";
+    }
+}
+
 // Global scope for Turnstile callback
 (window as any).onTurnstileSuccess = function (token: string) {
     console.log("Turnstile Success, Token:", token);
@@ -848,7 +881,31 @@ function validateReservationTime(): boolean {
     today.setHours(0, 0, 0, 0);
     selectedDate.setHours(0, 0, 0, 0);
 
-    // If the selected date is today, check if the time has passed
+    // Step 1.2: Check Pre-order constraint
+    const missionSelect = document.getElementById('mission') as HTMLSelectElement;
+    const preorderDateHint = document.getElementById('preorderDateHint');
+    // const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
+
+    if (missionSelect && missionSelect.value === 'reservation_food_preorder') {
+        const minDate = new Date(today);
+        minDate.setDate(today.getDate() + minPreorderDays);
+
+        if (selectedDate < minDate) {
+            if (preorderDateHint) {
+                const hintTemplate = (dict as any).validation_preorder_date || `Pre-orders require booking at least ${minPreorderDays} days in advance.`;
+                preorderDateHint.innerText = hintTemplate.replace('{N}', minPreorderDays.toString());
+                preorderDateHint.style.display = "block";
+            }
+            if (dateHint) dateHint.style.display = "none"; // Hide standard close hint
+            return false;
+        } else {
+            if (preorderDateHint) preorderDateHint.style.display = "none";
+        }
+    } else {
+        if (preorderDateHint) preorderDateHint.style.display = "none";
+    }
+
+    // Step 1.5: Check if selected time is in the past (for today only)
     if (selectedDate.getTime() === today.getTime()) {
         const [resHour, resMin] = resTimeVal.split(':').map(Number);
         const now = new Date();
@@ -1377,7 +1434,6 @@ async function handleFormSubmit(e: Event) {
         isTrial: false,
         state: 'pending',
         priority: 4, // High priority
-        userCredits: userCredits,
         userCredits: userCredits,
         reservation_utc: calculateReservationUTC(resDateInput.value, resTimeInput.value, selectedRestaurantData?.utc_offset_minutes),
         mission: missionSelect.value,
