@@ -9,8 +9,8 @@ export default defineConfig({
                 reservation: resolve(__dirname, 'reservation/restaurant_reservation.html'),
                 trial: resolve(__dirname, 'reservation/trial.html'),
                 resume: resolve(__dirname, 'resume/index.html'),
-                mouthpiece: resolve(__dirname, 'reservation/mouthpiece.html'),
-                login_success: resolve(__dirname, 'login-success.html')
+                login_success: resolve(__dirname, 'login-success.html'),
+                admin_tasks: resolve(__dirname, 'admin/tasks.html')
             },
         },
         outDir: 'dist',

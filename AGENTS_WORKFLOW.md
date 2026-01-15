@@ -1,11 +1,12 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-- **Task Name**: Enhance Session Logout (Dynamic Duration)
+- **Task Name**: Create Task Entry Page
 - **Assignee**: Claude
-- **Status**: IN_PROGRESS
-- **Deploy URL**: N/A
-- **Scope**: Frontend (Session Logic) + Firebase Config
+- **Status**: READY_FOR_QA
+- **Deploy URL**: /admin/tasks.html
+- **Scope**: Frontend (/admin/tasks) + Firebase Write
+- **Task ID**: Nb677QYLmAYmapGgbh6f
 
 ## Workflow History
 *(Empty)*

@@ -28,10 +28,9 @@ async function completeTask(taskId) {
     const taskRef = doc(db, "dev_task", taskId);
 
     try {
-        // Update both 'completed' boolean and 'state' string to be safe
+        // Update 'completed' boolean
         await updateDoc(taskRef, {
             completed: true,
-            state: "completed",
             completedAt: new Date().toISOString()
         });
         console.log(`✅ Task ${taskId} successfully marked as completed.`);

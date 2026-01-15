@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Dashboard | WiseCat Admin</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #22c55e;
+            --border: #334155;
+            --danger: #ef4444;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        /* Table */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: rgba(255, 255, 255, 0.02);
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .priority-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #334155;
+            color: #ccc;
+        }
+
+        .p-5 {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        /* Critical */
+        .p-4 {
+            background: rgba(249, 115, 22, 0.2);
+            color: #fdba74;
+        }
+
+        /* High */
+        .p-3 {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+
+        /* Normal */
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .status-done {
+            color: var(--success);
+        }
+
+        .status-pending {
+            color: var(--text-secondary);
+        }
+
+        /* Modal */
+        dialog {
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(2px);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+
+        .modal-footer {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .btn-ghost:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Auth Check -->
+    <div id="authCheck" style="text-align: center; margin-top: 20vh;">Checking access...</div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="container" hidden>
+        <header>
+            <div>
+                <h1>Dev Tasks</h1>
+                <p style="color: var(--text-secondary); margin: 0.25rem 0 0 0;">Manage testing and development tasks.
+                </p>
+            </div>
+            <button id="newTaskBtn" class="btn btn-primary">+ New Task</button>
+        </header>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">Pri</th>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th style="width: 120px;">Requested By</th>
+                        <th style="width: 100px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="taskTableBody">
+                    <tr>
+                        <td colspan="5" style="text-align:center; color: var(--text-secondary);">Loading tasks...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- New Task Modal -->
+    <dialog id="taskModal">
+        <h2 style="margin-top:0;">New Task</h2>
+        <form method="dialog" id="taskForm">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="titleInput" placeholder="e.g. Fix login bug" required>
+            </div>
+
+            <div class="form-group">
+                <label>Priority</label>
+                <select id="priorityInput">
+                    <option value="1">1 - Low</option>
+                    <option value="2">2 - Minor</option>
+                    <option value="3" selected>3 - Normal</option>
+                    <option value="4">4 - High</option>
+                    <option value="5">5 - Critical</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="descInput" rows="4" placeholder="Details..." required></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" id="cancelBtn">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Create Task</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Login Content -->
+    <div id="loginContent" style="text-align: center; margin-top: 20vh;" hidden>
+        <h2>Generic Login Required</h2>
+        <a href="/" style="color: var(--accent);">Go Home to Login</a>
+    </div>
+
+    <script type="module" src="../src/admin/tasks.ts"></script>
+</body>
+
+</html>

@@ -18,7 +18,7 @@ const db = getFirestore(app, "reservation"); // Trying "reservation" db first as
 async function run() {
     console.log("Connecting to Firebase...");
     try {
-        const q = query(collection(db, "dev_task"), where("state", "==", "pending")); // Filtering by state=pending
+        const q = query(collection(db, "dev_task"), where("completed", "==", false)); // Filtering by completed=false
         const querySnapshot = await getDocs(q);
 
         const tasks = [];
