@@ -211,6 +211,62 @@
         [hidden] {
             display: none !important;
         }
+
+        /* User Profile */
+        .user-profile {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            margin-right: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+        }
+
+        .user-info {
+            text-align: left;
+            margin-right: 8px;
+        }
+
+        .user-name {
+            font-weight: bold;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .user-email {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--danger);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+        }
     </style>
 </head>
 
@@ -227,7 +283,10 @@
                 <p style="color: var(--text-secondary); margin: 0.25rem 0 0 0;">Manage testing and development tasks.
                 </p>
             </div>
-            <button id="newTaskBtn" class="btn btn-primary">+ New Task</button>
+            <div class="header-actions">
+                <div id="userProfileDisplay"></div>
+                <button id="newTaskBtn" class="btn btn-primary">+ New Task</button>
+            </div>
         </header>
 
         <div class="card">

@@ -61,13 +61,18 @@ onAuthStateChanged(auth, (user) => {
         const profileEl = document.getElementById('userProfileDisplay');
         if (profileEl) {
             const name = user.displayName || user.email || 'Admin';
+            const email = user.email || '';
             const photo = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+
+            profileEl.className = 'user-profile';
             profileEl.innerHTML = `
-                <img src="${photo}" style="width: 24px; height: 24px; border-radius: 50%;">
-                <span style="color: var(--text-secondary);">${name}</span>
-                <button onclick="(window as any).firebase.auth().signOut()" style="background:none; border:none; cursor:pointer; font-size:0.8em; color: var(--danger);">✕</button>
+                <img class="user-avatar" src="${photo}" alt="User">
+                <div class="user-info">
+                    <div class="user-name">${name}</div>
+                    <div class="user-email">${email}</div>
+                </div>
+                <button onclick="(window as any).firebase.auth().signOut()" class="logout-btn">Logout</button>
             `;
-            // Quick inline signout hack or just let them go home
         }
 
         loadTasks();

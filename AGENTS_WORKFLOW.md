@@ -3,12 +3,12 @@
 ## Current Task
 ## Current Task
 ## Current Task
-- **Task Name**: Feature: Partial Quantity Acceptance & Admin Fixes
+- **Task Name**: Feature: Improve Admin Profile Display
 - **Assignee**: Claude
-- **Status**: READY_FOR_QA
-- **Deploy URL**: https://wisecat-8df8d.web.app
-- **Scope**: Frontend (Reservation, Admin)
-- **Task ID**: nenaHHEf6AbmNncCJzTi
+- **Status**: IN_PROGRESS
+- **Deploy URL**: https://wisecat-8df8d.web.app/admin/tasks.html
+- **Scope**: Frontend (Admin)
+- **Task ID**: ADMIN_PROFILE
 
 ## Workflow History
 *(Empty)*
