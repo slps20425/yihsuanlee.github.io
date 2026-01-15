@@ -637,7 +637,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
 
             // Mission Logic
-            const missionSelect = document.getElementById('mission') as HTMLSelectElement;
             if (missionSelect) {
                 missionSelect.addEventListener('change', (e: Event) => {
                     const target = e.target as HTMLSelectElement;
@@ -651,6 +650,28 @@ document.addEventListener("DOMContentLoaded", async function () {
                     updatePreorderHint();
                     validateForm(); // Re-validate date when mode changes
                 });
+            }
+
+            // --- Partial Quantity Disclaimer Logic ---
+            const preorderAgreeCheck = document.getElementById('preorderAgree') as HTMLInputElement;
+            const foodNameInput = document.getElementById('foodName') as HTMLInputElement;
+            const foodQuantitySelect = document.getElementById('foodQuantity') as HTMLSelectElement;
+
+            const toggleFoodFields = () => {
+                const shouldDisable = !preorderAgreeCheck.checked;
+                if (foodNameInput) {
+                    foodNameInput.disabled = shouldDisable;
+                    foodNameInput.style.opacity = shouldDisable ? "0.5" : "1";
+                }
+                if (foodQuantitySelect) {
+                    foodQuantitySelect.disabled = shouldDisable;
+                    foodQuantitySelect.style.opacity = shouldDisable ? "0.5" : "1";
+                }
+            };
+
+            if (preorderAgreeCheck && foodNameInput && foodQuantitySelect) {
+                preorderAgreeCheck.addEventListener('change', toggleFoodFields);
+                toggleFoodFields(); // Init
             }
 
             // Initial button state check

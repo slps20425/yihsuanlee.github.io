@@ -1,7 +1,7 @@
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, collection, addDoc, serverTimestamp, query, onSnapshot, deleteDoc, doc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, serverTimestamp, query, onSnapshot, deleteDoc, updateDoc, doc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
@@ -35,6 +35,9 @@ const priorityInput = document.getElementById('priorityInput') as HTMLSelectElem
 const descInput = document.getElementById('descInput') as HTMLTextAreaElement;
 const fileInput = document.getElementById('fileInput') as HTMLInputElement;
 const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+const modalTitle = document.querySelector('#taskModal h2');
+
+let editingTaskId: string | null = null;
 
 let currentUser: any = null;
 let allTasks: any[] = [];
@@ -77,24 +80,7 @@ onAuthStateChanged(auth, (user) => {
 
 // ... inside renderTable loop ...
 
-// Robust Owner Check: handle generic objects 
-// Note: createdBy might be an object { uid: "...", name: "..." } or missing
-const taskUid = data.createdBy?.uid;
-const isOwner = currentUser && taskUid && currentUser.uid === taskUid;
-
-if (!isDone && isOwner) {
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = '🗑️';
-    deleteBtn.style.background = 'transparent';
-    deleteBtn.style.border = 'none';
-    deleteBtn.style.cursor = 'pointer';
-    deleteBtn.style.fontSize = '1.2rem';
-    deleteBtn.title = 'Delete Task (Only Owner)';
-    deleteBtn.onclick = () => deleteTask(data.id);
-    row.querySelector('.action-cell')?.appendChild(deleteBtn);
-}
-
-// --- Tasks Logic ---
+// (Removed broken code block)
 
 // --- Tasks Logic ---
 
@@ -130,7 +116,14 @@ function renderTable() {
             valB = b.createdBy?.name || '';
         }
 
+        if (currentSort.field === 'createdAt') {
+            // Handle Timestamp objects for comparison
+            valA = valA?.toMillis ? valA.toMillis() : (new Date(valA).getTime() || 0);
+            valB = valB?.toMillis ? valB.toMillis() : (new Date(valB).getTime() || 0);
+        }
+
         if (valA > valB) return currentSort.dir === 'asc' ? 1 : -1;
+        if (valA < valB) return currentSort.dir === 'asc' ? -1 : 1;
         return 0;
     });
 
@@ -196,19 +189,35 @@ function renderTable() {
             <td class="action-cell"></td>
         `;
 
-        // Add delete button only for pending tasks created by the current user
+        // Add delete and edit buttons only for pending tasks created by the current user
         const isOwner = currentUser && data.createdBy && currentUser.uid === data.createdBy.uid;
 
         if (!isDone && isOwner) {
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = '🗑️';
-            deleteBtn.style.background = 'transparent';
-            deleteBtn.style.border = 'none';
-            deleteBtn.style.cursor = 'pointer';
-            deleteBtn.style.fontSize = '1.2rem';
-            deleteBtn.title = 'Delete Task';
-            deleteBtn.onclick = () => deleteTask(data.id);
-            row.querySelector('.action-cell')?.appendChild(deleteBtn);
+            const actionCell = row.querySelector('.action-cell');
+            if (actionCell) {
+                // Edit Button
+                const editBtn = document.createElement('button');
+                editBtn.textContent = '✏️';
+                editBtn.style.background = 'transparent';
+                editBtn.style.border = 'none';
+                editBtn.style.cursor = 'pointer';
+                editBtn.style.fontSize = '1.2rem';
+                editBtn.style.marginRight = '8px';
+                editBtn.title = 'Edit Task';
+                editBtn.onclick = () => openEditModal(data);
+                actionCell.appendChild(editBtn);
+
+                // Delete Button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '🗑️';
+                deleteBtn.style.background = 'transparent';
+                deleteBtn.style.border = 'none';
+                deleteBtn.style.cursor = 'pointer';
+                deleteBtn.style.fontSize = '1.2rem';
+                deleteBtn.title = 'Delete Task';
+                deleteBtn.onclick = () => deleteTask(data.id);
+                actionCell.appendChild(deleteBtn);
+            }
         }
 
         tableBody.appendChild(row);
@@ -296,8 +305,28 @@ function escapeHtml(text: string) {
 
 // --- Modal Logic ---
 
+// --- Modal Logic ---
+
+function openEditModal(data: any) {
+    editingTaskId = data.id;
+    if (modalTitle) modalTitle.textContent = "Edit Task";
+    if (submitBtn) submitBtn.textContent = "Update Task";
+
+    // Fill Form
+    titleInput.value = data.title || '';
+    descInput.value = data.content || '';
+    priorityInput.value = (data.priority || 3).toString();
+    // File input cannot be pre-filled securely
+
+    modal.showModal();
+}
+
 if (newTaskBtn) {
     newTaskBtn.addEventListener('click', () => {
+        editingTaskId = null; // Reset to create mode
+        if (modalTitle) modalTitle.textContent = "New Task";
+        if (submitBtn) submitBtn.textContent = "Create Task";
+        taskForm.reset();
         modal.showModal();
     });
 }
@@ -322,42 +351,57 @@ if (taskForm) {
         if (!title || !content) return;
 
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Uploading...';
 
         try {
             let attachmentUrl = null;
 
             // 1. Upload File (if exists)
             if (file) {
+                submitBtn.textContent = 'Uploading...';
                 const timestamp = Date.now();
                 const storageRef = ref(storage, `task_attachments/${timestamp}_${file.name}`);
                 const snapshot = await uploadBytes(storageRef, file);
                 attachmentUrl = await getDownloadURL(snapshot.ref);
             }
 
-            // 2. Write to Firestore
-            await addDoc(collection(db, "dev_task"), {
-                title: title,
-                content: content,
-                priority: priority,
-                completed: false,
-                attachment_url: attachmentUrl, // Save URL or null
-                createdAt: serverTimestamp(),
-                createdBy: {
-                    uid: currentUser.uid,
-                    email: currentUser.email || 'Anonymous',
-                    name: currentUser.displayName || 'Unknown'
-                }
-            });
+            // 2. Save/Update to Firestore
+            if (editingTaskId) {
+                submitBtn.textContent = 'Updating...';
+                const updateData: any = {
+                    title,
+                    content,
+                    priority,
+                    updatedAt: serverTimestamp()
+                };
+                if (attachmentUrl) updateData.attachment_url = attachmentUrl;
+
+                await updateDoc(doc(db, "dev_task", editingTaskId), updateData);
+            } else {
+                submitBtn.textContent = 'Saving...';
+                const docData = {
+                    title,
+                    content,
+                    priority,
+                    attachment_url: attachmentUrl,
+                    completed: false,
+                    createdAt: serverTimestamp(),
+                    createdBy: {
+                        uid: currentUser.uid,
+                        email: currentUser.email,
+                        name: currentUser.displayName || currentUser.email
+                    }
+                };
+                await addDoc(collection(db, "dev_task"), docData);
+            }
 
             modal.close();
             taskForm.reset();
         } catch (error) {
-            console.error("Error creating task:", error);
-            alert("Failed to create task (Check console for permission details)");
+            console.error("Error saving task:", error);
+            alert("Error: " + (error as any).message);
         } finally {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Create Task';
+            submitBtn.textContent = editingTaskId ? 'Update Task' : 'Create Task';
         }
     });
 }
