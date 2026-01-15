@@ -1,9 +1,7 @@
 # Tasks
 
 ## High Priority
-- [x] [3kAIBjSwvfRexWbMDgYQ] Feature: Restaurant Pre-order Warning Popup
-  - When reservation time is within 3 days, show a warning popup/text to let the user know.
-- [ ] [Ex2Sn0N8oTrc5ZlZAUD5] Feature: Admin Page Improvements
+- [x] [Ex2Sn0N8oTrc5ZlZAUD5] Feature: Admin Page Improvements
   - Add created date column.
   - Add sorting for each column.
 - [ ] [nenaHHEf6AbmNncCJzTi] Feature: Partial Quantity Acceptance
@@ -11,6 +9,7 @@
   - If disabled, disallow reservation with food-preorder.
 
 ## Completed
+- [x] [3kAIBjSwvfRexWbMDgYQ] Feature: Restaurant Pre-order Warning Popup
 - [x] [xp3T5gfbXd4pEtknJn5z] New Feature: Pre-order Date Logic
 - [x] [qD0bKDvf7jL0pdTLFz0i] New Feature: Delete Dev Task
 - [x] [VekLP5lAdUq2A7IU26xA] bug fix: Infinite URL Redirection

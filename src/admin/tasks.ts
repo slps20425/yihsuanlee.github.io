@@ -37,6 +37,8 @@ const fileInput = document.getElementById('fileInput') as HTMLInputElement;
 const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
 
 let currentUser: any = null;
+let allTasks: any[] = [];
+let currentSort: { field: string, dir: 'asc' | 'desc' } = { field: 'priority', dir: 'desc' };
 
 // --- Auth & Init ---
 
@@ -57,70 +59,137 @@ onAuthStateChanged(auth, (user) => {
 
 // --- Tasks Logic ---
 
+// --- Tasks Logic ---
+
 function loadTasks() {
-    const q = query(collection(db, "dev_task"), orderBy("completed"), orderBy("priority", "desc"));
+    const q = query(collection(db, "dev_task"));
 
     onSnapshot(q, (snapshot) => {
-        if (!tableBody) return;
-        tableBody.innerHTML = '';
+        allTasks = [];
+        snapshot.forEach((doc) => {
+            allTasks.push({ id: doc.id, ...doc.data() });
+        });
+        renderTable();
+    });
+}
 
-        if (snapshot.empty) {
-            tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color: #64748b;">No tasks found. Create one!</td></tr>';
-            return;
+function renderTable() {
+    if (!tableBody) return;
+    tableBody.innerHTML = '';
+
+    if (allTasks.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 2rem; color: #64748b;">No tasks found. Create one!</td></tr>';
+        return;
+    }
+
+    // Sort
+    allTasks.sort((a, b) => {
+        let valA = a[currentSort.field];
+        let valB = b[currentSort.field];
+
+        // Handle specific fields
+        if (currentSort.field === 'createdBy') {
+            valA = a.createdBy?.name || '';
+            valB = b.createdBy?.name || '';
         }
 
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            const row = document.createElement('tr');
+        if (valA < valB) return currentSort.dir === 'asc' ? -1 : 1;
+        if (valA > valB) return currentSort.dir === 'asc' ? 1 : -1;
+        return 0;
+    });
 
-            // Priority
-            const pClass = `p-${data.priority || 3}`;
-            const pLabel = data.priority || 3;
+    // Render
+    allTasks.forEach((data) => {
+        const row = document.createElement('tr');
 
-            // Status
-            const isDone = data.completed === true;
-            const statusHtml = isDone
-                ? '<span class="status-badge status-done">● Done</span>'
-                : '<span class="status-badge status-pending">○ Pending</span>';
+        // Priority
+        const pClass = `p-${data.priority || 3}`;
+        const pLabel = data.priority || 3;
 
-            // Safe content
-            const title = escapeHtml(data.title || '(No Title)');
-            const desc = escapeHtml((data.content || '').substring(0, 60) + (data.content?.length > 60 ? '...' : ''));
-            const author = escapeHtml(data.createdBy?.name || data.createdBy?.email || 'Unknown');
+        // Status
+        const isDone = data.completed === true;
+        const statusHtml = isDone
+            ? '<span class="status-badge status-done">● Done</span>'
+            : '<span class="status-badge status-pending">○ Pending</span>';
 
-            // Attachment Link
-            let attachmentHtml = '';
-            if (data.attachment_url) {
-                attachmentHtml = `<br><a href="${data.attachment_url}" target="_blank" style="font-size: 0.8em; color: var(--accent);">📎 View Attachment</a>`;
-            }
+        // Safe content
+        const title = escapeHtml(data.title || '(No Title)');
+        const desc = escapeHtml((data.content || '').substring(0, 60) + (data.content?.length > 60 ? '...' : ''));
+        const author = escapeHtml(data.createdBy?.name || data.createdBy?.email || 'Unknown');
 
-            row.innerHTML = `
-                <td><span class="priority-badge ${pClass}">P${pLabel}</span></td>
-                <td style="font-weight: 500;">
-                    ${title}
-                    ${attachmentHtml}
-                </td>
-                <td style="color: #94a3b8; font-size: 0.9em;">${desc}</td>
-                <td style="font-size: 0.9em;">${author}</td>
-                <td>${statusHtml}</td>
-                <td class="action-cell"></td>
-            `;
+        // Date
+        let dateHtml = '-';
+        if (data.createdAt) {
+            // Handle Firestore Timestamp or Date object
+            const dateObj = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+            dateHtml = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
 
-            // Add delete button only for pending tasks
-            if (!isDone) {
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = '🗑️';
-                deleteBtn.style.background = 'transparent';
-                deleteBtn.style.border = 'none';
-                deleteBtn.style.cursor = 'pointer';
-                deleteBtn.style.fontSize = '1.2rem';
-                deleteBtn.title = 'Delete Task';
-                deleteBtn.onclick = () => deleteTask(doc.id);
-                row.querySelector('.action-cell')?.appendChild(deleteBtn);
-            }
+        // Attachment Link
+        let attachmentHtml = '';
+        if (data.attachment_url) {
+            attachmentHtml = `<br><a href="${data.attachment_url}" target="_blank" style="font-size: 0.8em; color: var(--accent);">📎 View Attachment</a>`;
+        }
 
-            tableBody.appendChild(row);
-        });
+        row.innerHTML = `
+            <td><span class="priority-badge ${pClass}">P${pLabel}</span></td>
+            <td style="font-weight: 500;">
+                ${title}
+                ${attachmentHtml}
+            </td>
+            <td style="color: #94a3b8; font-size: 0.9em;">${desc}</td>
+            <td style="font-size: 0.85em; color: #ccc;">${dateHtml}</td>
+            <td style="font-size: 0.9em;">${author}</td>
+            <td>${statusHtml}</td>
+            <td class="action-cell"></td>
+        `;
+
+        // Add delete button only for pending tasks
+        if (!isDone) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.style.background = 'transparent';
+            deleteBtn.style.border = 'none';
+            deleteBtn.style.cursor = 'pointer';
+            deleteBtn.style.fontSize = '1.2rem';
+            deleteBtn.title = 'Delete Task';
+            deleteBtn.onclick = () => deleteTask(data.id);
+            row.querySelector('.action-cell')?.appendChild(deleteBtn);
+        }
+
+        tableBody.appendChild(row);
+    });
+}
+
+// Bind Sort Headers
+document.querySelectorAll('th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+        const field = th.getAttribute('data-sort');
+        if (!field) return;
+
+        if (currentSort.field === field) {
+            currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSort.field = field;
+            currentSort.dir = 'desc'; // Default new sort to desc
+        }
+        renderTable();
+        updateHeaderIcons();
+    });
+});
+
+function updateHeaderIcons() {
+    document.querySelectorAll('th[data-sort]').forEach(th => {
+        const field = th.getAttribute('data-sort');
+        let text = th.textContent?.replace(/[↕↑↓]/g, '').trim() || '';
+
+        if (currentSort.field === field) {
+            th.textContent = `${text} ${currentSort.dir === 'asc' ? '↑' : '↓'}`;
+            th.style.color = 'var(--accent)';
+        } else {
+            th.textContent = `${text} ↕`;
+            th.style.color = '';
+        }
     });
 }
 
