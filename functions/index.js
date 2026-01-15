@@ -27,8 +27,7 @@ exports.checkMessageSafety = onCall({ secrets: [OPENAI_API_KEY] }, async (reques
 
         console.log(`[Security Check] Analyzing text: "${text.substring(0, 50)}..."`);
 
-        // 1. FIREBASE KEYWORD CHECK (Local/Fast)
-        // Use the named database "reservation" where "configuration/settings" lives
+        // 1. FIREBASE KEYWORD CHECK (Local/Fast) - "reservation" database
         let blacklist = [];
         try {
             const db = getFirestore(admin.app(), "reservation");
@@ -36,7 +35,6 @@ exports.checkMessageSafety = onCall({ secrets: [OPENAI_API_KEY] }, async (reques
             const data = settings.data() || {};
             const customKeywords = data.custom_scam_keywords || "";
 
-            // Handle both String (comma sep) and Array types from Firestore
             if (Array.isArray(customKeywords)) {
                 blacklist = customKeywords.map(k => String(k).trim().toLowerCase());
             } else {
@@ -47,16 +45,15 @@ exports.checkMessageSafety = onCall({ secrets: [OPENAI_API_KEY] }, async (reques
             console.error("[Security Check] Firestore Policy Read Error (Falling back to default list):", e);
         }
 
-        // Hardcoded Fallback (Golden List) - Merge unique
+        // Hardcoded Fallback (Golden List)
         const fallbackKeywords = [
             "crypto", "investment", "profit", "jackpot", "lottery", "giveaway",
             "投資獲利", "加賴", "加line", "兼職", "獲利", "高報酬", "博弈"
         ];
 
         const combined = new Set([...blacklist, ...fallbackKeywords]);
-        // console.log(`[Security Check] Active Keywords: ${Array.from(combined).join(", ")}`); // Too verbose for prod
-
         const lowerText = text.toLowerCase();
+
         for (const word of combined) {
             if (lowerText.includes(word)) {
                 console.warn(`[Security Check] BLOCKED: Found keyword "${word}"`);
@@ -65,48 +62,29 @@ exports.checkMessageSafety = onCall({ secrets: [OPENAI_API_KEY] }, async (reques
         }
 
         // 2. OPENAI MODERATION API
-        // ... call openai ...
+        try {
+            const openai = new OpenAI({ apiKey: OPENAI_API_KEY.value() });
+            const moderation = await openai.moderations.create({
+                model: "omni-moderation-latest",
+                input: text,
+            });
+            const result = moderation.results[0];
+            if (result.flagged || result.categories.illicit || result.categories['illicit/violent']) {
+                console.warn("[Security Check] BLOCKED: OpenAI Flagged");
+                return { status: "blocked", reason: "AI Security Block" };
+            }
+        } catch (aiError) {
+            console.error("[Security Check] OpenAI API Fail:", aiError);
+            // Fail open (safe) if AI fails
+        }
+
+        return { status: "safe" };
+
     } catch (criticalError) {
         console.error("[Security Check] CRITICAL FUNC ERROR:", criticalError);
         return { status: "safe", warning: "System Error - Failed Open" };
     }
-
-    // (This part needs to be inside the big try block or handled. 
-    // The previous replace ended before OpenAI. I need to be careful with replace range.)
-    // Let's rewrite the top part and connect it to OpenAI part.
-
-    // ... Re-implement OpenAI part to be inside try/catch or just return early.
-
-    try {
-        const { text } = request.data;
-        // ... (Logic from above) ...
-        // ... (Keyword check returns) ...
-
-        // 2. OPENAI
-        const openai = new OpenAI({ apiKey: OPENAI_API_KEY.value() });
-        const moderation = await openai.moderations.create({
-            model: "omni-moderation-latest",
-            input: text,
-        });
-        const result = moderation.results[0];
-        if (result.flagged || result.categories.illicit || result.categories['illicit/violent']) {
-            return { status: "blocked", reason: "AI Security Block" };
-        }
-        return { status: "safe" };
-
-    } catch (e) {
-        console.error("OpenAI/System Error:", e);
-        return { status: "safe" };
-    }
-});
-
-const result = moderation.results[0];
-// Flags for safety or the 'illicit' category which covers many scam behaviors
-if (result.flagged || result.categories.illicit || result.categories['illicit/violent']) {
-    return {
-        status: "blocked",
-        reason: "AI Security Block (Suspected Scam/Phishing)"
-    };
+};
 }
 
 return { status: "safe" };

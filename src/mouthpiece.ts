@@ -29,7 +29,7 @@ function attachSafetyCheck(elementId: string) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    attachSafetyCheck('scriptInput');
+    attachSafetyCheck('scriptContent');
 });
 
 // Update validateForm to include safety check
