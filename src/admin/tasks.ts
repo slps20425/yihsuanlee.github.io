@@ -1,7 +1,7 @@
 
 import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, collection, addDoc, serverTimestamp, query, onSnapshot, deleteDoc, updateDoc, doc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "firebase/auth";
+import { getFirestore, collection, addDoc, serverTimestamp, query, onSnapshot, deleteDoc, updateDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
@@ -18,6 +18,10 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app, "reservation");
 const storage = getStorage(app);
+
+// Auth Providers
+const googleProvider = new GoogleAuthProvider();
+const microsoftProvider = new OAuthProvider('microsoft.com');
 
 // Elements
 const authCheckEl = document.getElementById('authCheck');
@@ -46,6 +50,46 @@ let currentPage = 1;
 const itemsPerPage = 10;
 
 // --- Auth & Init ---
+
+// Login Handler
+async function handleSocialLogin(provider: any) {
+    const authError = document.getElementById('authError');
+    if (authError) authError.textContent = '';
+
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        console.log('Admin login success:', user.uid);
+
+        // Check if user document exists, create if not
+        const userIdentifier = `uid_${user.uid}`;
+        const userRef = doc(db, "users", userIdentifier);
+        const docSnap = await getDoc(userRef);
+
+        if (!docSnap.exists()) {
+            await setDoc(userRef, {
+                name: user.displayName || "WiseCat User",
+                email: user.email || "N/A",
+                uid: user.uid,
+                picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email || 'User'),
+                credits: 1.00,
+                createdAt: serverTimestamp()
+            });
+            console.log('New user document created:', userIdentifier);
+        }
+        // onAuthStateChanged will handle UI updates
+    } catch (error: any) {
+        console.error('Login error:', error);
+        if (authError) authError.textContent = 'Login failed: ' + error.message;
+    }
+}
+
+// Bind login buttons
+const googleLoginBtn = document.getElementById('googleLoginBtn');
+const microsoftLoginBtn = document.getElementById('microsoftLoginBtn');
+
+if (googleLoginBtn) googleLoginBtn.addEventListener('click', () => handleSocialLogin(googleProvider));
+if (microsoftLoginBtn) microsoftLoginBtn.addEventListener('click', () => handleSocialLogin(microsoftProvider));
 
 // --- Auth & Init ---
 

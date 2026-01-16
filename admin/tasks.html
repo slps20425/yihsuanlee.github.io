@@ -357,9 +357,32 @@
     </dialog>
 
     <!-- Login Content -->
-    <div id="loginContent" style="text-align: center; margin-top: 20vh;" hidden>
-        <h2>Generic Login Required</h2>
-        <a href="/" style="color: var(--accent);">Go Home to Login</a>
+    <div id="loginContent" style="max-width: 400px; margin: 20vh auto; text-align: center;" hidden>
+        <h2 style="margin-bottom: 30px;">Admin Login Required</h2>
+
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+            <!-- Google Login -->
+            <button type="button" class="btn btn-primary" id="googleLoginBtn"
+                style="background: #fff; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 0.95rem;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"
+                    style="width: 20px; height: 20px;">
+                <span>Sign in with Google</span>
+            </button>
+
+            <!-- Microsoft Login -->
+            <button type="button" class="btn btn-primary" id="microsoftLoginBtn"
+                style="background: #2f2f2f; color: #fff; border: 1px solid #444; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 0.95rem;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft"
+                    style="width: 20px; height: 20px;">
+                <span>Sign in with Microsoft</span>
+            </button>
+        </div>
+
+        <div id="authError" style="color: var(--danger); margin-top: 15px; text-align: center; font-size: 14px;"></div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border);">
+            <a href="/" style="color: var(--accent); font-size: 14px; text-decoration: none;">← Back to Portal</a>
+        </div>
     </div>
 
     <script type="module" src="../src/admin/tasks.ts"></script>

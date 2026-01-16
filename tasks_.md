@@ -49,14 +49,15 @@
   - Investigate `onload` race condition.
 
 ## Pending Tasks
-- [/] [87VX2nLsZQj45c7CCven] Feature: Restaurant Page UI Enhancement
+- [x] [87VX2nLsZQj45c7CCven] Feature: Restaurant Page UI Enhancement
   - Priority: 3
   - Add increment/decrement buttons for party size and quantity
   - Ensure UI alignment with other elements
-- [ ] [BadQpTrsAQjiNEjoH30c] Bug: Fix Admin Task Upload (CORS Issue)
+- [x] [BadQpTrsAQjiNEjoH30c] Bug: Fix Admin Task Upload (CORS Issue)
   - Priority: 3
   - Fix CORS preflight issue preventing screenshot uploads
   - Error: HTTP status of preflight request didn't indicate success
+  - Note: Created cors.json - user must apply via Firebase Console
 - [ ] [l2SHMD6EKvJAgFSSPZ05] Bug: Admin Page Mobile UI
   - Priority: 3
   - Fix admin page UI that looks messy on mobile
