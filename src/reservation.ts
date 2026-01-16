@@ -711,6 +711,46 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (buddy && panel) buddy.addEventListener('click', () => panel.classList.toggle('show'));
     if (close && panel) close.addEventListener('click', () => panel.classList.remove('show'));
 
+    // --- Number Input Controls (Party Size & Food Quantity) ---
+    const initNumberInput = (displayId: string, inputId: string, minusId: string, plusId: string, min: number, max: number) => {
+        const display = document.getElementById(displayId);
+        const input = document.getElementById(inputId) as HTMLInputElement;
+        const minusBtn = document.getElementById(minusId) as HTMLButtonElement;
+        const plusBtn = document.getElementById(plusId) as HTMLButtonElement;
+
+        if (!display || !input || !minusBtn || !plusBtn) return;
+
+        const updateValue = (newValue: number) => {
+            // Clamp value between min and max
+            const clampedValue = Math.max(min, Math.min(max, newValue));
+            display.textContent = clampedValue.toString();
+            input.value = clampedValue.toString();
+
+            // Update button states
+            minusBtn.disabled = clampedValue <= min;
+            plusBtn.disabled = clampedValue >= max;
+        };
+
+        minusBtn.addEventListener('click', () => {
+            const currentValue = parseInt(input.value) || min;
+            updateValue(currentValue - 1);
+        });
+
+        plusBtn.addEventListener('click', () => {
+            const currentValue = parseInt(input.value) || min;
+            updateValue(currentValue + 1);
+        });
+
+        // Initialize button states
+        updateValue(parseInt(input.value) || min);
+    };
+
+    // Initialize Party Size (min: 1, max: 50)
+    initNumberInput('partySizeDisplay', 'partySize', 'partySizeMinus', 'partySizePlus', 1, 50);
+
+    // Initialize Food Quantity (min: 1, max: 4)
+    initNumberInput('foodQuantityDisplay', 'foodQuantity', 'foodQuantityMinus', 'foodQuantityPlus', 1, 4);
+
     // Bind event listeners using the centralized bind function
     bindValidationListeners();
     bindSearchListeners();

@@ -1,14 +1,12 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-## Current Task
-## Current Task
-- **Task Name**: Bug Fix: Intl-Tel-Input Initialization
+- **Task Name**: Restaurant Page UI Enhancement
 - **Assignee**: Claude
-- **Status**: READY_FOR_QA
-- **Deploy URL**: https://wisecat-8df8d.web.app/reservation/restaurant_reservation.html
+- **Status**: IN_PROGRESS
+- **Deploy URL**: (pending deployment)
 - **Scope**: Frontend (Reservation)
-- **Task ID**: INTL_TEL_BUG
+- **Task ID**: 87VX2nLsZQj45c7CCven
 
 ## Workflow History
 *(Empty)*

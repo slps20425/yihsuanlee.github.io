@@ -48,5 +48,25 @@
   - "phone number country code not display required a refresh"
   - Investigate `onload` race condition.
 
+## Pending Tasks
+- [/] [87VX2nLsZQj45c7CCven] Feature: Restaurant Page UI Enhancement
+  - Priority: 3
+  - Add increment/decrement buttons for party size and quantity
+  - Ensure UI alignment with other elements
+- [ ] [BadQpTrsAQjiNEjoH30c] Bug: Fix Admin Task Upload (CORS Issue)
+  - Priority: 3
+  - Fix CORS preflight issue preventing screenshot uploads
+  - Error: HTTP status of preflight request didn't indicate success
+- [ ] [l2SHMD6EKvJAgFSSPZ05] Bug: Admin Page Mobile UI
+  - Priority: 3
+  - Fix admin page UI that looks messy on mobile
+- [ ] [zCsqtM37u6uWLkrGgNuN] Feature: Enhanced Success Message
+  - Priority: 3
+  - Update success messages for all services (restaurant, mouthpiece, trial)
+  - Template: "Dear {{client_name}} we've receive the task. we will schedule your call ASAP. once finished will send result to {{client_email}}."
+- [ ] [NL8cMOdrF8yjasb8LmqN] Feature: Background Consistency
+  - Priority: 2
+  - Change trial and mouthpiece background to match entry page
+
 ## Backlog
 - [ ] Example Task 1
