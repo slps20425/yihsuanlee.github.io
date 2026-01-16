@@ -57,8 +57,8 @@
   - Priority: 3
   - Fix CORS preflight issue preventing screenshot uploads
   - Error: HTTP status of preflight request didn't indicate success
-  - Note: Created cors.json - user must apply via Firebase Console
-- [ ] [l2SHMD6EKvJAgFSSPZ05] Bug: Admin Page Mobile UI
+  - Note: Fixed by initializing Firebase Storage (not CORS)
+- [/] [l2SHMD6EKvJAgFSSPZ05] Bug: Admin Page Mobile UI
   - Priority: 3
   - Fix admin page UI that looks messy on mobile
 - [ ] [zCsqtM37u6uWLkrGgNuN] Feature: Enhanced Success Message

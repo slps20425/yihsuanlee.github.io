@@ -1,13 +1,12 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-- **Task Name**: Fix Admin Task Upload CORS Issue
+- **Task Name**: Add Inline Login to Admin Tasks Page
 - **Assignee**: Claude
 - **Status**: READY_FOR_QA
-- **Deploy URL**: N/A (Configuration task - cors.json created)
-- **Scope**: Firebase Storage Configuration
-- **Task ID**: BadQpTrsAQjiNEjoH30c
-- **Note**: User must apply CORS config via Firebase Console, then verify file upload works
+- **Deploy URL**: https://wisecat-8df8d.web.app/admin/tasks
+- **Scope**: Frontend (Admin Tasks)
+- **Task ID**: (User request - not from Firebase)
 
 ## Workflow History
 *(Empty)*
