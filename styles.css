@@ -1543,13 +1543,15 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     gap: 12px;
     padding: 10px;
     border-radius: 12px;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
     cursor: pointer;
     min-width: 0;
 }
 
 .sidebar-user-info:hover {
     background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
 }
 
 .sidebar-user-text {
@@ -1583,14 +1585,15 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     cursor: pointer;
     font-size: 0.8rem;
     font-weight: 700;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     width: 100%;
     margin-top: 8px;
 }
 
 .sidebar-logout-btn:hover {
     background: rgba(239, 68, 68, 0.2);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 /* Bottom Navigation (Mobile) / Sidebar (Desktop) */
@@ -1744,6 +1747,10 @@ input[type="date"]::-webkit-datetime-edit-day-field {
         border-top: none;
         border-right: 1px solid var(--border-color);
         padding: 2rem 0;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
     }
 
     .nav-item {
@@ -1753,11 +1760,25 @@ input[type="date"]::-webkit-datetime-edit-day-field {
         gap: 0.75rem;
         border-left: 4px solid transparent;
         height: 50px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-item:hover {
+        background: rgba(59, 130, 246, 0.15);
+        border-left-color: rgba(59, 130, 246, 0.5);
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
     }
 
     .nav-item.active {
         border-left-color: var(--secondary-color);
         background: rgba(59, 130, 246, 0.1);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    }
+
+    .nav-item.active:hover {
+        background: rgba(59, 130, 246, 0.2);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
     }
 
     .nav-icon {
