@@ -33,7 +33,8 @@
             padding: 0;
             min-height: 100vh;
             padding-bottom: 80px;
-            /* Space for bottom nav */
+            display: block;
+            /* Override flex centering from styles.css */
         }
 
         /* Top Header */
@@ -48,7 +49,8 @@
         }
 
         .header-content {
-            max-width: 1200px;
+            max-width: 1400px;
+            width: 95%;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -74,7 +76,8 @@
 
         /* Main Content Area */
         .main-content {
-            max-width: 1200px;
+            max-width: 1400px;
+            width: 95%;
             margin: 0 auto;
             padding: 1.5rem;
         }
@@ -94,6 +97,8 @@
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
+            max-width: none !important;
+            /* Allow cards to fill horizontal space */
         }
 
         .card h2 {
@@ -278,17 +283,7 @@
             margin-bottom: 0.75rem;
         }
 
-        /* Coming Soon Badge */
-        .coming-soon-badge {
-            display: inline-block;
-            background: var(--warning);
-            color: var(--bg-dark);
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-left: 0.5rem;
-        }
+        /* Coming Soon Badge removed */
 
         /* Placeholder Content */
         .placeholder {
@@ -371,7 +366,7 @@
         <!-- 📞 Calls Tab -->
         <div id="callsTab" class="tab-section">
             <div class="card">
-                <h2>📞 Call Management <span class="coming-soon-badge">COMING SOON</span></h2>
+                <h2>📞 Call Management</h2>
                 <p style="color: var(--text-secondary);">Manage inbound and outbound AI-powered calls</p>
                 <div
                     style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
@@ -621,7 +616,7 @@
                         <div style="font-size: 2.5rem;">📢</div>
                         <div style="flex: 1;">
                             <div style="font-weight: 600; margin-bottom: 0.25rem;">Mouthpiece Service <span
-                                    style="background: var(--warning); color: var(--bg-dark); padding: 0.125rem 0.5rem; border-radius: 6px; font-size: 0.7rem; margin-left: 0.5rem;">BETA</span>
+                                    style="background: var(--accent); color: white; padding: 0.125rem 0.5rem; border-radius: 6px; font-size: 0.7rem; margin-left: 0.5rem;">BETA</span>
                             </div>
                             <div style="font-size: 0.85rem; color: var(--text-secondary);">AI Voice representation
                                 service</div>
@@ -649,7 +644,7 @@
         <!-- 💬 Inbox Tab -->
         <div id="inboxTab" class="tab-section">
             <div class="card">
-                <h2>💬 Inbox <span class="coming-soon-badge">COMING SOON</span></h2>
+                <h2>💬 Inbox</h2>
                 <p style="color: var(--text-secondary);">Receive SMS messages and campaign announcements</p>
                 <div class="placeholder">
                     <div class="placeholder-icon">📨</div>
