@@ -460,55 +460,45 @@ exports.purchasePhoneNumber = onCall(
             console.log(`[purchasePhoneNumber] Purchasing number with subaccount`);
             const subaccountClient = twilio(subaccountSid, subaccountAuthToken);
 
-            // --- Enable Dialing Permissions (Safe List) ---
+            // --- Enable Dialing Permissions (GLOBAL / ALL COUNTRIES) ---
             try {
-                // Expanded Safe List: North America, Europe, Asia, Oceania (Major Travel Destinations)
-                let SAFE_COUNTRY_CODES = [
-                    // North America
-                    "US", "CA", "MX",
-                    // Asia / SEA
-                    "JP", "TW", "KR", "CN", "HK", "SG", "MY", "TH", "VN", "PH", "ID", "KH", "LA", "IN",
-                    // Oceania
-                    "AU", "NZ",
-                    // Europe (Western/Central/Northern/Southern)
-                    "GB", "FR", "DE", "IT", "ES", "PT", "NL", "BE", "CH", "AT", "SE", "NO", "DK", "FI", "IE", "PL", "CZ", "HU", "GR", "TR", "RO", "BG", "HR",
-                    // Middle East (Selected)
-                    "AE", "SA", "IL"
-                ];
+                console.log(`[purchasePhoneNumber] Fetching list of all countries to enable global dialing permissions...`);
+                // 1. Fetch all supported countries (auto-pagination handled by library usually, or we take first page which covers most if limit is high)
+                const allCountries = await subaccountClient.voice.v1.dialingPermissions.countries.list({ limit: 300 });
 
-                // Dynamic Override from Firestore (reservation DB)
-                try {
-                    const reservationDb = getFirestore(admin.app(), "reservation");
-                    const configDoc = await reservationDb.doc("configuration/settings").get();
-                    if (configDoc.exists) {
-                        const config = configDoc.data();
-                        if (Array.isArray(config.safe_country_codes) && config.safe_country_codes.length > 0) {
-                            SAFE_COUNTRY_CODES = config.safe_country_codes;
-                            console.log(`[purchasePhoneNumber] Loaded dynamic safe countries from Firestore: ${SAFE_COUNTRY_CODES.length} countries`);
-                        }
-                    }
-                } catch (confError) {
-                    console.warn(`[purchasePhoneNumber] Failed to load dynamic config, using default list: ${confError.message}`);
-                }
-
-                // Helper loop because bulk update might have limits or we just send one payload
-                const updateRequest = SAFE_COUNTRY_CODES.map(code => ({
-                    iso_code: code,
+                // 2. Filter out those that are already enabled (optional optimization) or just update all.
+                // We'll just map all ISO codes to ensure everything is enabled.
+                const updateRequest = allCountries.map(c => ({
+                    iso_code: c.isoCode,
                     low_risk_numbers_enabled: true,
                     high_risk_special_numbers_enabled: false,
                     high_risk_tollfraud_numbers_enabled: false
                 }));
 
-                await subaccountClient.voice.v1.dialingPermissions
-                    .bulkCountryUpdates
-                    .create({ updateRequest: JSON.stringify(updateRequest) });
+                // 3. Apply Bulk Update (Batching)
+                // Twilio limit is 100 per request. We'll use 50 to be safe.
+                const BATCH_SIZE = 50;
+                if (updateRequest.length > 0) {
+                    for (let i = 0; i < updateRequest.length; i += BATCH_SIZE) {
+                        const batch = updateRequest.slice(i, i + BATCH_SIZE);
 
-                console.log(`[purchasePhoneNumber] Enabled dialing permissions for: ${SAFE_COUNTRY_CODES.join(', ')}`);
+                        if (batch.length > 0) {
+                            await subaccountClient.voice.v1.dialingPermissions
+                                .bulkCountryUpdates
+                                .create({ updateRequest: JSON.stringify(batch) });
+                            console.log(`[purchasePhoneNumber] Batch ${i / BATCH_SIZE + 1}: Enabled ${batch.length} countries.`);
+                        }
+                    }
+
+                    console.log(`[purchasePhoneNumber] Successfully enabled global dialing permissions for all ${updateRequest.length} countries.`);
+                } else {
+                    console.warn(`[purchasePhoneNumber] No countries found to update.`);
+                }
             } catch (permError) {
-                console.warn(`[purchasePhoneNumber] Warning: Failed to update dialing permissions: ${permError.message}`);
+                console.warn(`[purchasePhoneNumber] Warning: Failed to update global dialing permissions: ${permError.message}`);
                 // Don't block purchase, just warn
             }
-            // ----------------------------------------------
+            // -----------------------------------------------------------
 
             const purchasedNumber = await subaccountClient.incomingPhoneNumbers.create({
                 phoneNumber: phoneNumber
