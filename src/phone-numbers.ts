@@ -90,17 +90,10 @@ onAuthStateChanged(auth, async (user) => {
     const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement;
 
     if (!user) {
-        console.log("No user logged in on dashboard.");
-        if (headerUserName) {
-            headerUserName.textContent = 'Guest (Login)';
-            headerUserName.onclick = () => window.location.href = '/Entry.html';
-        }
-        if (headerUserAvatar) {
-            headerUserAvatar.src = "https://ui-avatars.com/api/?name=Guest";
-        }
+        console.log("No user logged in on dashboard. Redirecting to Entry.html...");
+        window.location.href = '/Entry.html';
         return;
     }
-
     currentUser = user;
 
     if (user) {
