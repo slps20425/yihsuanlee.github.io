@@ -327,9 +327,19 @@ exports.searchNumbers = onCall(
                             cost: numberPrice
                         };
                     })
-                    // BACKEND FILTER: Explicitly remove numbers that require a Business Address.
-                    // User Request: "Hide business... display non-business (only individual)"
-                    .filter(num => !String(num.addressRequirements).toLowerCase().includes('business'));
+                    // BACKEND FILTER: STRICT MODE
+                    // User Request: "Hide business... hide in UI so that no one can buy"
+                    // Japan/NZ numbers are 'local' requirement, which implies strict regulatory bundles 
+                    // (Business OR Individual) that this simple app cannot handle.
+                    // To prevent purchase errors and confusion, we only allow 'none' or 'any'.
+                    .filter(num => {
+                        const req = String(num.addressRequirements).toLowerCase();
+                        // Filter out 'local', 'foreign', 'business'
+                        if (req.includes('business') || req === 'local' || req === 'foreign') {
+                            return false;
+                        }
+                        return true;
+                    });
 
                 console.log(`[searchNumbers] Success. Found ${results.length} ${resourceType} numbers. Backend: ${Date.now() - totalStart}ms`);
                 return { numbers: results };
