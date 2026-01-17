@@ -2020,14 +2020,8 @@ body.dashboard-layout {
     flex: 1;
 }
 
-/* Ensure Refill Button is Centered */
-#profileTab .btn-full {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+/* Remove old centering block */
 
-/* --- FINAL BUTTON ADJUSTMENTS --- */
 /* Consistently sized buttons for Profile & Actions */
 #profileTab .btn-full,
 #profileTab .card .btn-full,
@@ -2036,9 +2030,11 @@ body.dashboard-layout {
     height: 40px !important;
     font-size: 0.9rem !important;
     margin-left: 0 !important;
-    /* Aligned to left */
+    /* Force to left */
     margin-right: auto !important;
-    display: flex;
+    align-self: flex-start !important;
+    /* For flex containers */
+    display: flex !important;
     justify-content: center;
     align-items: center;
     box-shadow: none !important;
@@ -2046,9 +2042,11 @@ body.dashboard-layout {
     border-radius: 8px;
     text-decoration: none;
     box-sizing: border-box;
+    padding: 0 1rem;
 }
 
-#profileTab .btn-full:hover {
+#profileTab .btn-full:hover,
+.refill-btn:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
     transform: translateY(-1px);
 }
@@ -2056,8 +2054,9 @@ body.dashboard-layout {
 /* --- Credits Reminder Fix --- */
 .credits-info-box {
     max-width: 300px;
-    margin: 1rem auto 0 auto !important;
-    /* Center and match button width */
+    margin: 1rem 0 0 0 !important;
+    /* Aligned to left */
+    text-align: left !important;
 }
 
 /* --- Padding Fix for Bottom Button Clipping --- */
