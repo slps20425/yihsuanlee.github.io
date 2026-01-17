@@ -125,6 +125,26 @@ onAuthStateChanged(auth, async (user) => {
             headerUserAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`;
         }
 
+        // --- SELF-HEALING: Update LocalStorage Cache ---
+        const sessionData: any = {
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName || 'User',
+            picture: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`,
+            // We'll update credits later if we fetch them
+        };
+        // Merge with existing to keep credits if possible, or just overwrite
+        const existing = localStorage.getItem('wisecat_user');
+        if (existing) {
+            try {
+                const parsed = JSON.parse(existing);
+                sessionData['credits'] = parsed.credits; // preserve known credits
+            } catch (e) { }
+        }
+        console.log("💾 Dashboard: Healing localStorage session cache.");
+        localStorage.setItem('wisecat_user', JSON.stringify(sessionData));
+        // -----------------------------------------------
+
         loadUserSettings();
     }
 });
