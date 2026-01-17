@@ -107,11 +107,15 @@
                 <div class="user-name" id="userName"></div>
                 <div class="user-email" id="userEmail"></div>
             </div>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; width: 100%;">
                 <a href="/dashboard.html" class="logout-btn"
-                    style="background: var(--primary-color); text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">📊
-                    Dashboard</a>
-                <button onclick="logout()" class="logout-btn">Logout</button>
+                    style="flex: 1; background: var(--primary-color); text-decoration: none; display: flex; align-items: center; justify-content: center; height: 42px; padding: 0 16px; margin: 0; box-sizing: border-box; font-weight: 600; gap: 6px; border: none;">
+                    📊 Dashboard
+                </a>
+                <button onclick="logout()" class="logout-btn"
+                    style="flex: 0 0 auto; height: 42px; margin: 0; display: flex; align-items: center; justify-content: center; padding: 0 20px; box-sizing: border-box;">
+                    Logout
+                </button>
             </div>
         </div>
 
