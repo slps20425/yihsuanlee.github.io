@@ -240,6 +240,10 @@ async function handleSocialLogin(provider: any) {
     if (authError) authError.textContent = '';
 
     try {
+        // Enforce persistence explicitly
+        const { setPersistence, browserLocalPersistence } = await import("firebase/auth");
+        await setPersistence(auth, browserLocalPersistence);
+
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
         console.log('Social login success:', user.uid);
