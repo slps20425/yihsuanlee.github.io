@@ -15,10 +15,6 @@ const searchBtn = document.getElementById('searchBtn') as HTMLButtonElement | nu
 const resultsCard = document.getElementById('resultsCard') as HTMLElement | null;
 const numbersList = document.getElementById('numbersList') as HTMLUListElement | null;
 
-const phoneNumberCard = document.getElementById('phoneNumberCard') as HTMLElement | null;
-const currentPhoneNumber = document.getElementById('currentPhoneNumber') as HTMLElement | null;
-const purchasedDate = document.getElementById('purchasedDate') as HTMLElement | null;
-const phoneStatus = document.getElementById('phoneStatus') as HTMLElement | null;
 const releaseBtn = document.getElementById('releaseBtn') as HTMLButtonElement | null;
 
 const userName = document.getElementById('userName') as HTMLElement | null;
@@ -219,88 +215,87 @@ function loadUserSettings() {
     onSnapshot(settingsDoc, (snapshot) => {
         if (snapshot.exists()) {
             const settings = snapshot.data();
+            const myNumberSection = document.getElementById('myNumberSection');
+            const searchNumberSection = document.getElementById('searchNumberSection');
+            const tableBody = document.getElementById('myNumberTableBody');
 
             if (settings.phoneNumberStatus === 'active' && settings.phoneNumber) {
-                // Show current number
-                if (phoneNumberCard) phoneNumberCard.hidden = false;
-                if (currentPhoneNumber) currentPhoneNumber.textContent = settings.phoneNumber;
-                if (phoneStatus) phoneStatus.textContent = 'Active';
+                // HIDE Search, SHOW Table
+                if (searchNumberSection) searchNumberSection.hidden = true;
+                if (myNumberSection) myNumberSection.hidden = false;
 
-                if (settings.phoneNumberPurchasedAt && purchasedDate) {
-                    const date = settings.phoneNumberPurchasedAt.toDate();
-                    purchasedDate.textContent = date.toLocaleDateString();
-                }
+                // Populate Table Row
+                if (tableBody) {
+                    const capabilities = settings.capabilities || {};
+                    const capsHtml = `
+                        <div style="display: flex; gap: 8px;">
+                            ${capabilities.voice || capabilities.Voice ? '<span>📞</span>' : ''}
+                            ${capabilities.sms || capabilities.SMS ? '<span>💬</span>' : ''}
+                            ${capabilities.mms || capabilities.MMS ? '<span>📸</span>' : ''}
+                            ${capabilities.fax || capabilities.Fax ? '<span>fax</span>' : ''}
+                        </div>
+                    `;
 
-                // Show Twilio credentials (masked)
-                const twilioCredsCard = document.getElementById('twilioCredsCard');
-                const twilioSidMasked = document.getElementById('twilioSidMasked');
-                const twilioTokenMasked = document.getElementById('twilioTokenMasked');
+                    const configHtml = `
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                            <div style="margin-bottom: 4px;"><strong>Voice:</strong> Webhook to POST</div>
+                            <div style="font-family: monospace; color: var(--accent); margin-bottom: 8px;">https://api.vapi.ai/twilio/inbound_call</div>
+                            
+                            <div style="margin-bottom: 4px;"><strong>Messaging:</strong> Webhook to POST</div>
+                            <div style="font-family: monospace; color: var(--accent);">https://api.vapi.ai/twilio/sms</div>
+                        </div>
+                    `;
 
-                if (twilioCredsCard && settings.twilioSubaccountSid && settings.twilioSubaccountAuthToken) {
-                    twilioCredsCard.hidden = false;
-                    if (twilioSidMasked) {
-                        twilioSidMasked.textContent = maskCredential(settings.twilioSubaccountSid);
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td style="padding: 10px; font-weight: bold; color: var(--success); vertical-align: top;">
+                                ${settings.phoneNumber}
+                            </td>
+                            <td style="padding: 10px; vertical-align: top;">
+                                ${settings.friendlyName || 'Unknown Location'}
+                            </td>
+                            <td style="padding: 10px; vertical-align: top;">
+                                ${capsHtml}
+                            </td>
+                            <td style="padding: 10px; vertical-align: top;">
+                                ${configHtml}
+                            </td>
+                            <td style="padding: 10px; vertical-align: top;">
+                                <button id="releaseBtnInTable" class="btn btn-outline-danger" style="padding: 4px 8px; font-size: 0.85rem;">Release</button>
+                            </td>
+                        </tr>
+                    `;
+
+                    // Re-attach release button listener
+                    const releaseBtnInTable = document.getElementById('releaseBtnInTable');
+                    if (releaseBtnInTable) {
+                        releaseBtnInTable.addEventListener('click', () => {
+                            if (releaseDialog) releaseDialog.showModal();
+                        });
                     }
-                    if (twilioTokenMasked) {
-                        twilioTokenMasked.textContent = maskCredential(settings.twilioSubaccountAuthToken);
-                    }
-                }
-
-                // Hide search button and show message in Add tab
-                if (searchBtn) searchBtn.disabled = true;
-                const addTabMessage = document.createElement('div');
-                addTabMessage.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text-secondary);"><div style="font-size: 3rem; margin-bottom: 1rem;">📱</div><div style="font-size: 1.2rem; margin-bottom: 0.5rem;">You already have a phone number</div><div>To add a new number, please release your current number first from the Profile tab.</div></div>';
-                const addTab = document.getElementById('addTab');
-                // Clean up previous message if any
-                const existingMsg = document.getElementById('hasNumberMessage');
-                if (existingMsg) existingMsg.remove();
-
-                if (addTab) {
-                    addTabMessage.id = 'hasNumberMessage';
-                    const firstCard = addTab.querySelector('.card') as HTMLElement;
-                    if (firstCard) firstCard.style.display = 'none';
-                    addTab.appendChild(addTabMessage);
                 }
             } else {
-                // No active number
-                if (phoneNumberCard) phoneNumberCard.hidden = true;
-                const twilioCredsCard = document.getElementById('twilioCredsCard');
-                if (twilioCredsCard) twilioCredsCard.hidden = true;
-
-                // Re-enable search
-                if (searchBtn) searchBtn.disabled = false;
-                const hasNumberMsg = document.getElementById('hasNumberMessage');
-                if (hasNumberMsg) hasNumberMsg.remove();
-                const addTab = document.getElementById('addTab');
-                const firstCard = addTab?.querySelector('.card');
-                if (firstCard) (firstCard as HTMLElement).style.display = 'block';
+                // SHOW Search, HIDE Table
+                if (searchNumberSection) searchNumberSection.hidden = false;
+                if (myNumberSection) myNumberSection.hidden = true;
             }
 
-            // Sync Requirement UI
+            // Sync Requirement UI (legacy support for reminders)
             hasActivePhoneNumber = (settings.phoneNumberStatus === 'active' && !!settings.phoneNumber);
             if (noNumberReminder) {
                 noNumberReminder.style.display = hasActivePhoneNumber ? 'none' : 'flex';
             }
         } else {
-            hasActivePhoneNumber = false;
-            if (noNumberReminder) {
-                noNumberReminder.style.display = 'flex';
-            }
-            if (phoneNumberCard) phoneNumberCard.hidden = true;
-            const twilioCredsCard = document.getElementById('twilioCredsCard');
-            if (twilioCredsCard) twilioCredsCard.hidden = true;
+            // No settings doc yet
+            const myNumberSection = document.getElementById('myNumberSection');
+            const searchNumberSection = document.getElementById('searchNumberSection');
+            if (myNumberSection) myNumberSection.hidden = true;
+            if (searchNumberSection) searchNumberSection.hidden = false;
         }
     });
 }
 
-// Mask credential - show first 6 and last 4 characters
-function maskCredential(cred: string): string {
-    if (!cred || cred.length < 10) return '••••••••••••••••••••••••••••••••';
-    const start = cred.substring(0, 6);
-    const end = cred.substring(cred.length - 4);
-    const middle = '••••••••••••••••••••';
-    return `${start}${middle}${end}`;
-}
+
 
 // Search Numbers
 if (searchBtn) {

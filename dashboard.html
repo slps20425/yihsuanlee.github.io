@@ -189,10 +189,32 @@
             </div>
         </div>
 
-        <!-- Add Number Tab -->
+        <!-- Phone Numbers Tab (Renamed from Add Tab) -->
         <div id="addTab" class="tab-section active">
-            <div class="card">
-                <h2>📱 Add Phone Number</h2>
+            <!-- 1. Existing Number Section (Table View) -->
+            <div id="myNumberSection" class="card" hidden>
+                <h2>📱 My Phone Number</h2>
+                <div class="table-responsive" style="overflow-x: auto; margin-top: 1rem;">
+                    <table style="width: 100%; border-collapse: collapse; min-width: 600px;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--border); text-align: left;">
+                                <th style="padding: 10px; color: var(--text-secondary);">Number</th>
+                                <th style="padding: 10px; color: var(--text-secondary);">Friendly Name</th>
+                                <th style="padding: 10px; color: var(--text-secondary);">Capabilities</th>
+                                <th style="padding: 10px; color: var(--text-secondary);">Active Configuration</th>
+                                <th style="padding: 10px; color: var(--text-secondary);">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="myNumberTableBody">
+                            <!-- Injected via TS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 2. Search & Add New Number Section -->
+            <div id="searchNumberSection" class="card">
+                <h2>➕ Buy New Number</h2>
 
                 <!-- Country Selector -->
                 <div class="input-group">
@@ -252,9 +274,6 @@
                         <option value="mobile">Mobile</option>
                     </select>
                 </div>
-
-                <!-- Capabilities -->
-                <!-- Capabilities -->
 
                 <!-- Capabilities -->
                 <div class="input-group">
