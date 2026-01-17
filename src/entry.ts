@@ -301,6 +301,21 @@ onAuthStateChanged(auth, (user) => {
     }
 
     if (user) {
+        // TEMP DISABLED: Auto-redirect causing loops  
+        // To use dashboard: manually go to /dashboard.html
+        /*
+        const pathname = window.location.pathname.toLowerCase();
+        const isEntryPage = pathname.includes('entry') || pathname === '/';
+
+        if (isEntryPage) {
+            console.log('User logged in, redirecting to dashboard...');
+            window.location.href = '/dashboard.html';
+            return;
+        }
+        */
+
+
+        // Note: Code below won't execute due to redirect, but kept for reference
         // Real-time listener: Priority one
         const userIdentifier = `uid_${user.uid}`;
         const userRef = doc(db, "users", userIdentifier);

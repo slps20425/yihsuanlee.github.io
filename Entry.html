@@ -107,44 +107,14 @@
                 <div class="user-name" id="userName"></div>
                 <div class="user-email" id="userEmail"></div>
             </div>
-            <button onclick="logout()" class="logout-btn">Logout</button>
+            <div style="display: flex; gap: 10px;">
+                <a href="/dashboard.html" class="logout-btn"
+                    style="background: var(--primary-color); text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">📊
+                    Dashboard</a>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
         </div>
 
-
-
-        <!-- Menu Grid -->
-        <div class="menu-grid">
-            <!-- Restaurant Reservation -->
-            <a href="/reservation/restaurant_reservation.html" class="menu-card fade-in delay-2">
-                <div class="card-icon">🍽️</div>
-                <div class="card-content">
-                    <div class="card-title" data-i18n="service_res_title">Restaurant Reservation</div>
-                    <div class="card-desc" data-i18n="service_res_desc">AI-powered booking assistant for any restaurant
-                    </div>
-                </div>
-            </a>
-
-            <!-- Mouthpiece (New Service) -->
-            <a href="/reservation/mouthpiece.html" class="menu-card fade-in delay-3">
-                <div class="card-icon">📢</div>
-                <div class="card-content">
-                    <div class="card-title" data-i18n="service_mouthpiece_title">Mouthpiece Service</div>
-                    <div class="card-desc" data-i18n="service_mouthpiece_desc">AI Voice representation service (Beta)
-                    </div>
-                </div>
-            </a>
-
-            <!-- Trial Call (New Service) -->
-            <a href="/reservation/trial.html" class="menu-card fade-in delay-3">
-                <div class="card-icon">🎁</div>
-                <div class="card-content">
-                    <div class="card-title" data-i18n="service_trial_title">Free Trial Call</div>
-                    <div class="card-desc" data-i18n="service_trial_desc">Experience AI voice calling with a limited
-                        trial
-                    </div>
-                </div>
-            </a>
-        </div>
 
         <div class="footer fade-in delay-3">
             <div style="font-weight: 600; margin-bottom: 8px;">&copy; 2026 WiseCat AI. All rights reserved.</div>

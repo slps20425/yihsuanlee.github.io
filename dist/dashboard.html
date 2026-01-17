@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Dashboard | WiseCat</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            padding-bottom: 80px;
+            /* Space for bottom nav */
+        }
+
+        /* Top Header */
+        .top-header {
+            background: var(--card-bg);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 1.25rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .header-credits {
+            background: linear-gradient(135deg, var(--success), #16a34a);
+            padding: 0.4rem 1rem;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+            display: inline-block;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Tab Sections */
+        .tab-section {
+            display: none;
+        }
+
+        .tab-section.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h2 {
+            margin: 0 0 1rem 0;
+            font-size: 1.25rem;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--card-bg);
+            border-top: 2px solid var(--accent);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            z-index: 9999;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 0.5rem;
+        }
+
+        .nav-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-hover);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* Input */
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Dialogs */
+        dialog {
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .dialog-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dialog-header h2 {
+            margin: 0;
+        }
+
+        .dialog-content {
+            padding: 1.5rem;
+        }
+
+        .dialog-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Number List */
+        .number-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .number-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Coming Soon Badge */
+        .coming-soon-badge {
+            display: inline-block;
+            background: var(--warning);
+            color: var(--bg-dark);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        /* Placeholder Content */
+        .placeholder {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .placeholder-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        /* Desktop: Side nav instead of bottom nav */
+        @media (min-width: 1024px) {
+            body {
+                padding-bottom: 0;
+                padding-left: 250px;
+            }
+
+            .bottom-nav {
+                left: 0;
+                right: auto;
+                bottom: 0;
+                top: 0;
+                width: 250px;
+                height: 100vh;
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(5, auto);
+                border-top: none;
+                border-right: 1px solid var(--border);
+            }
+
+            .nav-item {
+                flex-direction: row;
+                justify-content: flex-start;
+                padding: 1.5rem;
+                gap: 1rem;
+            }
+
+            .nav-icon {
+                font-size: 1.5rem;
+            }
+
+            .nav-label {
+                font-size: 1rem;
+            }
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/dashboard-BgFAeRXt.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-BpHxYyIE.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-B5NFjYNj.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-dmn4Z6VQ.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-BXViPnOY.css">
+</head>
+
+<body>
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="header-content">
+            <h1 class="header-title">🐱 WiseCat AI</h1>
+            <div style="text-align: right; min-width: 140px;">
+                <div id="headerUserName"
+                    style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.35rem;">
+                    Loading...</div>
+                <div class="header-credits" id="creditsDisplay">$0.00</div>
+                <!-- Credit Progress Bar -->
+                <div
+                    style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 0.5rem; overflow: hidden;">
+                    <div id="creditProgressBar"
+                        style="height: 100%; width: 0%; border-radius: 3px; transition: width 0.5s ease, background 0.3s ease; background: #ef4444;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- 📞 Calls Tab -->
+        <div id="callsTab" class="tab-section">
+            <div class="card">
+                <h2>📞 Call Management <span class="coming-soon-badge">COMING SOON</span></h2>
+                <p style="color: var(--text-secondary);">Manage inbound and outbound AI-powered calls</p>
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div class="placeholder">
+                        <div class="placeholder-icon">📞</div>
+                        <div>Inbound Calls</div>
+                        <div style="font-size: 2rem; font-weight: 600; margin-top: 0.5rem;">0</div>
+                    </div>
+                    <div class="placeholder">
+                        <div class="placeholder-icon">📱</div>
+                        <div>Outbound Calls</div>
+                        <div style="font-size: 2rem; font-weight: 600; margin-top: 0.5rem;">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 👤 Profile Tab -->
+        <div id="profileTab" class="tab-section">
+            <div class="card">
+                <h2>👤 Personal Info</h2>
+                <div style="text-align: center; padding: 1rem;">
+                    <img id="userAvatar" src="https://ui-avatars.com/api/?name=User" alt="Avatar"
+                        style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--accent); margin-bottom: 1rem;">
+                    <div id="userName" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Loading...
+                    </div>
+                    <div id="userEmail" style="color: var(--text-secondary); margin-bottom: 1.5rem;">-</div>
+                </div>
+            </div>
+
+            <!-- Credits Card -->
+            <div class="card">
+                <h2>💰 Credits</h2>
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Current
+                        Balance</div>
+                    <div id="profileCredits" style="font-size: 2.5rem; font-weight: 700; color: var(--success);">$0.00
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-full">💳 Add Credits</button>
+                <div
+                    style="margin-top: 1rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border: 1px solid var(--accent); border-radius: 6px; font-size: 0.85rem;">
+                    ℹ️ Credits are used for phone numbers (~$3/month) and AI calls
+                </div>
+            </div>
+
+            <!-- Current Phone Number -->
+            <div id="phoneNumberCard" class="card" hidden>
+                <h2>📱 Your Number</h2>
+                <div
+                    style="background: rgba(34, 197, 94, 0.1); border: 1px solid var(--success); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <div id="currentPhoneNumber"
+                        style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin-bottom: 0.5rem;">-
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        Status: <span id="phoneStatus" style="color: var(--success);">Active</span><br>
+                        Since: <span id="purchasedDate">-</span>
+                    </div>
+                </div>
+                <button id="releaseBtn" class="btn btn-danger btn-full">Release Number</button>
+            </div>
+
+            <!-- Twilio Credentials (Masked) -->
+            <div id="twilioCredsCard" class="card" hidden>
+                <h2>🔐 Twilio Credentials</h2>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                    Your personal Twilio subaccount (created automatically)
+                </div>
+
+                <div
+                    style="background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Account SID
+                    </div>
+                    <div id="twilioSidMasked" style="font-family: monospace; font-size: 0.9rem; word-break: break-all;">
+                        ••••••••••••••••••••••••••••••••</div>
+                </div>
+
+                <div
+                    style="background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 1rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Auth Token
+                    </div>
+                    <div id="twilioTokenMasked"
+                        style="font-family: monospace; font-size: 0.9rem; word-break: break-all;">
+                        ••••••••••••••••••••••••••••••••</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Number Tab -->
+        <div id="addTab" class="tab-section active">
+            <div class="card">
+                <h2>📱 Add Phone Number</h2>
+
+                <!-- Country Selector -->
+                <div class="input-group">
+                    <label for="countrySelect">Country</label>
+                    <select id="countrySelect"
+                        style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: 1rem;">
+                        <option value="US">🇺🇸 United States</option>
+                        <option value="CA">🇨🇦 Canada</option>
+                        <option value="GB">🇬🇧 United Kingdom</option>
+                        <option value="AU">🇦🇺 Australia</option>
+                        <option value="AT">🇦🇹 Austria</option>
+                        <option value="BE">🇧🇪 Belgium</option>
+                        <option value="BR">🇧🇷 Brazil</option>
+                        <option value="BG">🇧🇬 Bulgaria</option>
+                        <option value="CL">🇨🇱 Chile</option>
+                        <option value="HR">🇭🇷 Croatia</option>
+                        <option value="CY">🇨🇾 Cyprus</option>
+                        <option value="CZ">🇨🇿 Czech Republic</option>
+                        <option value="DK">🇩🇰 Denmark</option>
+                        <option value="EE">🇪🇪 Estonia</option>
+                        <option value="FI">🇫🇮 Finland</option>
+                        <option value="FR">🇫🇷 France</option>
+                        <option value="DE">🇩🇪 Germany</option>
+                        <option value="GR">🇬🇷 Greece</option>
+                        <option value="HK">🇭🇰 Hong Kong</option>
+                        <option value="HU">🇭🇺 Hungary</option>
+                        <option value="IE">🇮🇪 Ireland</option>
+                        <option value="IL">🇮🇱 Israel</option>
+                        <option value="IT">🇮🇹 Italy</option>
+                        <option value="JP">🇯🇵 Japan</option>
+                        <option value="LT">🇱🇹 Lithuania</option>
+                        <option value="LU">🇱🇺 Luxembourg</option>
+                        <option value="MX">🇲🇽 Mexico</option>
+                        <option value="NL">🇳🇱 Netherlands</option>
+                        <option value="NZ">🇳🇿 New Zealand</option>
+                        <option value="NO">🇳🇴 Norway</option>
+                        <option value="PL">🇵🇱 Poland</option>
+                        <option value="PT">🇵🇹 Portugal</option>
+                        <option value="PR">🇵🇷 Puerto Rico</option>
+                        <option value="RO">🇷🇴 Romania</option>
+                        <option value="SG">🇸🇬 Singapore</option>
+                        <option value="SK">🇸🇰 Slovakia</option>
+                        <option value="SI">🇸🇮 Slovenia</option>
+                        <option value="ES">🇪🇸 Spain</option>
+                        <option value="SE">🇸🇪 Sweden</option>
+                        <option value="CH">🇨🇭 Switzerland</option>
+                        <option value="TW">🇹🇼 Taiwan</option>
+                    </select>
+                </div>
+
+                <!-- Capabilities -->
+                <div class="input-group">
+                    <label>Capabilities</label>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="voiceCapability" checked
+                                style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>📞 Voice</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="smsCapability" checked
+                                style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>💬 SMS</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="mmsCapability"
+                                style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>📸 MMS</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Area Code (Optional) -->
+                <div class="input-group">
+                    <label for="areaCodeInput">Area Code (Optional)</label>
+                    <input type="text" id="areaCodeInput" placeholder="e.g., 415" maxlength="10">
+                </div>
+
+                <button id="searchBtn" class="btn btn-primary btn-full">🔍 Search Numbers</button>
+            </div>
+
+            <!-- Results -->
+            <div id="resultsCard" class="card" hidden>
+                <h2>Available Numbers</h2>
+                <ul id="numbersList" class="number-list"></ul>
+            </div>
+        </div>
+
+        <!-- 📊 AI Tab -->
+        <div id="aiTab" class="tab-section">
+            <div class="card">
+                <h2>🧠 AI Assistant</h2>
+                <div
+                    style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--bg-dark); border-radius: 8px; margin-bottom: 1rem;">
+                    <div
+                        style="width: 12px; height: 12px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite;">
+                    </div>
+                    <div>
+                        <div style="font-weight: 600;">AI Agent Ready</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Connected to Vapi • Twilio
+                            Integration Active</div>
+                    </div>
+                </div>
+                <p style="color: var(--text-secondary);">Your AI assistant can make and receive calls using your phone
+                    number.</p>
+            </div>
+
+            <!-- AI Services -->
+            <div class="card">
+                <h2>📋 AI Services</h2>
+                <div style="display: grid; gap: 1rem;">
+                    <!-- Restaurant Reservation -->
+                    <a href="/reservation/restaurant_reservation.html"
+                        style="display: flex; gap: 1rem; padding: 1rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: inherit; transition: all 0.2s;"
+                        onmouseover="this.style.borderColor='var(--accent)'"
+                        onmouseout="this.style.borderColor='var(--border)'">
+                        <div style="font-size: 2.5rem;">🍽️</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Restaurant Reservation</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">AI-powered booking assistant
+                                for any restaurant</div>
+                        </div>
+                        <div style="align-self: center; color: var(--accent);">→</div>
+                    </a>
+
+                    <!-- Mouthpiece Service -->
+                    <a href="/reservation/mouthpiece.html"
+                        style="display: flex; gap: 1rem; padding: 1rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: inherit; transition: all 0.2s;"
+                        onmouseover="this.style.borderColor='var(--accent)'"
+                        onmouseout="this.style.borderColor='var(--border)'">
+                        <div style="font-size: 2.5rem;">📢</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Mouthpiece Service <span
+                                    style="background: var(--warning); color: var(--bg-dark); padding: 0.125rem 0.5rem; border-radius: 6px; font-size: 0.7rem; margin-left: 0.5rem;">BETA</span>
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">AI Voice representation
+                                service</div>
+                        </div>
+                        <div style="align-self: center; color: var(--accent);">→</div>
+                    </a>
+
+                    <!-- Free Trial Call -->
+                    <a href="/reservation/trial.html"
+                        style="display: flex; gap: 1rem; padding: 1rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: inherit; transition: all 0.2s;"
+                        onmouseover="this.style.borderColor='var(--accent)'"
+                        onmouseout="this.style.borderColor='var(--border)'">
+                        <div style="font-size: 2.5rem;">🎁</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Free Trial Call</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">Experience AI voice calling
+                                with a limited trial</div>
+                        </div>
+                        <div style="align-self: center; color: var(--accent);">→</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 💬 Inbox Tab -->
+        <div id="inboxTab" class="tab-section">
+            <div class="card">
+                <h2>💬 Inbox <span class="coming-soon-badge">COMING SOON</span></h2>
+                <p style="color: var(--text-secondary);">Receive SMS messages and campaign announcements</p>
+                <div class="placeholder">
+                    <div class="placeholder-icon">📨</div>
+                    <div>No messages yet</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) / Side Navigation (Desktop) -->
+    <nav class="bottom-nav">
+        <button class="nav-item" data-tab="calls">
+            <span class="nav-icon">📞</span>
+            <span class="nav-label">Calls</span>
+        </button>
+        <button class="nav-item" data-tab="profile">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">Profile</span>
+        </button>
+        <button class="nav-item active" data-tab="add">
+            <span class="nav-icon">➕</span>
+            <span class="nav-label">Add</span>
+        </button>
+        <button class="nav-item" data-tab="ai">
+            <span class="nav-icon">🤖</span>
+            <span class="nav-label">AI</span>
+        </button>
+        <button class="nav-item" data-tab="inbox">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label">Inbox</span>
+        </button>
+    </nav>
+
+    <!-- Purchase Dialog -->
+    <dialog id="purchaseDialog">
+        <div class="dialog-header">
+            <h2>Confirm Purchase</h2>
+        </div>
+        <div class="dialog-content">
+            <p>Purchasing phone number:</p>
+            <div style="padding: 1rem; background: var(--bg-dark); border-radius: 8px; margin: 1rem 0;">
+                <div style="font-size: 1.5rem; font-weight: bold;" id="confirmPhoneNumber"></div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;" id="confirmLocation">
+                </div>
+            </div>
+            <div
+                style="background: rgba(59, 130, 246, 0.1); border: 1px solid var(--accent); border-radius: 8px; padding: 1rem; font-size: 0.9rem;">
+                💰 <strong>Cost:</strong> ~$3.00/month (billed upfront)<br>
+                ⚠️ <strong>No refunds</strong> for early release<br>
+                Auto-releases if credits &lt; $6.00
+            </div>
+        </div>
+        <div class="dialog-footer">
+            <button id="cancelPurchaseBtn" class="btn"
+                style="background: var(--border); color: var(--text-primary); flex: 1;">Cancel</button>
+            <button id="confirmPurchaseBtn" class="btn btn-primary" style="flex: 1;">Purchase</button>
+        </div>
+    </dialog>
+
+    <!-- Release Dialog -->
+    <dialog id="releaseDialog">
+        <div class="dialog-header">
+            <h2>Release Phone Number</h2>
+        </div>
+        <div class="dialog-content">
+            <div
+                style="background: rgba(234, 179, 8, 0.1); border: 1px solid var(--warning); border-radius: 8px; padding: 1rem;">
+                ⚠️ <strong>Warning:</strong> You will not receive a refund for the remaining days.<br>
+                Are you sure?
+            </div>
+        </div>
+        <div class="dialog-footer">
+            <button id="cancelReleaseBtn" class="btn"
+                style="background: var(--border); color: var(--text-primary); flex: 1;">Cancel</button>
+            <button id="confirmReleaseBtn" class="btn btn-danger" style="flex: 1;">Yes, Release</button>
+        </div>
+    </dialog>
+
+</body>
+
+</html>

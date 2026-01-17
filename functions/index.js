@@ -12,6 +12,9 @@ const db = admin.firestore();
 const lineChannelId = defineSecret("LINE_CHANNEL_ID");
 const lineChannelSecret = defineSecret("LINE_CHANNEL_SECRET");
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
+const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
+const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
+const VAPI_API_KEY = defineSecret("VAPI_API_KEY");
 
 // ... (Existing code remains the same until exports.checkMessageSafety)
 
@@ -249,6 +252,525 @@ exports.triggerN8nWebhook = onDocumentCreated(
 
         } catch (err) {
             console.error("Error in Priority Dispatcher:", err);
+        }
+    }
+);
+
+// --- Phone Number Management Functions ---
+
+/**
+ * Search available phone numbers by area code
+ */
+exports.searchNumbers = onCall(
+    { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN] },
+    async (request) => {
+        try {
+            // Verify authentication
+            if (!request.auth) {
+                throw new HttpsError("unauthenticated", "User must be authenticated");
+            }
+
+            const { country = 'US', areaCode = '', voice = false, sms = false, mms = false } = request.data;
+
+            console.log(`[searchNumbers] Country: ${country}, Area: ${areaCode}, Voice: ${voice}, SMS: ${sms}, MMS: ${mms}`);
+
+            // Initialize Twilio client with master account
+            const twilio = require('twilio');
+            const client = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
+
+            // Build search parameters
+            const searchParams = { limit: 20 };
+            if (areaCode) searchParams.areaCode = areaCode;
+            if (voice) searchParams.voiceEnabled = true;
+            if (sms) searchParams.smsEnabled = true;
+            if (mms) searchParams.mmsEnabled = true;
+
+            // Search for available numbers
+            const numbers = await client.availablePhoneNumbers(country)
+                .local
+                .list(searchParams);
+
+            const results = numbers.map(num => ({
+                phoneNumber: num.phoneNumber,
+                locality: num.locality,
+                region: num.region,
+                country: country,
+                capabilities: num.capabilities
+            }));
+
+            console.log(`[searchNumbers] Found ${results.length} available numbers`);
+            return { numbers: results };
+
+        } catch (error) {
+            console.error("[searchNumbers] Error:", error);
+            throw new HttpsError("internal", error.message);
+        }
+    }
+);
+
+/**
+ * Purchase phone number with subaccount creation and Vapi integration
+ */
+exports.purchasePhoneNumber = onCall(
+    { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, VAPI_API_KEY] },
+    async (request) => {
+        try {
+            // Verify authentication
+            if (!request.auth) {
+                throw new HttpsError("unauthenticated", "User must be authenticated");
+            }
+
+            const { phoneNumber } = request.data;
+            if (!phoneNumber || !/^\+1\d{10}$/.test(phoneNumber)) {
+                throw new HttpsError("invalid-argument", "Valid E.164 phone number required (e.g., +18001234567)");
+            }
+
+            const uid = request.auth.uid;
+            console.log(`[purchasePhoneNumber] User ${uid} purchasing ${phoneNumber}`);
+
+            // Get Firestore instance (reservation DB)
+            const reservationDb = getFirestore(admin.app(), "reservation");
+            const settingsRef = reservationDb.doc(`users/uid_${uid}/settings/settings`);
+
+            // Check if user already has an active number
+            const settingsSnap = await settingsRef.get();
+            if (settingsSnap.exists) {
+                const settings = settingsSnap.data();
+                if (settings.phoneNumberStatus === 'active') {
+                    throw new HttpsError("failed-precondition", "You already have an active phone number. Please release it first.");
+                }
+            }
+
+            // Initialize Twilio client
+            const twilio = require('twilio');
+            const client = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
+
+            let subaccountSid, subaccountAuthToken;
+
+            // Step 1: Check for existing subaccount
+            const settingsDoc = await settingsRef.get();
+            const settings = settingsDoc.data() || {};
+
+            if (settings.twilioSubaccountSid && settings.twilioSubaccountAuthToken) {
+                // Use existing subaccount
+                subaccountSid = settings.twilioSubaccountSid;
+                subaccountAuthToken = settings.twilioSubaccountAuthToken;
+                console.log(`[purchasePhoneNumber] Using existing subaccount: ${subaccountSid}`);
+            } else {
+                // Step 2: Create new subaccount
+                console.log(`[purchasePhoneNumber] Creating new subaccount for user ${uid}`);
+                const subaccount = await client.api.v2010.accounts.create({
+                    friendlyName: `User_${uid.substring(0, 8)}`
+                });
+
+                subaccountSid = subaccount.sid;
+                subaccountAuthToken = subaccount.authToken;
+
+                // Save subaccount credentials
+                await settingsRef.set({
+                    twilioSubaccountSid: subaccountSid,
+                    twilioSubaccountAuthToken: subaccountAuthToken
+                }, { merge: true });
+
+                console.log(`[purchasePhoneNumber] Subaccount created: ${subaccountSid}`);
+            }
+
+            // Step 3: Purchase phone number using subaccount
+            console.log(`[purchasePhoneNumber] Purchasing number with subaccount`);
+            const subaccountClient = twilio(subaccountSid, subaccountAuthToken);
+
+            const purchasedNumber = await subaccountClient.incomingPhoneNumbers.create({
+                phoneNumber: phoneNumber
+            });
+
+            console.log(`[purchasePhoneNumber] Number purchased: ${purchasedNumber.sid}`);
+
+            // Step 4: Import to Vapi
+            console.log(`[purchasePhoneNumber] Importing to Vapi`);
+            let vapiPhoneNumberId;
+
+            try {
+                const vapiResponse = await axios.post(
+                    'https://api.vapi.ai/phone-number',
+                    {
+                        provider: 'twilio',
+                        number: phoneNumber,
+                        twilioAccountSid: subaccountSid,
+                        twilioAuthToken: subaccountAuthToken
+                    },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${VAPI_API_KEY.value()}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                vapiPhoneNumberId = vapiResponse.data.id;
+                console.log(`[purchasePhoneNumber] Vapi import successful: ${vapiPhoneNumberId}`);
+
+            } catch (vapiError) {
+                console.error(`[purchasePhoneNumber] Vapi import failed:`, vapiError.response?.data || vapiError.message);
+
+                // Save error state
+                await settingsRef.set({
+                    phoneNumber: phoneNumber,
+                    phoneNumberStatus: 'error',
+                    phoneNumberPurchasedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    vapiImportError: vapiError.message
+                }, { merge: true });
+
+                throw new HttpsError(
+                    "internal",
+                    "Number purchased but Vapi import failed. Contact support."
+                );
+            }
+
+            // Step 5: Save complete state to Firestore
+            await settingsRef.set({
+                phoneNumber: phoneNumber,
+                vapiPhoneNumberId: vapiPhoneNumberId,
+                phoneNumberStatus: 'active',
+                phoneNumberPurchasedAt: admin.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+
+            console.log(`[purchasePhoneNumber] Success! Number ${phoneNumber} is active`);
+
+            return {
+                success: true,
+                phoneNumber: phoneNumber,
+                vapiPhoneNumberId: vapiPhoneNumberId,
+                status: 'active'
+            };
+
+        } catch (error) {
+            console.error("[purchasePhoneNumber] Error:", error);
+            throw new HttpsError("internal", error.message);
+        }
+    }
+);
+
+/**
+ * Manual release of phone number (user-initiated)
+ */
+exports.releasePhoneNumber = onCall(
+    { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, VAPI_API_KEY] },
+    async (request) => {
+        try {
+            // Verify authentication
+            if (!request.auth) {
+                throw new HttpsError("unauthenticated", "User must be authenticated");
+            }
+
+            const uid = request.auth.uid;
+            console.log(`[releasePhoneNumber] User ${uid} releasing phone number`);
+
+            // Get user settings
+            const reservationDb = getFirestore(admin.app(), "reservation");
+            const settingsRef = reservationDb.doc(`users/uid_${uid}/settings`);
+            const settingsDoc = await settingsRef.get();
+
+            if (!settingsDoc.exists) {
+                throw new HttpsError("not-found", "No settings found");
+            }
+
+            const settings = settingsDoc.data();
+
+            if (settings.phoneNumberStatus !== 'active') {
+                throw new HttpsError("failed-precondition", "No active phone number to release");
+            }
+
+            const phoneNumber = settings.phoneNumber;
+            console.log(`[releasePhoneNumber] Releasing: ${phoneNumber}`);
+
+            // 1. Delete from Vapi
+            if (settings.vapiPhoneNumberId) {
+                try {
+                    await axios.delete(
+                        `https://api.vapi.ai/phone-number/${settings.vapiPhoneNumberId}`,
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${VAPI_API_KEY.value()}`
+                            }
+                        }
+                    );
+                    console.log(`[releasePhoneNumber] Deleted from Vapi`);
+                } catch (vapiError) {
+                    console.warn(`[releasePhoneNumber] Vapi deletion failed:`, vapiError.message);
+                }
+            }
+
+            // 2. Release from Twilio subaccount
+            if (settings.twilioSubaccountSid && settings.twilioSubaccountAuthToken) {
+                const twilio = require('twilio');
+                const subaccountClient = twilio(
+                    settings.twilioSubaccountSid,
+                    settings.twilioSubaccountAuthToken
+                );
+
+                const numbers = await subaccountClient.incomingPhoneNumbers.list({
+                    phoneNumber: phoneNumber
+                });
+
+                if (numbers.length > 0) {
+                    await numbers[0].remove();
+                    console.log(`[releasePhoneNumber] Released from Twilio`);
+                }
+            }
+
+            // 3. Update Firestore
+            await settingsRef.update({
+                phoneNumberStatus: 'released',
+                phoneNumberReleasedAt: admin.firestore.FieldValue.serverTimestamp(),
+                vapiPhoneNumberId: admin.firestore.FieldValue.delete(),
+                phoneNumber: admin.firestore.FieldValue.delete()
+            });
+
+            console.log(`[releasePhoneNumber] Success`);
+
+            return {
+                success: true,
+                message: "Phone number released successfully"
+            };
+
+        } catch (error) {
+            console.error("[releasePhoneNumber] Error:", error);
+            throw new HttpsError("internal", error.message);
+        }
+    }
+);
+
+/**
+ * Scheduled function to auto-release when credits are low
+ * Runs daily to prevent users from accumulating debt
+ */
+const { onSchedule } = require("firebase-functions/v2/scheduler");
+
+exports.autoReleaseOnLowCredits = onSchedule(
+    {
+        schedule: "0 0 * * *", // Daily at midnight UTC
+        timeZone: "UTC",
+        secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, VAPI_API_KEY]
+    },
+    async (event) => {
+        console.log("[autoReleaseOnLowCredits] Starting daily credit check...");
+
+        try {
+            const reservationDb = getFirestore(admin.app(), "reservation");
+            const usersRef = reservationDb.collection('users');
+
+            const snapshot = await usersRef.get();
+            const PHONE_NUMBER_MONTHLY_COST = 3.0; // USD (adjust based on actual costs)
+            const CREDIT_THRESHOLD = PHONE_NUMBER_MONTHLY_COST * 2; // $6 threshold
+
+            let releasedCount = 0;
+            let errorCount = 0;
+
+            for (const userDoc of snapshot.docs) {
+                // Get user's credits from users document
+                const userData = userDoc.data();
+                const userCredits = userData.credits || 0;
+
+                // Get user's phone number settings
+                const settingsRef = userDoc.ref.collection('settings').doc('settings');
+                const settingsSnap = await settingsRef.get();
+
+                if (!settingsSnap.exists) continue;
+
+                const settings = settingsSnap.data();
+
+                // Only check active phone numbers
+                if (settings.phoneNumberStatus === 'active') {
+                    console.log(`[autoReleaseOnLowCredits] User ${userDoc.id}: Credits = $${userCredits}, Threshold = $${CREDIT_THRESHOLD}`);
+
+                    // Auto-release if credits < 2x monthly cost
+                    if (userCredits < CREDIT_THRESHOLD) {
+                        console.log(`[autoReleaseOnLowCredits] ⚠️  Low credits! Releasing number for user: ${userDoc.id}`);
+                        console.log(`  Number: ${settings.phoneNumber}, Credits: $${userCredits}`);
+
+                        try {
+                            // Delete from Vapi
+                            if (settings.vapiPhoneNumberId) {
+                                try {
+                                    await axios.delete(
+                                        `https://api.vapi.ai/phone-number/${settings.vapiPhoneNumberId}`,
+                                        {
+                                            headers: {
+                                                'Authorization': `Bearer ${VAPI_API_KEY.value()}`
+                                            }
+                                        }
+                                    );
+                                    console.log(`  ✓ Deleted from Vapi`);
+                                } catch (vapiError) {
+                                    console.error(`  ✗ Vapi deletion failed:`, vapiError.message);
+                                }
+                            }
+
+                            // Release from Twilio
+                            if (settings.twilioSubaccountSid && settings.twilioSubaccountAuthToken) {
+                                try {
+                                    const twilio = require('twilio');
+                                    const subaccountClient = twilio(
+                                        settings.twilioSubaccountSid,
+                                        settings.twilioSubaccountAuthToken
+                                    );
+
+                                    const numbers = await subaccountClient.incomingPhoneNumbers.list({
+                                        phoneNumber: settings.phoneNumber
+                                    });
+
+                                    if (numbers.length > 0) {
+                                        await numbers[0].remove();
+                                        console.log(`  ✓ Released from Twilio`);
+                                    }
+                                } catch (twilioError) {
+                                    console.error(`  ✗ Twilio release failed:`, twilioError.message);
+                                }
+                            }
+
+                            // Update Firestore
+                            await settingsRef.update({
+                                phoneNumberStatus: 'auto_released',
+                                phoneNumberReleasedAt: admin.firestore.FieldValue.serverTimestamp(),
+                                releaseReason: 'low_credits',
+                                releaseCreditsAtTime: userCredits,
+                                vapiPhoneNumberId: admin.firestore.FieldValue.delete(),
+                                phoneNumber: admin.firestore.FieldValue.delete()
+                            });
+
+                            console.log(`  ✓ Auto-released due to low credits`);
+                            releasedCount++;
+
+                        } catch (releaseError) {
+                            console.error(`  ✗ Error releasing number:`, releaseError);
+                            errorCount++;
+                        }
+                    }
+                }
+            }
+
+            console.log(`[autoReleaseOnLowCredits] Complete. Released: ${releasedCount}, Errors: ${errorCount}`);
+
+        } catch (error) {
+            console.error("[autoReleaseOnLowCredits] Critical error:", error);
+        }
+    }
+);
+
+/**
+ * Scheduled function to release phone numbers after 30 days
+ * Runs daily at midnight UTC
+ */
+
+
+exports.releaseExpiredPhoneNumbers = onSchedule(
+    {
+        schedule: "0 0 * * *", // Daily at midnight UTC
+        timeZone: "UTC",
+        secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, VAPI_API_KEY]
+    },
+    async (event) => {
+        console.log("[releaseExpiredPhoneNumbers] Starting daily check...");
+
+        try {
+            const reservationDb = getFirestore(admin.app(), "reservation");
+            const usersRef = reservationDb.collection('users');
+
+            // Query all users with active phone numbers
+            const snapshot = await usersRef.get();
+            const now = Date.now();
+            const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+            let releasedCount = 0;
+            let errorCount = 0;
+
+            for (const userDoc of snapshot.docs) {
+                const settingsRef = userDoc.ref.collection('settings').doc('settings');
+                const settingsSnap = await settingsRef.get();
+
+                if (!settingsSnap.exists) continue;
+
+                const settings = settingsSnap.data();
+
+                // Check if number is active and older than 30 days
+                if (settings.phoneNumberStatus === 'active' && settings.phoneNumberPurchasedAt) {
+                    const purchasedAt = settings.phoneNumberPurchasedAt.toMillis();
+                    const age = now - purchasedAt;
+
+                    if (age >= THIRTY_DAYS_MS) {
+                        console.log(`[releaseExpiredPhoneNumbers] Releasing number for user: ${userDoc.id}`);
+                        console.log(`  Number: ${settings.phoneNumber}, Age: ${Math.floor(age / (24 * 60 * 60 * 1000))} days`);
+
+                        try {
+                            // 1. Delete from Vapi
+                            if (settings.vapiPhoneNumberId) {
+                                try {
+                                    await axios.delete(
+                                        `https://api.vapi.ai/phone-number/${settings.vapiPhoneNumberId}`,
+                                        {
+                                            headers: {
+                                                'Authorization': `Bearer ${VAPI_API_KEY.value()}`
+                                            }
+                                        }
+                                    );
+                                    console.log(`  ✓ Deleted from Vapi: ${settings.vapiPhoneNumberId}`);
+                                } catch (vapiError) {
+                                    console.error(`  ✗ Vapi deletion failed:`, vapiError.message);
+                                }
+                            }
+
+                            // 2. Release from Twilio subaccount
+                            if (settings.twilioSubaccountSid && settings.twilioSubaccountAuthToken) {
+                                try {
+                                    const twilio = require('twilio');
+                                    const subaccountClient = twilio(
+                                        settings.twilioSubaccountSid,
+                                        settings.twilioSubaccountAuthToken
+                                    );
+
+                                    // Find and delete the phone number
+                                    const numbers = await subaccountClient.incomingPhoneNumbers.list({
+                                        phoneNumber: settings.phoneNumber
+                                    });
+
+                                    if (numbers.length > 0) {
+                                        await numbers[0].remove();
+                                        console.log(`  ✓ Released from Twilio: ${settings.phoneNumber}`);
+                                    }
+                                } catch (twilioError) {
+                                    console.error(`  ✗ Twilio release failed:`, twilioError.message);
+                                }
+                            }
+
+                            // 3. Update Firestore status
+                            await settingsRef.update({
+                                phoneNumberStatus: 'expired',
+                                phoneNumberExpiredAt: admin.firestore.FieldValue.serverTimestamp(),
+                                vapiPhoneNumberId: admin.firestore.FieldValue.delete(),
+                                phoneNumber: admin.firestore.FieldValue.delete()
+                            });
+
+                            console.log(`  ✓ Updated Firestore status to 'expired'`);
+                            releasedCount++;
+
+                        } catch (releaseError) {
+                            console.error(`  ✗ Error releasing number:`, releaseError);
+                            errorCount++;
+
+                            // Mark as error but keep data for investigation
+                            await settingsRef.update({
+                                phoneNumberStatus: 'release_error',
+                                releaseErrorMessage: releaseError.message
+                            });
+                        }
+                    }
+                }
+            }
+
+            console.log(`[releaseExpiredPhoneNumbers] Complete. Released: ${releasedCount}, Errors: ${errorCount}`);
+
+        } catch (error) {
+            console.error("[releaseExpiredPhoneNumbers] Critical error:", error);
         }
     }
 );

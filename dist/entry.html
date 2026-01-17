@@ -9,11 +9,12 @@
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
-  <script type="module" crossorigin src="/assets/main-D4wpVf5e.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-DDjZhlwz.js">
-  <link rel="modulepreload" crossorigin href="/assets/i18n-Bhk_9dvI.js">
-  <link rel="modulepreload" crossorigin href="/assets/firebase-config-gIxso5Qi.js">
-  <link rel="stylesheet" crossorigin href="/assets/i18n-BXViPnOY.css">
+  <script type="module" crossorigin src="/assets/main-Dfs1Z8xo.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-BpHxYyIE.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-B5NFjYNj.js">
+  <link rel="modulepreload" crossorigin href="/assets/i18n-BwGhh8sj.js">
+  <link rel="modulepreload" crossorigin href="/assets/firebase-config-BOzqDDjX.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-BXViPnOY.css">
 </head>
 
 <body>
@@ -111,44 +112,14 @@
                 <div class="user-name" id="userName"></div>
                 <div class="user-email" id="userEmail"></div>
             </div>
-            <button onclick="logout()" class="logout-btn">Logout</button>
+            <div style="display: flex; gap: 10px;">
+                <a href="/dashboard.html" class="logout-btn"
+                    style="background: var(--primary-color); text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">📊
+                    Dashboard</a>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
         </div>
 
-
-
-        <!-- Menu Grid -->
-        <div class="menu-grid">
-            <!-- Restaurant Reservation -->
-            <a href="/reservation/restaurant_reservation.html" class="menu-card fade-in delay-2">
-                <div class="card-icon">🍽️</div>
-                <div class="card-content">
-                    <div class="card-title" data-i18n="service_res_title">Restaurant Reservation</div>
-                    <div class="card-desc" data-i18n="service_res_desc">AI-powered booking assistant for any restaurant
-                    </div>
-                </div>
-            </a>
-
-            <!-- Mouthpiece (New Service) -->
-            <a href="/reservation/mouthpiece.html" class="menu-card fade-in delay-3">
-                <div class="card-icon">📢</div>
-                <div class="card-content">
-                    <div class="card-title" data-i18n="service_mouthpiece_title">Mouthpiece Service</div>
-                    <div class="card-desc" data-i18n="service_mouthpiece_desc">AI Voice representation service (Beta)
-                    </div>
-                </div>
-            </a>
-
-            <!-- Trial Call (New Service) -->
-            <a href="/reservation/trial.html" class="menu-card fade-in delay-3">
-                <div class="card-icon">🎁</div>
-                <div class="card-content">
-                    <div class="card-title" data-i18n="service_trial_title">Free Trial Call</div>
-                    <div class="card-desc" data-i18n="service_trial_desc">Experience AI voice calling with a limited
-                        trial
-                    </div>
-                </div>
-            </a>
-        </div>
 
         <div class="footer fade-in delay-3">
             <div style="font-weight: 600; margin-bottom: 8px;">&copy; 2026 WiseCat AI. All rights reserved.</div>

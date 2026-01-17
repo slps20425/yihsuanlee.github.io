@@ -48,7 +48,20 @@
   - "phone number country code not display required a refresh"
   - Investigate `onload` race condition.
 
+
 ## Pending Tasks
+- [/] [VyD5R9OUuGKx79NUScto] Feature: Subaccount & Phone Number Management  
+  - Priority: 5 (HIGH)
+  - Implement Twilio subaccount creation per user
+  - Phone number purchase flow with Vapi integration
+  - Backend GCF: purchasePhoneNumber, searchNumbers
+  - Frontend: Purchase confirmation dialog
+  - Firestore schema updates for settings
+- [ ] [D3EwAFfOxo7SUyojiv4C] Feature: SMS Inbox
+  - Priority: 4
+  - Create personal inbox for each user to receive SMS
+  - For announcements, ads, and policy notifications
+  - Each user has their own phone number
 - [x] [87VX2nLsZQj45c7CCven] Feature: Restaurant Page UI Enhancement
   - Priority: 3
   - Add increment/decrement buttons for party size and quantity
@@ -58,9 +71,10 @@
   - Fix CORS preflight issue preventing screenshot uploads
   - Error: HTTP status of preflight request didn't indicate success
   - Note: Fixed by initializing Firebase Storage (not CORS)
-- [/] [l2SHMD6EKvJAgFSSPZ05] Bug: Admin Page Mobile UI
+- [x] [l2SHMD6EKvJAgFSSPZ05] Bug: Admin Page Mobile UI
   - Priority: 3
   - Fix admin page UI that looks messy on mobile
+  - Note: Added responsive CSS with media queries for mobile/tablet
 - [ ] [zCsqtM37u6uWLkrGgNuN] Feature: Enhanced Success Message
   - Priority: 3
   - Update success messages for all services (restaurant, mouthpiece, trial)
