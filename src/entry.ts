@@ -282,9 +282,21 @@ async function handleSocialLogin(provider: any) {
         }
 
         // Immediate Local Storage Save (Redundancy)
+        // Immediate Local Storage Save (Redundancy)
         console.log("📝 Immediate Save from Login:", sessionData);
         localStorage.setItem('wisecat_user', JSON.stringify(sessionData));
+
+        // --- Added for Robustness ---
+        const verify = localStorage.getItem('wisecat_user');
+        console.log("📝 Value verification:", verify ? "EXISTS" : "MISSING");
+
         displayUserProfile(sessionData);
+
+        // Redirect after short delay to ensure storage commit
+        setTimeout(() => {
+            console.log("🚀 Redirecting to Dashboard...");
+            window.location.href = '/dashboard.html';
+        }, 500);
 
     } catch (error: any) {
         console.error('Social login error:', error);
