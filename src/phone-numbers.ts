@@ -37,6 +37,46 @@ const releaseDialog = document.getElementById('releaseDialog') as HTMLDialogElem
 const cancelReleaseBtn = document.getElementById('cancelReleaseBtn') as HTMLButtonElement | null;
 const confirmReleaseBtn = document.getElementById('confirmReleaseBtn') as HTMLButtonElement | null;
 
+// --- Restore Session from LocalStorage (Immediate UI Feedback) ---
+try {
+    const cachedUser = localStorage.getItem('wisecat_user');
+    if (cachedUser) {
+        const u = JSON.parse(cachedUser);
+        console.log("Restoring session from localStorage:", u);
+
+        // Update Header
+        const headerUserName = document.getElementById('headerUserName');
+        const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement;
+
+        if (headerUserName) {
+            headerUserName.textContent = u.name;
+            // Restore click to profile behavior
+            headerUserName.onclick = () => {
+                const profileTab = document.querySelector('[data-tab="profile"]') as HTMLElement;
+                if (profileTab) profileTab.click();
+            };
+        }
+        if (headerUserAvatar) headerUserAvatar.src = u.picture;
+
+        // Update Profile Tab
+        if (userName) userName.textContent = u.name;
+        if (userEmail) userEmail.textContent = u.email;
+        if (userAvatar) userAvatar.src = u.picture;
+
+        // Update Credits if available in cache
+        if (u.credits !== undefined) {
+            const fmt = `$${parseFloat(u.credits).toFixed(2)}`;
+            const creditsDisplay = document.getElementById('creditsDisplay');
+            const profileCredits = document.getElementById('profileCredits');
+            if (creditsDisplay) creditsDisplay.textContent = fmt;
+            if (profileCredits) profileCredits.textContent = fmt;
+        }
+    }
+} catch (e) {
+    console.error("Error restoring session:", e);
+}
+// ----------------------------------------------------------------
+
 // Auth Check
 // Auth Check
 onAuthStateChanged(auth, async (user) => {
