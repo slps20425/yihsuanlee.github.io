@@ -65,17 +65,6 @@
         <div class="header-content">
             <h1 class="header-title">🐱 WiseCat AI</h1>
             <div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">
-                <!-- Language Selector -->
-                <select id="languageSelector" class="language-selector"
-                    style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; padding: 4px 8px; font-size: 0.85rem; cursor: pointer; outline: none;">
-                    <option value="en">🇺🇸 English</option>
-                    <option value="zh">🇹🇼 繁體中文</option>
-                    <option value="jp">🇯🇵 日本語</option>
-                    <option value="kr">🇰🇷 한국어</option>
-                    <option value="es">🇪🇸 Español</option>
-                    <option value="fr">🇫🇷 Français</option>
-                    <option value="it">🇮🇹 Italiano</option>
-                </select>
             </div>
         </div>
     </div>
@@ -105,82 +94,88 @@
 
         <!-- 👤 Profile Tab -->
         <div id="profileTab" class="tab-section">
-            <div class="card">
-                <h2>👤 Personal Info</h2>
-                <div style="text-align: center; padding: 1rem;">
-                    <img id="userAvatar" src="https://ui-avatars.com/api/?name=User" alt="Avatar"
-                        style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--accent); margin-bottom: 1rem;">
-                    <div id="userName" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Loading...
+            <div class="profile-grid">
+                <!-- Personal Info Card -->
+                <div class="card">
+                    <h2>👤 Personal Info</h2>
+                    <div style="text-align: center; padding: 0.5rem;">
+                        <img id="userAvatar" src="https://ui-avatars.com/api/?name=User" alt="Avatar"
+                            style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--accent); margin-bottom: 1rem;">
+                        <div id="userName" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">
+                            Loading...
+                        </div>
+                        <div id="userEmail" style="color: var(--text-secondary); margin-bottom: 1.5rem;">-</div>
+                        <button id="logoutBtn" class="btn btn-outline-danger btn-full"
+                            style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 600; margin-top: 1rem;">
+                            Log out
+                        </button>
                     </div>
-                    <div id="userEmail" style="color: var(--text-secondary); margin-bottom: 1.5rem;">-</div>
-                    <button id="logoutBtn" class="btn btn-outline-danger btn-full"
-                        style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 600; margin-top: 1rem;">
-                        Log out
-                    </button>
+                </div>
+
+                <!-- Credits Card -->
+                <div class="card">
+                    <h2>💰 Credits</h2>
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Current
+                            Balance</div>
+                        <div id="profileCredits" style="font-size: 2.5rem; font-weight: 700; color: var(--success);">
+                            $0.00
+                        </div>
+                    </div>
+                    <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank"
+                        class="btn btn-primary btn-full"
+                        style="text-decoration: none; display: flex; justify-content: center; align-items: center;">💳
+                        Refill Credits</a>
+                    <div class="credits-info-box"
+                        style="margin-top: 1rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border: 1px solid var(--accent); border-radius: 6px; font-size: 0.85rem;">
+                        ℹ️ Credits are used for phone numbers (~$3/month) and AI calls
+                    </div>
+                </div>
+
+                <!-- Current Phone Number -->
+                <div id="phoneNumberCard" class="card" hidden>
+                    <h2>📱 Your Number</h2>
+                    <div
+                        style="background: rgba(34, 197, 94, 0.1); border: 1px solid var(--success); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                        <div id="currentPhoneNumber"
+                            style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin-bottom: 0.5rem;">-
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                            Status: <span id="phoneStatus" style="color: var(--success);">Active</span><br>
+                            Since: <span id="purchasedDate">-</span>
+                        </div>
+                    </div>
+                    <button id="releaseBtn" class="btn btn-danger btn-full">Release Number</button>
+                </div>
+
+                <!-- Account Credentials (Masked) -->
+                <div id="twilioCredsCard" class="card" hidden>
+                    <h2>🔐 Account Credentials</h2>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        Your dedicated subaccount credentials
+                    </div>
+
+                    <div
+                        style="background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Account
+                            SID
+                        </div>
+                        <div id="twilioSidMasked"
+                            style="font-family: monospace; font-size: 0.9rem; word-break: break-all;">
+                            ••••••••••••••••••••••••••••••••</div>
+                    </div>
+
+                    <div
+                        style="background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 1rem;">
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Auth
+                            Token
+                        </div>
+                        <div id="twilioTokenMasked"
+                            style="font-family: monospace; font-size: 0.9rem; word-break: break-all;">
+                            ••••••••••••••••••••••••••••••••</div>
+                    </div>
                 </div>
             </div>
-
-            <!-- Credits Card -->
-            <div class="card">
-                <h2>💰 Credits</h2>
-                <div style="text-align: center; margin-bottom: 1rem;">
-                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Current
-                        Balance</div>
-                    <div id="profileCredits" style="font-size: 2.5rem; font-weight: 700; color: var(--success);">$0.00
-                    </div>
-                </div>
-                <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank"
-                    class="btn btn-primary btn-full"
-                    style="text-decoration: none; display: flex; justify-content: center; align-items: center;">💳
-                    Refill Credits</a>
-                <div class="credits-info-box"
-                    style="margin-top: 1rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border: 1px solid var(--accent); border-radius: 6px; font-size: 0.85rem;">
-                    ℹ️ Credits are used for phone numbers (~$3/month) and AI calls
-                </div>
-            </div>
-
-            <!-- Current Phone Number -->
-            <div id="phoneNumberCard" class="card" hidden>
-                <h2>📱 Your Number</h2>
-                <div
-                    style="background: rgba(34, 197, 94, 0.1); border: 1px solid var(--success); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                    <div id="currentPhoneNumber"
-                        style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin-bottom: 0.5rem;">-
-                    </div>
-                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
-                        Status: <span id="phoneStatus" style="color: var(--success);">Active</span><br>
-                        Since: <span id="purchasedDate">-</span>
-                    </div>
-                </div>
-                <button id="releaseBtn" class="btn btn-danger btn-full">Release Number</button>
-            </div>
-
-            <!-- Account Credentials (Masked) -->
-            <div id="twilioCredsCard" class="card" hidden>
-                <h2>🔐 Account Credentials</h2>
-                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                    Your dedicated subaccount credentials
-                </div>
-
-                <div
-                    style="background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
-                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Account SID
-                    </div>
-                    <div id="twilioSidMasked" style="font-family: monospace; font-size: 0.9rem; word-break: break-all;">
-                        ••••••••••••••••••••••••••••••••</div>
-                </div>
-
-                <div
-                    style="background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 1rem;">
-                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Auth Token
-                    </div>
-                    <div id="twilioTokenMasked"
-                        style="font-family: monospace; font-size: 0.9rem; word-break: break-all;">
-                        ••••••••••••••••••••••••••••••••</div>
-                </div>
-            </div>
-
-
         </div>
 
         <!-- Phone Numbers Tab (Renamed from Add Tab) -->
@@ -404,6 +399,18 @@
 
     <!-- Bottom Navigation (Mobile) / Side Navigation (Desktop) -->
     <nav class="bottom-nav">
+        <!-- Sidebar Top Section (Desktop Only) -->
+        <div class="sidebar-top-section">
+            <select id="languageSelector" class="language-selector-sidebar">
+                <option value="en">🇺🇸 English</option>
+                <option value="zh">🇹🇼 繁體中文</option>
+                <option value="jp">🇯🇵 日本語</option>
+                <option value="kr">🇰🇷 한국어</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="it">🇮Ｔ Italiano</option>
+            </select>
+        </div>
         <button class="nav-item" data-tab="calls">
             <span class="nav-icon">📞</span>
             <span class="nav-label" data-i18n="nav_calls">Calls</span>

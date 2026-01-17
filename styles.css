@@ -1446,9 +1446,62 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     margin: 0;
 }
 
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .profile-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    .profile-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.card h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.75rem;
+}
+
 .sidebar-user-section,
-.contact-link {
+.contact-link,
+.sidebar-top-section {
     display: none;
+}
+
+.language-selector-sidebar {
+    width: calc(100% - 24px);
+    margin: 0 12px 20px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.language-selector-sidebar:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent);
 }
 
 #headerUserAvatar {
@@ -1521,13 +1574,20 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 70px;
-    background: var(--card-bg);
-    border-top: 2px solid var(--secondary-color);
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    height: auto;
+    min-height: 85px;
+    /* Increased for mobile visibility */
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
     z-index: 10002;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    /* More padding at bottom */
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
 }
 
 .nav-item {
@@ -1535,14 +1595,15 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.25rem;
+    gap: 4px;
     cursor: pointer;
     transition: all 0.2s;
     border: none;
     background: transparent;
     color: var(--text-secondary);
-    padding: 0.5rem;
+    padding: 8px 12px;
     text-decoration: none;
+    flex: 1;
 }
 
 .nav-item:hover {
@@ -1681,6 +1742,11 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     .nav-label {
         font-size: 0.95rem;
         white-space: nowrap;
+    }
+
+    .sidebar-top-section {
+        display: block;
+        padding: 0 4px;
     }
 
     .sidebar-user-section {
