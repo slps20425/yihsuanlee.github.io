@@ -76,29 +76,6 @@
                     <option value="fr">🇫🇷 Français</option>
                     <option value="it">🇮🇹 Italiano</option>
                 </select>
-
-                <div class="user-control-frame">
-                    <div class="header-user-info"
-                        style="display: flex; flex-direction: row; align-items: center; gap: 12px; min-width: 0;">
-                        <div id="headerUserName"
-                            style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; font-weight: 600; cursor: pointer;"
-                            onclick="window.location.href='/Entry.html'">Guest (Login)</div>
-                        <div class="header-credits" id="creditsDisplay" style="white-space: nowrap; flex-shrink: 0;">
-                            $0.00
-                        </div>
-                    </div>
-                    <!-- Avatar -->
-                    <img id="headerUserAvatar" src="https://ui-avatars.com/api/?name=Guest"
-                        style="width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--accent); cursor: pointer; object-fit: cover;"
-                        onclick="document.getElementById('profileTab').scrollIntoView({behavior: 'smooth'}); document.querySelector('[data-tab=profile]').click();">
-
-                    <!-- Quick Logout -->
-                    <button id="headerLogoutBtn"
-                        style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; padding: 0 1rem; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; gap: 6px; font-weight: 600; font-size: 0.85rem;"
-                        title="Logout">
-                        <span data-i18n="nav_logout">Log out</span>
-                    </button>
-                </div>
             </div>
         </div>
     </div>
@@ -449,6 +426,21 @@
             <span class="nav-icon">💬</span>
             <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
         </button>
+
+        <!-- Sidebar User Section (Desktop Only) -->
+        <div class="sidebar-user-section">
+            <div class="sidebar-user-info" onclick="document.querySelector('[data-tab=profile]').click();">
+                <img id="headerUserAvatar" src="https://ui-avatars.com/api/?name=Guest" alt="Avatar">
+                <div class="sidebar-user-text">
+                    <div id="headerUserName">Guest</div>
+                    <div id="creditsDisplay" class="sidebar-credits">$0.00</div>
+                </div>
+            </div>
+            <button id="headerLogoutBtn" class="sidebar-logout-btn">
+                <span data-i18n="nav_logout">Log out</span>
+            </button>
+        </div>
+
         <!-- Contact & Support (Desktop Bottom-aligned) -->
         <a href="https://line.me/R/ti/p/@785ausca" target="_blank" class="nav-item contact-link">
             <span class="nav-icon">💬</span>
