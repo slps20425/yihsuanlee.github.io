@@ -460,6 +460,30 @@ exports.purchasePhoneNumber = onCall(
             console.log(`[purchasePhoneNumber] Purchasing number with subaccount`);
             const subaccountClient = twilio(subaccountSid, subaccountAuthToken);
 
+            // --- Enable Dialing Permissions (Safe List) ---
+            try {
+                // ISO 3166-1 alpha-2 codes: US, CA, GB, TW, JP, AU, NZ, SG, FR, DE, IT, KR
+                const SAFE_COUNTRY_CODES = ["US", "CA", "GB", "TW", "JP", "AU", "NZ", "SG", "FR", "DE", "IT", "KR"];
+
+                // Helper loop because bulk update might have limits or we just send one payload
+                const updateRequest = SAFE_COUNTRY_CODES.map(code => ({
+                    iso_code: code,
+                    low_risk_numbers_enabled: true,
+                    high_risk_special_numbers_enabled: false,
+                    high_risk_tollfraud_numbers_enabled: false
+                }));
+
+                await subaccountClient.voice.v1.dialingPermissions
+                    .bulkCountryUpdates
+                    .create({ updateRequest: JSON.stringify(updateRequest) });
+
+                console.log(`[purchasePhoneNumber] Enabled dialing permissions for: ${SAFE_COUNTRY_CODES.join(', ')}`);
+            } catch (permError) {
+                console.warn(`[purchasePhoneNumber] Warning: Failed to update dialing permissions: ${permError.message}`);
+                // Don't block purchase, just warn
+            }
+            // ----------------------------------------------
+
             const purchasedNumber = await subaccountClient.incomingPhoneNumbers.create({
                 phoneNumber: phoneNumber
             });
