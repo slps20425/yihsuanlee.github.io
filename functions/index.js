@@ -309,17 +309,21 @@ exports.searchNumbers = onCall(
                     else numberPrice = 3.00;
                 }
 
-                const results = numbersList.map(num => ({
-                    phoneNumber: num.phoneNumber,
-                    locality: num.locality,
-                    region: num.region,
-                    country: country,
-                    capabilities: num.capabilities,
-                    addressRequirements: num.addressRequirements, // Expose regulatory requirements (e.g. 'none', 'any', 'local', 'foreign')
-                    isoCountry: num.isoCountry,
-                    postalCode: num.postalCode,
-                    cost: numberPrice
-                }));
+                const results = numbersList
+                    .map(num => ({
+                        phoneNumber: num.phoneNumber,
+                        locality: num.locality,
+                        region: num.region,
+                        country: country,
+                        capabilities: num.capabilities,
+                        addressRequirements: num.addressRequirements, // usage: 'none', 'any', 'local', 'foreign', 'business'
+                        isoCountry: num.isoCountry,
+                        postalCode: num.postalCode,
+                        cost: numberPrice
+                    }))
+                    // BACKEND FILTER: Explicitly remove numbers that require a Business Address.
+                    // User Request: "Hide business... display non-business (only individual)"
+                    .filter(num => !String(num.addressRequirements).toLowerCase().includes('business'));
 
                 console.log(`[searchNumbers] Success. Found ${results.length} ${resourceType} numbers. Backend: ${Date.now() - totalStart}ms`);
                 return { numbers: results };
