@@ -4,6 +4,7 @@ import { auth } from './firebase-config';
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { countryTimezones } from './timezones';
 import { ScamCheck } from './scam-check';
+import './nav-active'; // Set active navigation item
 
 // ... (Existing code)
 
@@ -885,18 +886,18 @@ function updateMissionDescription() {
     const missionSelect = document.getElementById('mission') as HTMLSelectElement;
     const missionDescElement = document.getElementById('missionDescription');
     const currentLang = WiseCatI18n.currentLang;
-    
+
     if (missionSelect && missionDescElement) {
         const selectedOption = missionSelect.selectedOptions[0];
         const missionId = selectedOption.value;
-        
+
         const mission = MISSION_SCENARIOS.find(m => m.id === missionId);
         if (mission) {
             const lang = (currentLang as keyof typeof mission.description);
             missionDescElement.textContent = mission.description[lang] || mission.description.en;
         }
     }
-    
+
     // Reset validation when mission changes
     isDescriptionValidated = false;
     const scriptTextarea = document.getElementById('script') as HTMLTextAreaElement;
@@ -917,14 +918,14 @@ async function validateMissionDescription() {
     const feedbackDiv = document.getElementById('validationFeedback');
     const scriptTextarea = document.getElementById('script') as HTMLTextAreaElement;
     const missionSelect = document.getElementById('mission') as HTMLSelectElement;
-    
+
     if (!scriptTextarea || !missionSelect || !feedbackDiv || !validateBtn) return;
-    
+
     const description = scriptTextarea.value.trim();
     const missionId = missionSelect.value;
     const selectedOption = missionSelect.selectedOptions[0];
     const missionNameKey = selectedOption.getAttribute('data-mission-name');
-    
+
     if (description.length < 10) {
         feedbackDiv.textContent = '❌ Description is too short. Please provide at least 10 characters.';
         feedbackDiv.style.display = 'block';
@@ -933,7 +934,7 @@ async function validateMissionDescription() {
         feedbackDiv.style.color = '#f87171';
         return;
     }
-    
+
     // Show loading state
     validateBtn.disabled = true;
     validateBtn.textContent = '⏳ Validating...';
@@ -942,24 +943,24 @@ async function validateMissionDescription() {
     feedbackDiv.style.background = 'rgba(59, 130, 246, 0.1)';
     feedbackDiv.style.border = '1px solid rgba(59, 130, 246, 0.3)';
     feedbackDiv.style.color = '#60a5fa';
-    
+
     try {
         const functions = getFunctions();
         const validateFunction = httpsCallable(functions, 'validateMissionDescription');
-        
+
         const mission = MISSION_SCENARIOS.find(m => m.id === missionId);
         const currentLang = WiseCatI18n.currentLang;
         const missionName = mission ? mission.name[currentLang as keyof typeof mission.name] : missionId;
-        
+
         const result: any = await validateFunction({
             missionId,
             missionName,
             description,
             language: currentLang
         });
-        
+
         isDescriptionValidated = result.data.valid;
-        
+
         if (result.data.valid) {
             // Success - green border
             scriptTextarea.style.border = '2px solid #10b981';
@@ -977,7 +978,7 @@ async function validateMissionDescription() {
             feedbackDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
             feedbackDiv.style.color = '#f87171';
         }
-        
+
     } catch (error) {
         console.error('Validation error:', error);
         // On error, be permissive
@@ -1000,22 +1001,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const missionSelect = document.getElementById('mission');
     const validateBtn = document.getElementById('validateBtn');
     const scriptTextarea = document.getElementById('script');
-    
+
     if (missionSelect) {
         missionSelect.addEventListener('change', updateMissionDescription);
         // Set initial description
         updateMissionDescription();
     }
-    
+
     if (validateBtn) {
         validateBtn.addEventListener('click', validateMissionDescription);
     }
-    
+
     // Reset validation when script changes
     if (scriptTextarea) {
         scriptTextarea.addEventListener('input', () => {
             isDescriptionValidated = false;
-             validateForm();
+            validateForm();
         });
     }
 });

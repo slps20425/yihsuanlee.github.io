@@ -1753,11 +1753,13 @@ input[type="date"]::-webkit-datetime-edit-day-field {
         flex-direction: column;
         border-top: none;
         border-right: 1px solid var(--border-color);
-        padding: 2rem 0;
+        padding: 2rem 0 2rem 0;
         box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
         background: rgba(15, 23, 42, 0.95);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .nav-item {
