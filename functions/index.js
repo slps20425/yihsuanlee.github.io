@@ -290,8 +290,12 @@ exports.searchNumbers = onCall(
                         console.log(`[searchNumbers] Twilio ${t} search took ${Date.now() - s}ms`);
                         return res.map(n => ({ ...n, _sourceType: t }));
                     } catch (e) {
-                        console.log(`[searchNumbers] Twilio ${t} search failed (${Date.now() - s}ms): ${e.message}`);
-                        if (e.code === 20404 || e.status === 404) return [];
+                        const duration = Date.now() - s;
+                        if (e.code === 20404 || e.status === 404) {
+                            console.log(`[searchNumbers] Twilio ${t} search: Not supported in ${country} (${duration}ms)`);
+                            return [];
+                        }
+                        console.log(`[searchNumbers] Twilio ${t} search failed (${duration}ms): ${e.message}`);
                         throw e;
                     }
                 };
