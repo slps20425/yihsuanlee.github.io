@@ -355,20 +355,24 @@
             .top-header {
                 left: 180px;
                 right: 0;
-                width: auto;
+                width: calc(100% - 180px);
                 padding-left: 1.5rem;
+                padding-right: 1.5rem;
             }
 
             .header-content {
                 margin: 0;
                 width: 100%;
+                max-width: none;
             }
 
             .main-content {
                 margin-top: 70px;
-                margin-left: 0;
-                width: 100%;
-                padding-left: 1rem;
+                margin-left: 180px;
+                /* Explicit margin to avoid overlap */
+                width: calc(100% - 180px);
+                padding: 2rem;
+                max-width: 1400px;
             }
         }
 
@@ -406,7 +410,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/dashboard-_osJ5W2u.js"></script>
+  <script type="module" crossorigin src="/assets/dashboard-CBo0-OJz.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-B6mcbt7q.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-eF0aoAu-.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-dG1ZkEco.js">
@@ -419,18 +423,25 @@
     <div class="top-header">
         <div class="header-content">
             <h1 class="header-title">🐱 WiseCat AI</h1>
-            <div style="display: flex; align-items: center; gap: 12px; min-width: 140px; justify-content: flex-end;">
+            <div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">
                 <div style="text-align: right;">
                     <div id="headerUserName"
-                        style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.35rem; cursor: pointer;"
+                        style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.2rem; cursor: pointer;"
                         onclick="window.location.href='/Entry.html'">
                         Guest (Login)</div>
                     <div class="header-credits" id="creditsDisplay" style="display: inline-block;">$0.00</div>
                 </div>
                 <!-- Avatar -->
                 <img id="headerUserAvatar" src="https://ui-avatars.com/api/?name=Guest"
-                    style="width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--accent); cursor: pointer; object-fit: cover;"
+                    style="width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--accent); cursor: pointer; object-fit: cover;"
                     onclick="document.getElementById('profileTab').scrollIntoView({behavior: 'smooth'}); document.querySelector('[data-tab=profile]').click();">
+
+                <!-- Quick Logout -->
+                <button id="headerLogoutBtn"
+                    style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"
+                    title="Logout">
+                    <span style="font-size: 1.1rem;">👋</span>
+                </button>
             </div>
         </div>
     </div>

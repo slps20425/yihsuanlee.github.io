@@ -26,6 +26,7 @@ const userEmail = document.getElementById('userEmail') as HTMLElement | null;
 const userAvatar = document.getElementById('userAvatar') as HTMLImageElement | null;
 const creditsDisplay = document.getElementById('creditsDisplay') as HTMLElement | null;
 const logoutBtn = document.getElementById('logoutBtn') as HTMLButtonElement | null;
+const headerLogoutBtn = document.getElementById('headerLogoutBtn') as HTMLButtonElement | null;
 
 // Dialogs
 const purchaseDialog = document.getElementById('purchaseDialog') as HTMLDialogElement | null;
@@ -498,14 +499,15 @@ document.addEventListener('DOMContentLoaded', () => {
         activateTab('ai'); // Default
     }
 });
-// --- Logout ---
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-        signOut(auth).then(() => {
-            localStorage.removeItem('wisecat_user');
-            window.location.href = '/entry.html';
-        }).catch((err) => {
-            console.error("Logout error:", err);
-        });
+// --- Logout Logic ---
+function handleLogout() {
+    signOut(auth).then(() => {
+        localStorage.removeItem('wisecat_user');
+        window.location.href = '/Entry.html';
+    }).catch((err) => {
+        console.error("Logout error:", err);
     });
 }
+
+if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+if (headerLogoutBtn) headerLogoutBtn.addEventListener('click', handleLogout);
