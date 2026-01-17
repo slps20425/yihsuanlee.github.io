@@ -2,6 +2,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { app, auth, db } from "./firebase-config"; // Use shared config
+import WiseCatI18n from "./i18n";
 
 const functions = getFunctions(app);
 
@@ -43,6 +44,9 @@ const confirmPurchaseBtn = document.getElementById('confirmPurchaseBtn') as HTML
 const releaseDialog = document.getElementById('releaseDialog') as HTMLDialogElement | null;
 const cancelReleaseBtn = document.getElementById('cancelReleaseBtn') as HTMLButtonElement | null;
 const confirmReleaseBtn = document.getElementById('confirmReleaseBtn') as HTMLButtonElement | null;
+
+// --- Initialize i18n ---
+WiseCatI18n.init();
 
 // --- Restore Session from LocalStorage (Immediate UI Feedback) ---
 console.log("Dashboard loaded at " + new Date().toISOString());

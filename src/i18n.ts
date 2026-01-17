@@ -150,7 +150,13 @@ const WiseCatI18n: WiseCatI18nType = {
                     { t: "Blocked Apology", v: "Hey XXX, I'm trying to call you but you blocked me. Here's the sorry I want to let you know." },
                     { t: "General Contact", v: "Contact [someone] for [something] - I need to reach you urgently about an important matter." }
                 ]
-            }
+            },
+            nav_calls: "Calls",
+            nav_profile: "Profile",
+            nav_phone: "Phone Number",
+            nav_ai: "AI Hub",
+            nav_inbox: "Inbox",
+            nav_logout: "Log out"
         },
         zh: {
             portal_title: "WiseCat 門戶",
@@ -259,7 +265,13 @@ const WiseCatI18n: WiseCatI18nType = {
                     { t: "被封鎖道歉", v: "嘿XXX，我試著撥給你但你封鎖我了，這是我想讓你知道的道歉。" },
                     { t: "一般聯繫", v: "聯繫[某人]關於[某事] - 我需要緊急與您聯繫重要事項。" }
                 ]
-            }
+            },
+            nav_calls: "通話管理",
+            nav_profile: "個人帳戶",
+            nav_phone: "電話號碼",
+            nav_ai: "工具箱",
+            nav_inbox: "收件夾",
+            nav_logout: "登出"
         },
         jp: {
             portal_title: "WiseCat ポータル",
@@ -362,7 +374,13 @@ const WiseCatI18n: WiseCatI18nType = {
                     { t: "ブロック謝罪", v: "XXXさん、電話したけどブロックされています。お伝えしたい謝罪があります。" },
                     { t: "一般連絡", v: "[誰か]に[何か]について連絡 - 重要な件で緊急に連絡する必要があります。" }
                 ]
-            }
+            },
+            nav_calls: "通話記録",
+            nav_profile: "プロフィール",
+            nav_phone: "電話番号",
+            nav_ai: "AIハブ",
+            nav_inbox: "受信トレイ",
+            nav_logout: "ログアウト"
         },
         kr: {
             portal_title: "WiseCat 포털",
@@ -465,7 +483,13 @@ const WiseCatI18n: WiseCatI18nType = {
                     { t: "차단 사과", v: "XXX님, 전화를 드렸으나 차단된 것 같습니다. 전하고 싶은 사과가 있습니다." },
                     { t: "일반 연락", v: "[누군가]에게 [무엇]에 대해 연락 - 중요한 사안으로 긴급히 연락드려야 합니다." }
                 ]
-            }
+            },
+            nav_calls: "통화 내역",
+            nav_profile: "프로필",
+            nav_phone: "전화번호",
+            nav_ai: "AI 허브",
+            nav_inbox: "받은편지함",
+            nav_logout: "로그아웃"
         },
         es: {
             portal_title: "Portal WiseCat",
@@ -568,7 +592,13 @@ const WiseCatI18n: WiseCatI18nType = {
                     { t: "Disculpa por Bloqueo", v: "Hola XXX, traté de llamarte pero me bloqueaste. Aquí está la disculpa que quiero que sepas." },
                     { t: "Contacto General", v: "Contactar a [alguien] por [algo] - Necesito comunicarme urgentemente sobre un asunto importante." }
                 ]
-            }
+            },
+            nav_calls: "Llamadas",
+            nav_profile: "Perfil",
+            nav_phone: "Teléfono",
+            nav_ai: "Herramientas",
+            nav_inbox: "Bandeja",
+            nav_logout: "Cerrar sesión"
         },
         fr: {
             portal_title: "Portail WiseCat",
@@ -671,7 +701,13 @@ const WiseCatI18n: WiseCatI18nType = {
                     { t: "Excuses Blocage", v: "Salut XXX, j'ai essayé de t'appeler mais tu m'as bloqué. Voici les excuses que je veux que tu saches." },
                     { t: "Contact Général", v: "Contacter [quelqu'un] pour [quelque chose] - Je dois vous joindre de toute urgence pour une affaire importante." }
                 ]
-            }
+            },
+            nav_calls: "Appels",
+            nav_profile: "Profil",
+            nav_phone: "Téléphone",
+            nav_ai: "Outils",
+            nav_inbox: "Boîte",
+            nav_logout: "Déconnexion"
         },
         it: {
             portal_title: "Portale WiseCat",
@@ -774,7 +810,13 @@ const WiseCatI18n: WiseCatI18nType = {
                     { t: "Scuse Blocco", v: "Ehi XXX, ho provato a chiamarti ma mi hai bloccato. Ecco le scuse che voglio farti sapere." },
                     { t: "Contatto Generale", v: "Contattare [qualcuno] per [qualcosa] - Devo raggiungerti urgentemente per una questione importante." }
                 ]
-            }
+            },
+            nav_calls: "Chiamate",
+            nav_profile: "Profilo",
+            nav_phone: "Telefono",
+            nav_ai: "Strumenti",
+            nav_inbox: "Posta",
+            nav_logout: "Esci"
         }
     },
 

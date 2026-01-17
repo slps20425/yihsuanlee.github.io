@@ -56,12 +56,12 @@
             display: none !important;
         }
     </style>
-  <script type="module" crossorigin src="/assets/dashboard-Iht6Qpte.js"></script>
+  <script type="module" crossorigin src="/assets/dashboard-CfQDFoU1.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-CZUVvyED.js">
-  <link rel="modulepreload" crossorigin href="/assets/preload-helper-DQ40xmq_.js">
+  <link rel="modulepreload" crossorigin href="/assets/i18n-6pvchq9T.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-AwCycs0Y.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-O2Hx6jNt.js">
-  <link rel="stylesheet" crossorigin href="/assets/preload-helper-DxX3bTKc.css">
+  <link rel="stylesheet" crossorigin href="/assets/i18n-Bx4waBcF.css">
 </head>
 
 <body class="dashboard-layout">
@@ -70,6 +70,18 @@
         <div class="header-content">
             <h1 class="header-title">🐱 WiseCat AI</h1>
             <div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">
+                <!-- Language Selector -->
+                <select id="languageSelector" class="language-selector"
+                    style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; padding: 4px 8px; font-size: 0.85rem; cursor: pointer; outline: none;">
+                    <option value="en">🇺🇸 English</option>
+                    <option value="zh">🇹🇼 繁體中文</option>
+                    <option value="jp">🇯🇵 日本語</option>
+                    <option value="kr">🇰🇷 한국어</option>
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="it">🇮🇹 Italiano</option>
+                </select>
+
                 <div class="header-user-info">
                     <div id="headerUserName" onclick="window.location.href='/Entry.html'">Guest (Login)</div>
                     <div class="header-credits" id="creditsDisplay">$0.00</div>
@@ -83,7 +95,7 @@
                 <button id="headerLogoutBtn"
                     style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; padding: 0 1rem; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; gap: 6px; font-weight: 600; font-size: 0.85rem;"
                     title="Logout">
-                    Log out
+                    <span data-i18n="nav_logout">Log out</span>
                 </button>
             </div>
         </div>
@@ -417,23 +429,23 @@
     <nav class="bottom-nav">
         <button class="nav-item" data-tab="calls">
             <span class="nav-icon">📞</span>
-            <span class="nav-label">Calls</span>
+            <span class="nav-label" data-i18n="nav_calls">Calls</span>
         </button>
         <button class="nav-item" data-tab="profile">
             <span class="nav-icon">👤</span>
-            <span class="nav-label">Profile</span>
+            <span class="nav-label" data-i18n="nav_profile">Profile</span>
         </button>
         <button class="nav-item active" data-tab="add">
             <span class="nav-icon">📱</span>
-            <span class="nav-label">Phone Number</span>
+            <span class="nav-label" data-i18n="nav_phone">Phone Number</span>
         </button>
         <button class="nav-item" data-tab="ai">
             <span class="nav-icon">🤖</span>
-            <span class="nav-label">AI</span>
+            <span class="nav-label" data-i18n="nav_ai">AI Hub</span>
         </button>
         <button class="nav-item" data-tab="inbox">
             <span class="nav-icon">💬</span>
-            <span class="nav-label">Inbox</span>
+            <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
         </button>
     </nav>
 
