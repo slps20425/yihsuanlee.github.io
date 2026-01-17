@@ -1025,3 +1025,38 @@ document.addEventListener('DOMContentLoaded', () => {
 // Note: This assumes validateForm exists and manages submit button state
 // If needed, modify the existing validateForm function to check isDescriptionValidated
 
+
+// Translate mission dropdown options when language changes
+function translateMissionOptions() {
+    const missionSelect = document.getElementById('mission') as HTMLSelectElement;
+    if (!missionSelect) return;
+    
+    const currentLang = WiseCatI18n.currentLang;
+    
+    missionSelect.querySelectorAll('option').forEach((option) => {
+        const missionId = option.value;
+        const mission = MISSION_SCENARIOS.find(m => m.id === missionId);
+        
+        if (mission) {
+            const lang = (currentLang as keyof typeof mission.name);
+            const emoji = option.textContent?.split(' ')[0] || '';
+            option.textContent = `${emoji} ${mission.name[lang] || mission.name.en}`;
+        }
+    });
+}
+
+// Re-translate when language changes
+document.addEventListener('DOMContentLoaded', () => {
+    // Listen for language change events from i18n system
+    const languageSelector = document.getElementById('languageSelector');
+    if (languageSelector) {
+        languageSelector.addEventListener('change', () => {
+            // Wait for i18n to apply, then translate missions
+            setTimeout(translateMissionOptions, 100);
+        });
+    }
+    
+    // Initial translation
+    translateMissionOptions();
+});
+
