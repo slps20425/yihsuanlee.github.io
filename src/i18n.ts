@@ -61,7 +61,7 @@ const WiseCatI18n: WiseCatI18nType = {
             service_trial_title: "Free Trial Call",
             service_trial_desc: "Experience AI voice calling with a limited trial",
             btn_submit: "Start AI Call",
-            btn_refill: "Refill",
+            btn_refill: "Top-up",
             btn_back: "← Back to Portal",
             footer: "Automated call service provided by WiseCat AI",
             msg_calling: "WiseCat Assistant is calling!",
@@ -840,17 +840,22 @@ const WiseCatI18n: WiseCatI18nType = {
         this.currentLang = savedLang || (this.translations[browserLang] ? browserLang : 'en');
         console.log(`Language resolved to: ${this.currentLang} (Saved: ${savedLang}, Browser: ${browserLang})`);
 
-        // Setup language selector if it exists
-        const selector = document.getElementById('languageSelector') as HTMLSelectElement;
-        if (selector) {
-            selector.value = this.currentLang;
+        // Setup language selector(s) if they exist
+        const selectors = document.querySelectorAll('#languageSelector, .language-selector-sidebar, .language-selector-header');
+        selectors.forEach(selector => {
+            (selector as HTMLSelectElement).value = this.currentLang;
             selector.addEventListener('change', (e: Event) => {
                 const newLang = (e.target as HTMLSelectElement).value;
                 console.log('Language selector changed to:', newLang);
                 this.setLanguage(newLang);
+                // Sync all other selectors on the page
+                selectors.forEach(s => {
+                    if (s !== selector) (s as HTMLSelectElement).value = newLang;
+                });
             });
-        } else {
-            console.warn('Language selector element not found');
+        });
+        if (selectors.length === 0) {
+            console.warn('No language selector elements found');
         }
 
         this.apply();
