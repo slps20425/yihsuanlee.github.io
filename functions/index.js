@@ -328,7 +328,7 @@ exports.searchNumbers = onCall(
                     cost: num._sourceType === 'mobile' ? mobileP : localP
                 }));
 
-                console.log(`[searchNumbers] Unified Success. Total Backend: ${Date.now() - totalStart}ms`);
+                console.log(`[searchNumbers] Unified Success. Found: Local(${lRes.length}), Mobile(${mRes.length}). Total: ${results.length}. Backend: ${Date.now() - totalStart}ms`);
                 return { numbers: results };
 
             } catch (twilioError) {
