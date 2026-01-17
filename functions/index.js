@@ -307,13 +307,18 @@ exports.searchNumbers = onCall(
                     client.pricing.v1.phoneNumbers.countries(country).fetch().then(d => {
                         console.log(`[searchNumbers] Twilio pricing fetch took ${Date.now() - apiStart}ms`);
                         return d;
+                    }).catch(e => {
+                        console.warn(`[searchNumbers] Twilio pricing fetch failed: ${e.message}. Using fallbacks.`);
+                        return { phoneNumberPrices: [] };
                     })
                 ]);
-                console.log(`[searchNumbers] All APIs parallel fetch total: ${Date.now() - apiStart}ms`);
+                console.log(`[searchNumbers] Parallel API calls finished. Total APIs time: ${Date.now() - apiStart}ms`);
 
                 const getP = (k) => {
-                    const o = pData.phoneNumberPrices.find(p => p.number_type === k);
-                    return parseFloat(o?.current_price || o?.base_price || "0");
+                    const prices = pData?.phoneNumberPrices || [];
+                    const o = prices.find(p => p.number_type === k);
+                    const val = o?.current_price || o?.base_price || "0";
+                    return parseFloat(val);
                 };
 
                 const localP = getP('local') || (country === 'US' ? 1.15 : 3.00);
