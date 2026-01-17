@@ -111,18 +111,20 @@
         <div id="profileTab" class="tab-section" style="max-width: 1200px; margin: 0 auto;">
             <div class="profile-grid">
                 <!-- Personal Info Card -->
-                <div class="card" style="margin-bottom: 0;">
+                <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column;">
                     <h2
                         style="display: flex; align-items: center; gap: 8px; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
                         👤 Profile</h2>
-                    <div style="text-align: center; padding: 0.5rem; margin-bottom: 1rem;">
-                        <img id="userAvatar" src="https://ui-avatars.com/api/?name=User" alt="Avatar"
-                            style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--accent); margin-bottom: 0.75rem;">
-                        <div id="userName" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem;">
-                            Loading...</div>
-                        <div id="userEmail"
-                            style="color: var(--text-secondary); font-size: 0.85rem; word-break: break-all;">
-                            -</div>
+                    <div style="flex-grow: 1;">
+                        <div style="text-align: center; padding: 0.5rem; margin-bottom: 1rem;">
+                            <img id="userAvatar" src="https://ui-avatars.com/api/?name=User" alt="Avatar"
+                                style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--accent); margin-bottom: 0.75rem;">
+                            <div id="userName" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem;">
+                                Loading...</div>
+                            <div id="userEmail"
+                                style="color: var(--text-secondary); font-size: 0.85rem; word-break: break-all;">
+                                -</div>
+                        </div>
                     </div>
                     <button id="logoutBtn" class="btn btn-outline-danger btn-full">
                         Log out
@@ -130,19 +132,23 @@
                 </div>
 
                 <!-- Credits Card -->
-                <div class="card" style="margin-bottom: 0;">
+                <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column;">
                     <h2
                         style="display: flex; align-items: center; gap: 8px; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
                         💰 Credits</h2>
-                    <div style="text-align: center; margin-bottom: 1.25rem;">
-                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Current
-                            Balance</div>
-                        <div id="profileCredits" style="font-size: 2.2rem; font-weight: 800; color: var(--success);">
-                            $0.00</div>
-                    </div>
-                    <div class="credits-info-box"
-                        style="margin-bottom: 1.25rem; padding: 0.65rem; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; font-size: 0.75rem; text-align: left; max-width: 300px;">
-                        ℹ️ Used for numbers (~$3/mo) & AI calls
+                    <div style="flex-grow: 1;">
+                        <div style="text-align: center; margin-bottom: 1.25rem;">
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
+                                Current
+                                Balance</div>
+                            <div id="profileCredits"
+                                style="font-size: 2.2rem; font-weight: 800; color: var(--success);">
+                                $0.00</div>
+                        </div>
+                        <div class="credits-info-box"
+                            style="margin-bottom: 1.25rem; padding: 0.65rem; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; font-size: 0.75rem; text-align: left; max-width: 300px;">
+                            ℹ️ Used for numbers (~$3/mo) & AI calls
+                        </div>
                     </div>
                     <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank"
                         class="btn btn-primary btn-full">💳
