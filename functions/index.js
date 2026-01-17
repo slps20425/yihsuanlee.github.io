@@ -270,9 +270,9 @@ exports.searchNumbers = onCall(
                 throw new HttpsError("unauthenticated", "User must be authenticated");
             }
 
-            const { country = 'US', areaCode = '', voice = false, sms = false, mms = false } = request.data;
+            const { country = 'US', areaCode = '', voice = false, sms = false, mms = false, type = 'local' } = request.data;
 
-            console.log(`[searchNumbers] Country: ${country}, Area: ${areaCode}, Voice: ${voice}, SMS: ${sms}, MMS: ${mms}`);
+            console.log(`[searchNumbers] Country: ${country}, Type: ${type}, Area: ${areaCode}, Voice: ${voice}, SMS: ${sms}, MMS: ${mms}`);
 
             // Initialize Twilio client with master account
             const twilio = require('twilio');
@@ -285,11 +285,13 @@ exports.searchNumbers = onCall(
             if (sms) searchParams.smsEnabled = true;
             if (mms) searchParams.mmsEnabled = true;
 
+            // Determine resource type (local, mobile, tollFree)
+            const resourceType = ['local', 'mobile', 'tollFree'].includes(type) ? type : 'local';
+
             // Search for available numbers
             let numbers = [];
             try {
-                numbers = await client.availablePhoneNumbers(country)
-                    .local
+                numbers = await client.availablePhoneNumbers(country)[resourceType]
                     .list(searchParams);
             } catch (twilioError) {
                 // Return empty list if resource not found (e.g. invalid country or no local numbers)

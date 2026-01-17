@@ -287,6 +287,9 @@ if (searchBtn) {
         const smsCapability = document.getElementById('smsCapability') as HTMLInputElement | null;
         const mmsCapability = document.getElementById('mmsCapability') as HTMLInputElement | null;
 
+        const numberTypeSelect = document.getElementById('numberTypeSelect') as HTMLSelectElement | null; // NEW
+        const type = numberTypeSelect?.value || 'local'; // NEW
+
         const country = countrySelect?.value || 'US';
         const areaCode = areaCodeInput?.value.trim() || '';
         const voice = voiceCapability?.checked || false;
@@ -312,7 +315,8 @@ if (searchBtn) {
                 areaCode,
                 voice,
                 sms,
-                mms
+                mms,
+                type // NEW
             });
             const numbers = (result.data as any).numbers || [];
 

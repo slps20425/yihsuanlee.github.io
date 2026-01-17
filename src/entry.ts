@@ -13,7 +13,8 @@ const googleProvider = new GoogleAuthProvider();
 (window as any).firebaseInitialized = true;
 
 
-const microsoftProvider = new OAuthProvider('microsoft.com');
+
+
 
 // State
 let unsubscribeUser: any = null;
@@ -26,11 +27,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Bind buttons
     const googleLoginBtn = document.getElementById('googleLoginBtn');
-    const microsoftLoginBtn = document.getElementById('microsoftLoginBtn');
+    const appleLoginBtn = document.getElementById('appleLoginBtn');
     const lineLoginBtn = document.getElementById('lineLoginBtn');
 
     if (googleLoginBtn) googleLoginBtn.addEventListener('click', () => handleSocialLogin(googleProvider));
-    if (microsoftLoginBtn) microsoftLoginBtn.addEventListener('click', () => handleSocialLogin(microsoftProvider));
+    if (appleLoginBtn) {
+        appleLoginBtn.addEventListener('click', () => {
+            const appleProvider = new OAuthProvider('apple.com');
+            appleProvider.addScope('email');
+            appleProvider.addScope('name');
+            handleSocialLogin(appleProvider);
+        });
+    }
     if (lineLoginBtn) lineLoginBtn.addEventListener('click', handleLineLogin);
 
     // Expose logout globally for the inline onclick handler in HTML (or we can bind it here)
