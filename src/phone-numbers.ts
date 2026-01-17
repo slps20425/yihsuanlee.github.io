@@ -253,7 +253,7 @@ if (searchBtn) {
                         <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${number.locality || ''}, ${number.region || country}</div>
                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">${badges.join('')}</div>
                     </div>
-                    <button class="btn btn-primary">Buy $3/mo</button>
+                    <button class="btn btn-primary">Buy $3.00/mo</button>
                 `;
 
                 const buyBtn = li.querySelector('button') as HTMLButtonElement;

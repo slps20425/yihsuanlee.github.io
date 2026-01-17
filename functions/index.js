@@ -332,14 +332,43 @@ exports.purchasePhoneNumber = onCall(
             const reservationDb = getFirestore(admin.app(), "reservation");
             const settingsRef = reservationDb.doc(`users/uid_${uid}/settings/settings`);
 
-            // Check if user already has an active number
-            const settingsSnap = await settingsRef.get();
-            if (settingsSnap.exists) {
-                const settings = settingsSnap.data();
-                if (settings.phoneNumberStatus === 'active') {
-                    throw new HttpsError("failed-precondition", "You already have an active phone number. Please release it first.");
+            // Cost configuration
+            const PHONE_NUMBER_COST = 3.00; // USD (Standard Markup)
+
+            // Get user credit balance from users collection
+            const userRef = reservationDb.doc(`users/uid_${uid}`);
+
+            // Start a transaction to ensure atomic credit deduction
+            await reservationDb.runTransaction(async (transaction) => {
+                const userDoc = await transaction.get(userRef);
+                if (!userDoc.exists) {
+                    throw new HttpsError("not-found", "User profile not found");
                 }
-            }
+
+                const userData = userDoc.data();
+                const currentCredits = userData.credits || 0;
+
+                console.log(`[purchasePhoneNumber] User credits: $${currentCredits}, Cost: $${PHONE_NUMBER_COST}`);
+
+                if (currentCredits < PHONE_NUMBER_COST) {
+                    throw new HttpsError("failed-precondition", `Insufficient credits. You need $${PHONE_NUMBER_COST} but have $${currentCredits.toFixed(2)}`);
+                }
+
+                // Check settings within transaction to prevent race conditions
+                const settingsDoc = await transaction.get(settingsRef);
+                if (settingsDoc.exists) {
+                    const settings = settingsDoc.data();
+                    if (settings.phoneNumberStatus === 'active') {
+                        throw new HttpsError("failed-precondition", "You already have an active phone number. Please release it first.");
+                    }
+                }
+
+                // Deduct credits
+                const newBalance = currentCredits - PHONE_NUMBER_COST;
+                transaction.update(userRef, { credits: newBalance });
+
+                console.log(`[purchasePhoneNumber] Deducted $${PHONE_NUMBER_COST}. New balance: $${newBalance}`);
+            });
 
             // Initialize Twilio client
             const twilio = require('twilio');
