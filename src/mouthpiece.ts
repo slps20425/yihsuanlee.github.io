@@ -1,6 +1,7 @@
 import "./version";
 import WiseCatI18n from './i18n';
 import { auth } from './firebase-config';
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { countryTimezones } from './timezones';
 import { ScamCheck } from './scam-check';
 
@@ -482,6 +483,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             const userNameInput = document.getElementById('userName') as HTMLInputElement;
             if (user.name && userNameInput) userNameInput.value = user.name;
         } catch (e) { }
+    }
+
+    // --- Header Sync & Logout ---
+    onAuthStateChanged(auth, (user) => {
+        const headerUserName = document.getElementById('headerUserName');
+        const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement | null;
+        const creditsDisplay = document.getElementById('creditsDisplay');
+
+        if (user) {
+            if (headerUserName) headerUserName.textContent = user.displayName || 'User';
+            if (headerUserAvatar && user.photoURL) headerUserAvatar.src = user.photoURL;
+
+            const userSession = localStorage.getItem('wisecat_user');
+            if (userSession && creditsDisplay) {
+                const u = JSON.parse(userSession);
+                creditsDisplay.textContent = `$${(u.credits || 0).toFixed(2)}`;
+            }
+        }
+    });
+
+    const headerLogoutBtn = document.getElementById('headerLogoutBtn');
+    if (headerLogoutBtn) {
+        headerLogoutBtn.addEventListener('click', () => {
+            signOut(auth).then(() => {
+                localStorage.removeItem('wisecat_user');
+                window.location.href = '/Entry.html';
+            });
+        });
     }
 
     if (form) form.addEventListener('submit', handleFormSubmit);

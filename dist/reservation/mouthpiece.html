@@ -29,80 +29,47 @@
             display: block;
         }
     </style>
-  <script type="module" crossorigin src="/assets/mouthpiece-JUihorNi.js"></script>
+  <script type="module" crossorigin src="/assets/mouthpiece-CCOgbuoo.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-B6mcbt7q.js">
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-eF0aoAu-.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-GLTT_Tro.js">
   <link rel="modulepreload" crossorigin href="/assets/i18n-BwGhh8sj.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-DWsZ1HWM.js">
   <link rel="modulepreload" crossorigin href="/assets/timezones-DRXziDFl.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-dG1ZkEco.js">
   <link rel="modulepreload" crossorigin href="/assets/scam-check-C-_fuPrm.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-BXViPnOY.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-07El-t5H.css">
 </head>
 
-<body class="portal-bg">
-    <div>
-        <div class="wave"></div>
-        <div class="wave"></div>
-        <div class="wave"></div>
+<body class="dashboard-layout">
+    <div id="vanta-bg" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="header-content">
+            <h1 class="header-title">🐱 WiseCat AI</h1>
+            <div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">
+                <div class="header-user-info">
+                    <div id="headerUserName" onclick="window.location.href='/Entry.html'">Guest (Login)</div>
+                    <div class="header-credits" id="creditsDisplay">$0.00</div>
+                </div>
+                <!-- Avatar -->
+                <img id="headerUserAvatar" src="https://ui-avatars.com/api/?name=Guest"
+                    style="width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--accent); cursor: pointer; object-fit: cover;"
+                    onclick="window.location.href='/dashboard.html?tab=profile'">
+
+                <!-- Quick Logout -->
+                <button id="headerLogoutBtn"
+                    style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; padding: 0 1rem; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; gap: 6px; font-weight: 600; font-size: 0.85rem;"
+                    title="Logout">
+                    Log out
+                </button>
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-        <select id="languageSelector" class="language-selector">
-            <option value="en">🇺🇸 English</option>
-            <option value="zh">🇹🇼 繁體中文</option>
-            <option value="jp">🇯🇵 日本語</option>
-            <option value="kr">🇰🇷 한국어</option>
-            <option value="es">🇪🇸 Español</option>
-            <option value="fr">🇫🇷 Français</option>
-            <option value="it">🇮🇹 Italiano</option>
-        </select>
-
-        <div style="text-align: center; margin-bottom: 10px;">
-            <a href="https://wise-catty.cc/" style="display: inline-block;">
-                <img src="../assets/profile_anim.gif" alt="AI Cat" class="logo"
-                    style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; cursor: pointer;">
-            </a>
-        </div>
-
-        <h2 data-i18n="mouthpiece_title">📢 AI Mouthpiece</h2>
-        <form id="mouthpieceForm">
-            <label data-i18n="label_your_name">👤 Your Name</label>
-            <input type="text" id="userName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
-                data-i18n-placeholder="placeholder_name" placeholder="English name only" required>
-
-            <label data-i18n="label_recipient_name">👤 Recipient Name</label>
-            <input type="text" id="recipientName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
-                data-i18n-placeholder="placeholder_recipient" placeholder="English name only" required>
-
-            <label data-i18n="label_mission" style="margin-top: 20px;">🎯 Choose Mission</label>
-            <select id="mission" required
-                style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;">
-                <option value="deliver_message" data-i18n="opt_mouth_deliver" selected>Deliver Message to Someone
-                </option>
-                <option value="check_info" data-i18n="opt_mouth_check">Check Information with Someone</option>
-                <option value="other" data-i18n="opt_mouth_other">Other (Specify below)</option>
-            </select>
-            <input type="text" id="customMission"
-                style="display: none; margin-top: 10px; width: 100%; padding: 12px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;"
-                data-i18n-placeholder="placeholder_custom_mission" placeholder="Describe your mission...">
-
-            <label data-i18n="label_phone">📞 Recipient Phone</label>
-            <div class="phone-container">
-                <input type="tel" id="targetPhone" required style="width: 100%;">
-            </div>
-            <div id="phoneHint" style="font-size: 11px; color: #ff4d4d; margin-top: 5px; display: none;"
-                data-i18n="validation_phone">
-                Invalid phone format for selected country
-            </div>
-
-            <label data-i18n="label_script_language" style="margin-top: 15px;">🗣️ Speaking Language</label>
-            <div style="font-size: 11px; color: #888; margin-bottom: 5px;" id="autoDetectHint">
-                Default auto-detect based on phone number
-            </div>
-            <select id="scriptLanguage"
-                style="width: 100%; padding: 12px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white; margin-bottom: 20px;">
-                <option value="auto" data-i18n="option_auto" selected>✨ Auto-Detect</option>
+    <div class="main-content">
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
+            <select id="languageSelector" class="language-selector">
                 <option value="en">🇺🇸 English</option>
                 <option value="zh">🇹🇼 繁體中文</option>
                 <option value="jp">🇯🇵 日本語</option>
@@ -112,51 +79,132 @@
                 <option value="it">🇮🇹 Italiano</option>
             </select>
 
-            <label data-i18n="label_script">📄 AI Message Script</label>
-            <textarea id="scriptContent" rows="4" data-i18n-placeholder="placeholder_script"
-                placeholder="What should the AI say?" required></textarea>
+            <div style="text-align: center; margin-bottom: 10px;">
+                <a href="https://wise-catty.cc/" style="display: inline-block;">
+                    <img src="../assets/profile_anim.gif" alt="AI Cat" class="logo"
+                        style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; cursor: pointer;">
+                </a>
+            </div>
 
-            <label data-i18n="label_schedule" style="margin-top: 20px;">Schedule Call Preference</label>
-            <div class="schedule-options" style="margin-bottom: 15px;">
-                <select id="schedulePreference"
-                    style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;">
-                    <option value="asap" data-i18n="option_asap">Call ASAP</option>
-                    <option value="scheduled" data-i18n="option_scheduled">Schedule a specific time</option>
+            <h2 data-i18n="mouthpiece_title">📢 AI Mouthpiece</h2>
+            <form id="mouthpieceForm">
+                <label data-i18n="label_your_name">👤 Your Name</label>
+                <input type="text" id="userName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
+                    data-i18n-placeholder="placeholder_name" placeholder="English name only" required>
+
+                <label data-i18n="label_recipient_name">👤 Recipient Name</label>
+                <input type="text" id="recipientName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
+                    data-i18n-placeholder="placeholder_recipient" placeholder="English name only" required>
+
+                <label data-i18n="label_mission" style="margin-top: 20px;">🎯 Choose Mission</label>
+                <select id="mission" required
+                    style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;">
+                    <option value="deliver_message" data-i18n="opt_mouth_deliver" selected>Deliver Message to Someone
+                    </option>
+                    <option value="check_info" data-i18n="opt_mouth_check">Check Information with Someone</option>
+                    <option value="other" data-i18n="opt_mouth_other">Other (Specify below)</option>
+                </select>
+                <input type="text" id="customMission"
+                    style="display: none; margin-top: 10px; width: 100%; padding: 12px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;"
+                    data-i18n-placeholder="placeholder_custom_mission" placeholder="Describe your mission...">
+
+                <label data-i18n="label_phone">📞 Recipient Phone</label>
+                <div class="phone-container">
+                    <input type="tel" id="targetPhone" required style="width: 100%;">
+                </div>
+                <div id="phoneHint" style="font-size: 11px; color: #ff4d4d; margin-top: 5px; display: none;"
+                    data-i18n="validation_phone">
+                    Invalid phone format for selected country
+                </div>
+
+                <label data-i18n="label_script_language" style="margin-top: 15px;">🗣️ Speaking Language</label>
+                <div style="font-size: 11px; color: #888; margin-bottom: 5px;" id="autoDetectHint">
+                    Default auto-detect based on phone number
+                </div>
+                <select id="scriptLanguage"
+                    style="width: 100%; padding: 12px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white; margin-bottom: 20px;">
+                    <option value="auto" data-i18n="option_auto" selected>✨ Auto-Detect</option>
+                    <option value="en">🇺🇸 English</option>
+                    <option value="zh">🇹🇼 繁體中文</option>
+                    <option value="jp">🇯🇵 日本語</option>
+                    <option value="kr">🇰🇷 한국어</option>
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="it">🇮🇹 Italiano</option>
                 </select>
 
-                <div id="scheduleContainer" style="display: none; padding-left: 10px; border-left: 2px solid #555;">
-                    <label data-i18n="label_call_time">Call Time</label>
-                    <input type="datetime-local" id="scheduleTime" style="width: 100%; margin-bottom: 5px;">
-                    <div id="timezoneInfo" style="font-size: 12px; color: #aaa; margin-bottom: 15px;">
-                        Timezone: <span id="detectedTimezone">Auto-detecting...</span>
+                <label data-i18n="label_script">📄 AI Message Script</label>
+                <textarea id="scriptContent" rows="4" data-i18n-placeholder="placeholder_script"
+                    placeholder="What should the AI say?" required></textarea>
+
+                <label data-i18n="label_schedule" style="margin-top: 20px;">Schedule Call Preference</label>
+                <div class="schedule-options" style="margin-bottom: 15px;">
+                    <select id="schedulePreference"
+                        style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;">
+                        <option value="asap" data-i18n="option_asap">Call ASAP</option>
+                        <option value="scheduled" data-i18n="option_scheduled">Schedule a specific time</option>
+                    </select>
+
+                    <div id="scheduleContainer" style="display: none; padding-left: 10px; border-left: 2px solid #555;">
+                        <label data-i18n="label_call_time">Call Time</label>
+                        <input type="datetime-local" id="scheduleTime" style="width: 100%; margin-bottom: 5px;">
+                        <div id="timezoneInfo" style="font-size: 12px; color: #aaa; margin-bottom: 15px;">
+                            Timezone: <span id="detectedTimezone">Auto-detecting...</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="retry-container">
-                <input type="checkbox" id="retryOption">
-                <label for="retryOption">
-                    <span data-i18n="label_retry">Re-try 1 time</span>
-                    <span class="warning-text" data-i18n="warning_retry">(This will charge you twice, careful)</span>
-                </label>
-            </div>
-
-            <div class="credits-card" style="margin-top: 45px;">
-                <div class="credits-info">
-                    <span id="creditsDisplay" data-i18n="text_credits" style="font-weight: bold; color: #fff;">Current
-                        Credits: $0 USD</span>
+                <div class="retry-container">
+                    <input type="checkbox" id="retryOption">
+                    <label for="retryOption">
+                        <span data-i18n="label_retry">Re-try 1 time</span>
+                        <span class="warning-text" data-i18n="warning_retry">(This will charge you twice,
+                            careful)</span>
+                    </label>
                 </div>
-                <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank" data-i18n="btn_refill"
-                    class="refill-btn">Refill</a>
-            </div>
 
-            <div id="turnstile-widget" style="margin-top: 20px;"></div>
+                <div class="credits-card" style="margin-top: 45px;">
+                    <div class="credits-info">
+                        <span id="creditsDisplay" data-i18n="text_credits"
+                            style="font-weight: bold; color: #fff;">Current
+                            Credits: $0 USD</span>
+                    </div>
+                    <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank" data-i18n="btn_refill"
+                        class="refill-btn">Refill</a>
+                </div>
 
-            <button type="submit" id="submitBtn" data-i18n="btn_submit" disabled>Start AI Call</button>
-            <a href="https://wise-catty.cc/" class="back-link" data-i18n="btn_back">← Back to Portal</a>
-            <div class="footer" data-i18n="footer">Automated call service provided by WiseCat AI</div>
-        </form>
+                <div id="turnstile-widget" style="margin-top: 20px;"></div>
+
+                <button type="submit" id="submitBtn" data-i18n="btn_submit" disabled>Start AI Call</button>
+                <a href="/dashboard.html" class="back-link" data-i18n="btn_back">← Back to Dashboard</a>
+                <div class="footer" data-i18n="footer">Automated call service provided by WiseCat AI</div>
+            </form>
+        </div>
     </div>
+
+    <!-- Bottom Navigation (Mobile) / Side Navigation (Desktop) -->
+    <nav class="bottom-nav">
+        <a href="/dashboard.html?tab=calls" class="nav-item">
+            <span class="nav-icon">📞</span>
+            <span class="nav-label">Calls</span>
+        </a>
+        <a href="/dashboard.html?tab=profile" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">Profile</span>
+        </a>
+        <a href="/dashboard.html?tab=add" class="nav-item">
+            <span class="nav-icon">➕</span>
+            <span class="nav-label">Add</span>
+        </a>
+        <a href="/dashboard.html?tab=ai" class="nav-item active">
+            <span class="nav-icon">🤖</span>
+            <span class="nav-label">AI</span>
+        </a>
+        <a href="/dashboard.html?tab=inbox" class="nav-item">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label">Inbox</span>
+        </a>
+    </nav>
 
     <!-- Help Buddy -->
     <button class="helper-buddy" id="helperBuddy">🐱</button>

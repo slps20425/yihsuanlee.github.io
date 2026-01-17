@@ -25,6 +25,15 @@ const userName = document.getElementById('userName') as HTMLElement | null;
 const userEmail = document.getElementById('userEmail') as HTMLElement | null;
 const userAvatar = document.getElementById('userAvatar') as HTMLImageElement | null;
 const creditsDisplay = document.getElementById('creditsDisplay') as HTMLElement | null;
+
+// Phone Requirement Tracking
+let hasActivePhoneNumber = false;
+const noNumberReminder = document.getElementById('noNumberReminder');
+const linkRestaurant = document.getElementById('linkRestaurant');
+const linkMouthpiece = document.getElementById('linkMouthpiece');
+const noNumberDialog = document.getElementById('noNumberDialog') as HTMLDialogElement | null;
+const goToAddTabBtn = document.getElementById('goToAddTabBtn');
+const closeNoNumberBtn = document.getElementById('closeNoNumberBtn');
 const logoutBtn = document.getElementById('logoutBtn') as HTMLButtonElement | null;
 const headerLogoutBtn = document.getElementById('headerLogoutBtn') as HTMLButtonElement | null;
 
@@ -87,10 +96,25 @@ try {
 onAuthStateChanged(auth, async (user) => {
     console.log("🔥 onAuthStateChanged event:", user ? `Logged in as ${user.uid}` : "Logged out (null)");
     const headerUserName = document.getElementById('headerUserName');
-    const headerCredits = document.getElementById('creditsDisplay');
+    // const headerCredits = document.getElementById('creditsDisplay'); // Commented out to fix lint warning
     const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement;
 
     if (!user) {
+        // If we have a cached user, we can wait a bit longer for Firebase to catch up
+        // instead of redirecting immediately which might be a race condition.
+        const cachedUser = localStorage.getItem('wisecat_user');
+        if (cachedUser) {
+            console.log("Wait for Firebase Auth (cached user exists)...");
+            // If it's been more than 3 seconds and still no user, then redirect
+            setTimeout(() => {
+                if (!auth.currentUser) {
+                    console.log("Still no user after delay. Redirecting...");
+                    window.location.href = '/Entry.html';
+                }
+            }, 3000);
+            return;
+        }
+
         console.log("No user logged in on dashboard. Redirecting to Entry.html...");
         window.location.href = '/Entry.html';
         return;
@@ -251,7 +275,17 @@ function loadUserSettings() {
                 const firstCard = addTab?.querySelector('.card');
                 if (firstCard) (firstCard as HTMLElement).style.display = 'block';
             }
+
+            // Sync Requirement UI
+            hasActivePhoneNumber = (settings.phoneNumberStatus === 'active' && !!settings.phoneNumber);
+            if (noNumberReminder) {
+                noNumberReminder.style.display = hasActivePhoneNumber ? 'none' : 'flex';
+            }
         } else {
+            hasActivePhoneNumber = false;
+            if (noNumberReminder) {
+                noNumberReminder.style.display = 'flex';
+            }
             if (phoneNumberCard) phoneNumberCard.hidden = true;
             const twilioCredsCard = document.getElementById('twilioCredsCard');
             if (twilioCredsCard) twilioCredsCard.hidden = true;
@@ -331,29 +365,32 @@ if (searchBtn) {
             numbers.forEach((number: any) => {
                 const capabilities = number.capabilities || {};
                 const badges: string[] = [];
-                if (capabilities.voice) badges.push('<span style="background: var(--success); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">📞 Voice</span>');
-                if (capabilities.SMS) badges.push('<span style="background: var(--accent); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">💬 SMS</span>');
-                if (capabilities.MMS) badges.push('<span style="background: var(--warning); color: var(--bg-dark); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">📸 MMS</span>');
+                if (capabilities.voice) badges.push('<span class="capability-tag capability-voice">Voice</span>');
+                if (capabilities.SMS) badges.push('<span class="capability-tag capability-sms">SMS</span>');
+                if (capabilities.MMS) badges.push('<span class="capability-tag capability-mms">MMS</span>');
 
-                // Dynamic Pricing (Cost * 2) - Each number now has its own cost from backend
                 const baseCost = number.cost || 3.00;
                 const monthlyPrice = baseCost * 2;
 
-                const li = document.createElement('li');
-                li.className = 'number-item';
-                li.innerHTML = `
-                    <div>
-                        <div style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">${number.phoneNumber}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${number.locality || ''}, ${number.region || country}</div>
-                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">${badges.join('')}</div>
+                const card = document.createElement('div');
+                card.className = 'number-card';
+                card.innerHTML = `
+                    <div class="number-card-header">
+                        <div class="number-card-phone">${number.phoneNumber}</div>
+                        <div class="number-card-location">${number.locality || ''}, ${number.region || country}</div>
                     </div>
-                    <button class="btn btn-primary">Buy $${monthlyPrice.toFixed(2)}/mo</button>
+                    <div class="number-card-capabilities">
+                        ${badges.join('')}
+                    </div>
+                    <div class="buy-button-container">
+                        <button class="btn btn-primary btn-full">Buy $${monthlyPrice.toFixed(2)}/mo</button>
+                    </div>
                 `;
 
-                const buyBtn = li.querySelector('button') as HTMLButtonElement;
-                buyBtn.addEventListener('click', () => openPurchaseDialog(number, monthlyPrice)); // Pass calculated price
+                const buyBtn = card.querySelector('button') as HTMLButtonElement;
+                buyBtn.addEventListener('click', () => openPurchaseDialog(number, monthlyPrice));
 
-                numbersList.appendChild(li);
+                numbersList.appendChild(card);
             });
 
         } catch (error: any) {
@@ -511,3 +548,28 @@ function handleLogout() {
 
 if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
 if (headerLogoutBtn) headerLogoutBtn.addEventListener('click', handleLogout);
+
+// --- AI Service Protection ---
+function handleAIServiceClick(e: Event) {
+    if (!hasActivePhoneNumber) {
+        e.preventDefault();
+        noNumberDialog?.showModal();
+    }
+}
+
+linkRestaurant?.addEventListener('click', handleAIServiceClick);
+linkMouthpiece?.addEventListener('click', handleAIServiceClick);
+
+goToAddTabBtn?.addEventListener('click', () => {
+    noNumberDialog?.close();
+    // Simulate clicking the "Add" tab button
+    const addTabBtn = document.querySelector('[data-tab="add"]') as HTMLButtonElement | null;
+    if (addTabBtn) {
+        addTabBtn.click();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+});
+
+closeNoNumberBtn?.addEventListener('click', () => {
+    noNumberDialog?.close();
+});
