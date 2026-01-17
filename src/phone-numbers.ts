@@ -38,16 +38,21 @@ const cancelReleaseBtn = document.getElementById('cancelReleaseBtn') as HTMLButt
 const confirmReleaseBtn = document.getElementById('confirmReleaseBtn') as HTMLButtonElement | null;
 
 // Auth Check
+// Auth Check
 onAuthStateChanged(auth, async (user) => {
+    const headerUserName = document.getElementById('headerUserName');
+    const headerCredits = document.getElementById('creditsDisplay');
+    const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement;
+
     if (!user) {
-        // If not logged in, redirect to entry or show login
-        // But for consistency with user request, we just show "not logged in" state
         console.log("No user logged in on dashboard.");
-
-        // Update header to show "Guest" or "Login"
-        const headerUserName = document.getElementById('headerUserName');
-        if (headerUserName) headerUserName.textContent = 'Guest';
-
+        if (headerUserName) {
+            headerUserName.textContent = 'Guest (Login)';
+            headerUserName.onclick = () => window.location.href = '/Entry.html';
+        }
+        if (headerUserAvatar) {
+            headerUserAvatar.src = "https://ui-avatars.com/api/?name=Guest";
+        }
         return;
     }
 
@@ -61,9 +66,20 @@ onAuthStateChanged(auth, async (user) => {
             userAvatar.src = user.photoURL;
         }
 
-        // Update header username
-        const headerUserName = document.getElementById('headerUserName');
-        if (headerUserName) headerUserName.textContent = user.displayName || 'User';
+        // Update header info
+        if (headerUserName) {
+            headerUserName.textContent = user.displayName || 'User';
+            // Remove redirect onclick if logged in, or make it go to profile
+            headerUserName.onclick = () => {
+                const profileTab = document.querySelector('[data-tab="profile"]') as HTMLElement;
+                if (profileTab) profileTab.click();
+            };
+        }
+        if (headerUserAvatar && user.photoURL) {
+            headerUserAvatar.src = user.photoURL;
+        } else if (headerUserAvatar) {
+            headerUserAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`;
+        }
 
         loadUserSettings();
     }
