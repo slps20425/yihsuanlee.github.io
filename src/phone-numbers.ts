@@ -229,38 +229,40 @@ function loadUserSettings() {
                     const capabilities = settings.capabilities || {};
                     const capsHtml = `
                         <div style="display: flex; gap: 8px;">
-                            ${capabilities.voice || capabilities.Voice ? '<span>📞</span>' : ''}
-                            ${capabilities.sms || capabilities.SMS ? '<span>💬</span>' : ''}
-                            ${capabilities.mms || capabilities.MMS ? '<span>📸</span>' : ''}
-                            ${capabilities.fax || capabilities.Fax ? '<span>fax</span>' : ''}
+                            ${capabilities.voice || capabilities.Voice ? '<span>📞 Voice</span>' : ''}
+                            ${capabilities.sms || capabilities.SMS ? '<span>💬 SMS</span>' : ''}
+                            ${capabilities.mms || capabilities.MMS ? '<span>📸 MMS</span>' : ''}
+                            ${capabilities.fax || capabilities.Fax ? '<span>📠 Fax</span>' : ''}
                         </div>
                     `;
 
-                    const configHtml = `
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">
-                            <div style="margin-bottom: 4px;"><strong>Voice:</strong> Webhook to POST</div>
-                            <div style="font-family: monospace; color: var(--accent); margin-bottom: 8px;">https://api.vapi.ai/twilio/inbound_call</div>
-                            
-                            <div style="margin-bottom: 4px;"><strong>Messaging:</strong> Webhook to POST</div>
-                            <div style="font-family: monospace; color: var(--accent);">https://api.vapi.ai/twilio/sms</div>
-                        </div>
-                    `;
+                    // Mask Phone ID
+                    const rawId = settings.vapiPhoneNumberId || '';
+                    let maskedId = '-';
+                    if (rawId && rawId.length > 10) {
+                        maskedId = rawId.substring(0, 4) + '••••' + rawId.substring(rawId.length - 4);
+                    } else {
+                        maskedId = rawId;
+                    }
 
                     tableBody.innerHTML = `
                         <tr>
-                            <td style="padding: 10px; font-weight: bold; color: var(--success); vertical-align: top;">
+                            <td style="padding: 10px; font-weight: bold; color: var(--success); vertical-align: middle;">
                                 ${settings.phoneNumber}
                             </td>
-                            <td style="padding: 10px; vertical-align: top;">
-                                ${settings.friendlyName || 'Unknown Location'}
+                            <td style="padding: 10px; font-family: monospace; color: var(--text-secondary); vertical-align: middle;">
+                                ${maskedId}
                             </td>
-                            <td style="padding: 10px; vertical-align: top;">
+                            <td style="padding: 10px; vertical-align: middle;">
+                                <input type="text" id="friendlyNameInput" 
+                                    value="${settings.friendlyName || ''}" 
+                                    placeholder="Enter label..."
+                                    style="background: transparent; border: 1px solid var(--border); color: var(--text-primary); padding: 4px 8px; border-radius: 4px; width: 100%; max-width: 200px;">
+                            </td>
+                            <td style="padding: 10px; vertical-align: middle;">
                                 ${capsHtml}
                             </td>
-                            <td style="padding: 10px; vertical-align: top;">
-                                ${configHtml}
-                            </td>
-                            <td style="padding: 10px; vertical-align: top;">
+                            <td style="padding: 10px; vertical-align: middle;">
                                 <button id="releaseBtnInTable" class="btn btn-outline-danger" style="padding: 4px 8px; font-size: 0.85rem;">Release</button>
                             </td>
                         </tr>
@@ -271,6 +273,35 @@ function loadUserSettings() {
                     if (releaseBtnInTable) {
                         releaseBtnInTable.addEventListener('click', () => {
                             if (releaseDialog) releaseDialog.showModal();
+                        });
+                    }
+
+                    // Attach Friendly Name Edit Listener
+                    const friendlyNameInput = document.getElementById('friendlyNameInput') as HTMLInputElement;
+                    if (friendlyNameInput) {
+                        friendlyNameInput.addEventListener('change', async (e) => {
+                            const params = (e.target as HTMLInputElement).value;
+                            try {
+                                // We have 'doc' and 'db' imported at top.
+                                // We can use: import { updateDoc } from "firebase/firestore";
+                                // But let's check imports at top of file needed.
+                                // Actually, I'll use the 'doc' ref we already have: settingsDoc
+                                // We need 'updateDoc' or 'setDoc'. importing dynamically or assuming availability.
+                                // Let's use dynamic import to be safe if not at top, or just use existing imports.
+                                // Checking imports: 'import { doc, onSnapshot } from "firebase/firestore";'
+                                // Need to add 'setDoc' to imports? No, I can't edit top of file easily with this tool if I don't target it.
+                                // I'll use dynamic import for updateDoc to be safe and clean.
+                                const { updateDoc } = await import("firebase/firestore");
+                                await updateDoc(settingsDoc, { friendlyName: params });
+                                console.log("Friendly Name updated to:", params);
+
+                                // Optional: Visual feedback
+                                friendlyNameInput.style.borderColor = 'var(--success)';
+                                setTimeout(() => friendlyNameInput.style.borderColor = 'var(--border)', 1000);
+                            } catch (err) {
+                                console.error("Failed to update friendly name:", err);
+                                alert("Failed to save name.");
+                            }
                         });
                     }
                 }
