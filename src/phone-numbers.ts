@@ -336,6 +336,10 @@ if (searchBtn) {
                 if (capabilities.SMS) badges.push('<span style="background: var(--accent); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">💬 SMS</span>');
                 if (capabilities.MMS) badges.push('<span style="background: var(--warning); color: var(--bg-dark); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">📸 MMS</span>');
 
+                // Determine price based on type
+                const isTollFree = type === 'tollFree';
+                const monthlyPrice = isTollFree ? 50.00 : 3.00;
+
                 const li = document.createElement('li');
                 li.className = 'number-item';
                 li.innerHTML = `
@@ -344,11 +348,11 @@ if (searchBtn) {
                         <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${number.locality || ''}, ${number.region || country}</div>
                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">${badges.join('')}</div>
                     </div>
-                    <button class="btn btn-primary">Buy $3.00/mo</button>
+                    <button class="btn btn-primary">Buy $${monthlyPrice.toFixed(2)}/mo</button>
                 `;
 
                 const buyBtn = li.querySelector('button') as HTMLButtonElement;
-                buyBtn.addEventListener('click', () => openPurchaseDialog(number));
+                buyBtn.addEventListener('click', () => openPurchaseDialog(number, monthlyPrice)); // Pass price
 
                 numbersList.appendChild(li);
             });
@@ -365,10 +369,16 @@ if (searchBtn) {
 }
 
 // Open Purchase Dialog
-function openPurchaseDialog(number: any) {
+function openPurchaseDialog(number: any, price: number = 3.00) {
     selectedNumber = number;
     if (confirmPhoneNumber) confirmPhoneNumber.textContent = number.phoneNumber;
     if (confirmLocation) confirmLocation.textContent = `${number.locality || ''}, ${number.region || ''}`;
+
+    // Update dialog price text if element exists (you might need to add this ID to HTML first, 
+    // but for now let's just update the button text if needed, or assume fixed price UI)
+    // Actually, let's update the confirm button text to show price
+    if (confirmPurchaseBtn) confirmPurchaseBtn.textContent = `Purchase for $${price.toFixed(2)}`;
+
     if (purchaseDialog) purchaseDialog.showModal();
 }
 
