@@ -332,6 +332,7 @@ onAuthStateChanged(auth, (user) => {
                 };
 
                 // Sync to localStorage
+                console.log("📝 Saving user session to localStorage:", userSession);
                 localStorage.setItem('wisecat_user', JSON.stringify(userSession));
                 displayUserProfile(userSession);
             } else {

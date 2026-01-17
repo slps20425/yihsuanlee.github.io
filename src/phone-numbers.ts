@@ -38,11 +38,12 @@ const cancelReleaseBtn = document.getElementById('cancelReleaseBtn') as HTMLButt
 const confirmReleaseBtn = document.getElementById('confirmReleaseBtn') as HTMLButtonElement | null;
 
 // --- Restore Session from LocalStorage (Immediate UI Feedback) ---
+console.log("Dashboard loaded at " + new Date().toISOString());
 try {
     const cachedUser = localStorage.getItem('wisecat_user');
     if (cachedUser) {
         const u = JSON.parse(cachedUser);
-        console.log("Restoring session from localStorage:", u);
+        console.log("✅ Restoring session from localStorage:", u);
 
         // Update Header
         const headerUserName = document.getElementById('headerUserName');
@@ -71,15 +72,18 @@ try {
             if (creditsDisplay) creditsDisplay.textContent = fmt;
             if (profileCredits) profileCredits.textContent = fmt;
         }
+    } else {
+        console.warn("⚠️ No 'wisecat_user' found in localStorage.");
     }
 } catch (e) {
-    console.error("Error restoring session:", e);
+    console.error("❌ Error restoring session:", e);
 }
 // ----------------------------------------------------------------
 
 // Auth Check
 // Auth Check
 onAuthStateChanged(auth, async (user) => {
+    console.log("🔥 onAuthStateChanged event:", user ? `Logged in as ${user.uid}` : "Logged out (null)");
     const headerUserName = document.getElementById('headerUserName');
     const headerCredits = document.getElementById('creditsDisplay');
     const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement;
