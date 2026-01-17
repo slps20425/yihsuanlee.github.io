@@ -508,11 +508,14 @@ exports.purchasePhoneNumber = onCall(
             }
 
             // Step 5: Save complete state to Firestore
+            // Save capabilities to enable feature flagging (e.g. SMS)
             await settingsRef.set({
                 phoneNumber: phoneNumber,
                 vapiPhoneNumberId: vapiPhoneNumberId,
                 phoneNumberStatus: 'active',
-                phoneNumberPurchasedAt: admin.firestore.FieldValue.serverTimestamp()
+                phoneNumberPurchasedAt: admin.firestore.FieldValue.serverTimestamp(),
+                capabilities: purchasedNumber.capabilities || {}, // { voice: true, sms: true, mms: false }
+                smsEnabled: purchasedNumber.capabilities?.sms || false // Explicit flag for easier querying
             }, { merge: true });
 
             console.log(`[purchasePhoneNumber] Success! Number ${phoneNumber} is active`);
