@@ -1,21 +1,8 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, onSnapshot } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, onSnapshot } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
+import { app, auth, db } from "./firebase-config"; // Use shared config
 
-// Firebase config
-const firebaseConfig = {
-    apiKey: "AIzaSyA6J4fAGE0E9Sd0HRa9V_95u4TT3eOQP14",
-    authDomain: "wisecat-8df8d.firebaseapp.com",
-    projectId: "wisecat-8df8d",
-    storageBucket: "wisecat-8df8d.firebasestorage.app",
-    messagingSenderId: "1078479155773",
-    appId: "1:1078479155773:web:b7dd5e95cb45a30be72b31"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
 const functions = getFunctions(app);
 
 // State
@@ -52,11 +39,17 @@ const confirmReleaseBtn = document.getElementById('confirmReleaseBtn') as HTMLBu
 
 // Auth Check
 onAuthStateChanged(auth, async (user) => {
-    // DISABLED: Let anyone access dashboard, shows login prompt if needed
-    // if (!user) {
-    //     window.location.href = '/Entry.html';
-    //     return;
-    // }
+    if (!user) {
+        // If not logged in, redirect to entry or show login
+        // But for consistency with user request, we just show "not logged in" state
+        console.log("No user logged in on dashboard.");
+
+        // Update header to show "Guest" or "Login"
+        const headerUserName = document.getElementById('headerUserName');
+        if (headerUserName) headerUserName.textContent = 'Guest';
+
+        return;
+    }
 
     currentUser = user;
 
@@ -80,6 +73,10 @@ onAuthStateChanged(auth, async (user) => {
 function loadUserSettings() {
     if (!currentUser) return;
 
+    // Note: 'users' collection is in 'reservation' DB (handled by shared 'db' export)
+    // But check if db in firebase-config is "reservation" or default?
+    // src/firebase-config.ts exports 'db' as getFirestore(app, "reservation")
+    // So we can use it directly.
     const userDoc = doc(db, 'users', `uid_${currentUser.uid}`);
 
     // Listen to user credits
@@ -155,7 +152,11 @@ function loadUserSettings() {
                 const addTabMessage = document.createElement('div');
                 addTabMessage.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text-secondary);"><div style="font-size: 3rem; margin-bottom: 1rem;">📱</div><div style="font-size: 1.2rem; margin-bottom: 0.5rem;">You already have a phone number</div><div>To add a new number, please release your current number first from the Profile tab.</div></div>';
                 const addTab = document.getElementById('addTab');
-                if (addTab && !document.getElementById('hasNumberMessage')) {
+                // Clean up previous message if any
+                const existingMsg = document.getElementById('hasNumberMessage');
+                if (existingMsg) existingMsg.remove();
+
+                if (addTab) {
                     addTabMessage.id = 'hasNumberMessage';
                     const firstCard = addTab.querySelector('.card') as HTMLElement;
                     if (firstCard) firstCard.style.display = 'none';
@@ -195,6 +196,12 @@ function maskCredential(cred: string): string {
 // Search Numbers
 if (searchBtn) {
     searchBtn.addEventListener('click', async () => {
+        // Validation: Check if user is logged in
+        if (!auth.currentUser) {
+            alert("Please log in to search for numbers.");
+            return;
+        }
+
         const countrySelect = document.getElementById('countrySelect') as HTMLSelectElement | null;
         const voiceCapability = document.getElementById('voiceCapability') as HTMLInputElement | null;
         const smsCapability = document.getElementById('smsCapability') as HTMLInputElement | null;
@@ -358,23 +365,44 @@ if (confirmReleaseBtn) {
 const navItems = document.querySelectorAll('.nav-item');
 const tabSections = document.querySelectorAll('.tab-section');
 
+// Function to activate tab
+function activateTab(tabName: string) {
+    // Validate tab name
+    const targetTab = document.getElementById(`${tabName}Tab`);
+    if (!targetTab) return;
+
+    // Remove active from all nav items
+    navItems.forEach(item => {
+        if (item.getAttribute('data-tab') === tabName) {
+            item.classList.add('active');
+        } else {
+            item.classList.remove('active');
+        }
+    });
+
+    // Hide all tab sections
+    tabSections.forEach(section => section.classList.remove('active'));
+
+    // Show selected tab
+    targetTab.classList.add('active');
+
+    // Persist to localStorage
+    localStorage.setItem('wisecat_active_tab', tabName);
+}
+
 navItems.forEach(navItem => {
     navItem.addEventListener('click', () => {
         const tabName = navItem.getAttribute('data-tab');
-
-        // Remove active from all nav items
-        navItems.forEach(item => item.classList.remove('active'));
-
-        // Add active to clicked item
-        navItem.classList.add('active');
-
-        // Hide all tab sections
-        tabSections.forEach(section => section.classList.remove('active'));
-
-        // Show selected tab
-        const targetTab = document.getElementById(`${tabName}Tab`);
-        if (targetTab) {
-            targetTab.classList.add('active');
-        }
+        if (tabName) activateTab(tabName);
     });
+});
+
+// Restore Tab on Load
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTab = localStorage.getItem('wisecat_active_tab');
+    if (savedTab) {
+        activateTab(savedTab);
+    } else {
+        activateTab('ai'); // Default
+    }
 });
