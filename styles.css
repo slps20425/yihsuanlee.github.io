@@ -1860,3 +1860,9 @@ body.dashboard-layout {
     margin-right: auto;
     display: flex;
 }
+
+/* --- Credits Reminder Fix --- */
+.credits-info-box {
+    max-width: 300px;
+    margin: 1rem auto 0 auto !important; /* Center and match button width */
+}

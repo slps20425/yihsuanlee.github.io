@@ -279,8 +279,11 @@ exports.searchNumbers = onCall(
             const searchParams = { limit: 20 };
             if (areaCode) searchParams.areaCode = areaCode;
             if (voice) searchParams.voiceEnabled = true;
-            if (sms) searchParams.smsEnabled = true;
-            if (mms) searchParams.mmsEnabled = true;
+            // Relaxed Search: User requested "OR" logic / "Don't use AND".
+            // We disable strict filtering for SMS/MMS so that numbers (e.g. NZ Local) 
+            // valid for Voice but lacking SMS still appear.
+            // if (sms) searchParams.smsEnabled = true;
+            // if (mms) searchParams.mmsEnabled = true;
 
             try {
                 const apiStart = Date.now();
