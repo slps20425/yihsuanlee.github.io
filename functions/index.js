@@ -310,17 +310,23 @@ exports.searchNumbers = onCall(
                 }
 
                 const results = numbersList
-                    .map(num => ({
-                        phoneNumber: num.phoneNumber,
-                        locality: num.locality,
-                        region: num.region,
-                        country: country,
-                        capabilities: num.capabilities,
-                        addressRequirements: num.addressRequirements, // usage: 'none', 'any', 'local', 'foreign', 'business'
-                        isoCountry: num.isoCountry,
-                        postalCode: num.postalCode,
-                        cost: numberPrice
-                    }))
+                    .map(num => {
+                        // DEBUG: Log unusual requirements to help refine filter
+                        if (num.addressRequirements !== 'none') {
+                            console.log(`[searchNumbers] Found Number: ${num.phoneNumber}, Req: ${num.addressRequirements}`);
+                        }
+                        return {
+                            phoneNumber: num.phoneNumber,
+                            locality: num.locality,
+                            region: num.region,
+                            country: country,
+                            capabilities: num.capabilities,
+                            addressRequirements: num.addressRequirements, // usage: 'none', 'any', 'local', 'foreign', 'business'
+                            isoCountry: num.isoCountry,
+                            postalCode: num.postalCode,
+                            cost: numberPrice
+                        };
+                    })
                     // BACKEND FILTER: Explicitly remove numbers that require a Business Address.
                     // User Request: "Hide business... display non-business (only individual)"
                     .filter(num => !String(num.addressRequirements).toLowerCase().includes('business'));
@@ -356,8 +362,9 @@ exports.purchasePhoneNumber = onCall(
             }
 
             const { phoneNumber } = request.data;
-            if (!phoneNumber || !/^\+1\d{10}$/.test(phoneNumber)) {
-                throw new HttpsError("invalid-argument", "Valid E.164 phone number required (e.g., +18001234567)");
+            // FIXED: Relaxed validation for International Numbers (e.g. +81 for Japan, +64 for NZ)
+            if (!phoneNumber || !/^\+[1-9]\d{1,14}$/.test(phoneNumber)) {
+                throw new HttpsError("invalid-argument", "Valid E.164 phone number required (e.g., +18001234567 or +81...)");
             }
 
             const uid = request.auth.uid;
