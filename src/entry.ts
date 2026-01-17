@@ -251,6 +251,8 @@ async function handleSocialLogin(provider: any) {
         console.log(`Connecting to DB: ${db.app.options.projectId}, DB ID: ${(db as any)._databaseId?.database || 'default'}`);
         const docSnap = await getDoc(userRef);
 
+        let sessionData;
+
         if (!docSnap.exists()) {
             const initialData = {
                 name: user.displayName || "WiseCat User",
@@ -262,7 +264,24 @@ async function handleSocialLogin(provider: any) {
             };
             await setDoc(userRef, initialData);
             console.log('New user document created with $1.00 bonus:', userIdentifier);
+            // Prepare session data (use 1.00 for credits)
+            sessionData = { ...initialData, credits: 1.00, createdAt: Date.now() }; // approximate timestamp
+        } else {
+            const data = docSnap.data();
+            sessionData = {
+                uid: user.uid,
+                email: user.email,
+                name: user.displayName,
+                picture: user.photoURL,
+                credits: data.credits || 0
+            };
         }
+
+        // Immediate Local Storage Save (Redundancy)
+        console.log("📝 Immediate Save from Login:", sessionData);
+        localStorage.setItem('wisecat_user', JSON.stringify(sessionData));
+        displayUserProfile(sessionData);
+
     } catch (error: any) {
         console.error('Social login error:', error);
         if (authError) authError.textContent = 'Auth error: ' + error.message;
