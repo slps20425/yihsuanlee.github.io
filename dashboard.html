@@ -51,7 +51,8 @@
         .header-content {
             max-width: 1400px;
             width: 95%;
-            margin: 0 auto;
+            margin-left: 2.5%;
+            /* Default mobile centering */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -78,7 +79,8 @@
         .main-content {
             max-width: 1400px;
             width: 95%;
-            margin: 0 auto;
+            margin-left: 2.5%;
+            /* Default mobile centering */
             padding: 1.5rem;
         }
 
@@ -335,6 +337,15 @@
 
             .nav-label {
                 font-size: 1rem;
+            }
+
+            .header-content {
+                margin-left: 2rem;
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: calc(100% - 2rem);
             }
         }
     </style>
