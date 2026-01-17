@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Fetch User Data to sync localStorage
                 // We need to mirror what handleSocialLogin does in entry.ts
-                const userRef = doc(db, 'reservation', 'users', 'uid_' + user.uid);
+                const userRef = doc(db, 'users', 'uid_' + user.uid);
                 let userData: any = {};
 
                 try {
