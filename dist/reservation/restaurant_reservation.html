@@ -44,14 +44,14 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/reservation-Ceq5Z-MW.js"></script>
+  <script type="module" crossorigin src="/assets/reservation-CFA2aNil.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-CZUVvyED.js">
-  <link rel="modulepreload" crossorigin href="/assets/i18n-DC8JRie4.js">
+  <link rel="modulepreload" crossorigin href="/assets/i18n-BT2fXJEB.js">
   <link rel="modulepreload" crossorigin href="/assets/version-Dr8pX8LW.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-O2Hx6jNt.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-AwCycs0Y.js">
   <link rel="modulepreload" crossorigin href="/assets/scam-check-dixBLdR_.js">
-  <link rel="stylesheet" crossorigin href="/assets/i18n-C_jfu4j3.css">
+  <link rel="stylesheet" crossorigin href="/assets/i18n-C0u35Cnl.css">
 </head>
 
 <body class="dashboard-layout">
@@ -331,6 +331,21 @@
                 <option value="it">🇮Ｔ Italiano</option>
             </select>
         </div>
+
+        <!-- Sidebar User Section (Desktop Only) - MOVED TO TOP -->
+        <div class="sidebar-user-section">
+            <div class="sidebar-user-info" onclick="window.location.href='/dashboard.html?tab=profile'">
+                <img id="headerUserAvatar" src="https://ui-avatars.com/api/?name=Guest" alt="Avatar">
+                <div class="sidebar-user-text">
+                    <div id="headerUserName">Guest</div>
+                    <div id="creditsDisplay" class="sidebar-credits">$0.00</div>
+                </div>
+            </div>
+            <button id="headerLogoutBtn" class="sidebar-logout-btn">
+                <span data-i18n="nav_logout">Log out</span>
+            </button>
+        </div>
+
         <a href="/dashboard.html?tab=calls" class="nav-item">
             <span class="nav-icon">📞</span>
             <span class="nav-label" data-i18n="nav_calls">Calls</span>
@@ -351,20 +366,6 @@
             <span class="nav-icon">💬</span>
             <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
         </a>
-
-        <!-- Sidebar User Section (Desktop Only) -->
-        <div class="sidebar-user-section">
-            <div class="sidebar-user-info" onclick="window.location.href='/dashboard.html?tab=profile'">
-                <img id="headerUserAvatar" src="https://ui-avatars.com/api/?name=Guest" alt="Avatar">
-                <div class="sidebar-user-text">
-                    <div id="headerUserName">Guest</div>
-                    <div id="creditsDisplay" class="sidebar-credits">$0.00</div>
-                </div>
-            </div>
-            <button id="headerLogoutBtn" class="sidebar-logout-btn">
-                <span data-i18n="nav_logout">Log out</span>
-            </button>
-        </div>
     </nav>
 
     <div
