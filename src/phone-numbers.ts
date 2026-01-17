@@ -284,6 +284,7 @@ if (searchBtn) {
         }
 
         const countrySelect = document.getElementById('countrySelect') as HTMLSelectElement | null;
+        const numberTypeSelect = document.getElementById('numberTypeSelect') as HTMLSelectElement | null;
         const voiceCapability = document.getElementById('voiceCapability') as HTMLInputElement | null;
         const smsCapability = document.getElementById('smsCapability') as HTMLInputElement | null;
         const mmsCapability = document.getElementById('mmsCapability') as HTMLInputElement | null;
@@ -316,7 +317,8 @@ if (searchBtn) {
                 areaCode,
                 voice,
                 sms,
-                mms
+                mms,
+                type: numberTypeSelect?.value || 'local'
             });
             const fetchDuration = Date.now() - fetchStart;
             console.log(`[Frontend] Search API call took ${fetchDuration}ms`);
