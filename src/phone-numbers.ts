@@ -307,6 +307,9 @@ if (searchBtn) {
         searchBtn.disabled = true;
 
         try {
+            const fetchStart = Date.now();
+            console.log(`[Frontend] Search started for ${country}`);
+
             const searchNumbers = httpsCallable(functions, 'searchNumbers');
             const result = await searchNumbers({
                 country,
@@ -314,8 +317,10 @@ if (searchBtn) {
                 voice,
                 sms,
                 mms
-                // 'type' is now handled automatically by the backend
             });
+            const fetchDuration = Date.now() - fetchStart;
+            console.log(`[Frontend] Search API call took ${fetchDuration}ms`);
+
             const numbers = (result.data as any).numbers || [];
 
             if (!numbersList) return;

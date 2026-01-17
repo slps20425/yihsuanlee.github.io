@@ -264,52 +264,48 @@ exports.triggerN8nWebhook = onDocumentCreated(
 exports.searchNumbers = onCall(
     { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN] },
     async (request) => {
+        const totalStart = Date.now();
         try {
-            // Verify authentication
             if (!request.auth) {
                 throw new HttpsError("unauthenticated", "User must be authenticated");
             }
 
             const { country = 'US', areaCode = '', voice = false, sms = false, mms = false } = request.data;
+            console.log(`[searchNumbers] Performance Tracking Start: ${country}. Area: ${areaCode}`);
 
-            console.log(`[searchNumbers] Unified Search for ${country}. Area: ${areaCode}, V: ${voice}, S: ${sms}, M: ${mms}`);
-
-            // Initialize Twilio client with master account
             const twilio = require('twilio');
             const client = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
 
-            // Build search parameters
             const searchParams = { limit: 20 };
             if (areaCode) searchParams.areaCode = areaCode;
             if (voice) searchParams.voiceEnabled = true;
             if (sms) searchParams.smsEnabled = true;
             if (mms) searchParams.mmsEnabled = true;
 
-            // Parallel search: Local + Mobile + Pricing
-
-            let allNumbers = [];
-
             try {
                 const fetchSource = async (t) => {
+                    const s = Date.now();
                     try {
                         const res = await client.availablePhoneNumbers(country)[t].list(searchParams);
+                        console.log(`[searchNumbers] Twilio ${t} search took ${Date.now() - s}ms`);
                         return res.map(n => ({ ...n, _sourceType: t }));
                     } catch (e) {
+                        console.log(`[searchNumbers] Twilio ${t} search failed (${Date.now() - s}ms): ${e.message}`);
                         if (e.code === 20404 || e.status === 404) return [];
                         throw e;
                     }
                 };
 
+                const apiStart = Date.now();
                 const [lRes, mRes, pData] = await Promise.all([
                     fetchSource('local'),
                     fetchSource('mobile'),
-                    client.pricing.v1.phoneNumbers.countries(country).fetch()
+                    client.pricing.v1.phoneNumbers.countries(country).fetch().then(d => {
+                        console.log(`[searchNumbers] Twilio pricing fetch took ${Date.now() - apiStart}ms`);
+                        return d;
+                    })
                 ]);
-
-                // Mapping and Results
-
-                // Find price for the requested type (local, mobile, toll_free)
-                // Twilio pricing uses types: 'local', 'mobile', 'toll_free'
+                console.log(`[searchNumbers] All APIs parallel fetch total: ${Date.now() - apiStart}ms`);
 
                 const getP = (k) => {
                     const o = pData.phoneNumberPrices.find(p => p.number_type === k);
@@ -328,16 +324,15 @@ exports.searchNumbers = onCall(
                     cost: num._sourceType === 'mobile' ? mobileP : localP
                 }));
 
-                console.log(`[searchNumbers] Unified Found ${results.length} numbers for ${country}`);
+                console.log(`[searchNumbers] Unified Success. Total Backend: ${Date.now() - totalStart}ms`);
                 return { numbers: results };
 
             } catch (twilioError) {
-                console.error("[searchNumbers] Unified Search Error:", twilioError);
+                console.error("[searchNumbers] Unified API Error:", twilioError);
                 return { numbers: [] };
             }
-
         } catch (error) {
-            console.error("[searchNumbers] Error:", error);
+            console.error("[searchNumbers] Fatal Error:", error);
             throw new HttpsError("internal", error.message);
         }
     }
