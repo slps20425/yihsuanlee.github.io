@@ -1714,16 +1714,20 @@ async function handleFormSubmit(e: Event) {
         }
 
         const userDocRef = doc(db, 'users', `uid_${auth.currentUser.uid}`);
+        const settingsRef = doc(db, 'users', `uid_${auth.currentUser.uid}`, 'settings', 'settings');
         const cost = currentCost;
 
         await runTransaction(db, async (transaction) => {
             const userDoc = await transaction.get(userDocRef);
+            const settingsDoc = await transaction.get(settingsRef);
+
             if (!userDoc.exists()) {
                 throw "User document does not exist!";
             }
 
             const userData = userDoc.data();
             const currentCredits = Number(userData.credits || 0);
+            const settings = settingsDoc.exists() ? settingsDoc.data() : {};
 
             if (currentCredits < cost) {
                 // Throwing simple string to be caught below
@@ -1736,6 +1740,8 @@ async function handleFormSubmit(e: Event) {
             // Create Task
             transaction.set(taskRef, {
                 ...payload,
+                senderPhoneNumber: settings.phoneNumber || '',
+                vapiPhoneNumberId: settings.vapiPhoneNumberId || '',
                 userCredits: currentCredits - cost, // Store NEW balance
                 cost: cost,
                 createdAt: serverTimestamp(),
