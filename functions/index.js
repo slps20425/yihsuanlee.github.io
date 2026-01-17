@@ -327,14 +327,15 @@ exports.searchNumbers = onCall(
                             cost: numberPrice
                         };
                     })
-                    // BACKEND FILTER: SEMI-STRICT MODE
-                    // User Request: "don't need to filter Local... I as a individual can still buy local"
-                    // We ONLY filter out numbers that explicitly require 'business'.
-                    // 'local' and 'foreign' are allowed.
+                    // BACKEND FILTER: STRICT MODE
+                    // User Request (Revert): "can you back to previous version"
+                    // Japan/NZ numbers are 'local' requirement, which implies strict regulatory bundles 
+                    // (Business OR Individual) that this simple app cannot handle.
+                    // To prevent purchase errors and confusion, we only allow 'none' or 'any'.
                     .filter(num => {
                         const req = String(num.addressRequirements).toLowerCase();
-                        // Block if it explicitly says 'business'
-                        if (req.includes('business')) {
+                        // Filter out 'local', 'foreign', 'business'
+                        if (req.includes('business') || req === 'local' || req === 'foreign') {
                             return false;
                         }
                         return true;
