@@ -4,6 +4,7 @@ const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const OpenAI = require("openai");
 const axios = require("axios");
+const twilio = require('twilio');
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -273,7 +274,6 @@ exports.searchNumbers = onCall(
             const { country = 'US', areaCode = '', voice = false, sms = false, mms = false } = request.data;
             console.log(`[searchNumbers] Performance Tracking Start: ${country}. Area: ${areaCode}`);
 
-            const twilio = require('twilio');
             const client = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
 
             const searchParams = { limit: 20 };
