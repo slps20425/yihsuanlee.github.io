@@ -156,7 +156,8 @@ const WiseCatI18n: WiseCatI18nType = {
             nav_phone: "Phone Number",
             nav_ai: "AI Hub",
             nav_inbox: "Inbox",
-            nav_logout: "Log out"
+            nav_logout: "Log out",
+            nav_contact: "Contact & Support"
         },
         zh: {
             portal_title: "WiseCat 門戶",
@@ -271,7 +272,8 @@ const WiseCatI18n: WiseCatI18nType = {
             nav_phone: "電話號碼",
             nav_ai: "工具箱",
             nav_inbox: "收件夾",
-            nav_logout: "登出"
+            nav_logout: "登出",
+            nav_contact: "客服與回饋"
         },
         jp: {
             portal_title: "WiseCat ポータル",
@@ -380,7 +382,8 @@ const WiseCatI18n: WiseCatI18nType = {
             nav_phone: "電話番号",
             nav_ai: "AIハブ",
             nav_inbox: "受信トレイ",
-            nav_logout: "ログアウト"
+            nav_logout: "ログアウト",
+            nav_contact: "お問い合わせ"
         },
         kr: {
             portal_title: "WiseCat 포털",
@@ -489,7 +492,8 @@ const WiseCatI18n: WiseCatI18nType = {
             nav_phone: "전화번호",
             nav_ai: "AI 허브",
             nav_inbox: "받은편지함",
-            nav_logout: "로그아웃"
+            nav_logout: "로그아웃",
+            nav_contact: "고객 지원"
         },
         es: {
             portal_title: "Portal WiseCat",
@@ -598,7 +602,8 @@ const WiseCatI18n: WiseCatI18nType = {
             nav_phone: "Teléfono",
             nav_ai: "Herramientas",
             nav_inbox: "Bandeja",
-            nav_logout: "Cerrar sesión"
+            nav_logout: "Cerrar sesión",
+            nav_contact: "Soporte y Ayuda"
         },
         fr: {
             portal_title: "Portail WiseCat",
@@ -707,7 +712,8 @@ const WiseCatI18n: WiseCatI18nType = {
             nav_phone: "Téléphone",
             nav_ai: "Outils",
             nav_inbox: "Boîte",
-            nav_logout: "Déconnexion"
+            nav_logout: "Déconnexion",
+            nav_contact: "Support & Aide"
         },
         it: {
             portal_title: "Portale WiseCat",
@@ -816,7 +822,8 @@ const WiseCatI18n: WiseCatI18nType = {
             nav_phone: "Telefono",
             nav_ai: "Strumenti",
             nav_inbox: "Posta",
-            nav_logout: "Esci"
+            nav_logout: "Esci",
+            nav_contact: "Supporto e Aiuto"
         }
     },
 

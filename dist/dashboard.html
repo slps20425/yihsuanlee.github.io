@@ -56,12 +56,12 @@
             display: none !important;
         }
     </style>
-  <script type="module" crossorigin src="/assets/dashboard-CfQDFoU1.js"></script>
+  <script type="module" crossorigin src="/assets/dashboard-BCUVlHVj.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-CZUVvyED.js">
-  <link rel="modulepreload" crossorigin href="/assets/i18n-6pvchq9T.js">
+  <link rel="modulepreload" crossorigin href="/assets/i18n-_h8DBvEt.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-AwCycs0Y.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-O2Hx6jNt.js">
-  <link rel="stylesheet" crossorigin href="/assets/i18n-Bx4waBcF.css">
+  <link rel="stylesheet" crossorigin href="/assets/i18n-BAgcJsGu.css">
 </head>
 
 <body class="dashboard-layout">
@@ -82,9 +82,13 @@
                     <option value="it">🇮🇹 Italiano</option>
                 </select>
 
-                <div class="header-user-info">
-                    <div id="headerUserName" onclick="window.location.href='/Entry.html'">Guest (Login)</div>
-                    <div class="header-credits" id="creditsDisplay">$0.00</div>
+                <div class="header-user-info"
+                    style="display: flex; flex-direction: row; align-items: center; gap: 12px; min-width: 0;">
+                    <div id="headerUserName"
+                        style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; font-weight: 600; cursor: pointer;"
+                        onclick="window.location.href='/Entry.html'">Guest (Login)</div>
+                    <div class="header-credits" id="creditsDisplay" style="white-space: nowrap; flex-shrink: 0;">$0.00
+                    </div>
                 </div>
                 <!-- Avatar -->
                 <img id="headerUserAvatar" src="https://ui-avatars.com/api/?name=Guest"
@@ -447,6 +451,11 @@
             <span class="nav-icon">💬</span>
             <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
         </button>
+        <!-- Contact & Support (Desktop Bottom-aligned) -->
+        <a href="https://line.me/R/ti/p/@785ausca" target="_blank" class="nav-item contact-link">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label" data-i18n="nav_contact">Contact & Support</span>
+        </a>
     </nav>
 
     <!-- Purchase Dialog -->

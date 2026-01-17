@@ -1594,11 +1594,11 @@ input[type="date"]::-webkit-datetime-edit-day-field {
         top: 0;
         width: 220px;
         height: 100vh;
-        grid-template-columns: 1fr;
-        grid-template-rows: repeat(auto-fill, minmax(60px, auto));
+        display: flex;
+        flex-direction: column;
         border-top: none;
         border-right: 1px solid var(--border-color);
-        padding-top: 2rem;
+        padding: 2rem 0;
     }
 
     .nav-item {
@@ -1622,6 +1622,13 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     .nav-label {
         font-size: 0.95rem;
         white-space: nowrap;
+    }
+
+    .nav-item.contact-link {
+        margin-top: auto;
+        border-top: 1px solid var(--border-color);
+        padding-top: 1.5rem;
+        padding-bottom: 2rem;
     }
 
     .top-header {
