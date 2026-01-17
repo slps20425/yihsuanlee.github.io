@@ -315,6 +315,9 @@ exports.searchNumbers = onCall(
                     region: num.region,
                     country: country,
                     capabilities: num.capabilities,
+                    addressRequirements: num.addressRequirements, // Expose regulatory requirements (e.g. 'none', 'any', 'local', 'foreign')
+                    isoCountry: num.isoCountry,
+                    postalCode: num.postalCode,
                     cost: numberPrice
                 }));
 

@@ -364,10 +364,26 @@ if (searchBtn) {
             numbersList.innerHTML = '';
             numbers.forEach((number: any) => {
                 const capabilities = number.capabilities || {};
+                const addressReq = number.addressRequirements || 'none';
+
+                // FILTER: Hide "Business" restricted numbers if possible (User request)
+                // Note: Twilio values are typically 'none', 'any', 'local', 'foreign'.
+                // If we see 'business' explicitly, we skip.
+                if (String(addressReq).toLowerCase().includes('business')) {
+                    return;
+                }
+
                 const badges: string[] = [];
                 if (capabilities.voice) badges.push('<span class="capability-tag capability-voice">Voice</span>');
                 if (capabilities.SMS) badges.push('<span class="capability-tag capability-sms">SMS</span>');
                 if (capabilities.MMS) badges.push('<span class="capability-tag capability-mms">MMS</span>');
+
+                // Address Requirement Badge
+                if (addressReq !== 'none') {
+                    let badgeClass = 'capability-mms'; // Re-use styling or add new
+                    if (addressReq === 'local') badgeClass = 'capability-voice'; // Green for local
+                    badges.push(`<span class="capability-tag" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: var(--text-secondary);">Reg: ${addressReq}</span>`);
+                }
 
                 const baseCost = number.cost || 3.00;
                 const monthlyPrice = baseCost * 2;
