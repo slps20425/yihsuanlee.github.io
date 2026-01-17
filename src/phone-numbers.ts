@@ -336,9 +336,9 @@ if (searchBtn) {
                 if (capabilities.SMS) badges.push('<span style="background: var(--accent); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">💬 SMS</span>');
                 if (capabilities.MMS) badges.push('<span style="background: var(--warning); color: var(--bg-dark); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">📸 MMS</span>');
 
-                // Determine price based on type
-                const isTollFree = type === 'tollFree';
-                const monthlyPrice = isTollFree ? 50.00 : 3.00;
+                // Dynamic Pricing (Cost * 2)
+                const baseCost = (result.data as any).cost || 3.00; // Get cost from API or default
+                const monthlyPrice = baseCost * 2;
 
                 const li = document.createElement('li');
                 li.className = 'number-item';
@@ -352,7 +352,7 @@ if (searchBtn) {
                 `;
 
                 const buyBtn = li.querySelector('button') as HTMLButtonElement;
-                buyBtn.addEventListener('click', () => openPurchaseDialog(number, monthlyPrice)); // Pass price
+                buyBtn.addEventListener('click', () => openPurchaseDialog(number, monthlyPrice)); // Pass calculated price
 
                 numbersList.appendChild(li);
             });

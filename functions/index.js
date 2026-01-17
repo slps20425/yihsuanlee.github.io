@@ -288,16 +288,47 @@ exports.searchNumbers = onCall(
             // Determine resource type (local, mobile, tollFree)
             const resourceType = ['local', 'mobile', 'tollFree'].includes(type) ? type : 'local';
 
-            // Search for available numbers
+            // Search for available numbers and pricing
             let numbers = [];
+            let numberPrice = 0; // Default fallback
+
             try {
-                numbers = await client.availablePhoneNumbers(country)[resourceType]
-                    .list(searchParams);
+                // Parallel fetch: Numbers + Pricing
+                const [numbersList, pricingData] = await Promise.all([
+                    client.availablePhoneNumbers(country)[resourceType].list(searchParams),
+                    client.pricing.v1.phoneNumbers.countries(country).fetch()
+                ]);
+
+                numbers = numbersList;
+
+                // Find price for the requested type (local, mobile, toll_free)
+                // Twilio pricing uses types: 'local', 'mobile', 'toll_free'
+                const mapType = {
+                    'local': 'local',
+                    'mobile': 'mobile',
+                    'tollFree': 'toll_free'
+                };
+
+                const pricingType = mapType[resourceType];
+                const priceObj = pricingData.phoneNumberPrices.find(p => p.number_type === pricingType);
+
+                if (priceObj) {
+                    numberPrice = parseFloat(priceObj.current_price || priceObj.base_price || "0");
+                } else {
+                    // Fallback logic
+                    console.warn(`[searchNumbers] Pricing not found for type ${pricingType} in ${country}`);
+                    if (country === 'US' && resourceType === 'local') numberPrice = 1.15;
+                    else if (resourceType === 'tollFree') numberPrice = 25.00;
+                    else numberPrice = 3.00;
+                }
+
+                console.log(`[searchNumbers] Found ${numbers.length} numbers. Base Cost: $${numberPrice}`);
+
             } catch (twilioError) {
                 // Return empty list if resource not found (e.g. invalid country or no local numbers)
                 if (twilioError.code === 20404 || twilioError.status === 404) {
                     console.log(`[searchNumbers] No numbers found for ${country} (404/20404). Returning empty list.`);
-                    return { numbers: [] };
+                    return { numbers: [], cost: 0 };
                 }
                 throw twilioError; // Re-throw other errors
             }
@@ -310,8 +341,7 @@ exports.searchNumbers = onCall(
                 capabilities: num.capabilities
             }));
 
-            console.log(`[searchNumbers] Found ${results.length} available numbers`);
-            return { numbers: results };
+            return { numbers: results, cost: numberPrice };
 
         } catch (error) {
             console.error("[searchNumbers] Error:", error);
