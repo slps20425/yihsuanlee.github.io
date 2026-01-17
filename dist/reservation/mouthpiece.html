@@ -29,15 +29,15 @@
             display: block;
         }
     </style>
-  <script type="module" crossorigin src="/assets/mouthpiece-pZePaFet.js"></script>
+  <script type="module" crossorigin src="/assets/mouthpiece-ee4IOuyj.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-CZUVvyED.js">
-  <link rel="modulepreload" crossorigin href="/assets/i18n-DFZLn1ij.js">
+  <link rel="modulepreload" crossorigin href="/assets/i18n-DJFm3Qao.js">
   <link rel="modulepreload" crossorigin href="/assets/version-Dr8pX8LW.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-O2Hx6jNt.js">
   <link rel="modulepreload" crossorigin href="/assets/timezones-DRXziDFl.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-AwCycs0Y.js">
   <link rel="modulepreload" crossorigin href="/assets/scam-check-dixBLdR_.js">
-  <link rel="stylesheet" crossorigin href="/assets/i18n-DAGOAWau.css">
+  <link rel="stylesheet" crossorigin href="/assets/i18n-C0c2Wi0Z.css">
 </head>
 
 <body class="dashboard-layout">
@@ -48,21 +48,16 @@
         <div class="header-content">
             <h1 class="header-title">🐱 WiseCat AI</h1>
             <div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">
-                <div class="header-user-info">
-                    <div id="headerUserName" onclick="window.location.href='/Entry.html'">Guest (Login)</div>
-                    <div class="header-credits" id="creditsDisplay">$0.00</div>
-                </div>
-                <!-- Avatar -->
-                <img id="headerUserAvatar" src="https://ui-avatars.com/api/?name=Guest"
-                    style="width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--accent); cursor: pointer; object-fit: cover;"
-                    onclick="window.location.href='/dashboard.html?tab=profile'">
-
-                <!-- Quick Logout -->
-                <button id="headerLogoutBtn"
-                    style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; padding: 0 1rem; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; gap: 6px; font-weight: 600; font-size: 0.85rem;"
-                    title="Logout">
-                    Log out
-                </button>
+                <!-- Mobile Language Selector -->
+                <select id="languageSelectorHeader" class="language-selector-header">
+                    <option value="en">🇺🇸 EN</option>
+                    <option value="zh">🇹🇼 中</option>
+                    <option value="jp">🇯🇵 日</option>
+                    <option value="kr">🇰🇷 한</option>
+                    <option value="es">🇪🇸 ES</option>
+                    <option value="fr">🇫🇷 FR</option>
+                    <option value="it">🇮Ｔ IT</option>
+                </select>
             </div>
         </div>
     </div>
@@ -80,7 +75,7 @@
             </select>
 
             <div style="text-align: center; margin-bottom: 10px;">
-                <a href="https://wise-catty.cc/" style="display: inline-block;">
+                <a href="/dashboard.html" style="display: inline-block;">
                     <img src="../assets/profile_anim.gif" alt="AI Cat" class="logo"
                         style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; cursor: pointer;">
                 </a>
@@ -154,23 +149,13 @@
                     </div>
                 </div>
 
-                <div class="retry-container">
-                    <input type="checkbox" id="retryOption">
-                    <label for="retryOption">
-                        <span data-i18n="label_retry">Re-try 1 time</span>
-                        <span class="warning-text" data-i18n="warning_retry">(This will charge you twice,
-                            careful)</span>
-                    </label>
-                </div>
-
                 <div class="credits-card" style="margin-top: 45px;">
                     <div class="credits-info">
-                        <span id="creditsDisplay" data-i18n="text_credits"
-                            style="font-weight: bold; color: #fff;">Current
+                        <span id="formCredits" data-i18n="text_credits" style="font-weight: bold; color: #fff;">Current
                             Credits: $0 USD</span>
                     </div>
                     <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank" data-i18n="btn_refill"
-                        class="refill-btn">Refill</a>
+                        class="refill-btn">Top-up</a>
                 </div>
 
                 <div id="turnstile-widget" style="margin-top: 20px;"></div>
@@ -184,26 +169,52 @@
 
     <!-- Bottom Navigation (Mobile) / Side Navigation (Desktop) -->
     <nav class="bottom-nav">
+        <!-- Sidebar Top Section (Desktop Only) -->
+        <div class="sidebar-top-section">
+            <select id="languageSelector" class="language-selector-sidebar">
+                <option value="en">🇺🇸 English</option>
+                <option value="zh">🇹🇼 繁體中文</option>
+                <option value="jp">🇯🇵 日本語</option>
+                <option value="kr">🇰🇷 한국어</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="it">🇮Ｔ Italiano</option>
+            </select>
+        </div>
         <a href="/dashboard.html?tab=calls" class="nav-item">
             <span class="nav-icon">📞</span>
-            <span class="nav-label">Calls</span>
+            <span class="nav-label" data-i18n="nav_calls">Calls</span>
         </a>
         <a href="/dashboard.html?tab=profile" class="nav-item">
             <span class="nav-icon">👤</span>
-            <span class="nav-label">Profile</span>
+            <span class="nav-label" data-i18n="nav_profile">Profile</span>
         </a>
         <a href="/dashboard.html?tab=add" class="nav-item">
-            <span class="nav-icon">➕</span>
-            <span class="nav-label">Add</span>
+            <span class="nav-icon">📱</span>
+            <span class="nav-label" data-i18n="nav_phone">Phone Number</span>
         </a>
         <a href="/dashboard.html?tab=ai" class="nav-item active">
             <span class="nav-icon">🤖</span>
-            <span class="nav-label">AI</span>
+            <span class="nav-label" data-i18n="nav_ai">AI Hub</span>
         </a>
         <a href="/dashboard.html?tab=inbox" class="nav-item">
             <span class="nav-icon">💬</span>
-            <span class="nav-label">Inbox</span>
+            <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
         </a>
+
+        <!-- Sidebar User Section (Desktop Only) -->
+        <div class="sidebar-user-section">
+            <div class="sidebar-user-info" onclick="window.location.href='/dashboard.html?tab=profile'">
+                <img id="headerUserAvatar" src="https://ui-avatars.com/api/?name=Guest" alt="Avatar">
+                <div class="sidebar-user-text">
+                    <div id="headerUserName">Guest</div>
+                    <div id="creditsDisplay" class="sidebar-credits">$0.00</div>
+                </div>
+            </div>
+            <button id="headerLogoutBtn" class="sidebar-logout-btn">
+                <span data-i18n="nav_logout">Log out</span>
+            </button>
+        </div>
     </nav>
 
     <!-- Help Buddy -->

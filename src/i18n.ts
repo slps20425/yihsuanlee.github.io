@@ -957,8 +957,9 @@ const WiseCatI18n: WiseCatI18nType = {
     },
 
     refreshCredits() {
-        const creditsDisplay = document.getElementById('creditsDisplay') || document.getElementById('creditsAmount');
-        if (!creditsDisplay) return;
+        // Find all potential credit display elements on the page
+        const displays = document.querySelectorAll('#creditsDisplay, #creditsAmount, #profileCredits, #formCredits, .sidebar-credits');
+        if (displays.length === 0) return;
 
         const userSession = localStorage.getItem('wisecat_user');
         if (userSession) {
@@ -967,13 +968,21 @@ const WiseCatI18n: WiseCatI18nType = {
                 const credits = user.credits || 0;
                 const dict = this.translations[this.currentLang] || this.translations['en'];
 
-                // If it's the portal amount display, just show the $ sign
-                if (creditsDisplay.id === 'creditsAmount') {
-                    creditsDisplay.textContent = `$${credits.toFixed(2)} USD`;
-                } else if (dict.text_credits) {
-                    creditsDisplay.textContent = dict.text_credits.replace('$0', `$${credits}`);
-                }
-            } catch (e) { console.error("i18n credits error", e); }
+                displays.forEach(el => {
+                    if (el.id === 'creditsAmount' || el.id === 'profileCredits') {
+                        // Direct amount display
+                        el.textContent = `$${credits.toFixed(2)}`;
+                    } else if (dict.text_credits) {
+                        // Translation-based display
+                        el.textContent = dict.text_credits.replace('$0', `$${credits.toFixed(2)}`);
+                    } else {
+                        // Fallback
+                        el.textContent = `$${credits.toFixed(2)} USD`;
+                    }
+                });
+            } catch (e) {
+                console.error("i18n credits error", e);
+            }
         }
     },
 
