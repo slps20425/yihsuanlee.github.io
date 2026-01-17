@@ -31,7 +31,7 @@ function attachSafetyCheck(elementId: string) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    attachSafetyCheck('scriptContent');
+    attachSafetyCheck('script');
 });
 
 // Update validateForm to include safety check
@@ -607,7 +607,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userNameEl = document.getElementById('userName') as HTMLInputElement;
         const recipientNameEl = document.getElementById('recipientName') as HTMLInputElement;
         const targetPhoneEl = document.getElementById('targetPhone') as HTMLInputElement;
-        const scriptContentEl = document.getElementById('scriptContent') as HTMLTextAreaElement;
+        const scriptEl = document.getElementById('script') as HTMLTextAreaElement;
         const schedulePreferenceEl = document.getElementById('schedulePreference') as HTMLSelectElement;
         const scriptLanguageEl = document.getElementById('scriptLanguage') as HTMLSelectElement;
 
@@ -650,7 +650,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             userName: userNameEl.value,
             recipientName: recipientNameEl.value,
             targetPhoneNumber: phoneInputPlugin ? phoneInputPlugin.getNumber() : targetPhoneEl.value,
-            script: scriptContentEl.value,
+            script: scriptEl.value,
             schedulePreference: schedulePreferenceEl.value,
             language: finalLang,
             userEmail: (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email :
@@ -755,9 +755,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
         // 4. Force Final Safety Check
-        const scriptContent = document.getElementById('scriptContent') as HTMLTextAreaElement;
-        if (scriptContent && scriptContent.value) {
-            const safetyResult = await ScamCheck.validate(scriptContent.value);
+        const script = document.getElementById('script') as HTMLTextAreaElement;
+        if (script && script.value) {
+            const safetyResult = await ScamCheck.validate(script.value);
             if (!safetyResult.safe) {
                 btn.disabled = true;
                 btn.innerText = "⚠️ Content Unsafe";
