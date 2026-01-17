@@ -328,7 +328,8 @@ function logout() {
         .then(() => {
             console.log('User signed out.');
             localStorage.removeItem('wisecat_user');
-            // UI updates handled by onAuthStateChanged
+            // Redirect to entry page
+            window.location.href = '/entry.html';
         })
         .catch((error: any) => {
             console.error('Sign out error', error);

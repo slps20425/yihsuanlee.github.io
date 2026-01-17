@@ -270,9 +270,9 @@ exports.searchNumbers = onCall(
                 throw new HttpsError("unauthenticated", "User must be authenticated");
             }
 
-            const { country = 'US', areaCode = '', voice = false, sms = false, mms = false, type = 'local' } = request.data;
+            const { country = 'US', areaCode = '', voice = false, sms = false, mms = false } = request.data;
 
-            console.log(`[searchNumbers] Country: ${country}, Type: ${type}, Area: ${areaCode}, Voice: ${voice}, SMS: ${sms}, MMS: ${mms}`);
+            console.log(`[searchNumbers] Unified Search for ${country}. Area: ${areaCode}, V: ${voice}, S: ${sms}, M: ${mms}`);
 
             // Initialize Twilio client with master account
             const twilio = require('twilio');
@@ -285,63 +285,56 @@ exports.searchNumbers = onCall(
             if (sms) searchParams.smsEnabled = true;
             if (mms) searchParams.mmsEnabled = true;
 
-            // Determine resource type (local, mobile, tollFree)
-            const resourceType = ['local', 'mobile', 'tollFree'].includes(type) ? type : 'local';
+            // Parallel search: Local + Mobile + Pricing
 
-            // Search for available numbers and pricing
-            let numbers = [];
-            let numberPrice = 0; // Default fallback
+            let allNumbers = [];
 
             try {
-                // Parallel fetch: Numbers + Pricing
-                const [numbersList, pricingData] = await Promise.all([
-                    client.availablePhoneNumbers(country)[resourceType].list(searchParams),
+                const fetchSource = async (t) => {
+                    try {
+                        const res = await client.availablePhoneNumbers(country)[t].list(searchParams);
+                        return res.map(n => ({ ...n, _sourceType: t }));
+                    } catch (e) {
+                        if (e.code === 20404 || e.status === 404) return [];
+                        throw e;
+                    }
+                };
+
+                const [lRes, mRes, pData] = await Promise.all([
+                    fetchSource('local'),
+                    fetchSource('mobile'),
                     client.pricing.v1.phoneNumbers.countries(country).fetch()
                 ]);
 
-                numbers = numbersList;
+                // Mapping and Results
 
                 // Find price for the requested type (local, mobile, toll_free)
                 // Twilio pricing uses types: 'local', 'mobile', 'toll_free'
-                const mapType = {
-                    'local': 'local',
-                    'mobile': 'mobile',
-                    'tollFree': 'toll_free'
+
+                const getP = (k) => {
+                    const o = pData.phoneNumberPrices.find(p => p.number_type === k);
+                    return parseFloat(o?.current_price || o?.base_price || "0");
                 };
 
-                const pricingType = mapType[resourceType];
-                const priceObj = pricingData.phoneNumberPrices.find(p => p.number_type === pricingType);
+                const localP = getP('local') || (country === 'US' ? 1.15 : 3.00);
+                const mobileP = getP('mobile') || 3.00;
 
-                if (priceObj) {
-                    numberPrice = parseFloat(priceObj.current_price || priceObj.base_price || "0");
-                } else {
-                    // Fallback logic
-                    console.warn(`[searchNumbers] Pricing not found for type ${pricingType} in ${country}`);
-                    if (country === 'US' && resourceType === 'local') numberPrice = 1.15;
-                    else if (resourceType === 'tollFree') numberPrice = 25.00;
-                    else numberPrice = 3.00;
-                }
+                const results = [...lRes, ...mRes].map(num => ({
+                    phoneNumber: num.phoneNumber,
+                    locality: num.locality,
+                    region: num.region,
+                    country: country,
+                    capabilities: num.capabilities,
+                    cost: num._sourceType === 'mobile' ? mobileP : localP
+                }));
 
-                console.log(`[searchNumbers] Found ${numbers.length} numbers. Base Cost: $${numberPrice}`);
+                console.log(`[searchNumbers] Unified Found ${results.length} numbers for ${country}`);
+                return { numbers: results };
 
             } catch (twilioError) {
-                // Return empty list if resource not found (e.g. invalid country or no local numbers)
-                if (twilioError.code === 20404 || twilioError.status === 404) {
-                    console.log(`[searchNumbers] No numbers found for ${country} (404/20404). Returning empty list.`);
-                    return { numbers: [], cost: 0 };
-                }
-                throw twilioError; // Re-throw other errors
+                console.error("[searchNumbers] Unified Search Error:", twilioError);
+                return { numbers: [] };
             }
-
-            const results = numbers.map(num => ({
-                phoneNumber: num.phoneNumber,
-                locality: num.locality,
-                region: num.region,
-                country: country,
-                capabilities: num.capabilities
-            }));
-
-            return { numbers: results, cost: numberPrice };
 
         } catch (error) {
             console.error("[searchNumbers] Error:", error);

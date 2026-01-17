@@ -1,4 +1,4 @@
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { app, auth, db } from "./firebase-config"; // Use shared config
@@ -25,6 +25,7 @@ const userName = document.getElementById('userName') as HTMLElement | null;
 const userEmail = document.getElementById('userEmail') as HTMLElement | null;
 const userAvatar = document.getElementById('userAvatar') as HTMLImageElement | null;
 const creditsDisplay = document.getElementById('creditsDisplay') as HTMLElement | null;
+const logoutBtn = document.getElementById('logoutBtn') as HTMLButtonElement | null;
 
 // Dialogs
 const purchaseDialog = document.getElementById('purchaseDialog') as HTMLDialogElement | null;
@@ -287,9 +288,6 @@ if (searchBtn) {
         const smsCapability = document.getElementById('smsCapability') as HTMLInputElement | null;
         const mmsCapability = document.getElementById('mmsCapability') as HTMLInputElement | null;
 
-        const numberTypeSelect = document.getElementById('numberTypeSelect') as HTMLSelectElement | null; // NEW
-        const type = numberTypeSelect?.value || 'local'; // NEW
-
         const country = countrySelect?.value || 'US';
         const areaCode = areaCodeInput?.value.trim() || '';
         const voice = voiceCapability?.checked || false;
@@ -315,8 +313,8 @@ if (searchBtn) {
                 areaCode,
                 voice,
                 sms,
-                mms,
-                type // NEW
+                mms
+                // 'type' is now handled automatically by the backend
             });
             const numbers = (result.data as any).numbers || [];
 
@@ -336,8 +334,8 @@ if (searchBtn) {
                 if (capabilities.SMS) badges.push('<span style="background: var(--accent); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">💬 SMS</span>');
                 if (capabilities.MMS) badges.push('<span style="background: var(--warning); color: var(--bg-dark); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">📸 MMS</span>');
 
-                // Dynamic Pricing (Cost * 2)
-                const baseCost = (result.data as any).cost || 3.00; // Get cost from API or default
+                // Dynamic Pricing (Cost * 2) - Each number now has its own cost from backend
+                const baseCost = number.cost || 3.00;
                 const monthlyPrice = baseCost * 2;
 
                 const li = document.createElement('li');
@@ -500,3 +498,14 @@ document.addEventListener('DOMContentLoaded', () => {
         activateTab('ai'); // Default
     }
 });
+// --- Logout ---
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+        signOut(auth).then(() => {
+            localStorage.removeItem('wisecat_user');
+            window.location.href = '/entry.html';
+        }).catch((err) => {
+            console.error("Logout error:", err);
+        });
+    });
+}
