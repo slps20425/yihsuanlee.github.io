@@ -462,8 +462,23 @@ exports.purchasePhoneNumber = onCall(
 
             // --- Enable Dialing Permissions (Safe List) ---
             try {
-                // ISO 3166-1 alpha-2 codes: US, CA, GB, TW, JP, AU, NZ, SG, FR, DE, IT, KR
-                const SAFE_COUNTRY_CODES = ["US", "CA", "GB", "TW", "JP", "AU", "NZ", "SG", "FR", "DE", "IT", "KR"];
+                // Default: ISO 3166-1 alpha-2 codes: US, CA, GB, TW, JP, AU, NZ, SG, FR, DE, IT, KR
+                let SAFE_COUNTRY_CODES = ["US", "CA", "GB", "TW", "JP", "AU", "NZ", "SG", "FR", "DE", "IT", "KR"];
+
+                // Dynamic Override from Firestore (reservation DB)
+                try {
+                    const reservationDb = getFirestore(admin.app(), "reservation");
+                    const configDoc = await reservationDb.doc("configuration/settings").get();
+                    if (configDoc.exists) {
+                        const config = configDoc.data();
+                        if (Array.isArray(config.safe_country_codes) && config.safe_country_codes.length > 0) {
+                            SAFE_COUNTRY_CODES = config.safe_country_codes;
+                            console.log(`[purchasePhoneNumber] Loaded dynamic safe countries from Firestore: ${SAFE_COUNTRY_CODES.length} countries`);
+                        }
+                    }
+                } catch (confError) {
+                    console.warn(`[purchasePhoneNumber] Failed to load dynamic config, using default list: ${confError.message}`);
+                }
 
                 // Helper loop because bulk update might have limits or we just send one payload
                 const updateRequest = SAFE_COUNTRY_CODES.map(code => ({
