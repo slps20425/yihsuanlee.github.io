@@ -286,9 +286,19 @@ exports.searchNumbers = onCall(
             if (mms) searchParams.mmsEnabled = true;
 
             // Search for available numbers
-            const numbers = await client.availablePhoneNumbers(country)
-                .local
-                .list(searchParams);
+            let numbers = [];
+            try {
+                numbers = await client.availablePhoneNumbers(country)
+                    .local
+                    .list(searchParams);
+            } catch (twilioError) {
+                // Return empty list if resource not found (e.g. invalid country or no local numbers)
+                if (twilioError.code === 20404 || twilioError.status === 404) {
+                    console.log(`[searchNumbers] No numbers found for ${country} (404/20404). Returning empty list.`);
+                    return { numbers: [] };
+                }
+                throw twilioError; // Re-throw other errors
+            }
 
             const results = numbers.map(num => ({
                 phoneNumber: num.phoneNumber,
