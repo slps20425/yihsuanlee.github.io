@@ -898,3 +898,111 @@ exports.releaseExpiredPhoneNumbers = onSchedule(
         }
     }
 );
+
+// Define Gemini API key secret
+const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
+
+/**
+ * Validates if a user's description matches their selected mission using Gemini 2.5 Flash Lite
+ * 
+ * Usage: Call from frontend with { missionId, missionName, description, language }
+ * Returns: { valid: boolean }
+ */
+exports.validateMissionDescription = onCall(
+    { secrets: [GEMINI_API_KEY] },
+    async (request) => {
+        const { missionId, missionName, description, language } = request.data;
+
+        // Validate inputs
+        if (!missionId || !missionName || !description) {
+            throw new HttpsError(
+                "invalid-argument",
+                "Missing required parameters: missionId, missionName, or description"
+            );
+        }
+
+        if (description.length < 10) {
+            throw new HttpsError(
+                "invalid-argument",
+                "Description is too short. Please provide at least 10 characters."
+            );
+        }
+
+        if (description.length > 1000) {
+            throw new HttpsError(
+                "invalid-argument",
+                "Description is too long. Please keep it under 1000 characters."
+            );
+        }
+
+        try {
+            const { GoogleGenerativeAI } = require("@google/generative-ai");
+            
+            // Initialize Gemini with the secret API key
+            const genAI = new GoogleGenerativeAI(GEMINI_API_KEY.value());
+            
+            // Use gemini-2.5-flash-lite (not the deprecated 1.5 version)
+            const model = genAI.getGenerativeModel({
+                model: "gemini-2.5-flash-lite",
+                generationConfig: {
+                    temperature: 0.1,
+                    maxOutputTokens: 10,
+                }
+            });
+
+            // Language-specific instructions
+            const systemInstructions = {
+                en: "You are a task validator. Determine if the description matches the mission category.",
+                zh: "你是任務審核員。判斷描述內容是否屬於該任務類別。",
+                jp: "あなたはタスク検証者です。説明が任務カテゴリーと一致するかどうかを判断してください。",
+                kr: "당신은 작업 검證자입니다. 설명이 임무 카테고리와 일치하는지 판단하세요.",
+                es: "Eres un validador de tareas. Determina si la descripción coincide con la categoría de misión.",
+                fr: "Vous êtes un validateur de tâches. Déterminez si la description correspond à la catégorie de mission.",
+                it: "Sei un validatore di compiti. Determina se la descrizione corrisponde alla categoria della missione."
+            };
+
+            const instruction = systemInstructions[language] || systemInstructions.en;
+
+            const prompt = `${instruction}
+
+Mission: ${missionName}
+Description: ${description}
+
+Instructions:
+- If the description clearly relates to the mission, respond: MATCH
+- If the description does NOT relate to the mission, respond: NOT_MATCH
+- Be somewhat lenient - if there's reasonable connection, say MATCH
+
+Respond with ONLY the word "MATCH" or "NOT_MATCH". Nothing else.`;
+
+            // Call Gemini AI
+            const result = await model.generateContent(prompt);
+            const response = result.response.text().trim().toUpperCase();
+
+            // Parse response
+            const isMatch = response.includes("MATCH") && !response.includes("NOT_MATCH");
+
+            // Log for monitoring
+            console.log({
+                missionId,
+                missionName,
+                descriptionLength: description.length,
+                result: isMatch ? "MATCH" : "NOT_MATCH",
+                userId: request.auth?.uid || "anonymous"
+            });
+
+            return {
+                valid: isMatch
+            };
+
+        } catch (error) {
+            console.error("Gemini API Error:", error);
+            
+            // Fail-open: If AI fails, don't block users
+            console.warn("Validation failed, allowing request to proceed");
+            return {
+                valid: true
+            };
+        }
+    }
+);

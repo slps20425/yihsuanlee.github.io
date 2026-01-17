@@ -873,3 +873,154 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 });
+
+// ============ Mission Validation Logic ============
+import { MISSION_SCENARIOS } from './mission-scenarios';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+
+let isDescriptionValidated = false;
+
+// Update mission description hint when mission changes
+function updateMissionDescription() {
+    const missionSelect = document.getElementById('mission') as HTMLSelectElement;
+    const missionDescElement = document.getElementById('missionDescription');
+    const currentLang = WiseCatI18n.currentLang;
+    
+    if (missionSelect && missionDescElement) {
+        const selectedOption = missionSelect.selectedOptions[0];
+        const missionId = selectedOption.value;
+        
+        const mission = MISSION_SCENARIOS.find(m => m.id === missionId);
+        if (mission) {
+            const lang = (currentLang as keyof typeof mission.description);
+            missionDescElement.textContent = mission.description[lang] || mission.description.en;
+        }
+    }
+    
+    // Reset validation when mission changes
+    isDescriptionValidated = false;
+    const scriptTextarea = document.getElementById('script') as HTMLTextAreaElement;
+    if (scriptTextarea) {
+        scriptTextarea.style.borderColor = '';
+        scriptTextarea.style.boxShadow = '';
+    }
+    const feedbackDiv = document.getElementById('validationFeedback');
+    if (feedbackDiv) {
+        feedbackDiv.style.display = 'none';
+    }
+    validateForm();
+}
+
+// Validate description against selected mission
+async function validateMissionDescription() {
+    const validateBtn = document.getElementById('validateBtn') as HTMLButtonElement;
+    const feedbackDiv = document.getElementById('validationFeedback');
+    const scriptTextarea = document.getElementById('script') as HTMLTextAreaElement;
+    const missionSelect = document.getElementById('mission') as HTMLSelectElement;
+    
+    if (!scriptTextarea || !missionSelect || !feedbackDiv || !validateBtn) return;
+    
+    const description = scriptTextarea.value.trim();
+    const missionId = missionSelect.value;
+    const selectedOption = missionSelect.selectedOptions[0];
+    const missionNameKey = selectedOption.getAttribute('data-mission-name');
+    
+    if (description.length < 10) {
+        feedbackDiv.textContent = '❌ Description is too short. Please provide at least 10 characters.';
+        feedbackDiv.style.display = 'block';
+        feedbackDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+        feedbackDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        feedbackDiv.style.color = '#f87171';
+        return;
+    }
+    
+    // Show loading state
+    validateBtn.disabled = true;
+    validateBtn.textContent = '⏳ Validating...';
+    feedbackDiv.style.display = 'block';
+    feedbackDiv.textContent = 'Checking with AI...';
+    feedbackDiv.style.background = 'rgba(59, 130, 246, 0.1)';
+    feedbackDiv.style.border = '1px solid rgba(59, 130, 246, 0.3)';
+    feedbackDiv.style.color = '#60a5fa';
+    
+    try {
+        const functions = getFunctions();
+        const validateFunction = httpsCallable(functions, 'validateMissionDescription');
+        
+        const mission = MISSION_SCENARIOS.find(m => m.id === missionId);
+        const currentLang = WiseCatI18n.currentLang;
+        const missionName = mission ? mission.name[currentLang as keyof typeof mission.name] : missionId;
+        
+        const result: any = await validateFunction({
+            missionId,
+            missionName,
+            description,
+            language: currentLang
+        });
+        
+        isDescriptionValidated = result.data.valid;
+        
+        if (result.data.valid) {
+            // Success - green border
+            scriptTextarea.style.border = '2px solid #10b981';
+            scriptTextarea.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+            feedbackDiv.textContent = '✅ Description matches the mission!';
+            feedbackDiv.style.background = 'rgba(16, 185, 129, 0.1)';
+            feedbackDiv.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            feedbackDiv.style.color = '#10b981';
+        } else {
+            // Fail - red border
+            scriptTextarea.style.border = '2px solid #ef4444';
+            scriptTextarea.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+            feedbackDiv.textContent = '❌ Description doesn\'t match the mission. Please revise.';
+            feedbackDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+            feedbackDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+            feedbackDiv.style.color = '#f87171';
+        }
+        
+    } catch (error) {
+        console.error('Validation error:', error);
+        // On error, be permissive
+        isDescriptionValidated = true;
+        feedbackDiv.textContent = '⚠️ Validation service unavailable. Proceeding...';
+        feedbackDiv.style.background = 'rgba(251, 191, 36, 0.1)';
+        feedbackDiv.style.border = '1px solid rgba(251, 191, 36, 0.3)';
+        feedbackDiv.style.color = '#fbbf24';
+        scriptTextarea.style.borderColor = '';
+        scriptTextarea.style.boxShadow = '';
+    } finally {
+        validateBtn.disabled = false;
+        validateBtn.innerHTML = '<span data-i18n="validate_btn">🔍 Check Description</span>';
+        validateForm();
+    }
+}
+
+// Initialize validation UI
+document.addEventListener('DOMContentLoaded', () => {
+    const missionSelect = document.getElementById('mission');
+    const validateBtn = document.getElementById('validateBtn');
+    const scriptTextarea = document.getElementById('script');
+    
+    if (missionSelect) {
+        missionSelect.addEventListener('change', updateMissionDescription);
+        // Set initial description
+        updateMissionDescription();
+    }
+    
+    if (validateBtn) {
+        validateBtn.addEventListener('click', validateMissionDescription);
+    }
+    
+    // Reset validation when script changes
+    if (scriptTextarea) {
+        scriptTextarea.addEventListener('input', () => {
+            isDescriptionValidated = false;
+             validateForm();
+        });
+    }
+});
+
+// Update validateForm to include mission validation check
+// Note: This assumes validateForm exists and manages submit button state
+// If needed, modify the existing validateForm function to check isDescriptionValidated
+

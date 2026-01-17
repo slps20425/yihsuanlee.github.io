@@ -29,7 +29,7 @@
             display: block;
         }
     </style>
-  <script type="module" crossorigin src="/assets/mouthpiece-BHXtSJuS.js"></script>
+  <script type="module" crossorigin src="/assets/mouthpiece-UZgoNvSi.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-CZUVvyED.js">
   <link rel="modulepreload" crossorigin href="/assets/i18n-BT2fXJEB.js">
   <link rel="modulepreload" crossorigin href="/assets/version-Dr8pX8LW.js">
@@ -94,14 +94,40 @@
                 <label data-i18n="label_mission" style="margin-top: 20px;">🎯 Choose Mission</label>
                 <select id="mission" required
                     style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;">
-                    <option value="deliver_message" data-i18n="opt_mouth_deliver" selected>Deliver Message to Someone
+                    <option value="lost_item" data-mission-name="mission_1" selected>🔍 Lost Item Inquiry</option>
+                    <option value="business_hours" data-mission-name="mission_2">🏪 Business Hours Confirmation</option>
+                    <option value="restaurant_booking" data-mission-name="mission_3">🍽️ Restaurant Reservation</option>
+                    <option value="package_tracking" data-mission-name="mission_4">📦 Package Tracking</option>
+                    <option value="event_rsvp" data-mission-name="mission_5">🎉 Event RSVP</option>
+                    <option value="repair_appointment" data-mission-name="mission_6">🔧 Repair Appointment</option>
+                    <option value="order_modification" data-mission-name="mission_7">📝 Order Modification</option>
+                    <option value="emergency_notification" data-mission-name="mission_8">🚨 Emergency Notification
                     </option>
-                    <option value="check_info" data-i18n="opt_mouth_check">Check Information with Someone</option>
-                    <option value="other" data-i18n="opt_mouth_other">Other (Specify below)</option>
+                    <option value="schedule_verification" data-mission-name="mission_9">📅 Schedule Verification
+                    </option>
+                    <option value="stock_inquiry" data-mission-name="mission_10">📊 Stock Inquiry</option>
                 </select>
-                <input type="text" id="customMission"
-                    style="display: none; margin-top: 10px; width: 100%; padding: 12px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;"
-                    data-i18n-placeholder="placeholder_custom_mission" placeholder="Describe your mission...">
+
+                <!-- Mission Description Hint -->
+                <div id="missionDescription"
+                    style="margin-top: 10px; padding: 10px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; font-size: 13px; color: #9ca3af;">
+                    Select a mission to see its description
+                </div>
+
+                <label data-i18n="label_script" style="margin-top: 20px;">📄 AI Message Script</label>
+                <textarea id="script" required rows="6"
+                    style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white; resize: vertical;"
+                    data-i18n-placeholder="placeholder_script" placeholder="What should the AI say?"></textarea>
+
+                <!-- Validation Button and Feedback -->
+                <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                    <button type="button" id="validateBtn"
+                        style="flex: 1; padding: 10px 16px; background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        <span data-i18n="validate_btn">🔍 Check Description</span>
+                    </button>
+                </div>
+                <div id="validationFeedback"
+                    style="margin-top: 8px; padding: 10px; border-radius: 8px; font-size: 13px; display: none;"></div>
 
                 <label data-i18n="label_phone">📞 Recipient Phone</label>
                 <div class="phone-container">
