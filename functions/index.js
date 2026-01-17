@@ -462,8 +462,19 @@ exports.purchasePhoneNumber = onCall(
 
             // --- Enable Dialing Permissions (Safe List) ---
             try {
-                // Default: ISO 3166-1 alpha-2 codes: US, CA, GB, TW, JP, AU, NZ, SG, FR, DE, IT, KR
-                let SAFE_COUNTRY_CODES = ["US", "CA", "GB", "TW", "JP", "AU", "NZ", "SG", "FR", "DE", "IT", "KR"];
+                // Expanded Safe List: North America, Europe, Asia, Oceania (Major Travel Destinations)
+                let SAFE_COUNTRY_CODES = [
+                    // North America
+                    "US", "CA", "MX",
+                    // Asia / SEA
+                    "JP", "TW", "KR", "CN", "HK", "SG", "MY", "TH", "VN", "PH", "ID", "KH", "LA", "IN",
+                    // Oceania
+                    "AU", "NZ",
+                    // Europe (Western/Central/Northern/Southern)
+                    "GB", "FR", "DE", "IT", "ES", "PT", "NL", "BE", "CH", "AT", "SE", "NO", "DK", "FI", "IE", "PL", "CZ", "HU", "GR", "TR", "RO", "BG", "HR",
+                    // Middle East (Selected)
+                    "AE", "SA", "IL"
+                ];
 
                 // Dynamic Override from Firestore (reservation DB)
                 try {
