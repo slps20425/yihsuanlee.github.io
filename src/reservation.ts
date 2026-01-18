@@ -680,12 +680,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                 div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
 
                 div.innerHTML = `
-                    <input type="text" placeholder="Item Name (e.g. Burger)" class="order-item-name" 
-                        style="flex: 1; min-width: 150px; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: white;">
-                    <input type="number" value="1" min="1" max="99" class="order-item-qty" 
-                        style="width: 60px; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: white; text-align: center;">
-                    <button type="button" class="remove-item-btn" style="background: none; border: none; color: #ff4444; font-size: 18px; cursor: pointer; padding: 0 5px;">&times;</button>
-                `;
+                    < input type = "text" placeholder = "Item Name (e.g. Burger)" class="order-item-name"
+                style = "flex: 1; min-width: 150px; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: white;" >
+                    <input type="number" value = "1" min = "1" max = "99" class="order-item-qty"
+                style = "width: 50px; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: white; text-align: center;" >
+                    <button type="button" class="remove-item-btn"
+                style = "flex: 0 0 auto; width: 24px; height: 24px; padding: 0; background: none; border: none; color: #ff4444; font-size: 16px; line-height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;" >& times; </button>
+                    `;
 
                 div.querySelector('.remove-item-btn')?.addEventListener('click', () => {
                     div.remove();
@@ -739,7 +740,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             const userSession = localStorage.getItem('wisecat_user');
             if (userSession && creditsDisplay) {
                 const u = JSON.parse(userSession);
-                creditsDisplay.textContent = `$${(u.credits || 0).toFixed(2)}`;
+                creditsDisplay.textContent = `$${(u.credits || 0).toFixed(2)} `;
             }
         }
     });
@@ -843,7 +844,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         if (countryCode && countryTimezones[countryCode]) {
             tz = countryTimezones[countryCode];
-            source = `based on ${countryCode.toUpperCase()}`;
+            source = `based on ${countryCode.toUpperCase()} `;
         } else {
             try {
                 tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -895,7 +896,7 @@ function updatePreorderHint() {
 
     if (missionSelect && missionSelect.value === 'reservation_food_preorder' && preorderDateHint) {
         // Show hint proactively
-        const hintTemplate = (dict as any).validation_preorder_date_hint || `Note: Pre-orders must be booked at least ${minPreorderDays} days in advance.`;
+        const hintTemplate = (dict as any).validation_preorder_date_hint || `Note: Pre - orders must be booked at least ${minPreorderDays} days in advance.`;
         preorderDateHint.innerText = hintTemplate.replace('{N}', minPreorderDays.toString());
 
         // Use a neutral color for the proactive hint (vs error red)
@@ -1033,14 +1034,14 @@ function validateReservationTime(): boolean {
 
         if (selectedDate < minDate) {
             if (preorderDateHint) {
-                const hintTemplate = (dict as any).validation_preorder_date || `Pre-orders require booking at least ${minPreorderDays} days in advance.`;
+                const hintTemplate = (dict as any).validation_preorder_date || `Pre - orders require booking at least ${minPreorderDays} days in advance.`;
                 const msg = hintTemplate.replace('{N}', minPreorderDays.toString());
                 preorderDateHint.innerText = msg;
                 preorderDateHint.style.display = "block";
 
                 // Show Popup using the same message
                 if ((window as any).showToast) {
-                    (window as any).showToast(`⚠️ ${msg}`, "error");
+                    (window as any).showToast(`⚠️ ${msg} `, "error");
                 }
             }
             if (dateHint) dateHint.style.display = "none"; // Hide standard close hint
