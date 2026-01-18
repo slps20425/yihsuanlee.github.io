@@ -100,7 +100,7 @@
 - [ ] [0OcQudGdi98PIztEoQWA] Bug: Profile Avatar Layout
   - Priority: 3
   - No room to display user profile avatar with logout button in bottom panel or header
-- [ ] [0i0kdlWhPPFzVZZaGP6X] Feature: Reservation Menu with Pre-order
+- [ ] [0i0kdlWhPPFzVZZGGP6X] Feature: Reservation Menu with Pre-order
   - Priority: 3
   - Adding menu for reservation with pre-order or upload a menu
 - [ ] [3sb7PuQ0HcnI99VGH5DS] Bug: Logout Button Style
@@ -109,9 +109,10 @@
 - [ ] [ATRp9AtafaPIvVfPPb1q] Feature: Header Redirect to Profile
   - Priority: 3
   - In both Web/Mobile the header WiseCat should always redirect user to profile tab
-- [/] [EgdmqCG7k0hdml2f4v9a] Bug: No Low Balance Reminder in Inbox
+- [x] [EgdmqCG7k0hdml2f4v9a] Bug: No Low Balance Reminder in Inbox
   - Priority: 3
   - Inbox not receive low balance reminder when user only 2 credit after login
+  - Resolution: Updated `autoReleaseOnLowCredits` GCF to send inbox warnings (<$10) and release alerts (<$6).
 - [ ] [UpOhJ0ng4LqxVIoRCfra] Bug: Redundant Credits Text
   - Priority: 3
   - Redundant credits text in top up button
