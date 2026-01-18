@@ -1,12 +1,12 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-- **Task Name**: Bug: Fix Google Login 403 on Mobile
+- **Task Name**: Bug: No Low Balance Reminder in Inbox
 - **Assignee**: Gemini
 - **Status**: IN_PROGRESS
 - **Deploy URL**: TBD
-- **Scope**: Fix Google Login 403 error (disallowed_useragent)
-- **Task ID**: GOOGLE_LOGIN_403
+- **Scope**: Investigate why low balance reminder is not sent to inbox
+- **Task ID**: EgdmqCG7k0hdml2f4v9a
 
 
 ## Workflow History

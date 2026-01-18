@@ -865,8 +865,33 @@ exports.autoReleaseOnLowCredits = onSchedule(
                 if (settings.phoneNumberStatus === 'active') {
                     console.log(`[autoReleaseOnLowCredits] User ${userDoc.id}: Credits = $${userCredits}, Threshold = $${CREDIT_THRESHOLD}`);
 
-                    // Auto-release if credits < 2x monthly cost
-                    if (userCredits < CREDIT_THRESHOLD) {
+                    const WARNING_THRESHOLD = 5.00; // Warning threshold (e.g. $5.00)
+                    // Note: User mentioned "2 credit" expecting reminder. 
+                    // If Threshold is 6 (3*2), then 2 credits -> release.
+                    // Let's adjust logic:
+                    // If < 6: Release (Critical)
+                    // If < 10: Warning
+
+                    const RELEASE_THRESHOLD = CREDIT_THRESHOLD; // $6.00
+                    const WARN_THRESHOLD = 10.00;
+
+                    // Message Helper
+                    const sendInboxMessage = async (subject, body) => {
+                        const inboxRef = userDoc.ref.collection("inbound_messages").doc(); // Auto ID
+                        await inboxRef.set({
+                            body: body,
+                            sender: "WiseCat System",
+                            receiver: settings.phoneNumber, // The user's number
+                            receivedAt: admin.firestore.FieldValue.serverTimestamp(),
+                            isRead: false,
+                            sid: inboxRef.id,
+                            type: 'system_alert' // Tag for UI if needed
+                        });
+                        console.log(`  -> Sent Inbox Alert: ${subject}`);
+                    };
+
+                    // 1. Critical Release
+                    if (userCredits < RELEASE_THRESHOLD) {
                         console.log(`[autoReleaseOnLowCredits] ⚠️  Low credits! Releasing number for user: ${userDoc.id}`);
                         console.log(`  Number: ${settings.phoneNumber}, Credits: $${userCredits}`);
 
@@ -920,6 +945,12 @@ exports.autoReleaseOnLowCredits = onSchedule(
                                 phoneNumber: admin.firestore.FieldValue.delete()
                             });
 
+                            // NOTIFY USER OF RELEASE
+                            await sendInboxMessage(
+                                "Number Released",
+                                `Your phone number ${settings.phoneNumber} has been released due to insufficient credits ($${userCredits.toFixed(2)} < $${RELEASE_THRESHOLD.toFixed(2)}). Please top up to purchase a new number.`
+                            );
+
                             console.log(`  ✓ Auto-released due to low credits`);
                             releasedCount++;
 
@@ -927,6 +958,16 @@ exports.autoReleaseOnLowCredits = onSchedule(
                             console.error(`  ✗ Error releasing number:`, releaseError);
                             errorCount++;
                         }
+                    }
+                    // 2. Warning (Only if not released)
+                    else if (userCredits < WARN_THRESHOLD) {
+                        // Check if we already spammed them? 
+                        // For now, daily warning is acceptable.
+                        console.log(`[autoReleaseOnLowCredits] Sending Low Balance Warning`);
+                        await sendInboxMessage(
+                            "Low Balance Warning",
+                            `Your credit balance is low ($${userCredits.toFixed(2)}). Your phone number will be released if balance drops below $${RELEASE_THRESHOLD.toFixed(2)}. Please top up soon.`
+                        );
                     }
                 }
             }
