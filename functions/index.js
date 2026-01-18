@@ -639,8 +639,24 @@ exports.purchasePhoneNumber = onCall(
             }
             // -----------------------------------------------------------
 
+            // Fetch dynamic SMS URL from configuration
+            let smsUrl = 'https://us-central1-wisecat-8df8d.cloudfunctions.net/twilioInboundWebhook'; // Fallback
+            try {
+                const globalSettingsDoc = await reservationDb.doc('configuration/settings').get();
+                if (globalSettingsDoc.exists) {
+                    const data = globalSettingsDoc.data();
+                    if (data.inboundSmsUrl) {
+                        smsUrl = data.inboundSmsUrl;
+                    }
+                }
+            } catch (e) {
+                console.warn("[purchasePhoneNumber] Failed to fetch smsUrl config, using default", e);
+            }
+
             const purchasedNumber = await subaccountClient.incomingPhoneNumbers.create({
-                phoneNumber: phoneNumber
+                phoneNumber: phoneNumber,
+                smsUrl: smsUrl,
+                smsMethod: 'POST'
             });
 
             console.log(`[purchasePhoneNumber] Number purchased: ${purchasedNumber.sid}`);

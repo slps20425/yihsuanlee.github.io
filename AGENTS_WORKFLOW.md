@@ -4,7 +4,7 @@
 - **Task Name**: Feature: SMS Inbox
 - **Assignee**: Gemini
 - **Status**: READY_FOR_QA
-- **Deploy URL**: TBD
+- **Deploy URL**: https://us-central1-wisecat-8df8d.cloudfunctions.net/twilioInboundWebhook
 - **Scope**: Create personal inbox for SMS/announcements
 - **Task ID**: D3EwAFfOxo7SUyojiv4C
 
