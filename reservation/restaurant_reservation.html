@@ -199,13 +199,18 @@
                     style="display: none; margin-top: 15px; padding: 10px; border: 1px solid #444; border-radius: 8px; background: #222;">
                     <!-- Order Details -->
                     <label data-i18n="label_order_details" style="margin-top: 0;">Order Details / Menu Items</label>
-                    <textarea id="preOrderText" data-i18n-placeholder="placeholder_order_details"
-                        placeholder="e.g. 1x Beef Burger, 2x Coke, 1x Caesar Salad..."
-                        style="width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #1a1a1a; color: white;"
-                        rows="3"></textarea>
 
-                    <!-- Upload Menu -->
-                    <label data-i18n="label_upload_menu">Upload Menu Image (Optional)</label>
+                    <div id="orderItemsList" style="margin-bottom: 10px;">
+                        <!-- Dynamic rows will be added here -->
+                    </div>
+
+                    <button type="button" id="addOrderItemBtn"
+                        style="width: 100%; padding: 8px; background: #333; color: white; border: 1px dashed #666; border-radius: 8px; cursor: pointer; margin-bottom: 15px;">
+                        + Add Item
+                    </button>
+
+                    <label data-i18n="label_upload_menu" style="margin-top: 5px;">Upload Menu Image (Optional)</label>
+                    <div style="font-size: 11px; color: #888; margin-bottom: 5px;">Recommended to prevent typos.</div>
                     <input type="file" id="preOrderFile" accept="image/*"
                         style="width: 100%; margin-bottom: 10px; padding: 10px; background: #333; border-radius: 8px; color: #ccc;">
 

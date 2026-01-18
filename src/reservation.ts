@@ -125,8 +125,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // --- Remote Config Listener ---
     const { doc, onSnapshot } = await import("firebase/firestore");
-    const { db, storage } = await import("./firebase-config");
-    const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+    const { db } = await import("./firebase-config"); // Revert
+    // Removed storage imports
 
     const configRef = doc(db, 'configuration', 'settings');
     const resBtn = document.getElementById('submitBtn') as HTMLButtonElement | null;
@@ -668,26 +668,51 @@ document.addEventListener("DOMContentLoaded", async function () {
                 });
             }
 
-            // --- Partial Quantity Disclaimer Logic ---
+            // --- Order List Logic ---
+            const orderItemsList = document.getElementById('orderItemsList');
+            const addOrderItemBtn = document.getElementById('addOrderItemBtn');
             const preorderAgreeCheck = document.getElementById('preorderAgree') as HTMLInputElement;
-            const foodNameInput = document.getElementById('foodName') as HTMLInputElement;
-            const foodQuantitySelect = document.getElementById('foodQuantity') as HTMLSelectElement;
 
-            const toggleFoodFields = () => {
-                const shouldDisable = !preorderAgreeCheck.checked;
-                if (foodNameInput) {
-                    foodNameInput.disabled = shouldDisable;
-                    foodNameInput.style.opacity = shouldDisable ? "0.5" : "1";
-                }
-                if (foodQuantitySelect) {
-                    foodQuantitySelect.disabled = shouldDisable;
-                    foodQuantitySelect.style.opacity = shouldDisable ? "0.5" : "1";
-                }
+            const addOrderItemRow = () => {
+                if (!orderItemsList) return;
+                const div = document.createElement('div');
+                div.className = 'order-item-row';
+                div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
+
+                div.innerHTML = `
+                    <input type="text" placeholder="Item (e.g. Beef Burger)" class="order-item-name" 
+                        style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #1a1a1a; color: white;">
+                    <input type="number" value="1" min="1" max="99" class="order-item-qty" 
+                        style="width: 60px; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #1a1a1a; color: white; text-align: center;">
+                    <button type="button" class="remove-item-btn" style="background: none; border: none; color: #ff4444; font-size: 18px; cursor: pointer; padding: 0 5px;">&times;</button>
+                `;
+
+                div.querySelector('.remove-item-btn')?.addEventListener('click', () => {
+                    div.remove();
+                });
+
+                orderItemsList.appendChild(div);
             };
 
-            if (preorderAgreeCheck && foodNameInput && foodQuantitySelect) {
-                preorderAgreeCheck.addEventListener('change', toggleFoodFields);
-                toggleFoodFields(); // Init
+            if (addOrderItemBtn) {
+                addOrderItemBtn.addEventListener('click', addOrderItemRow);
+            }
+
+            // Initial row if empty
+            if (orderItemsList && orderItemsList.children.length === 0) {
+                addOrderItemRow();
+            }
+
+            // Sync disclaimer
+            const toggleOrderInputs = () => {
+                const shouldDisable = !preorderAgreeCheck.checked;
+                if (addOrderItemBtn) (addOrderItemBtn as HTMLButtonElement).disabled = shouldDisable;
+                const inputs = orderItemsList?.querySelectorAll('input, button');
+                inputs?.forEach(inp => (inp as any).disabled = shouldDisable);
+            }
+            if (preorderAgreeCheck) {
+                preorderAgreeCheck.addEventListener('change', toggleOrderInputs);
+                toggleOrderInputs(); // init
             }
 
             // Initial button state check
@@ -775,7 +800,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     initNumberInput('partySizeDisplay', 'partySize', 'partySizeMinus', 'partySizePlus', 1, 50);
 
     // Initialize Food Quantity (min: 1, max: 4)
-    initNumberInput('foodQuantityDisplay', 'foodQuantity', 'foodQuantityMinus', 'foodQuantityPlus', 1, 4);
+    // initNumberInput('foodQuantityDisplay', 'foodQuantity', 'foodQuantityMinus', 'foodQuantityPlus', 1, 4); // Removed for dynamic order list
 
     // Bind event listeners using the centralized bind function
     bindValidationListeners();
@@ -1538,7 +1563,7 @@ async function handleFormSubmit(e: Event) {
     const retryCheck = document.getElementById('retryOption') as HTMLInputElement;
 
     // Food Pre-order Inputs
-    const preOrderTextInput = document.getElementById('preOrderText') as HTMLTextAreaElement;
+    // const preOrderTextInput = document.getElementById('preOrderText') as HTMLTextAreaElement; // Removed
     const preOrderFileInput = document.getElementById('preOrderFile') as HTMLInputElement;
     const preorderAgreeCheck = document.getElementById('preorderAgree') as HTMLInputElement;
 
@@ -1551,12 +1576,14 @@ async function handleFormSubmit(e: Event) {
     const taskId = `task_${randomId}`;
     const taskRef = doc(db, 'tasks', taskId);
 
-    // Handle File Upload
+    // --- Handle File Upload (Optional) ---
+    // preOrderFileInput already defined above
     let preOrderImageUrl = "n/a";
     if (missionSelect.value === 'reservation_food_preorder' && preOrderFileInput && preOrderFileInput.files && preOrderFileInput.files.length > 0) {
         const file = preOrderFileInput.files[0];
         (window as any).showToast("Uploading menu image...", "info");
         try {
+            // Auth check handled by rules or assumed guest path
             const uid = auth.currentUser ? auth.currentUser.uid : 'guest';
             const fileName = `${Date.now()}_${file.name}`;
             const storageRef = ref(storage, `users/${uid}/uploads/${fileName}`);
@@ -1564,7 +1591,31 @@ async function handleFormSubmit(e: Event) {
             preOrderImageUrl = await getDownloadURL(storageRef);
         } catch (e) {
             console.error("Upload failed:", e);
-            (window as any).showToast("Image upload failed. Proceeding without image.", "warning");
+            (window as any).showToast("Image upload failed. Proceeding.", "warning");
+        }
+    }
+
+    // --- Handle Structured Order List ---
+    let orderDetailsFn = 'n/a';
+    if (missionSelect.value === 'reservation_food_preorder') {
+        const listContainer = document.getElementById('orderItemsList');
+        const items: string[] = [];
+        if (listContainer) {
+            listContainer.querySelectorAll('.order-item-row').forEach(row => {
+                const nameInp = row.querySelector('.order-item-name') as HTMLInputElement;
+                const qtyInp = row.querySelector('.order-item-qty') as HTMLInputElement;
+                if (nameInp && nameInp.value.trim()) {
+                    items.push(`${nameInp.value.trim()} x${qtyInp.value}`);
+                }
+            });
+        }
+        if (items.length > 0) {
+            orderDetailsFn = items.join(', ');
+        } else if (preOrderImageUrl === 'n/a') {
+            // No text AND no image?
+            orderDetailsFn = "No details provided";
+        } else {
+            orderDetailsFn = "See uploaded menu";
         }
     }
 
@@ -1578,9 +1629,9 @@ async function handleFormSubmit(e: Event) {
         reservation_utc: calculateReservationUTC(resDateInput.value, resTimeInput.value, selectedRestaurantData?.utc_offset_minutes),
         mission: missionSelect.value,
         preorderBackup: missionSelect.value === 'reservation_food_preorder' ? preorderBackupSelect.value : 'n/a',
-        preOrderDetails: missionSelect.value === 'reservation_food_preorder' ? preOrderTextInput.value : 'n/a',
+        preOrderDetails: orderDetailsFn,
         preOrderImageUrl: preOrderImageUrl,
-        foodName: missionSelect.value === 'reservation_food_preorder' ? preOrderTextInput.value : 'n/a',
+        foodName: orderDetailsFn, // Legacy map
         foodQuantity: "See details",
         Name: name,
         'Party Size': partySizeInput.value,
