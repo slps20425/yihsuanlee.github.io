@@ -1224,7 +1224,7 @@ exports.twilioInboundWebhook = onRequest(async (req, res) => {
             return res.status(400).send("Bad Request");
         }
 
-        const db = admin.firestore();
+        const db = getFirestore(admin.app(), "reservation");
 
         // 2. Identify the Tenant (User)
         // We need to find which user owns this phone number.
