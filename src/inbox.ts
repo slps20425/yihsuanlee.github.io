@@ -1,8 +1,7 @@
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, query, orderBy, limit, onSnapshot, doc, updateDoc, Timestamp, where } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth'; // Keep types/functions if needed, but use auth instance from config
+import { collection, query, orderBy, limit, onSnapshot, doc, updateDoc, Timestamp, where } from 'firebase/firestore';
+import { auth, db } from './firebase-config'; // Import shared instances
 
-const db = getFirestore();
-const auth = getAuth();
 
 export function initInbox() {
     console.log("Initializing Inbox...");
