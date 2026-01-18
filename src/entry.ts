@@ -1,9 +1,9 @@
 import "./version";
 import WiseCatI18n from './i18n';
 
-import { GoogleAuthProvider, OAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc, onSnapshot, serverTimestamp } from "firebase/firestore";
-import { app, auth, db } from './firebase-config';
+import { auth, db } from './firebase-config';
 
 // (window as any).firebaseInitialized = true; // No longer needed here if imported elsewhere or handled by modules
 
@@ -251,7 +251,7 @@ function showCenteredToast(message: string) {
 // --- Auth Logic ---
 
 // Revised Auth Logic using Redirect for Mobile Compatibility
-import { signInWithRedirect, getRedirectResult, UserCredential } from "firebase/auth";
+import { signInWithRedirect, getRedirectResult } from "firebase/auth";
 
 async function checkRedirectResult() {
     try {
@@ -268,6 +268,12 @@ async function checkRedirectResult() {
 }
 
 async function handleSocialLogin(provider: any) {
+    const termsCheckbox = document.getElementById('termsCheckbox') as HTMLInputElement;
+    if (termsCheckbox && !termsCheckbox.checked) {
+        alert("Please agree to the terms and fraud prevention policy to continue.");
+        return;
+    }
+
     const authError = document.getElementById('authError');
     if (authError) authError.textContent = '';
 
@@ -338,6 +344,12 @@ async function processLoginSuccess(user: any) {
 }
 
 function handleLineLogin() {
+    const termsCheckbox = document.getElementById('termsCheckbox') as HTMLInputElement;
+    if (termsCheckbox && !termsCheckbox.checked) {
+        alert("Please agree to the terms and fraud prevention policy to continue.");
+        return;
+    }
+
     const channelId = "2008812650"; // Provided by user
     const redirectUri = encodeURIComponent("https://wise-catty.cc/api/auth/line/callback");
     const state = "random_string_for_security_" + Date.now(); // Should be better
@@ -405,7 +417,7 @@ onAuthStateChanged(auth, (user) => {
                 localStorage.setItem('wisecat_user', JSON.stringify(userSession));
                 displayUserProfile(userSession);
             } else {
-                // Document missing (e.g. first time LINE login) -> Create it
+                // Document missing -> Create it
                 console.log("User document missing, creating new one with prefix:", userIdentifier);
                 const initialData = {
                     name: user.displayName || "WiseCat User",

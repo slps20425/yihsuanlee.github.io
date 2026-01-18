@@ -653,6 +653,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function handleFormSubmit(e: Event) {
         e.preventDefault();
+
+        // Call Consent Validation
+        const consentCheckbox = document.getElementById('consentCheckbox') as HTMLInputElement;
+        if (consentCheckbox && !consentCheckbox.checked) {
+            alert("Please agree to let the AI call on my behalf to continue.");
+            return;
+        }
+
         const btn = document.getElementById('submitBtn') as HTMLButtonElement;
         btn.disabled = true;
 
@@ -703,7 +711,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             priority: 5, // Highest priority (ASAP)
             reservation_utc: serverTimestamp(), // Run now
             mission: missionEl.value,
-            customMission: missionEl.value === 'other' ? customMissionEl.value : '',
+            // Determine mission name
             missionDescription: (missionEl.value === 'other')
                 ? (customMissionEl.value || '')
                 : (MISSION_SCENARIOS.find(m => m.id === missionEl.value)?.description.en || ''),
@@ -939,7 +947,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ============ Mission Validation Logic ============
 
 
-let isDescriptionValidated = false;
+
 
 // Update mission description hint when mission changes
 function updateMissionDescription() {
@@ -959,7 +967,7 @@ function updateMissionDescription() {
     }
 
     // Reset validation when mission changes
-    isDescriptionValidated = false;
+
     const scriptTextarea = document.getElementById('script') as HTMLTextAreaElement;
     if (scriptTextarea) {
         scriptTextarea.style.borderColor = '';
@@ -1019,7 +1027,7 @@ async function validateMissionDescription() {
             language: currentLang
         });
 
-        isDescriptionValidated = result.data.valid;
+
 
         if (result.data.valid) {
             // Success - green border
@@ -1042,7 +1050,7 @@ async function validateMissionDescription() {
     } catch (error) {
         console.error('Validation error:', error);
         // On error, be permissive
-        isDescriptionValidated = true;
+
         feedbackDiv.textContent = '⚠️ Validation service unavailable. Proceeding...';
         feedbackDiv.style.background = 'rgba(251, 191, 36, 0.1)';
         feedbackDiv.style.border = '1px solid rgba(251, 191, 36, 0.3)';
@@ -1075,7 +1083,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Reset validation when script changes
     if (scriptTextarea) {
         scriptTextarea.addEventListener('input', () => {
-            isDescriptionValidated = false;
+
             validateForm();
         });
     }

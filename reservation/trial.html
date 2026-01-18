@@ -93,6 +93,17 @@
 
 
                 <label data-i18n="label_phone" style="margin-top: 15px;">📞 Target Phone (Recipient)</label>
+                <!-- Call Consent Agreement -->
+                <label class="agreement-box" for="consentCheckbox" style="margin-top: 30px;">
+                    <div class="custom-checkbox">
+                        <input type="checkbox" id="consentCheckbox" required>
+                        <span class="checkmark"></span>
+                    </div>
+                    <span class="agreement-text" data-i18n="label_agree_call">
+                        I agree to let the AI call on my behalf. If I do not agree, I will not be granted access.
+                    </span>
+                </label>
+
                 <div class="phone-container">
                     <input type="tel" id="targetPhone" required style="width: 100%;">
                 </div>

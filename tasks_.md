@@ -106,10 +106,10 @@
   - Priority: 3
   - No room to display user profile avatar with logout button in bottom panel or header
   - Resolution: Added avatar to mobile header (top right) which links to profile tab.
-- [ ] [0i0kdlWhPPFzVZZaGP6X] Feature: Adding menu for reservation with pre-order
+- [x] [0i0kdlWhPPFzVZZaGP6X] Feature: Reservation Menu with Pre-order
   - Priority: 3
   - Content: adding menu for reservation with pre-order or upload a menu
-- [ ] [3sb7PuQ0HcnI99VGH5DS] UI: Make profile logout button solid red
+- [/] [3sb7PuQ0HcnI99VGH5DS] UI: Make profile logout button solid red
   - Priority: 3
   - Content: fix the profile logout button should fill with red color ? make it solid
 - [ ] [ATRp9AtafaPIvVfPPb1q] UI: Header WiseCat Redirect to Profile
@@ -120,15 +120,13 @@
   - Content: bug redundant credits text in top up button
 - [ ] [NL8cMOdrF8yjasb8LmqN] UI: Unify Trial/Mouthpiece Background
   - Priority: 2
-  - Content: fix change the trial and mouthpiece background to be same as entryhe header WiseCat should always redirect user to profile tab
-- [x] [EgdmqCG7k0hdml2f4v9a] Bug: No Low Balance Reminder in Inbox
-  - Priority: 3
-  - Inbox not receive low balance reminder when user only 2 credit after login
-  - Resolution: Updated `autoReleaseOnLowCredits` GCF to send inbox warnings (<$10) and release alerts (<$6).
-- [ ] [UpOhJ0ng4LqxVIoRCfra] Bug: Redundant Credits Text
-  - Redundant credits text in top up button
-  - Priority: 2
-  - Change trial and mouthpiece background to match entry page
+  - Content: fix change the trial and mouthpiece background to be same as entry
+- [ ] **UI Polish (Dashboard & Profile)** <!-- id: 24 -->
+    - [x] Make profile logout button solid red <!-- id: 25 -->
+    - [x] Make "Payment & Usage History" header one line <!-- id: 26 -->
+    - [x] Replace refresh emoji with SVG icon <!-- id: 27 -->
+    - [x] Remove redundant "Credits" text from Top Up buttons <!-- id: 28 -->
+    - [ ] Fix header layout (logo visibility + profile alignment) <!-- id: 29 -->
 
 ## Backlog
 - [ ] Example Task 1

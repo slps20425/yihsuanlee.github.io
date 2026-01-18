@@ -277,13 +277,23 @@
                     </label>
                 </div>
 
-                <div class="credits-card" style="margin-top: 45px;">
+                <!-- Call Consent Agreement -->
+                <label class="agreement-box" for="consentCheckbox" style="margin-top: 30px;">
+                    <div class="custom-checkbox">
+                        <input type="checkbox" id="consentCheckbox" required>
+                        <span class="checkmark"></span>
+                    </div>
+                    <span class="agreement-text" data-i18n="label_agree_call">
+                        I agree to let the AI call on my behalf. If I do not agree, I will not be granted access.
+                    </span>
+                </label>
+
+                <div id="creditsCard" class="credits-card" style="margin-top: 45px;">
                     <div class="credits-info">
                         <span id="formCredits" data-i18n="text_credits" style="font-weight: bold; color: #fff;">Current
                             Credits: $0 USD</span>
                     </div>
-                    <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank" data-i18n="btn_refill"
-                        class="refill-btn">Top-up</a>
+                    <a href="../dashboard.html" class="btn btn-primary btn-full" data-i18n="btn_refill">💳 Top-up</a>
                 </div>
 
                 <div class="disclaimer-box"

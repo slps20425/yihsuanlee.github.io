@@ -476,6 +476,14 @@ function bindValidationListeners() {
 
 async function handleFormSubmit(e: Event) {
     e.preventDefault();
+
+    // Call Consent Validation
+    const consentCheckbox = document.getElementById('consentCheckbox') as HTMLInputElement;
+    if (consentCheckbox && !consentCheckbox.checked) {
+        alert("Please agree to let the AI call on my behalf to continue.");
+        return;
+    }
+
     const btn = document.getElementById('submitBtn') as HTMLButtonElement;
     const scriptInput = document.getElementById('scriptContent') as HTMLTextAreaElement;
     const nameInput = document.getElementById('userName') as HTMLInputElement;

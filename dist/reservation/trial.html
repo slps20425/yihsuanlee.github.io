@@ -40,13 +40,13 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/trial-C4uHqlnt.js"></script>
+  <script type="module" crossorigin src="/assets/trial-DugM-mYz.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-RgUJSTE4.js">
-  <link rel="modulepreload" crossorigin href="/assets/i18n-CflKAa87.js">
+  <link rel="modulepreload" crossorigin href="/assets/i18n-Nod3evmg.js">
   <link rel="modulepreload" crossorigin href="/assets/version-Dr8pX8LW.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-CyS5681M.js">
   <link rel="modulepreload" crossorigin href="/assets/scam-check-BjQROVeV.js">
-  <link rel="stylesheet" crossorigin href="/assets/i18n-Xg9KR3h-.css">
+  <link rel="stylesheet" crossorigin href="/assets/i18n-DsXOwCLl.css">
 </head>
 
 <body class="dashboard-layout">
@@ -99,6 +99,17 @@
 
 
                 <label data-i18n="label_phone" style="margin-top: 15px;">📞 Target Phone (Recipient)</label>
+                <!-- Call Consent Agreement -->
+                <label class="agreement-box" for="consentCheckbox" style="margin-top: 30px;">
+                    <div class="custom-checkbox">
+                        <input type="checkbox" id="consentCheckbox" required>
+                        <span class="checkmark"></span>
+                    </div>
+                    <span class="agreement-text" data-i18n="label_agree_call">
+                        I agree to let the AI call on my behalf. If I do not agree, I will not be granted access.
+                    </span>
+                </label>
+
                 <div class="phone-container">
                     <input type="tel" id="targetPhone" required style="width: 100%;">
                 </div>

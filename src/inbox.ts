@@ -1,5 +1,5 @@
 import { onAuthStateChanged } from 'firebase/auth'; // Keep types/functions if needed, but use auth instance from config
-import { collection, query, orderBy, limit, onSnapshot, doc, updateDoc, Timestamp, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from './firebase-config'; // Import shared instances
 
 

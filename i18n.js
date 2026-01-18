@@ -105,7 +105,9 @@ const WiseCatI18n = {
                     { t: "Logistics Sync", v: "Checking if the package needs to be dropped at the management office (管理室)." },
                     { t: "Fallback Contact", v: "I've been trying to reach you. Please contact me via email at {email}." }
                 ]
-            }
+            },
+            label_agree_fraud: "I agree I will not use this service for fraud. I agree to the <a href='terms.html'>Terms of Service</a> & AI hub services.",
+            label_agree_call: "I agree to let the AI call on my behalf. If I do not agree, I will not be granted access."
         },
         zh: {
             portal_title: "WiseCat 門戶",
@@ -203,7 +205,9 @@ const WiseCatI18n = {
                     { t: "物流確認", v: "確認物流包裹是否需要放在管理室？" },
                     { t: "聯繫方式", v: "我一直聯絡不上您，請透過電子郵件 {email} 與我聯繫。" }
                 ]
-            }
+            },
+            label_agree_fraud: "我同意不會將此服務用於詐騙。我同意<a href='terms.html'>服務條款</a>及 AI hub 服務。",
+            label_agree_call: "我同意由 AI 代替我撥打電話。如果我不同意，我將無法獲得存取權限。"
         },
         jp: {
             portal_title: "WiseCat ポータル",
@@ -300,7 +304,9 @@ const WiseCatI18n = {
                     { t: "物流の確認", v: "荷物を管理室に預ける必要があるか物流会社に確認しています。" },
                     { t: "連絡先", v: "連絡が取れませんでした。メール {email} で連絡をください。" }
                 ]
-            }
+            },
+            label_agree_fraud: "私はこのサービスを詐欺目的で使用しないことに同意します。すべてのAIハブサービスを継続することに同意します。",
+            label_agree_call: "私はAIが私の代表として電話をかけることに同意します。同意しない場合、アクセスは許可されません。"
         },
         kr: {
             portal_title: "WiseCat 포털",
@@ -394,7 +400,9 @@ const WiseCatI18n = {
                     { t: "물류 확인", v: "택배를 관리실에 맡겨야 하는지 물류팀에 확인 중입니다." },
                     { t: "연락처", v: "연락이 닿지 않아 이메일 {email}로 연락 부탁드립니다." }
                 ]
-            }
+            },
+            label_agree_fraud: "나는 이 서비스를 사기 목적으로 사용하지 않기로 동의합니다. 모든 AI 허브 서비스를 계속하기로 동의합니다.",
+            label_agree_call: "나는 AI가 나를 대신하여 전화를 거는 것에 동의합니다. 동의하지 않으면 액세스가 허용되지 않습니다."
         },
         es: {
             portal_title: "Portal WiseCat",
@@ -488,7 +496,9 @@ const WiseCatI18n = {
                     { t: "Logística", v: "Confirmando con logística si el paquete debe dejarse en la oficina de administración (管理室)." },
                     { t: "Contacto", v: "He intentado contactarte. Por favor, escríbeme al correo {email}." }
                 ]
-            }
+            },
+            label_agree_fraud: "Acepto que no usaré este servicio para fraude. Acepto continuar con todos los servicios del centro de IA.",
+            label_agree_call: "Acepto que la IA llame en mi nombre. Si no acepto, no se me concederá el acceso."
         },
         fr: {
             portal_title: "Portail WiseCat",
@@ -582,7 +592,9 @@ const WiseCatI18n = {
                     { t: "Logistique", v: "Vérification avec la logistique si le colis doit être déposé au bureau de gestion (管理室)." },
                     { t: "Contact", v: "J'ai essayé de vous joindre. Veuillez me contacter par e-mail à {email}." }
                 ]
-            }
+            },
+            label_agree_fraud: "J'accepte de ne pas utiliser ce service à des fins de fraude. J'accepte de continuer à utiliser tous les services du hub IA.",
+            label_agree_call: "J'accepte que l'IA appelle en mon nom. Si je n'accepte pas, l'accès ne me sera pas accordé."
         },
         it: {
             portal_title: "Portale WiseCat",
@@ -676,7 +688,9 @@ const WiseCatI18n = {
                     { t: "Logistica", v: "Verifica con la logistica se il pacco deve essere lasciato nell'ufficio di gestione (管理室)." },
                     { t: "Contatto", v: "Ho provato a contattarti. Per favore, scrivimi via email a {email}." }
                 ]
-            }
+            },
+            label_agree_fraud: "Accetto di non utilizzare questo servizio per scopi fraudolenti. Accetto di continuare a utilizzare tutti i servizi dell'hub IA.",
+            label_agree_call: "Accetto che l'IA chiami per mio conto. Se non accetto, non mi sarà concesso l'accesso."
         }
     },
 

@@ -1501,6 +1501,13 @@ async function handleFormSubmit(e: Event) {
         return;
     }
 
+    // Call Consent Validation
+    const consentCheckbox = document.getElementById('consentCheckbox') as HTMLInputElement;
+    if (consentCheckbox && !consentCheckbox.checked) {
+        alert("Please agree to let the AI call on your behalf to continue.");
+        return;
+    }
+
     // Scam Detection Check
     const nameInput = document.getElementById('userName') as HTMLInputElement;
     const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
@@ -1564,8 +1571,6 @@ async function handleFormSubmit(e: Event) {
     const retryCheck = document.getElementById('retryOption') as HTMLInputElement;
 
     // Food Pre-order Inputs
-    // const preOrderTextInput = document.getElementById('preOrderText') as HTMLTextAreaElement; // Removed
-    const preOrderFileInput = null; // Removed
     const preorderAgreeCheck = document.getElementById('preorderAgree') as HTMLInputElement;
 
     const { doc, collection, serverTimestamp, runTransaction } = await import("firebase/firestore");
