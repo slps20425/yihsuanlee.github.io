@@ -1135,7 +1135,12 @@ Respond with ONLY the word "MATCH" or "NOT_MATCH". Nothing else.`;
                 valid: isMatch
             };
 
+        } catch (error) {
+            console.error("Gemini API Error:", error);
+            console.warn("Validation failed, allowing request to proceed");
+            return { valid: true };
         }
+    }
 );
 
 /**
