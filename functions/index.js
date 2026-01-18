@@ -406,15 +406,17 @@ exports.getCallRates = onCall(
                 multiplier,
                 outbound: pricing.outboundPrefixPrices.map(p => ({
                     prefix: p.prefixes[0],
-                    base_price: parseFloat(p.currentPrice || 0),
-                    user_price: parseFloat(p.currentPrice || 0) * multiplier,
-                    friendly_name: p.friendlyName
+                    base_price: parseFloat(p.currentPrice || p.current_price || 0), // Try both casing
+                    user_price: parseFloat(p.currentPrice || p.current_price || 0) * multiplier,
+                    friendly_name: p.friendlyName,
+                    debug_raw_price: p.currentPrice // Temporary debug
                 })).slice(0, 50), // Limit to top 50 to avoid huge payload
                 inbound: pricing.inboundCallPrices.map(p => ({
                     type: p.numberType, // e.g., "local", "mobile"
-                    base_price: parseFloat(p.currentPrice || 0),
-                    user_price: parseFloat(p.currentPrice || 0) * multiplier, // Usually 0 for incoming local
-                    description: "Per minute cost to receive"
+                    base_price: parseFloat(p.currentPrice || p.current_price || 0),
+                    user_price: parseFloat(p.currentPrice || p.current_price || 0) * multiplier,
+                    description: "Per minute cost to receive",
+                    debug_raw_price: p.currentPrice // Temporary debug
                 }))
             };
         } catch (e) {

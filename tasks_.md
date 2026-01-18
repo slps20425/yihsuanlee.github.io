@@ -106,9 +106,30 @@
 - [x] [oNzRJ7gPcxYBVTjLL0yn] Feature: Mobile Contact Integration in Mouthpiece
   - Priority: 3
   - Add "Load Contact" feature from mobile native contacts
-- [/] [ViHAP25BidK8HUZYsP15] Feature: Revert to Microsoft Login
+- [x] [ViHAP25BidK8HUZYsP15] Feature: Revert to Microsoft Login
   - Priority: 3
   - Change back to Microsoft login (replace Apple ID)
+- [/] [bJfhytdpcQupkHsZmicg] Bug: Rate Checking Shows 0
+  - Priority: 3
+  - Rate checking currently all show 0, need investigate
+- [ ] [EgdmqCG7k0hdml2f4v9a] Bug: No Low Balance Reminder in Inbox
+  - Priority: 3
+  - Inbox not receive low balance reminder when user only 2 credit after login
+- [ ] [3sb7PuQ0HcnI99VGH5DS] Bug: Logout Button Style
+  - Priority: 3
+  - Profile logout button should fill with red color (solid)
+- [ ] [UpOhJ0ng4LqxVIoRCfra] Bug: Redundant Credits Text
+  - Priority: 3
+  - Redundant credits text in top up button
+- [ ] [0OcQudGdi98PIztEoQWA] Bug: Profile Avatar Layout
+  - Priority: 3
+  - No room to display user profile avatar with logout button in bottom panel or header
+- [ ] [ATRp9AtafaPIvVfPPb1q] Feature: Header Redirect to Profile
+  - Priority: 3
+  - In both Web/Mobile the header WiseCat should always redirect user to profile tab
+- [ ] [0i0kdlWhPPFzVZZaGP6X] Feature: Reservation Menu with Pre-order
+  - Priority: 3
+  - Adding menu for reservation with pre-order or upload a menu
 - [ ] [NL8cMOdrF8yjasb8LmqN] Feature: Background Consistency
   - Priority: 2
   - Change trial and mouthpiece background to match entry page
