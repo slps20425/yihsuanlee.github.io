@@ -1,12 +1,12 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-- **Task Name**: Enhanced Success Message
+- **Task Name**: Fix Chinese Contact Label
 - **Assignee**: Gemini
-- **Status**: READY_FOR_QA
-- **Deploy URL**: https://wisecat-8df8d.web.app
-- **Scope**: Update JS files for success text
-- **Task ID**: zCsqtM37u6uWLkrGgNuN
+- **Status**: IN_PROGRESS
+- **Deploy URL**: TBD
+- **Scope**: Update i18n for zh-TW
+- **Task ID**: oqP2PhTxaP1YYGfX5EVr
 
 ## Workflow History
 - [READY_FOR_QA] Fix Admin Page Mobile UI (l2SHMD6EKvJAgFSSPZ05)

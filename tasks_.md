@@ -79,6 +79,9 @@
   - Priority: 3
   - Update success messages for all services (restaurant, mouthpiece, trial)
   - Template: "Dear {{client_name}} we've receive the task. we will schedule your call ASAP. once finished will send result to {{client_email}}."
+- [x] [oqP2PhTxaP1YYGfX5EVr] Bug: Fix Chinese Contact Label
+  - Priority: 3
+  - Change "客服與回饋" to "客服"
 - [ ] [NL8cMOdrF8yjasb8LmqN] Feature: Background Consistency
   - Priority: 2
   - Change trial and mouthpiece background to match entry page

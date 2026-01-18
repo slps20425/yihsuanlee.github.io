@@ -273,7 +273,7 @@ const WiseCatI18n: WiseCatI18nType = {
             nav_ai: "工具箱",
             nav_inbox: "收件夾",
             nav_logout: "登出",
-            nav_contact: "客服與回饋"
+            nav_contact: "客服"
         },
         jp: {
             portal_title: "WiseCat ポータル",
