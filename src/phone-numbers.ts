@@ -3,8 +3,17 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { app, auth, db } from "./firebase-config"; // Use shared config
 import WiseCatI18n from "./i18n";
+import { ScamCheck } from "./scam-check";
 
 const functions = getFunctions(app);
+
+// New Elements
+const rateCheckInput = document.getElementById('rateCheckInput') as HTMLInputElement | null;
+const rateCheckBtn = document.getElementById('rateCheckBtn') as HTMLButtonElement | null;
+const rateResult = document.getElementById('rateResult') as HTMLElement | null;
+const refreshUsageBtn = document.getElementById('refreshUsageBtn') as HTMLButtonElement | null;
+const usageTableBody = document.getElementById('usageHistoryBody') as HTMLElement | null;
+
 
 // State
 let currentUser: any = null;
@@ -433,7 +442,127 @@ if (searchBtn) {
             console.error('Search error:', error);
         } finally {
             searchBtn.disabled = false;
+
         }
+    });
+}
+
+if (rateCheckBtn && rateCheckInput && rateResult) {
+    rateCheckBtn.addEventListener('click', async () => {
+        const country = rateCheckInput.value.trim().toUpperCase();
+        if (!country) {
+            ScamCheck.showToast("Please enter a country code (e.g. US, GB)", "error");
+            return;
+        }
+
+        rateResult.innerHTML = '<span style="color: var(--text-secondary);">Checking rates...</span>';
+        rateCheckBtn.disabled = true;
+
+        try {
+            const getCallRates = httpsCallable(functions, 'getCallRates');
+            const result = await getCallRates({ country });
+            const data = result.data as any;
+
+            // Display Logic
+            let html = `<div style="margin-top:0.5rem; padding:0.5rem; background:rgba(0,0,0,0.2); border-radius:6px;">`;
+            html += `<div style="font-weight:bold; margin-bottom:4px; display:flex; justify-content:space-between;">
+                        <span>${data.country} Rates</span>
+                        <span style="font-size:0.8em; color:var(--accent);">${data.currency} (x${data.multiplier})</span>
+                     </div>`;
+
+            // Outbound Sample
+            if (data.outbound && data.outbound.length > 0) {
+                const p = data.outbound[0]; // Show first prefix usually
+                html += `<div style="font-size:0.9rem;">📞 Outbound: <strong>${p.user_price.toFixed(3)}</strong> / min</div>`;
+            } else {
+                html += `<div style="font-size:0.9rem;">📞 Outbound: N/A</div>`;
+            }
+
+            // Inbound Sample
+            if (data.inbound && data.inbound.length > 0) {
+                const p = data.inbound.find((x: any) => x.type === 'local') || data.inbound[0];
+                html += `<div style="font-size:0.9rem;">📱 Inbound: <strong>${p.user_price.toFixed(3)}</strong> / min</div>`;
+            }
+            html += `</div>`;
+
+            rateResult.innerHTML = html;
+
+        } catch (e: any) {
+            console.error("Rate check failed:", e);
+            rateResult.innerHTML = `<span style="color: var(--danger);">Error: ${e.message}</span>`;
+        } finally {
+            rateCheckBtn.disabled = false;
+        }
+    });
+}
+
+// USAGE HISTORY LOGIC
+async function loadUsageHistory() {
+    if (!usageTableBody) return;
+
+    // Check cache or loading state? 
+    // Just load every time user clicks Dashboard? Or explicit refresh?
+    // We'll reset to loading only if empty
+    if (usageTableBody.children.length === 0 || usageTableBody.firstElementChild?.textContent?.includes("Loading")) {
+        usageTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 2rem; color: var(--text-secondary);">Loading usage data...</td></tr>';
+    }
+
+    try {
+        const getTransformedUsageHistory = httpsCallable(functions, 'getTransformedUsageHistory');
+        const result = await getTransformedUsageHistory();
+        const { usage } = result.data as any;
+
+        if (!usage || usage.length === 0) {
+            usageTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 2rem; color: var(--text-secondary);">No usage history found.</td></tr>';
+            return;
+        }
+
+        usageTableBody.innerHTML = usage.map((item: any) => {
+            let dateStr = 'N/A';
+            try {
+                // Try parsing the date, handle potential formats
+                const rawDate = item.end_date || item.start_date || item.date; // fallback to 'date' property if exists
+                if (rawDate) {
+                    const d = new Date(rawDate);
+                    if (!isNaN(d.getTime())) {
+                        dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    }
+                }
+            } catch (e) {
+                console.warn("Date parse error", e);
+            }
+
+            const cost = parseFloat((item.user_price || 0).toString()).toFixed(2);
+
+            // Determine Type and Description
+            let type = "Usage";
+            let desc = item.description || item.category;
+
+            if (item.category === "phone-number") type = "Number";
+            else if (item.category && item.category.includes("sms")) type = "SMS";
+            else if (item.category && item.category.includes("voice")) type = "Voice";
+            else if (item.description && item.description.toLowerCase().includes("recording")) type = "Recording";
+
+            return `
+                <tr>
+                    <td>${dateStr}</td>
+                    <td><span class="capability-tag ${type === 'Number' ? 'capability-voice' : type === 'SMS' ? 'capability-sms' : 'capability-mms'}">${type}</span></td>
+                    <td>${desc}</td>
+                    <td style="color: var(--warning); font-weight:600;">$${cost}</td>
+                </tr>
+            `;
+        }).join('');
+
+    } catch (e: any) {
+        console.error("Failed to load usage:", e);
+        usageTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 2rem; color: var(--danger);">Failed to load history: ${e.message}</td></tr>`;
+    }
+}
+
+if (refreshUsageBtn) {
+    refreshUsageBtn.addEventListener('click', () => {
+        usageTableBody!.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 2rem; color: var(--text-secondary);">Refreshing...</td></tr>';
+        loadUsageHistory();
     });
 }
 
@@ -551,6 +680,11 @@ function activateTab(tabName: string) {
 
     // Persist to localStorage
     localStorage.setItem('wisecat_active_tab', tabName);
+
+    // If Profile, load usage history if needed
+    if (tabName === 'profile') {
+        loadUsageHistory();
+    }
 }
 
 navItems.forEach(navItem => {
@@ -561,12 +695,16 @@ navItems.forEach(navItem => {
 });
 
 // Restore Tab on Load
+// Restore Tab on Load
 document.addEventListener('DOMContentLoaded', () => {
-    const savedTab = localStorage.getItem('wisecat_active_tab');
-    if (savedTab) {
+    let savedTab = localStorage.getItem('wisecat_active_tab');
+    if (savedTab === 'dashboard') savedTab = 'profile'; // Handle grandfathered 'dashboard' state
+
+    // Check if tab element exists
+    if (savedTab && document.getElementById(`${savedTab}Tab`)) {
         activateTab(savedTab);
     } else {
-        activateTab('ai'); // Default
+        activateTab('profile'); // Default fallback
     }
 });
 // --- Logout Logic ---

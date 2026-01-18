@@ -21,13 +21,7 @@
         }
 
         /* Essential local overrides that differ from global or are dashboard-specific */
-        .tab-section {
-            display: none;
-        }
-
-        .tab-section.active {
-            display: block;
-        }
+        /* dashboard-grid removed */
 
         .card {
             background: var(--card-bg);
@@ -35,6 +29,24 @@
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
+        }
+
+        .usage-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .usage-table th,
+        .usage-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .usage-table th {
+            color: var(--text-secondary);
+            font-weight: 600;
         }
 
         .placeholder {
@@ -55,13 +67,35 @@
         [hidden] {
             display: none !important;
         }
+
+        /* Fix Tab Switching */
+        .tab-section {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .tab-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
-  <script type="module" crossorigin src="/assets/dashboard-6GWBPsmn.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-CZUVvyED.js">
-  <link rel="modulepreload" crossorigin href="/assets/i18n-B_APIFrn.js">
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-AwCycs0Y.js">
-  <link rel="modulepreload" crossorigin href="/assets/firebase-config-O2Hx6jNt.js">
-  <link rel="stylesheet" crossorigin href="/assets/i18n-BIPElyTN.css">
+  <script type="module" crossorigin src="/assets/dashboard-C1lA2gbn.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-DW7_Xq6E.js">
+  <link rel="modulepreload" crossorigin href="/assets/i18n-RWzviKJH.js">
+  <link rel="modulepreload" crossorigin href="/assets/firebase-config-BMWcJPQv.js">
+  <link rel="modulepreload" crossorigin href="/assets/scam-check-Bp_ET3Hd.js">
+  <link rel="stylesheet" crossorigin href="/assets/i18n-Xg9KR3h-.css">
 </head>
 
 <body class="dashboard-layout">
@@ -84,101 +118,124 @@
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- 📞 Calls Tab -->
-        <div id="callsTab" class="tab-section">
-            <div class="card">
-                <h2>📞 Call Management</h2>
-                <p style="color: var(--text-secondary);">Manage inbound and outbound AI-powered calls</p>
-                <div
-                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
-                    <div class="placeholder">
-                        <div class="placeholder-icon">📞</div>
-                        <div>Inbound Calls</div>
-                        <div style="font-size: 2rem; font-weight: 600; margin-top: 0.5rem;">0</div>
-                    </div>
-                    <div class="placeholder">
-                        <div class="placeholder-icon">📱</div>
-                        <div>Outbound Calls</div>
-                        <div style="font-size: 2rem; font-weight: 600; margin-top: 0.5rem;">0</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Quick Stats moved to Profile Tab or separate section if desired, removing stray HTML -->
 
-        <!-- 👤 Profile Tab -->
-        <div id="profileTab" class="tab-section" style="max-width: 1200px; margin: 0 auto;">
-            <div class="profile-grid">
-                <!-- Personal Info Card -->
-                <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column;">
-                    <h2
-                        style="display: flex; align-items: center; gap: 8px; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
-                        👤 Profile</h2>
-                    <div style="flex-grow: 1;">
+    <!-- 👤 Profile Tab -->
+    <div class="main-content">
+        <div id="profileTab" class="tab-section">
+            <style>
+                /* Scoped styles for Profile Tab Grid */
+                .profile-grid-container {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                    gap: 1.5rem;
+                }
+
+                @media (min-width: 1024px) {
+                    .profile-grid-container {
+                        grid-template-columns: 1fr 2fr;
+                        /* 1/3 Left, 2/3 Right */
+                        align-items: start;
+                    }
+                }
+
+                .profile-left-column {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.5rem;
+                }
+
+                .profile-right-column {
+                    display: flex;
+                    flex-direction: column;
+                }
+            </style>
+
+            <div class="profile-grid-container">
+                <!-- Left Column (1/3) -->
+                <div class="profile-left-column">
+                    <!-- Credits Card (Prioritized) -->
+                    <div class="card">
+                        <h2
+                            style="display: flex; align-items: center; gap: 8px; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+                            💰 Credits
+                        </h2>
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <div
+                                style="font-size: 0.95rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">
+                                Current Balance</div>
+                            <div id="profileCredits"
+                                style="font-size: 2.5rem; font-weight: 800; color: var(--success);">
+                                $0.00
+                            </div>
+                        </div>
+                        <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank"
+                            class="btn btn-primary btn-full">
+                            💳 <span data-i18n="btn_refill">Top-up</span>&nbsp;Credits
+                        </a>
+                    </div>
+
+                    <!-- Personal Info Card -->
+                    <div class="card">
+                        <h2
+                            style="display: flex; align-items: center; gap: 8px; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+                            👤 Profile
+                        </h2>
                         <div style="text-align: center; padding: 0.5rem; margin-bottom: 1rem;">
                             <img id="userAvatar" src="https://ui-avatars.com/api/?name=User" alt="Avatar"
-                                style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--accent); margin-bottom: 0.75rem;">
-                            <div id="userName" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem;">
-                                Loading...</div>
-                            <div id="userEmail"
-                                style="color: var(--text-secondary); font-size: 0.85rem; word-break: break-all;">
-                                -</div>
+                                style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--accent); margin-bottom: 1rem;">
+                            <div id="userName" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.25rem;">
+                                Loading...
+                            </div>
+                            <div id="userEmail" style="color: var(--text-secondary); font-size: 0.9rem;">-</div>
                         </div>
+                        <button id="logoutBtn" class="btn btn-outline-danger btn-full">Log out</button>
                     </div>
-                    <button id="logoutBtn" class="btn btn-outline-danger btn-full">
-                        Log out
-                    </button>
                 </div>
 
-                <!-- Credits Card -->
-                <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column;">
-                    <h2
-                        style="display: flex; align-items: center; gap: 8px; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
-                        💰 Credits</h2>
-                    <div style="flex-grow: 1;">
-                        <div style="text-align: center; margin-bottom: 1.25rem;">
-                            <div
-                                style="font-size: 0.95rem; color: var(--text-primary); font-weight: 700; margin-bottom: 0.5rem;">
-                                Current
-                                Balance</div>
-                            <div id="profileCredits"
-                                style="font-size: 2.2rem; font-weight: 800; color: var(--success);">
-                                $0.00</div>
+                <!-- Right Column (2/3) -->
+                <div class="profile-right-column">
+                    <!-- Payment & Usage History -->
+                    <div class="card" style="height: 100%;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+                            <h2 style="display: flex; align-items: center; gap: 8px; font-size: 1.1rem; margin: 0;">
+                                📜 Payment & Usage History
+                            </h2>
+                            <button id="refreshUsageBtn"
+                                style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 4px;"
+                                title="Refresh">🔄</button>
                         </div>
-                        <div class="credits-info-box"
-                            style="margin-bottom: 1.25rem; padding: 0.65rem; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; font-size: 0.75rem; text-align: left; max-width: 300px;">
-                            ℹ️ Used for numbers (~$3/mo) & AI calls
-                        </div>
-                    </div>
-                    <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank"
-                        class="btn btn-primary btn-full">💳
-                        <span data-i18n="btn_refill">Top-up</span>&nbsp;Credits</a>
-                </div>
 
-                <!-- Current Phone Number (Conditional) -->
-                <div id="phoneNumberCard" class="card" style="margin-bottom: 0;" hidden>
-                    <h2
-                        style="display: flex; align-items: center; gap: 8px; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
-                        📱 Your Number</h2>
-                    <div
-                        style="background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; text-align: center;">
-                        <div id="currentPhoneNumber"
-                            style="font-size: 1.25rem; font-weight: 800; color: var(--success); margin-bottom: 0.5rem;">
-                            -</div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);">
-                            Status: <span id="phoneStatus"
-                                style="color: var(--success); font-weight: 600;">Active</span>
+                        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                            <table class="usage-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usageHistoryBody">
+                                    <tr>
+                                        <td colspan="4"
+                                            style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                            Loading history...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <button id="releaseBtn" class="btn btn-outline-danger btn-full"
-                        style="height: 40px; font-size: 0.9rem;">Release Number</button>
                 </div>
             </div>
         </div>
 
-        <!-- Phone Numbers Tab (Renamed from Add Tab) -->
-        <div id="addTab" class="tab-section active">
+
+        <!-- 📱 Phone Numbers Tab (Restored) -->
+        <div id="addTab" class="tab-section">
+
+
             <!-- 1. Existing Number Section (Table View) -->
             <div id="myNumberSection" class="card" hidden>
                 <h2>📱 My Phone Number</h2>
@@ -200,9 +257,29 @@
                 </div>
             </div>
 
+            <!-- Rate Checker (Moved Below Phone Number) -->
+            <div
+                style="background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; border: 1px dashed var(--border);">
+                <h3 style="display: flex; align-items: center; gap: 8px; font-size: 1rem; margin-bottom: 0.5rem;">
+                    🌍 Rate Checker</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.75rem;">Check call rates
+                    before you buy.</p>
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <input type="text" id="rateCheckInput" placeholder="Country Code (e.g. US)"
+                        style="flex: 1; min-width: 200px; padding: 0.6rem 0.8rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: 0.95rem;">
+                    <button id="rateCheckBtn" class="btn btn-secondary"
+                        style="padding: 4px 12px; font-size: 0.85rem; white-space: nowrap; height: auto;">Check</button>
+                </div>
+                <div id="rateResult" style="margin-top: 0.75rem; font-size: 0.85rem;"></div>
+            </div>
+
             <!-- 2. Search & Add New Number Section -->
             <div id="searchNumberSection" class="card" hidden>
                 <h2>➕ Buy New Number</h2>
+
+
+
+                <!-- Country Selector -->
 
                 <!-- Country Selector -->
                 <div class="input-group">
@@ -292,16 +369,15 @@
                 </div>
 
                 <button id="searchBtn" class="btn btn-primary btn-full">🔍 Search Numbers</button>
-            </div>
-
-            <!-- Results -->
-            <div id="resultsCard" class="card" hidden>
-                <h2>✨ Available Numbers</h2>
-                <div id="numbersList" class="number-grid">
-                    <!-- Numbers will be injected here as cards -->
+                <!-- Results -->
+                <div id="resultsCard" class="card" hidden>
+                    <h2>✨ Available Numbers</h2>
+                    <div id="numbersList" class="number-grid">
+                        <!-- Numbers will be injected here as cards -->
+                    </div>
                 </div>
-            </div>
-        </div>
+            </div> <!-- Close searchNumberSection -->
+        </div> <!-- Close addTab -->
 
         <!-- 📊 AI Tab -->
         <div id="aiTab" class="tab-section">
@@ -318,7 +394,8 @@
                             Integration Active</div>
                     </div>
                 </div>
-                <p style="color: var(--text-secondary);">Your AI assistant can make and receive calls using your phone
+                <p style="color: var(--text-secondary);">Your AI assistant can make and receive calls using your
+                    phone
                     number.</p>
             </div>
 
@@ -339,7 +416,8 @@
                         <div style="font-size: 2.5rem;">🍽️</div>
                         <div style="flex: 1;">
                             <div style="font-weight: 600; margin-bottom: 0.25rem;">Restaurant Reservation</div>
-                            <div style="font-size: 0.85rem; color: var(--text-secondary);">AI-powered booking assistant
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">AI-powered booking
+                                assistant
                                 for any restaurant</div>
                         </div>
                         <div style="align-self: center; color: var(--accent);">→</div>
@@ -369,7 +447,8 @@
                         <div style="font-size: 2.5rem;">🎁</div>
                         <div style="flex: 1;">
                             <div style="font-weight: 600; margin-bottom: 0.25rem;">Free Trial Call</div>
-                            <div style="font-size: 0.85rem; color: var(--text-secondary);">Experience AI voice calling
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">Experience AI voice
+                                calling
                                 with a limited trial</div>
                         </div>
                         <div style="align-self: center; color: var(--accent);">→</div>
@@ -410,17 +489,19 @@
                 <option value="it">🇮🇹 Italiano</option>
             </select>
         </div>
-        <button class="nav-item" data-tab="calls">
-            <span class="nav-icon">📞</span>
-            <span class="nav-label" data-i18n="nav_calls">Calls</span>
+        <button class="nav-item" data-tab="dashboard" style="display:none;">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Dashboard</span>
         </button>
+        <!-- Hiding redundant tabs -->
+        <!-- Hiding redundant tabs -->
         <button class="nav-item" data-tab="profile">
             <span class="nav-icon">👤</span>
             <span class="nav-label" data-i18n="nav_profile">Profile</span>
         </button>
-        <button class="nav-item active" data-tab="add">
+        <button class="nav-item" data-tab="add">
             <span class="nav-icon">📱</span>
-            <span class="nav-label" data-i18n="nav_phone">Phone Number</span>
+            <span class="nav-label" data-i18n="nav_phone">Buy Number</span>
         </button>
         <button class="nav-item" data-tab="ai">
             <span class="nav-icon">🤖</span>
@@ -430,6 +511,12 @@
             <span class="nav-icon">💬</span>
             <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
         </button>
+
+        <!-- Contact (Renamed & Moved) -->
+        <a href="https://line.me/R/ti/p/@785ausca" target="_blank" class="nav-item contact-link">
+            <span class="nav-icon">🎧</span>
+            <span class="nav-label" data-i18n="nav_contact">Contacts</span>
+        </a>
 
         <!-- Sidebar User Section (Desktop Only) -->
         <div class="sidebar-user-section">
@@ -444,12 +531,6 @@
                 <span data-i18n="nav_logout">Log out</span>
             </button>
         </div>
-
-        <!-- Contact & Support (Desktop Bottom-aligned) -->
-        <a href="https://line.me/R/ti/p/@785ausca" target="_blank" class="nav-item contact-link">
-            <span class="nav-icon">💬</span>
-            <span class="nav-label" data-i18n="nav_contact">Contact & Support</span>
-        </a>
     </nav>
 
     <!-- Purchase Dialog -->
@@ -509,7 +590,8 @@
                     You don't have a phone number yet
                 </p>
                 <p style="font-size: 0.9rem;">
-                    To use AI Reservation or Mouthpiece services, you first need to purchase a professional phone number
+                    To use AI Reservation or Mouthpiece services, you first need to purchase a professional phone
+                    number
                     to represent you.
                 </p>
             </div>

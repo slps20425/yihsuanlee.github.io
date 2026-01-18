@@ -157,7 +157,7 @@ const WiseCatI18n: WiseCatI18nType = {
             nav_ai: "AI Hub",
             nav_inbox: "Inbox",
             nav_logout: "Log out",
-            nav_contact: "Contact & Support"
+            nav_contact: "Contacts"
         },
         zh: {
             portal_title: "WiseCat 門戶",

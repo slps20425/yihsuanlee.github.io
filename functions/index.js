@@ -362,6 +362,119 @@ exports.searchNumbers = onCall(
 /**
  * Purchase phone number with subaccount creation and Vapi integration
  */
+
+// Helper to get billing config
+async function getBillingConfig(db) {
+    try {
+        const settings = await db.doc("configuration/settings").get();
+        const data = settings.data() || {};
+        return data.billing || {
+            number_multiplier: 2.0,
+            common_multiplier: 3.0,
+            services: { mouthpiece: 4.0, restaurant: 4.0 },
+            country_multipliers: {}
+        };
+    } catch (e) {
+        console.error("Error fetching billing config:", e);
+        return { number_multiplier: 2.0, common_multiplier: 3.0, services: {}, country_multipliers: {} };
+    }
+}
+
+/**
+ * Get Call Rates (Rate Checker)
+ */
+exports.getCallRates = onCall(
+    { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN] },
+    async (request) => {
+        if (!request.auth) throw new HttpsError("unauthenticated", "Auth required");
+        const { country = 'US' } = request.data;
+        const db = getFirestore(admin.app(), "reservation");
+
+        try {
+            const billing = await getBillingConfig(db);
+            // Case-insensitive lookup for country multiplier
+            const countryKey = Object.keys(billing.country_multipliers || {}).find(k => k.toUpperCase() === country.toUpperCase());
+            const multiplier = countryKey ? billing.country_multipliers[countryKey] : (billing.common_multiplier || 3.0);
+
+            const client = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
+            // Fetch Voice Pricing
+            const pricing = await client.pricing.v1.voice.countries(country).fetch();
+
+            return {
+                country,
+                currency: pricing.priceUnit,
+                multiplier,
+                outbound: pricing.outboundPrefixPrices.map(p => ({
+                    prefix: p.prefixes[0],
+                    base_price: parseFloat(p.currentPrice || 0),
+                    user_price: parseFloat(p.currentPrice || 0) * multiplier,
+                    friendly_name: p.friendlyName
+                })).slice(0, 50), // Limit to top 50 to avoid huge payload
+                inbound: pricing.inboundCallPrices.map(p => ({
+                    type: p.numberType, // e.g., "local", "mobile"
+                    base_price: parseFloat(p.currentPrice || 0),
+                    user_price: parseFloat(p.currentPrice || 0) * multiplier, // Usually 0 for incoming local
+                    description: "Per minute cost to receive"
+                }))
+            };
+        } catch (e) {
+            console.error("[getCallRates] Error:", e);
+            throw new HttpsError("internal", e.message);
+        }
+    }
+);
+
+/**
+ * Get Usage History (Transformed with Multiplier)
+ */
+exports.getTransformedUsageHistory = onCall(
+    { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN] },
+    async (request) => {
+        if (!request.auth) throw new HttpsError("unauthenticated", "Auth required");
+        const uid = request.auth.uid;
+        const db = getFirestore(admin.app(), "reservation");
+
+        try {
+            // Get user's subaccount credentials
+            const settingsRef = db.doc(`users/uid_${uid}/settings/settings`);
+            const settingsDoc = await settingsRef.get();
+            const settings = settingsDoc.data() || {};
+
+            if (!settings.twilioSubaccountSid || !settings.twilioSubaccountAuthToken) {
+                return { usage: [] };
+            }
+
+            const subClient = twilio(settings.twilioSubaccountSid, settings.twilioSubaccountAuthToken);
+
+            // Fetch usage records (summary of last 30 days is standard if no date range provided)
+            const records = await subClient.usage.records.list({ limit: 50 });
+
+            const billing = await getBillingConfig(db);
+            const multiplier = billing.common_multiplier || 3.0;
+
+            const usage = records.map(r => ({
+                category: r.category, // e.g., "calls", "phonenumbers"
+                description: r.description,
+                usage: parseFloat(r.usage || 0),
+                unit: r.usageUnit,
+                base_price: parseFloat(r.price || 0),
+                user_price: parseFloat(r.price || 0) * multiplier,
+                currency: r.priceUnit,
+                start_date: r.startDate,
+                end_date: r.endDate
+            })).filter(r => r.usage > 0 || r.base_price > 0); // Hide empty records
+
+            return { usage, multiplier };
+        } catch (e) {
+            console.error("[getTransformedUsageHistory] Error:", e);
+            throw new HttpsError("internal", e.message);
+        }
+    }
+);
+
+/**
+ * Purchase phone number with subaccount creation and Vapi integration
+ */
 exports.purchasePhoneNumber = onCall(
     { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, VAPI_API_KEY] },
     async (request) => {
@@ -371,21 +484,47 @@ exports.purchasePhoneNumber = onCall(
                 throw new HttpsError("unauthenticated", "User must be authenticated");
             }
 
-            const { phoneNumber } = request.data;
+            const { phoneNumber, countryCode = 'US' } = request.data;
             // FIXED: Relaxed validation for International Numbers (e.g. +81 for Japan, +64 for NZ)
             if (!phoneNumber || !/^\+[1-9]\d{1,14}$/.test(phoneNumber)) {
                 throw new HttpsError("invalid-argument", "Valid E.164 phone number required (e.g., +18001234567 or +81...)");
             }
 
             const uid = request.auth.uid;
-            console.log(`[purchasePhoneNumber] User ${uid} purchasing ${phoneNumber}`);
+            console.log(`[purchasePhoneNumber] User ${uid} purchasing ${phoneNumber} (${countryCode})`);
 
             // Get Firestore instance (reservation DB)
             const reservationDb = getFirestore(admin.app(), "reservation");
             const settingsRef = reservationDb.doc(`users/uid_${uid}/settings/settings`);
 
-            // Cost configuration
-            const PHONE_NUMBER_COST = 3.00; // USD (Standard Markup)
+            // 1. Calculate Dynamic Cost
+            const billing = await getBillingConfig(reservationDb);
+            const numberMultiplier = billing.number_multiplier || 2.0;
+
+            // Initialize Main Twilio Client to fetch Base Price
+            const baseTwilio = require('twilio');
+            const mainClient = baseTwilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
+
+            let basePrice = 1.15; // Default fallback for US Local
+            try {
+                // Try to find generic price for this country/type
+                // Note: We don't know the exact type (Mobile/Local) unless passed. 
+                // We'll optimistically fetch 'Local' pricing for the country.
+                const pricing = await mainClient.pricing.v1.phoneNumbers.countries(countryCode).fetch();
+                // Find 'local' price
+                const localPriceObj = pricing.phoneNumberPrices.find(p => p.numberType === 'local');
+                if (localPriceObj) {
+                    basePrice = parseFloat(localPriceObj.currentPrice || 1.15);
+                } else if (pricing.phoneNumberPrices.length > 0) {
+                    // Fallback to first available type if local not found (e.g. some countries only have mobile)
+                    basePrice = parseFloat(pricing.phoneNumberPrices[0].currentPrice || 1.15);
+                }
+            } catch (e) {
+                console.warn("[purchasePhoneNumber] Could not fetch dynamic price, using default:", e.message);
+            }
+
+            const PHONE_NUMBER_COST = basePrice * numberMultiplier;
+            console.log(`[purchasePhoneNumber] Calculated Cost: $${PHONE_NUMBER_COST} (Base: $${basePrice} x ${numberMultiplier})`);
 
             // Get user credit balance from users collection
             const userRef = reservationDb.doc(`users/uid_${uid}`);
@@ -403,7 +542,7 @@ exports.purchasePhoneNumber = onCall(
                 console.log(`[purchasePhoneNumber] User credits: $${currentCredits}, Cost: $${PHONE_NUMBER_COST}`);
 
                 if (currentCredits < PHONE_NUMBER_COST) {
-                    throw new HttpsError("failed-precondition", `Insufficient credits. You need $${PHONE_NUMBER_COST} but have $${currentCredits.toFixed(2)}`);
+                    throw new HttpsError("failed-precondition", `Insufficient credits. You need $${PHONE_NUMBER_COST.toFixed(2)} but have $${currentCredits.toFixed(2)}`);
                 }
 
                 // Check settings within transaction to prevent race conditions
@@ -423,8 +562,8 @@ exports.purchasePhoneNumber = onCall(
             });
 
             // Initialize Twilio client
-            const twilio = require('twilio');
-            const client = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
+            // const twilio = require('twilio'); // Moved up
+            const client = mainClient; // Reuse main client
 
             let subaccountSid, subaccountAuthToken;
 
@@ -458,7 +597,7 @@ exports.purchasePhoneNumber = onCall(
 
             // Step 3: Purchase phone number using subaccount
             console.log(`[purchasePhoneNumber] Purchasing number with subaccount`);
-            const subaccountClient = twilio(subaccountSid, subaccountAuthToken);
+            const subaccountClient = baseTwilio(subaccountSid, subaccountAuthToken);
 
             // --- Enable Dialing Permissions (GLOBAL / ALL COUNTRIES) ---
             try {
@@ -564,7 +703,8 @@ exports.purchasePhoneNumber = onCall(
                 success: true,
                 phoneNumber: phoneNumber,
                 vapiPhoneNumberId: vapiPhoneNumberId,
-                status: 'active'
+                status: 'active',
+                cost: PHONE_NUMBER_COST
             };
 
         } catch (error) {
@@ -937,10 +1077,10 @@ exports.validateMissionDescription = onCall(
 
         try {
             const { GoogleGenerativeAI } = require("@google/generative-ai");
-            
+
             // Initialize Gemini with the secret API key
             const genAI = new GoogleGenerativeAI(GEMINI_API_KEY.value());
-            
+
             // Use gemini-2.5-flash-lite (not the deprecated 1.5 version)
             const model = genAI.getGenerativeModel({
                 model: "gemini-2.5-flash-lite",
@@ -997,7 +1137,7 @@ Respond with ONLY the word "MATCH" or "NOT_MATCH". Nothing else.`;
 
         } catch (error) {
             console.error("Gemini API Error:", error);
-            
+
             // Fail-open: If AI fails, don't block users
             console.warn("Validation failed, allowing request to proceed");
             return {
