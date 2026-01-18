@@ -1,5 +1,11 @@
 # AGENTS_WORKFLOW
 
+> [!CAUTION]
+> **DATABASE ALERT**: This project uses a **NAMED** Firestore database: `reservation`.
+> Agents MUST ensure all code connects to this specific database instance.
+> - **Frontend**: `import { db } from './firebase-config';`
+> - **Backend**: `getFirestore(app, "reservation");`
+
 ## Current Task
 - **Task Name**: Bug: Profile Avatar Layout
 - **Assignee**: Gemini

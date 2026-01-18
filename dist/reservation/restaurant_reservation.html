@@ -44,12 +44,12 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/reservation-BGVBKGBO.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-RgUJSTE4.js">
+  <script type="module" crossorigin src="/assets/reservation-DBNnXasp.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-B6rxURYL.js">
   <link rel="modulepreload" crossorigin href="/assets/i18n-CflKAa87.js">
   <link rel="modulepreload" crossorigin href="/assets/version-Dr8pX8LW.js">
-  <link rel="modulepreload" crossorigin href="/assets/firebase-config-CyS5681M.js">
-  <link rel="modulepreload" crossorigin href="/assets/scam-check-BjQROVeV.js">
+  <link rel="modulepreload" crossorigin href="/assets/firebase-config-CNkYWOUu.js">
+  <link rel="modulepreload" crossorigin href="/assets/scam-check-BkGX42iS.js">
   <link rel="stylesheet" crossorigin href="/assets/i18n-Xg9KR3h-.css">
 </head>
 
@@ -203,21 +203,18 @@
 
                 <div id="preorderFields"
                     style="display: none; margin-top: 15px; padding: 10px; border: 1px solid #444; border-radius: 8px; background: #222;">
-                    <!-- Food Name -->
-                    <label data-i18n="label_food_name" style="margin-top: 0;">Food Name</label>
-                    <input type="text" id="foodName" data-i18n-placeholder="placeholder_food_name"
-                        placeholder="e.g. Chocolate Cake" style="width: 100%; margin-bottom: 10px;">
+                    <!-- Order Details -->
+                    <label data-i18n="label_order_details" style="margin-top: 0;">Order Details / Menu Items</label>
+                    <textarea id="preOrderText" data-i18n-placeholder="placeholder_order_details"
+                        placeholder="e.g. 1x Beef Burger, 2x Coke, 1x Caesar Salad..."
+                        style="width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #1a1a1a; color: white;"
+                        rows="3"></textarea>
 
-                    <!-- Quantity -->
-                    <label data-i18n="label_food_quantity">Quantity (Max 4)</label>
-                    <div class="number-input-container" style="margin-top: 5px; margin-bottom: 10px;">
-                        <button type="button" class="number-input-btn" id="foodQuantityMinus"
-                            aria-label="Decrease quantity">−</button>
-                        <div class="number-input-value" id="foodQuantityDisplay">1</div>
-                        <button type="button" class="number-input-btn" id="foodQuantityPlus"
-                            aria-label="Increase quantity">+</button>
-                        <input type="hidden" id="foodQuantity" value="1">
-                    </div>
+                    <!-- Upload Menu -->
+                    <label data-i18n="label_upload_menu">Upload Menu Image (Optional)</label>
+                    <input type="file" id="preOrderFile" accept="image/*"
+                        style="width: 100%; margin-bottom: 10px; padding: 10px; background: #333; border-radius: 8px; color: #ccc;">
+
 
                     <!-- Disclaimer Checkbox -->
                     <div style="display: flex; align-items: center; gap: 12px; margin-top: 15px;">

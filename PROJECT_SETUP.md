@@ -2,6 +2,13 @@
 
 > **Add this to your user rules so agents remember the setup!**
 
+## ⚠️ CRITICAL DEVELOPMENT RULES
+1. **Firestore Database**: ALWAYS use the named database `reservation`.
+   - **Frontend**: Import `db` from `./src/firebase-config.ts`. DO NOT initialize `getFirestore()` yourself.
+   - **Backend**: Use `getFirestore(app, "reservation")`.
+2. **Auth**: Import `auth` from `./src/firebase-config.ts`.
+
+
 ## ✅ Installed Tools
 
 ### Global Tools (Already Installed)

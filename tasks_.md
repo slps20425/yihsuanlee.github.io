@@ -1,5 +1,10 @@
 # Tasks
 
+> [!IMPORTANT]
+> **ARCHITECTURE RULE**: ALL Firestore operations must use the named database `reservation`.
+> - **Frontend**: Import `db` from `src/firebase-config.ts`. NEVER use `getFirestore()` (default DB).
+> - **Backend**: Use `getFirestore(app, "reservation")`.
+
 ## High Priority
 - [ ] [GOOGLE_LOGIN_403] Bug: Fix Google Login 403 on Mobile
   - Priority: 5 (Critical)
@@ -101,21 +106,26 @@
   - Priority: 3
   - No room to display user profile avatar with logout button in bottom panel or header
   - Resolution: Added avatar to mobile header (top right) which links to profile tab.
-- [ ] [0i0kdlWhPPFzVZZGGP6X] Feature: Reservation Menu with Pre-order
+- [ ] [0i0kdlWhPPFzVZZaGP6X] Feature: Adding menu for reservation with pre-order
   - Priority: 3
-  - Adding menu for reservation with pre-order or upload a menu
-- [ ] [3sb7PuQ0HcnI99VGH5DS] Bug: Logout Button Style
+  - Content: adding menu for reservation with pre-order or upload a menu
+- [ ] [3sb7PuQ0HcnI99VGH5DS] UI: Make profile logout button solid red
   - Priority: 3
-  - Profile logout button should fill with red color (solid)
-- [ ] [ATRp9AtafaPIvVfPPb1q] Feature: Header Redirect to Profile
+  - Content: fix the profile logout button should fill with red color ? make it solid
+- [ ] [ATRp9AtafaPIvVfPPb1q] UI: Header WiseCat Redirect to Profile
   - Priority: 3
-  - In both Web/Mobile the header WiseCat should always redirect user to profile tab
+  - Content: in both Web/Mobile the header WiseCat should always redirect user to profile tab
+- [ ] [UpOhJ0ng4LqxVIoRCfra] Bug: Redundant credits text in top up button
+  - Priority: 3
+  - Content: bug redundant credits text in top up button
+- [ ] [NL8cMOdrF8yjasb8LmqN] UI: Unify Trial/Mouthpiece Background
+  - Priority: 2
+  - Content: fix change the trial and mouthpiece background to be same as entryhe header WiseCat should always redirect user to profile tab
 - [x] [EgdmqCG7k0hdml2f4v9a] Bug: No Low Balance Reminder in Inbox
   - Priority: 3
   - Inbox not receive low balance reminder when user only 2 credit after login
   - Resolution: Updated `autoReleaseOnLowCredits` GCF to send inbox warnings (<$10) and release alerts (<$6).
 - [ ] [UpOhJ0ng4LqxVIoRCfra] Bug: Redundant Credits Text
-  - Priority: 3
   - Redundant credits text in top up button
   - Priority: 2
   - Change trial and mouthpiece background to match entry page

@@ -125,7 +125,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // --- Remote Config Listener ---
     const { doc, onSnapshot } = await import("firebase/firestore");
-    const { db } = await import("./firebase-config");
+    const { db, storage } = await import("./firebase-config");
+    const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
 
     const configRef = doc(db, 'configuration', 'settings');
     const resBtn = document.getElementById('submitBtn') as HTMLButtonElement | null;
@@ -1537,17 +1538,35 @@ async function handleFormSubmit(e: Event) {
     const retryCheck = document.getElementById('retryOption') as HTMLInputElement;
 
     // Food Pre-order Inputs
-    const foodNameInput = document.getElementById('foodName') as HTMLInputElement;
-    const foodQuantitySelect = document.getElementById('foodQuantity') as HTMLSelectElement;
+    const preOrderTextInput = document.getElementById('preOrderText') as HTMLTextAreaElement;
+    const preOrderFileInput = document.getElementById('preOrderFile') as HTMLInputElement;
     const preorderAgreeCheck = document.getElementById('preorderAgree') as HTMLInputElement;
 
     const { doc, collection, serverTimestamp, runTransaction } = await import("firebase/firestore");
-    const { db } = await import("./firebase-config");
+    const { db, storage } = await import("./firebase-config");
+    const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
 
     const tasksCol = collection(db, 'tasks');
     const randomId = doc(tasksCol).id;
     const taskId = `task_${randomId}`;
     const taskRef = doc(db, 'tasks', taskId);
+
+    // Handle File Upload
+    let preOrderImageUrl = "n/a";
+    if (missionSelect.value === 'reservation_food_preorder' && preOrderFileInput && preOrderFileInput.files && preOrderFileInput.files.length > 0) {
+        const file = preOrderFileInput.files[0];
+        (window as any).showToast("Uploading menu image...", "info");
+        try {
+            const uid = auth.currentUser ? auth.currentUser.uid : 'guest';
+            const fileName = `${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, `users/${uid}/uploads/${fileName}`);
+            await uploadBytes(storageRef, file);
+            preOrderImageUrl = await getDownloadURL(storageRef);
+        } catch (e) {
+            console.error("Upload failed:", e);
+            (window as any).showToast("Image upload failed. Proceeding without image.", "warning");
+        }
+    }
 
     const payload = {
         taskId: taskId,
@@ -1559,8 +1578,10 @@ async function handleFormSubmit(e: Event) {
         reservation_utc: calculateReservationUTC(resDateInput.value, resTimeInput.value, selectedRestaurantData?.utc_offset_minutes),
         mission: missionSelect.value,
         preorderBackup: missionSelect.value === 'reservation_food_preorder' ? preorderBackupSelect.value : 'n/a',
-        foodName: missionSelect.value === 'reservation_food_preorder' ? foodNameInput.value : 'n/a',
-        foodQuantity: missionSelect.value === 'reservation_food_preorder' ? foodQuantitySelect.value : 'n/a',
+        preOrderDetails: missionSelect.value === 'reservation_food_preorder' ? preOrderTextInput.value : 'n/a',
+        preOrderImageUrl: preOrderImageUrl,
+        foodName: missionSelect.value === 'reservation_food_preorder' ? preOrderTextInput.value : 'n/a',
+        foodQuantity: "See details",
         Name: name,
         'Party Size': partySizeInput.value,
         'date/month/year': resDateInput.value,
