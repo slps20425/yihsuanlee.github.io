@@ -680,10 +680,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
 
                 div.innerHTML = `
-                    <input type="text" placeholder="Item (e.g. Beef Burger)" class="order-item-name" 
-                        style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #1a1a1a; color: white;">
+                    <input type="text" placeholder="Item Name (e.g. Burger)" class="order-item-name" 
+                        style="flex: 1; min-width: 150px; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: white;">
                     <input type="number" value="1" min="1" max="99" class="order-item-qty" 
-                        style="width: 60px; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #1a1a1a; color: white; text-align: center;">
+                        style="width: 60px; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: white; text-align: center;">
                     <button type="button" class="remove-item-btn" style="background: none; border: none; color: #ff4444; font-size: 18px; cursor: pointer; padding: 0 5px;">&times;</button>
                 `;
 
@@ -1564,36 +1564,19 @@ async function handleFormSubmit(e: Event) {
 
     // Food Pre-order Inputs
     // const preOrderTextInput = document.getElementById('preOrderText') as HTMLTextAreaElement; // Removed
-    const preOrderFileInput = document.getElementById('preOrderFile') as HTMLInputElement;
+    const preOrderFileInput = null; // Removed
     const preorderAgreeCheck = document.getElementById('preorderAgree') as HTMLInputElement;
 
     const { doc, collection, serverTimestamp, runTransaction } = await import("firebase/firestore");
-    const { db, storage } = await import("./firebase-config");
-    const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+    const { db } = await import("./firebase-config");
 
     const tasksCol = collection(db, 'tasks');
     const randomId = doc(tasksCol).id;
     const taskId = `task_${randomId}`;
     const taskRef = doc(db, 'tasks', taskId);
 
-    // --- Handle File Upload (Optional) ---
-    // preOrderFileInput already defined above
+    // --- Handle File Upload (Removed Per Request) ---
     let preOrderImageUrl = "n/a";
-    if (missionSelect.value === 'reservation_food_preorder' && preOrderFileInput && preOrderFileInput.files && preOrderFileInput.files.length > 0) {
-        const file = preOrderFileInput.files[0];
-        (window as any).showToast("Uploading menu image...", "info");
-        try {
-            // Auth check handled by rules or assumed guest path
-            const uid = auth.currentUser ? auth.currentUser.uid : 'guest';
-            const fileName = `${Date.now()}_${file.name}`;
-            const storageRef = ref(storage, `users/${uid}/uploads/${fileName}`);
-            await uploadBytes(storageRef, file);
-            preOrderImageUrl = await getDownloadURL(storageRef);
-        } catch (e) {
-            console.error("Upload failed:", e);
-            (window as any).showToast("Image upload failed. Proceeding.", "warning");
-        }
-    }
 
     // --- Handle Structured Order List ---
     let orderDetailsFn = 'n/a';
@@ -1611,11 +1594,8 @@ async function handleFormSubmit(e: Event) {
         }
         if (items.length > 0) {
             orderDetailsFn = items.join(', ');
-        } else if (preOrderImageUrl === 'n/a') {
-            // No text AND no image?
-            orderDetailsFn = "No details provided";
         } else {
-            orderDetailsFn = "See uploaded menu";
+            orderDetailsFn = "No items listed";
         }
     }
 
@@ -1630,7 +1610,7 @@ async function handleFormSubmit(e: Event) {
         mission: missionSelect.value,
         preorderBackup: missionSelect.value === 'reservation_food_preorder' ? preorderBackupSelect.value : 'n/a',
         preOrderDetails: orderDetailsFn,
-        preOrderImageUrl: preOrderImageUrl,
+        preOrderImageUrl: preOrderImageUrl, // Kept as 'n/a' for schema compatibility
         foodName: orderDetailsFn, // Legacy map
         foodQuantity: "See details",
         Name: name,

@@ -7,12 +7,12 @@
 > - **Backend**: `getFirestore(app, "reservation");`
 
 ## Current Task
-- **Task Name**: Bug: Profile Avatar Layout
+- **Task Name**: Feature: Reservation Menu with Pre-order
 - **Assignee**: Gemini
 - **Status**: READY_FOR_QA
 - **Deploy URL**: https://wisecat-8df8d.web.app/
-- **Scope**: Fix layout of user profile avatar and logout button
-- **Task ID**: 0OcQudGdi98PIztEoQWA
+- **Scope**: Implement dynamic order item list and optional menu upload for reservation pre-orders.
+- **Task ID**: 0i0kdlWhPPFzVZZaGP6X
 
 
 ## Workflow History

@@ -26,8 +26,4 @@ setPersistence(auth, browserLocalPersistence).catch((error) => {
 // Connect to the specific "reservation" database
 const db = getFirestore(app, "reservation");
 
-// Initialize Storage
-import { getStorage } from "firebase/storage";
-const storage = getStorage(app);
-
-export { app, auth, db, storage };
+export { app, auth, db };
