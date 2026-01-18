@@ -1,12 +1,12 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-- **Task Name**: Bug: Fix Google Login 403 & Low Balance Reminder
+- **Task Name**: Bug: Profile Avatar Layout
 - **Assignee**: Gemini
 - **Status**: READY_FOR_QA
 - **Deploy URL**: https://wisecat-8df8d.web.app/
-- **Scope**: Fixed Mobile Login (403) and Low Balance Inbox Alerts
-- **Task ID**: EgdmqCG7k0hdml2f4v9a, GOOGLE_LOGIN_403
+- **Scope**: Fix layout of user profile avatar and logout button
+- **Task ID**: 0OcQudGdi98PIztEoQWA
 
 
 ## Workflow History

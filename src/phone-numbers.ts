@@ -79,6 +79,12 @@ try {
         }
         if (headerUserAvatar) headerUserAvatar.src = u.picture;
 
+        const mobileHeaderAvatar = document.getElementById('mobileHeaderAvatar') as HTMLImageElement;
+        if (mobileHeaderAvatar) {
+            mobileHeaderAvatar.src = u.picture;
+            mobileHeaderAvatar.style.display = 'block';
+        }
+
         // Update Profile Tab
         if (userName) userName.textContent = u.name;
         if (userEmail) userEmail.textContent = u.email;
@@ -151,6 +157,14 @@ onAuthStateChanged(auth, async (user) => {
             headerUserAvatar.src = user.photoURL;
         } else if (headerUserAvatar) {
             headerUserAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`;
+        }
+
+        // Mobile Header Avatar
+        const mobileHeaderAvatar = document.getElementById('mobileHeaderAvatar') as HTMLImageElement;
+        if (mobileHeaderAvatar) {
+            const picUrl = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`;
+            mobileHeaderAvatar.src = picUrl;
+            mobileHeaderAvatar.style.display = 'block'; // Show it now that we have data
         }
 
         // --- SELF-HEALING: Update LocalStorage Cache ---

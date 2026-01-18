@@ -99,6 +99,11 @@
         <div class="header-content">
             <h1 class="header-title">🐱 WiseCat AI</h1>
             <div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">
+                <!-- Mobile Avatar -->
+                <img id="mobileHeaderAvatar" src="https://ui-avatars.com/api/?name=User" alt="Profile"
+                    style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--accent); cursor: pointer; display: none;"
+                    onclick="document.querySelector('[data-tab=profile]').click();">
+
                 <!-- Mobile Language Selector -->
                 <select id="languageSelectorHeader" class="language-selector-header">
                     <option value="en">🇺🇸 EN</option>

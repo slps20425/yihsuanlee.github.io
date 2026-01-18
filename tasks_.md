@@ -97,9 +97,10 @@
 - [x] [bJfhytdpcQupkHsZmicg] Bug: Rate Checking Shows 0
   - Priority: 3
   - Rate checking currently all show 0, need investigate
-- [ ] [0OcQudGdi98PIztEoQWA] Bug: Profile Avatar Layout
+- [x] [0OcQudGdi98PIztEoQWA] Bug: Profile Avatar Layout
   - Priority: 3
   - No room to display user profile avatar with logout button in bottom panel or header
+  - Resolution: Added avatar to mobile header (top right) which links to profile tab.
 - [ ] [0i0kdlWhPPFzVZZGGP6X] Feature: Reservation Menu with Pre-order
   - Priority: 3
   - Adding menu for reservation with pre-order or upload a menu
