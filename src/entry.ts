@@ -27,16 +27,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Bind buttons
     const googleLoginBtn = document.getElementById('googleLoginBtn');
-    const appleLoginBtn = document.getElementById('appleLoginBtn');
+    const microsoftLoginBtn = document.getElementById('microsoftLoginBtn');
     const lineLoginBtn = document.getElementById('lineLoginBtn');
 
     if (googleLoginBtn) googleLoginBtn.addEventListener('click', () => handleSocialLogin(googleProvider));
-    if (appleLoginBtn) {
-        appleLoginBtn.addEventListener('click', () => {
-            const appleProvider = new OAuthProvider('apple.com');
-            appleProvider.addScope('email');
-            appleProvider.addScope('name');
-            handleSocialLogin(appleProvider);
+    if (microsoftLoginBtn) {
+        microsoftLoginBtn.addEventListener('click', () => {
+            const microsoftProvider = new OAuthProvider('microsoft.com');
+            microsoftProvider.addScope('email');
+            microsoftProvider.addScope('openid'); // Standard OIDC scopes
+            microsoftProvider.addScope('profile');
+            // microsoftProvider.setCustomParameters({
+            //    prompt: 'select_account' 
+            // });
+            handleSocialLogin(microsoftProvider);
         });
     }
     if (lineLoginBtn) lineLoginBtn.addEventListener('click', handleLineLogin);

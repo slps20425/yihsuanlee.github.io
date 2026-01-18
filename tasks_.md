@@ -106,6 +106,9 @@
 - [x] [oNzRJ7gPcxYBVTjLL0yn] Feature: Mobile Contact Integration in Mouthpiece
   - Priority: 3
   - Add "Load Contact" feature from mobile native contacts
+- [/] [ViHAP25BidK8HUZYsP15] Feature: Revert to Microsoft Login
+  - Priority: 3
+  - Change back to Microsoft login (replace Apple ID)
 - [ ] [NL8cMOdrF8yjasb8LmqN] Feature: Background Consistency
   - Priority: 2
   - Change trial and mouthpiece background to match entry page

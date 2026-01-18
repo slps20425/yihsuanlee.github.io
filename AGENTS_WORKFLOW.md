@@ -1,12 +1,12 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-- **Task Name**: Feature: SMS Inbox
+- **Task Name**: Revert to Microsoft Login
 - **Assignee**: Gemini
-- **Status**: READY_FOR_QA
-- **Deploy URL**: https://us-central1-wisecat-8df8d.cloudfunctions.net/twilioInboundWebhook
-- **Scope**: Create personal inbox for SMS/announcements
-- **Task ID**: D3EwAFfOxo7SUyojiv4C
+- **Status**: IN_PROGRESS
+- **Deploy URL**: TBD
+- **Scope**: Revert Apple Login to Microsoft Login
+- **Task ID**: ViHAP25BidK8HUZYsP15
 
 ## Workflow History
 - [READY_FOR_QA] Fix Admin Page Mobile UI (l2SHMD6EKvJAgFSSPZ05)
