@@ -1,6 +1,11 @@
 # Tasks
 
 ## High Priority
+- [ ] [GOOGLE_LOGIN_403] Bug: Fix Google Login 403 on Mobile
+  - Priority: 5 (Critical)
+  - Error: 403 disallowed_useragent
+  - Context: User reported issue in mobile WebView/App.
+  - Proposed Solution: Use Capacitor Firebase Auth or switch to signInWithRedirect.
 - [x] [6XnvNW9fYT9kRrL0kE2D] Bug: Fix not able to access mouthpiece page
   - Priority: 5 (Critical)
   - Content: Bug - fix not able to access mouthpiece page
@@ -62,27 +67,7 @@
   - Create personal inbox for each user to receive SMS
   - For announcements, ads, and policy notifications
   - Each user has their own phone number
-- [ ] [0OcQudGdi98PIztEoQWA] Bug: no room to display user profile avatar with logout
-  - Priority: 3
-  - bug no room to display user profile avatar with logout button in bottom panel or header
-- [ ] [0i0kdlWhPPFzVZZaGP6X] Feature: adding menu for reservation with pre-order
-  - Priority: 3
-  - Feature  :  adding menu for reservation with pre-order Or upload a menu
-- [ ] [3sb7PuQ0HcnI99VGH5DS] Bug: fix the profile logout button
-  - Priority: 3
-  - fix the profile logout button should fill with red color ? make it solid
-- [ ] [ATRp9AtafaPIvVfPPb1q] Feature: header WiseCat redirect
-  - Priority: 3
-  - in both Web/Mobile the header WiseCat should always redirect user to profile tab
-- [ ] [EgdmqCG7k0hdml2f4v9a] Bug: INBOX not receive low balance reminder
-  - Priority: 3
-  - INBOX not receive low balance reminder when user only 2 credit after login
-- [ ] [UpOhJ0ng4LqxVIoRCfra] Bug: redundant credits text in top up button
-  - Priority: 3
-  - bug redundant credits text in top up button
-- [ ] [bJfhytdpcQupkHsZmicg] Bug: rate checking
-  - Priority: 3
-  - bug rate checking currently all show 0 need investigate
+
 - [x] [87VX2nLsZQj45c7CCven] Feature: Restaurant Page UI Enhancement
   - Priority: 3
   - Add increment/decrement buttons for party size and quantity
@@ -109,28 +94,27 @@
 - [x] [ViHAP25BidK8HUZYsP15] Feature: Revert to Microsoft Login
   - Priority: 3
   - Change back to Microsoft login (replace Apple ID)
-- [/] [bJfhytdpcQupkHsZmicg] Bug: Rate Checking Shows 0
+- [x] [bJfhytdpcQupkHsZmicg] Bug: Rate Checking Shows 0
   - Priority: 3
   - Rate checking currently all show 0, need investigate
-- [ ] [EgdmqCG7k0hdml2f4v9a] Bug: No Low Balance Reminder in Inbox
-  - Priority: 3
-  - Inbox not receive low balance reminder when user only 2 credit after login
-- [ ] [3sb7PuQ0HcnI99VGH5DS] Bug: Logout Button Style
-  - Priority: 3
-  - Profile logout button should fill with red color (solid)
-- [ ] [UpOhJ0ng4LqxVIoRCfra] Bug: Redundant Credits Text
-  - Priority: 3
-  - Redundant credits text in top up button
 - [ ] [0OcQudGdi98PIztEoQWA] Bug: Profile Avatar Layout
   - Priority: 3
   - No room to display user profile avatar with logout button in bottom panel or header
-- [ ] [ATRp9AtafaPIvVfPPb1q] Feature: Header Redirect to Profile
-  - Priority: 3
-  - In both Web/Mobile the header WiseCat should always redirect user to profile tab
 - [ ] [0i0kdlWhPPFzVZZaGP6X] Feature: Reservation Menu with Pre-order
   - Priority: 3
   - Adding menu for reservation with pre-order or upload a menu
-- [ ] [NL8cMOdrF8yjasb8LmqN] Feature: Background Consistency
+- [ ] [3sb7PuQ0HcnI99VGH5DS] Bug: Logout Button Style
+  - Priority: 3
+  - Profile logout button should fill with red color (solid)
+- [ ] [ATRp9AtafaPIvVfPPb1q] Feature: Header Redirect to Profile
+  - Priority: 3
+  - In both Web/Mobile the header WiseCat should always redirect user to profile tab
+- [/] [EgdmqCG7k0hdml2f4v9a] Bug: No Low Balance Reminder in Inbox
+  - Priority: 3
+  - Inbox not receive low balance reminder when user only 2 credit after login
+- [ ] [UpOhJ0ng4LqxVIoRCfra] Bug: Redundant Credits Text
+  - Priority: 3
+  - Redundant credits text in top up button
   - Priority: 2
   - Change trial and mouthpiece background to match entry page
 

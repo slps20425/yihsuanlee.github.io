@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize i18n explicitly
     WiseCatI18n.init();
 
+    // Check if returning from a redirect login
+    checkRedirectResult();
+
     // Bind buttons
     const googleLoginBtn = document.getElementById('googleLoginBtn');
     const microsoftLoginBtn = document.getElementById('microsoftLoginBtn');
@@ -247,6 +250,23 @@ function showCenteredToast(message: string) {
 
 // --- Auth Logic ---
 
+// Revised Auth Logic using Redirect for Mobile Compatibility
+import { signInWithRedirect, getRedirectResult, UserCredential } from "firebase/auth";
+
+async function checkRedirectResult() {
+    try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+            console.log('Redirect login success:', result.user.uid);
+            await processLoginSuccess(result.user);
+        }
+    } catch (error: any) {
+        console.error('Redirect login error:', error);
+        const authError = document.getElementById('authError');
+        if (authError) authError.textContent = 'Auth error: ' + error.message;
+    }
+}
+
 async function handleSocialLogin(provider: any) {
     const authError = document.getElementById('authError');
     if (authError) authError.textContent = '';
@@ -256,64 +276,65 @@ async function handleSocialLogin(provider: any) {
         const { setPersistence, browserLocalPersistence } = await import("firebase/auth");
         await setPersistence(auth, browserLocalPersistence);
 
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        console.log('Social login success:', user.uid);
-
-        // Robust Document ID: Always use UID as requested with prefix
-        const userIdentifier = `uid_${user.uid}`;
-        const userRef = doc(db, "users", userIdentifier);
-
-        console.log(`Connecting to DB: ${db.app.options.projectId}, DB ID: ${(db as any)._databaseId?.database || 'default'}`);
-        const docSnap = await getDoc(userRef);
-
-        let sessionData;
-
-        if (!docSnap.exists()) {
-            const initialData = {
-                name: user.displayName || "WiseCat User",
-                email: user.email || "N/A",
-                uid: user.uid,
-                picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email || 'User'),
-                credits: 1.00,
-                createdAt: serverTimestamp()
-            };
-            await setDoc(userRef, initialData);
-            console.log('New user document created with $1.00 bonus:', userIdentifier);
-            // Prepare session data (use 1.00 for credits)
-            sessionData = { ...initialData, credits: 1.00, createdAt: Date.now() }; // approximate timestamp
-        } else {
-            const data = docSnap.data();
-            sessionData = {
-                uid: user.uid,
-                email: user.email,
-                name: user.displayName,
-                picture: user.photoURL,
-                credits: data.credits || 0
-            };
-        }
-
-        // Immediate Local Storage Save (Redundancy)
-        // Immediate Local Storage Save (Redundancy)
-        console.log("📝 Immediate Save from Login:", sessionData);
-        localStorage.setItem('wisecat_user', JSON.stringify(sessionData));
-
-        // --- Added for Robustness ---
-        const verify = localStorage.getItem('wisecat_user');
-        console.log("📝 Value verification:", verify ? "EXISTS" : "MISSING");
-
-        displayUserProfile(sessionData);
-
-        // Redirect after short delay to ensure storage commit
-        setTimeout(() => {
-            console.log("🚀 Redirecting to Dashboard...");
-            window.location.href = '/dashboard.html';
-        }, 500);
+        // Switch to Redirect for mobile compatibility (avoids 403 disallowed_useragent)
+        await signInWithRedirect(auth, provider);
+        // The page will redirect; execution stops here.
 
     } catch (error: any) {
-        console.error('Social login error:', error);
-        if (authError) authError.textContent = 'Auth error: ' + error.message;
+        console.error('Social login init error:', error);
+        if (authError) authError.textContent = 'Auth init error: ' + error.message;
     }
+}
+
+async function processLoginSuccess(user: any) {
+    // Robust Document ID: Always use UID as requested with prefix
+    const userIdentifier = `uid_${user.uid}`;
+    const userRef = doc(db, "users", userIdentifier);
+
+    console.log(`Connecting to DB: ${db.app.options.projectId}, DB ID: ${(db as any)._databaseId?.database || 'default'}`);
+    const docSnap = await getDoc(userRef);
+
+    let sessionData;
+
+    if (!docSnap.exists()) {
+        const initialData = {
+            name: user.displayName || "WiseCat User",
+            email: user.email || "N/A",
+            uid: user.uid,
+            picture: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email || 'User'),
+            credits: 1.00,
+            createdAt: serverTimestamp()
+        };
+        await setDoc(userRef, initialData);
+        console.log('New user document created with $1.00 bonus:', userIdentifier);
+        // Prepare session data (use 1.00 for credits)
+        sessionData = { ...initialData, credits: 1.00, createdAt: Date.now() }; // approximate timestamp
+    } else {
+        const data = docSnap.data();
+        sessionData = {
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName,
+            picture: user.photoURL,
+            credits: data.credits || 0
+        };
+    }
+
+    // Immediate Local Storage Save (Redundancy)
+    console.log("📝 Immediate Save from Login:", sessionData);
+    localStorage.setItem('wisecat_user', JSON.stringify(sessionData));
+
+    // --- Added for Robustness ---
+    const verify = localStorage.getItem('wisecat_user');
+    console.log("📝 Value verification:", verify ? "EXISTS" : "MISSING");
+
+    displayUserProfile(sessionData);
+
+    // Redirect after short delay to ensure storage commit
+    setTimeout(() => {
+        console.log("🚀 Redirecting to Dashboard...");
+        window.location.href = '/dashboard.html';
+    }, 500);
 }
 
 function handleLineLogin() {

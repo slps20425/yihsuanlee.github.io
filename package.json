@@ -8,8 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "npm run build && npx --yes firebase-tools@13.30.0 deploy --only hosting,functions",
-    "ship": "npm run build && git add . && git commit -m 'Auto-commit before deploy' && git push && npx --yes firebase-tools@13.30.0 deploy --only hosting,functions"
+    "deploy": "npm run build && npx --yes firebase-tools@13.30.0 deploy --only hosting,functions,firestore",
+    "ship": "npm run build && git add . && git commit -m 'Auto-commit before deploy' && git push && npx --yes firebase-tools@13.30.0 deploy --only hosting,functions,firestore"
   },
   "keywords": [],
   "author": "",
