@@ -1135,14 +1135,76 @@ Respond with ONLY the word "MATCH" or "NOT_MATCH". Nothing else.`;
                 valid: isMatch
             };
 
-        } catch (error) {
-            console.error("Gemini API Error:", error);
-
-            // Fail-open: If AI fails, don't block users
-            console.warn("Validation failed, allowing request to proceed");
-            return {
-                valid: true
-            };
         }
-    }
 );
+
+/**
+ * Twilio Inbound Webhook
+ * Handles incoming SMS and routes to user's inbox
+ */
+exports.twilioInboundWebhook = onRequest(async (req, res) => {
+    try {
+        // 1. Parse incoming request (Twilio format: application/x-www-form-urlencoded)
+        const params = req.body;
+
+        // Essential fields
+        const to = params.To;             // Our User's Twilio Number (e.g. +1415...)
+        const from = params.From;         // Sender's Number
+        const body = params.Body || "";   // Message Text
+        const messageSid = params.MessageSid; // Unique ID from Twilio
+
+        console.log(`[twilioInboundWebhook] RX SMS from ${from} to ${to} (SID: ${messageSid})`);
+
+        if (!to || !messageSid) {
+            console.warn("[twilioInboundWebhook] Missing required fields");
+            return res.status(400).send("Bad Request");
+        }
+
+        const db = admin.firestore();
+
+        // 2. Identify the Tenant (User)
+        // We need to find which user owns this phone number.
+        // Searching all users/.../settings where phoneNumber == to
+        const querySnapshot = await db.collectionGroup("settings")
+            .where("phoneNumber", "==", to)
+            .limit(1)
+            .get();
+
+        if (querySnapshot.empty) {
+            console.warn(`[twilioInboundWebhook] Orphaned SMS: No user found for number ${to}`);
+            // Return 200 OK to stop Twilio from retrying
+            return res.status(200).send("Orphaned");
+        }
+
+        // 3. Save to User's Inbox
+        const settingsDoc = querySnapshot.docs[0];
+        const userRef = settingsDoc.ref.parent.parent; // settings/settings -> parent(settings col) -> parent(userDoc)
+
+        if (!userRef) {
+            console.error("[twilioInboundWebhook] Could not determine parent user ref");
+            return res.status(500).send("Internal Error");
+        }
+
+        const uid = userRef.id;
+        console.log(`[twilioInboundWebhook] Routed to User: ${uid}`);
+
+        const inboxRef = userRef.collection("inbound_messages").doc(messageSid);
+
+        await inboxRef.set({
+            body: body,
+            sender: from,
+            receiver: to,
+            receivedAt: admin.firestore.FieldValue.serverTimestamp(),
+            isRead: false,
+            sid: messageSid,
+            // Optional: Raw dumping for debugging
+            // raw: params 
+        });
+
+        res.status(200).send("<Response></Response>"); // TwiML success response
+
+    } catch (error) {
+        console.error("[twilioInboundWebhook] Fatal Error:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});

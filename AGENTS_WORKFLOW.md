@@ -1,12 +1,12 @@
 # AGENTS_WORKFLOW
 
 ## Current Task
-- **Task Name**: Fix Chinese Contact Label
+- **Task Name**: Feature: SMS Inbox
 - **Assignee**: Gemini
-- **Status**: IN_PROGRESS
+- **Status**: READY_FOR_QA
 - **Deploy URL**: TBD
-- **Scope**: Update i18n for zh-TW
-- **Task ID**: oqP2PhTxaP1YYGfX5EVr
+- **Scope**: Create personal inbox for SMS/announcements
+- **Task ID**: D3EwAFfOxo7SUyojiv4C
 
 ## Workflow History
 - [READY_FOR_QA] Fix Admin Page Mobile UI (l2SHMD6EKvJAgFSSPZ05)

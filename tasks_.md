@@ -57,11 +57,32 @@
   - Backend GCF: purchasePhoneNumber, searchNumbers
   - Frontend: Purchase confirmation dialog
   - Firestore schema updates for settings
-- [ ] [D3EwAFfOxo7SUyojiv4C] Feature: SMS Inbox
+- [x] [D3EwAFfOxo7SUyojiv4C] Feature: SMS Inbox
   - Priority: 4
   - Create personal inbox for each user to receive SMS
   - For announcements, ads, and policy notifications
   - Each user has their own phone number
+- [ ] [0OcQudGdi98PIztEoQWA] Bug: no room to display user profile avatar with logout
+  - Priority: 3
+  - bug no room to display user profile avatar with logout button in bottom panel or header
+- [ ] [0i0kdlWhPPFzVZZaGP6X] Feature: adding menu for reservation with pre-order
+  - Priority: 3
+  - Feature  :  adding menu for reservation with pre-order Or upload a menu
+- [ ] [3sb7PuQ0HcnI99VGH5DS] Bug: fix the profile logout button
+  - Priority: 3
+  - fix the profile logout button should fill with red color ? make it solid
+- [ ] [ATRp9AtafaPIvVfPPb1q] Feature: header WiseCat redirect
+  - Priority: 3
+  - in both Web/Mobile the header WiseCat should always redirect user to profile tab
+- [ ] [EgdmqCG7k0hdml2f4v9a] Bug: INBOX not receive low balance reminder
+  - Priority: 3
+  - INBOX not receive low balance reminder when user only 2 credit after login
+- [ ] [UpOhJ0ng4LqxVIoRCfra] Bug: redundant credits text in top up button
+  - Priority: 3
+  - bug redundant credits text in top up button
+- [ ] [bJfhytdpcQupkHsZmicg] Bug: rate checking
+  - Priority: 3
+  - bug rate checking currently all show 0 need investigate
 - [x] [87VX2nLsZQj45c7CCven] Feature: Restaurant Page UI Enhancement
   - Priority: 3
   - Add increment/decrement buttons for party size and quantity
@@ -82,6 +103,9 @@
 - [x] [oqP2PhTxaP1YYGfX5EVr] Bug: Fix Chinese Contact Label
   - Priority: 3
   - Change "客服與回饋" to "客服"
+- [x] [oNzRJ7gPcxYBVTjLL0yn] Feature: Mobile Contact Integration in Mouthpiece
+  - Priority: 3
+  - Add "Load Contact" feature from mobile native contacts
 - [ ] [NL8cMOdrF8yjasb8LmqN] Feature: Background Consistency
   - Priority: 2
   - Change trial and mouthpiece background to match entry page

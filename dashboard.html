@@ -603,6 +603,11 @@
     </dialog>
 
     <script type="module" src="./src/phone-numbers.ts"></script>
+    <script type="module">
+        import { initInbox } from './src/inbox.ts';
+        // Initialize once DOM is ready or immediately
+        initInbox();
+    </script>
 
 </body>
 

@@ -456,6 +456,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    const loadContactBtn = document.getElementById('loadContactBtn');
+
+    // Check for Contact Picker API support
+    const isContactPickerSupported = ('contacts' in navigator && 'ContactsManager' in window);
+
+    if (loadContactBtn) {
+        if (isContactPickerSupported) {
+            loadContactBtn.style.display = 'flex';
+
+            loadContactBtn.addEventListener('click', async () => {
+                const props = ['name', 'tel'];
+                const opts = { multiple: false };
+
+                try {
+                    const contacts = await (navigator as any).contacts.select(props, opts);
+
+                    if (contacts.length) {
+                        const contact = contacts[0];
+
+                        // Populate Name
+                        const recipient = document.getElementById('recipientName') as HTMLInputElement;
+                        if (recipient && contact.name && contact.name.length) {
+                            recipient.value = contact.name[0];
+                            // Trigger validation/updates if needed
+                        }
+
+                        // Populate Phone
+                        const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
+                        if (phoneInput && contact.tel && contact.tel.length) {
+                            // Clean the phone number first? 
+                            // intl-tel-input usually handles pasting, but setting value directly might need setNumber
+                            let tel = contact.tel[0];
+
+                            if (phoneInputPlugin) {
+                                phoneInputPlugin.setNumber(tel);
+                            } else {
+                                phoneInput.value = tel;
+                            }
+
+                            // Trigger events for validation and country update
+                            phoneInput.dispatchEvent(new Event('input'));
+                            phoneInput.dispatchEvent(new Event('countrychange'));
+                            phoneInput.dispatchEvent(new Event('blur'));
+                        }
+                    }
+                } catch (ex) {
+                    console.error('Contact Picker failed:', ex);
+                    // Fail silently or show toast? For now silent as prompt cancellation throws error
+                }
+            });
+        } else {
+            loadContactBtn.style.display = 'none';
+        }
+    }
+
     if (phoneInput) {
         phoneInput.addEventListener('input', validateForm);
         phoneInput.addEventListener('countrychange', () => {
