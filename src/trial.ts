@@ -616,7 +616,7 @@ async function handleFormSubmit(e: Event) {
 
         // 2. Success UI (No Webhook)
         btn.innerText = dict.msg_success;
-        (window as any).showToast(dict.msg_success_toast || `We've received your task. Will email to ${userEmail} when ready.`, "success");
+        (window as any).showToast(`Dear ${nameInput.value}, we've received the task. We will schedule your call ASAP. Once finished will send result to ${userEmail}.`, "success");
     } catch (error) {
         console.error("Error submitting trial:", error);
 

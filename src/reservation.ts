@@ -1753,7 +1753,7 @@ async function handleFormSubmit(e: Event) {
 
         // 2. Success UI (No Webhook)
         btn.innerText = (dict as any).msg_success;
-        (window as any).showToast(`We've received your task. Will email to ${userEmail} when ready`, "success");
+        (window as any).showToast(`Dear ${name}, we've received the task. We will schedule your call ASAP. Once finished will send result to ${userEmail}.`, "success");
 
     } catch (error) {
         console.error("Error submitting reservation:", error);

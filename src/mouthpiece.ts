@@ -5,6 +5,8 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { countryTimezones } from './timezones';
 import { ScamCheck } from './scam-check';
 import './nav-active'; // Set active navigation item
+import { MISSION_SCENARIOS } from './mission-scenarios';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 // ... (Existing code)
 
@@ -647,6 +649,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             reservation_utc: serverTimestamp(), // Run now
             mission: missionEl.value,
             customMission: missionEl.value === 'other' ? customMissionEl.value : '',
+            missionDescription: (missionEl.value === 'other')
+                ? (customMissionEl.value || '')
+                : (MISSION_SCENARIOS.find(m => m.id === missionEl.value)?.description.en || ''),
             userName: userNameEl.value,
             recipientName: recipientNameEl.value,
             targetPhoneNumber: phoneInputPlugin ? phoneInputPlugin.getNumber() : targetPhoneEl.value,
@@ -822,7 +827,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 try { const u = JSON.parse(stored); if (u.email) userEmail = u.email; } catch (e) { }
             }
 
-            (window as any).showToast(`We've received your task. Will email to ${userEmail} when ready.`, "success");
+            (window as any).showToast(`Dear ${userNameEl.value}, we've received the task. We will schedule your call ASAP. Once finished will send result to ${userEmail}.`, "success");
 
         } catch (error) {
             console.error("Error submitting mouthpiece:", error);
@@ -876,8 +881,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ============ Mission Validation Logic ============
-import { MISSION_SCENARIOS } from './mission-scenarios';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+// ============ Mission Validation Logic ============
+
 
 let isDescriptionValidated = false;
 
@@ -1030,13 +1035,13 @@ document.addEventListener('DOMContentLoaded', () => {
 function translateMissionOptions() {
     const missionSelect = document.getElementById('mission') as HTMLSelectElement;
     if (!missionSelect) return;
-    
+
     const currentLang = WiseCatI18n.currentLang;
-    
+
     missionSelect.querySelectorAll('option').forEach((option) => {
         const missionId = option.value;
         const mission = MISSION_SCENARIOS.find(m => m.id === missionId);
-        
+
         if (mission) {
             const lang = (currentLang as keyof typeof mission.name);
             const emoji = option.textContent?.split(' ')[0] || '';
@@ -1055,7 +1060,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(translateMissionOptions, 100);
         });
     }
-    
+
     // Initial translation
     translateMissionOptions();
 });
