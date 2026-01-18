@@ -75,7 +75,7 @@
   - Priority: 3
   - Fix admin page UI that looks messy on mobile
   - Note: Added responsive CSS with media queries for mobile/tablet
-- [/] [zCsqtM37u6uWLkrGgNuN] Feature: Enhanced Success Message
+- [x] [zCsqtM37u6uWLkrGgNuN] Feature: Enhanced Success Message
   - Priority: 3
   - Update success messages for all services (restaurant, mouthpiece, trial)
   - Template: "Dear {{client_name}} we've receive the task. we will schedule your call ASAP. once finished will send result to {{client_email}}."

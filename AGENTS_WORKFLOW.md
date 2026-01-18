@@ -3,8 +3,8 @@
 ## Current Task
 - **Task Name**: Enhanced Success Message
 - **Assignee**: Gemini
-- **Status**: IN_PROGRESS
-- **Deploy URL**: TBD
+- **Status**: READY_FOR_QA
+- **Deploy URL**: https://wisecat-8df8d.web.app
 - **Scope**: Update JS files for success text
 - **Task ID**: zCsqtM37u6uWLkrGgNuN
 
