@@ -2762,3 +2762,44 @@ body.dashboard-layout {
         max-width: 75% !important;
     }
 }
+
+/* Dynamic sidebar width - responsive to viewport */
+@media (max-width: 1023px) {
+    .bottom-nav {
+        width: min(240px, 65vw) !important;
+        max-width: 65vw !important;
+    }
+}
+
+/* Reduce sidebar to half width and half height for items */
+@media (max-width: 1023px) {
+    .bottom-nav {
+        width: min(180px, 50vw) !important;
+        max-width: 50vw !important;
+    }
+    
+    .bottom-nav .nav-item {
+        min-height: 32px !important;
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.7rem !important;
+    }
+    
+    .bottom-nav .nav-icon {
+        font-size: 0.85rem !important;
+    }
+    
+    .bottom-nav .nav-label {
+        font-size: 0.65rem !important;
+    }
+    
+    .nav-dropdown-item {
+        padding: 0.3rem 0.6rem !important;
+        padding-left: 1.5rem !important;
+        font-size: 0.65rem !important;
+        min-height: 28px !important;
+    }
+    
+    .nav-dropdown-item .nav-icon {
+        font-size: 0.75rem !important;
+    }
+}
