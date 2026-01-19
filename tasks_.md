@@ -2,13 +2,8 @@
 
 ## High Priority (3+)
 
-- [x] **[P3] Fix logout button styling** (ID: 3sb7PuQ0HcnI99VGH5DS) ✅ COMPLETED
-  - Made logout button solid red with gradient
-  - White text for better contrast
-  - Enhanced shadow effects
-
-- [ ] **[P3] WiseCat header redirect** (ID: ATRp9AtafaPIvVfPPb1q)
-  - Header "WiseCat" should redirect to profile tab
+- [/] **[P3] WiseCat header redirect** (ID: ATRp9AtafaPIvVfPPb1q)
+  - Header "WiseCat" text/logo should redirect to profile tab
   - Apply to both web and mobile
 
 - [ ] **[P3] SMS inbox not displaying** (ID: Qg63xqPJLIbSwyMx2Di6)
@@ -26,9 +21,9 @@
 
 ## Completed Today
 
-- [x] Dashboard UI fixes (session timeout, refresh button, avatar clipping)
-- [x] Auth debugging implementation  
-- [x] Header z-index fixes
+- [x] **[P3] Fix logout button styling** (ID: 3sb7PuQ0HcnI99VGH5DS) ✅
+  - Made logout button solid red with gradient
+- [x] Dashboard UI fixes (header spacing, language selector, sidebar positioning)
+- [x] Auth debugging with 5-minute expiry for redirect flag
 - [x] Animated refresh button with loading spinner
-- [x] Header spacing (space-evenly) and language selector visibility
-- [x] Solid red logout button with gradient
+- [x] Version checker in console
