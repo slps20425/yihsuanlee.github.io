@@ -549,23 +549,28 @@ async function loadUsageHistory() {
     try {
         const getTransformedUsageHistory = httpsCallable(functions, 'getTransformedUsageHistory');
         const result = await getTransformedUsageHistory();
-        const { usage } = result.data as any;
+        const { usage, multiplier } = result.data as any;
+
+        // Update Cost Header to show multiplier
+        const costHeader = document.querySelector('.usage-table th:nth-child(4)');
+        if (costHeader && multiplier) {
+            costHeader.textContent = `Cost (x${multiplier})`;
+            costHeader.setAttribute('title', `Base provider cost x ${multiplier} margin`);
+        }
 
         if (!usage || usage.length === 0) {
-            usageTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 2rem; color: var(--text-secondary);">No usage history found.</td></tr>';
+            usageTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 2rem; color: var(--text-secondary);">No usage history found for the last 30 days.</td></tr>';
             return;
         }
 
         usageTableBody.innerHTML = usage.map((item: any) => {
             let dateStr = 'N/A';
             try {
-                // Try parsing the date, handle potential formats
-                const rawDate = item.end_date || item.start_date || item.date; // fallback to 'date' property if exists
-                if (rawDate) {
-                    const d = new Date(rawDate);
-                    if (!isNaN(d.getTime())) {
-                        dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                    }
+                // Backend now returns ISO strings for daily records
+                if (item.start_date) {
+                    const d = new Date(item.start_date);
+                    // Daily records usually start at 00:00 UTC, so just showing Date is cleaner than time
+                    dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
                 }
             } catch (e) {
                 console.warn("Date parse error", e);
@@ -577,10 +582,15 @@ async function loadUsageHistory() {
             let type = "Usage";
             let desc = item.description || item.category;
 
-            if (item.category === "phone-number") type = "Number";
+            if (item.category === "phone-number" || item.category === "phonenumbers") type = "Number";
             else if (item.category && item.category.includes("sms")) type = "SMS";
-            else if (item.category && item.category.includes("voice")) type = "Voice";
+            else if (item.category && item.category.includes("calls")) type = "Voice";
             else if (item.description && item.description.toLowerCase().includes("recording")) type = "Recording";
+
+            // Clean up description if it's just the category name
+            if (desc === item.category) {
+                desc = desc.charAt(0).toUpperCase() + desc.slice(1);
+            }
 
             return `
                 <tr>
