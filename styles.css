@@ -2803,3 +2803,66 @@ body.dashboard-layout {
         font-size: 0.75rem !important;
     }
 }
+
+/* Further reduce to 25vw width and smaller heights */
+@media (max-width: 1023px) {
+    .bottom-nav {
+        width: min(140px, 35vw) !important;
+        max-width: 35vw !important;
+    }
+    
+    .bottom-nav .nav-item {
+        min-height: 28px !important;
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.6rem !important;
+        gap: 0.4rem !important;
+    }
+    
+    .bottom-nav .nav-icon {
+        font-size: 0.75rem !important;
+    }
+    
+    .bottom-nav .nav-label {
+        font-size: 0.55rem !important;
+    }
+    
+    .nav-dropdown-item {
+        padding: 0.25rem 0.5rem !important;
+        padding-left: 1.2rem !important;
+        font-size: 0.55rem !important;
+        min-height: 24px !important;
+    }
+    
+    .nav-dropdown-item .nav-icon {
+        font-size: 0.65rem !important;
+    }
+    
+    /* Reduce user section further */
+    .sidebar-user-section {
+        padding: 0.4rem !important;
+    }
+    
+    .sidebar-user-info img {
+        width: 28px !important;
+        height: 28px !important;
+    }
+    
+    .sidebar-user-text {
+        font-size: 0.6rem !important;
+    }
+    
+    .sidebar-user-text div {
+        font-size: 0.55rem !important;
+    }
+    
+    /* Hamburger button smaller */
+    .hamburger-menu {
+        width: 36px !important;
+        height: 36px !important;
+        padding: 8px !important;
+    }
+    
+    .hamburger-menu span {
+        width: 18px !important;
+    }
+}
