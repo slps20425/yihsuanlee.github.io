@@ -309,7 +309,11 @@ function loadUserSettings() {
                                 <input type="text" id="friendlyNameInput" 
                                     value="${settings.friendlyName || ''}" 
                                     placeholder="Enter label..."
-                                    style="background: transparent; border: 1px solid var(--border); color: var(--text-primary); padding: 4px 8px; border-radius: 4px; width: 100%; max-width: 200px;">
+                                    style="background: transparent; border: 1px solid var(--border); color: var(--text-primary); padding: 4px 8px; border-radius: 4px; width: 100%; max-width: 150px;">
+                            </td>
+                            <!-- Added Purchased Date Column -->
+                            <td style="padding: 10px; color: var(--text-muted); font-size: 0.9rem; vertical-align: middle;">
+                                ${settings.phoneNumberPurchasedAt ? new Date(settings.phoneNumberPurchasedAt).toLocaleDateString() : 'N/A'}
                             </td>
                             <td style="padding: 10px; vertical-align: middle;">
                                 ${capsHtml}
@@ -319,6 +323,44 @@ function loadUserSettings() {
                             </td>
                         </tr>
                     `;
+                    // Add Renewal Warning Footer
+                    const warningConfig = {
+                        monthlyCost: settings.monthlyCost || '$3.45', // Default if not in settings
+                        renewDate: settings.phoneNumberPurchasedAt ? new Date(new Date(settings.phoneNumberPurchasedAt).setDate(new Date(settings.phoneNumberPurchasedAt).getDate() + 30)).toLocaleDateString() : 'Monthly'
+                    };
+
+                    const footer = document.createElement('div');
+                    footer.style.marginTop = '10px';
+                    footer.style.padding = '10px';
+                    footer.style.background = 'rgba(255, 193, 7, 0.1)';
+                    footer.style.border = '1px solid rgba(255, 193, 7, 0.3)';
+                    footer.style.borderRadius = '6px';
+                    footer.style.color = 'var(--text-secondary)';
+                    footer.style.fontSize = '0.85rem';
+                    footer.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="bi bi-info-circle text-warning"></i>
+                            <span>
+                                <strong>Monthly Cost:</strong> ${warningConfig.monthlyCost} (Auto-renews). 
+                                Please ensure you have sufficient credits. 
+                                <br>
+                                <span style="font-size: 0.8rem; opacity: 0.8;">Next billing estimate: ${warningConfig.renewDate}</span>
+                            </span>
+                        </div>
+                    `;
+                    // Append footer to the section container (parent of table-responsive)
+                    // We need to find where tableBody is. It's inside a table.
+                    // The 'tableBody' is passed or found? 
+                    // 'tableBody' variable is defined in the scope (lines 280-ish).
+                    // We should append to 'myNumberSection' or after the table.
+                    // 'myNumberSection' contains the table.
+                    const container = document.getElementById('myNumberSection');
+                    // Remove old footer if exists
+                    const oldFooter = document.getElementById('renewalWarningFooter');
+                    if (oldFooter) oldFooter.remove();
+                    footer.id = 'renewalWarningFooter';
+                    if (container) container.appendChild(footer);
+
 
                     // Re-attach release button listener
                     const releaseBtnInTable = document.getElementById('releaseBtnInTable');
