@@ -217,17 +217,17 @@ function renderAlert(container: HTMLElement, id: string, title: string, body: st
 
     el.innerHTML = `
         <i class="bi ${icon}" style="color: ${color}; font-size: 1.2rem; margin-top: 2px;"></i>
-        <div style="flex-grow: 1;">
+        <div style="flex-grow: 1; padding-right: 25px;">
             <div style="font-weight: bold; color: var(--text-primary); margin-bottom: 2px;">${title}</div>
             <div style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.4;">${escapeHtml(body)}</div>
         </div>
-        <button class="dismiss-btn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px;">
+        <button class="dismiss-btn-circle">
             <i class="bi bi-x-lg"></i>
         </button>
     `;
 
     // Dismiss Logic
-    const btn = el.querySelector('.dismiss-btn') as HTMLButtonElement;
+    const btn = el.querySelector('.dismiss-btn-circle') as HTMLButtonElement;
     btn.onclick = () => {
         dismissedAlerts.add(id);
         renderInbox();

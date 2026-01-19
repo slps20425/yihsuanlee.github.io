@@ -355,6 +355,7 @@ function validateForm() {
     const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
     const scriptInput = document.getElementById('scriptContent') as HTMLTextAreaElement;
     const phoneHint = document.getElementById('phoneHint');
+    const consentCheckbox = document.getElementById('consentCheckbox') as HTMLInputElement;
 
     if (!btn || !phoneInput || !scriptInput) return;
 
@@ -383,8 +384,9 @@ function validateForm() {
 
     const wordCount = countWords(scriptInput.value);
     const isScriptValid = wordCount > 0 && wordCount <= MAX_WORDS;
+    const isConsentGiven = consentCheckbox ? consentCheckbox.checked : false;
 
-    if (turnstileValidated && isPhoneValid && isScriptValid) {
+    if (turnstileValidated && isPhoneValid && isScriptValid && isConsentGiven) {
         btn.disabled = false;
         btn.style.opacity = "1";
     } else {
@@ -428,6 +430,11 @@ function bindValidationListeners() {
     const scriptInput = document.getElementById('scriptContent');
     if (scriptInput) {
         scriptInput.addEventListener('input', validateForm);
+    }
+
+    const consentCheckbox = document.getElementById('consentCheckbox');
+    if (consentCheckbox) {
+        consentCheckbox.addEventListener('change', validateForm);
     }
 
     // Dynamic Label Logic

@@ -95,16 +95,7 @@
 
 
                 <label data-i18n="label_phone" style="margin-top: 15px;">📞 Target Phone (Recipient)</label>
-                <!-- Call Consent Agreement -->
-                <label class="agreement-box" for="consentCheckbox" style="margin-top: 30px;">
-                    <div class="custom-checkbox">
-                        <input type="checkbox" id="consentCheckbox" required>
-                        <span class="checkmark"></span>
-                    </div>
-                    <span class="agreement-text" data-i18n="label_agree_call">
-                        I agree to let the AI call on my behalf. If I do not agree, I will not be granted access.
-                    </span>
-                </label>
+
 
                 <div class="phone-container">
                     <input type="tel" id="targetPhone" required style="width: 100%;">
@@ -139,6 +130,18 @@
                 </div>
 
                 <div id="turnstile-widget" style="margin-top: 20px;"></div>
+
+                <!-- Call Consent Agreement -->
+                <label class="agreement-box" for="consentCheckbox"
+                    style="margin-top: 20px; margin-bottom: 20px; display: flex;">
+                    <div class="custom-checkbox">
+                        <input type="checkbox" id="consentCheckbox" required>
+                        <span class="checkmark"></span>
+                    </div>
+                    <span class="agreement-text" data-i18n="label_agree_call">
+                        I agree to let the AI call on my behalf. If I do not agree, I will not be granted access.
+                    </span>
+                </label>
 
                 <button type="submit" id="submitBtn" data-i18n="btn_trial" disabled>Try for Free</button>
                 <a href="/dashboard.html" class="back-link" data-i18n="btn_back">← Back to Dashboard</a>

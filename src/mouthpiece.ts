@@ -93,6 +93,7 @@ function validateForm() {
     const btn = document.getElementById('submitBtn') as HTMLButtonElement;
     const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
     const phoneHint = document.getElementById('phoneHint');
+    const consentCheckbox = document.getElementById('consentCheckbox') as HTMLInputElement;
 
     // 1. Credit Check
     const userSession = localStorage.getItem('wisecat_user');
@@ -139,7 +140,9 @@ function validateForm() {
     }
 
     // 3. Combined Logic
-    if (credits > 0 && turnstileValidated && isPhoneValid) {
+    const isConsentGiven = consentCheckbox ? consentCheckbox.checked : false;
+
+    if (credits > 0 && turnstileValidated && isPhoneValid && isConsentGiven) {
         btn.disabled = false;
         btn.style.opacity = "1";
     } else {
@@ -521,6 +524,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Initial call
         setTimeout(updateAutoDetectLabel, 1000); // Wait for plugin init
+    }
+
+    const consentCheckbox = document.getElementById('consentCheckbox');
+    if (consentCheckbox) {
+        consentCheckbox.addEventListener('change', validateForm);
     }
 
     if (mission) {

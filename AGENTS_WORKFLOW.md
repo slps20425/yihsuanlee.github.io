@@ -3,25 +3,19 @@
 ## Current Status: READY_FOR_QA
 
 ## Last Completed Task
-- **Task ID**: NL8cMOdrF8yjasb8LmqN
-- **Title**: Background Consistency & Multiple Fixes
-- **Completed**: 2026-01-19 11:45 GMT+8
+- **Task ID**: AgreeCheck_InboxUI
+- **Title**: Agree Statement Placement & Inbox UI Polish
+- **Completed**: 2026-01-19 (Current)
 - **Deploy URL**: https://wisecat-8df8d.web.app
 
 ## Summary of Changes
-1. ✅ **Background Consistency** - Restaurant, Trial, and Mouthpiece pages now use the same canvas-based animated background as the Entry page (replaced Vanta.js).
-2. ✅ **SMS Inbox Fix** - Fixed `uid_` prefix issue in Firestore path; SMS messages now appear correctly in Inbox.
-3. ✅ **n8n Email Attribution** - Removed "Sent automatically with n8n" footer from emails.
-4. ✅ **Mouthpiece Templates** - Verified 10 mission scenarios are correctly integrated and multilingual.
-5. ✅ **WiseCat Header Clickable** - Redirects to profile tab on Dashboard.
-6. ✅ **Logout Button** - Updated to solid red style.
+1. ✅ **Agree Statement Placement** - Moved "I agree" checkbox above "Start Call" button on Trial, Mouthpiece, and Restaurant pages.
+2. ✅ **Consent Validation** - "Start Call" button is now disabled until checkbox is checked.
+3. ✅ **Inbox UI Polish** - Replaced text dismiss button with circular "×" button for alerts.
 
 ## QA Testing Checklist
-- [ ] **Backgrounds**: Check Restaurant, Trial, and Mouthpiece pages. Should match Entry page background (canvas dots/particles), NO Vanta waves.
-- [ ] **Inbox**: Check Inbox tab. Should see SMS messages if any exist in Firestore.
-- [ ] **Emails**: Trigger an email (if possible). Should NOT have n8n footer.
-- [ ] **Header**: Click "WiseCat AI" logo in header. Should go to Profile.
-- [ ] **Logout**: Verify Logout button is solid red.
-
-## Notes
-- Hard refresh (Cmd+Shift+R) required.
+- [ ] **Trial Page**: Verify "Start Call" is disabled. Check "I agree". Verify button enables. Uncheck -> Disables.
+- [ ] **Mouthpiece Page**: Same check.
+- [ ] **Restaurant Reservation**: Same check.
+- [ ] **Inbox**: Check "Low Balance" or "Global Policy" alert. Verify "×" button style. Click to dismiss.
+- [ ] **Mobile Layout**: Verify checkbox alignment on mobile.

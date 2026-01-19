@@ -884,6 +884,11 @@ function bindValidationListeners() {
         }
     });
 
+    const consentCheckbox = document.getElementById('consentCheckbox');
+    if (consentCheckbox) {
+        consentCheckbox.addEventListener('change', validateForm);
+    }
+
     // Form Submit
     const form = document.getElementById('resForm');
     if (form) form.addEventListener('submit', handleFormSubmit);
@@ -916,6 +921,7 @@ function validateForm() {
     const btn = document.getElementById('submitBtn') as HTMLButtonElement;
     const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
     const phoneHint = document.getElementById('phoneHint');
+    const consentCheckbox = document.getElementById('consentCheckbox') as HTMLInputElement;
 
     if (!btn || !phoneInput) return;
 
@@ -985,9 +991,10 @@ function validateForm() {
 
     // 3. Combined Logic
     const hasRestaurant = !!selectedRestaurantData;
+    const isConsentGiven = consentCheckbox ? consentCheckbox.checked : false;
 
     // Check isUserPhoneValid as well
-    if (credits > 0 && turnstileValidated && isPhoneValid && isUserPhoneValid && isTimeValid && hasRestaurant) {
+    if (credits > 0 && turnstileValidated && isPhoneValid && isUserPhoneValid && isTimeValid && hasRestaurant && isConsentGiven) {
         btn.disabled = false;
         btn.style.opacity = "1";
     } else {

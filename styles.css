@@ -2239,3 +2239,31 @@ body.dashboard-layout {
     padding-bottom: 5rem !important;
     /* Extra space at bottom to prevent clipping */
 }
+
+/* Circular Dismiss Button (Custom) */
+.dismiss-btn-circle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    transition: all 0.2s ease;
+    padding: 0;
+    z-index: 10;
+}
+
+.dismiss-btn-circle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    transform: scale(1.1);
+}
