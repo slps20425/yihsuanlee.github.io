@@ -1,26 +1,33 @@
-export const APP_VERSION = 'v1.1.7-tooltip-mobile-fix';
-export const BUILD_TIMESTAMP = new Date().toISOString();
+// Version checker - displays in console
+const APP_VERSION = '2.1.0'; // Update this with each deployment
+const BUILD_TIME = new Date().toISOString();
 
-export function displayVersion() {
-    const el = document.createElement('div');
-    el.id = 'app-version-display';
-    el.style.cssText = `
-        position: fixed;
-        bottom: 5px;
-        right: 5px;
-        font-size: 10px;
-        color: rgba(255, 255, 255, 0.3);
-        z-index: 9999;
-        pointer-events: none;
-        font-family: monospace;
-    `;
-    el.innerText = `${APP_VERSION} (${new Date().toLocaleTimeString()})`;
-    document.body.appendChild(el);
-}
+console.log(
+    '%c🐱 WiseCat AI %cv' + APP_VERSION,
+    'color: #10b981; font-size: 16px; font-weight: bold;',
+    'color: #3b82f6; font-size: 14px;'
+);
+console.log(
+    '%cBuild: %c' + BUILD_TIME,
+    'color: #9ca3af; font-size: 12px;',
+    'color: #d1d5db; font-size: 12px;'
+);
+console.log(
+    '%cTo check version: %cwindow.WiseCatVersion',
+    'color: #9ca3af; font-size: 12px;',
+    'color: #f59e0b; font-size: 12px; font-family: monospace;'
+);
 
-// Auto-run if imported
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', displayVersion);
-} else {
-    displayVersion();
-}
+// Make version accessible globally
+(window as any).WiseCatVersion = {
+    version: APP_VERSION,
+    buildTime: BUILD_TIME,
+    checkUpdate: () => {
+        console.log('%c🔍 Checking version...', 'color: #3b82f6; font-size: 14px;');
+        console.log(`%cCurrent: v${APP_VERSION}`, 'color: #10b981; font-size: 12px;');
+        console.log(`%cBuild: ${BUILD_TIME}`, 'color: #9ca3af; font-size: 12px;');
+        console.log('%c💡 Hard refresh (Ctrl+Shift+R) to get latest version', 'color: #f59e0b; font-size: 12px;');
+    }
+};
+
+export { APP_VERSION, BUILD_TIME };
