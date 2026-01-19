@@ -448,31 +448,24 @@ exports.getTransformedUsageHistory = onCall(
 
             const subClient = twilio(settings.twilioSubaccountSid, settings.twilioSubaccountAuthToken);
 
-            // Fetch DAILY usage records (last 30 days) to populate the "Date" column
-            const records = await subClient.usage.records.daily.list({ limit: 30 });
+            // Fetch DAILY usage records (last 90 days roughly, limit higher to catch multiple categories per day)
+            const records = await subClient.usage.records.daily.list({ limit: 100 });
 
             const billing = await getBillingConfig(db);
             const multiplier = billing.common_multiplier || 3.0;
 
-            // Define high-level categories to display (prevents redundancy)
-            // Twilio returns both aggregates (e.g. "sms") and specifics (e.g. "sms-inbound")
-            // specific codes: https://www.twilio.com/docs/usage/api/usage-record#usage-categories
+            // Define categories to display.
+            // We include both high-level and common granular ones to ensure we don't hide data if high-level is missing.
+            // But we exclude 'totalprice' to avoid double-counting everything.
             const ALLOWED_CATEGORIES = new Set([
-                "calls",
-                "sms",
-                "phonenumbers",
-                "phonenumbers-local", // sometimes phonenumbers is empty but local is set
+                "calls", "calls-inbound", "calls-outbound",
+                "sms", "sms-inbound", "sms-outbound",
+                "phonenumbers", "phonenumbers-local", "phonenumbers-mobile", "phonenumbers-tollfree",
                 "recordings",
                 "voice-insights",
                 "monitor-storage",
-                "trunking-origination",
-                "trunking-termination"
+                "trunking-origination", "trunking-termination"
             ]);
-
-            // Helper to prioritize: if 'sms' exists, don't show 'sms-inbound' etc? 
-            // Actually 'sms' is the sum. So if we show 'sms', we cover all sms.
-            // But we need to be careful not to show BOTH 'sms' and 'sms-inbound'.
-            // Simple approach: Allow only the top-level aggregates where possible.
 
             const usage = records.map(r => ({
                 category: r.category,
@@ -488,15 +481,15 @@ exports.getTransformedUsageHistory = onCall(
             }))
                 .filter(r => r.user_price > 0.001) // Filter checks > 0 cost
                 .filter(r => {
-                    // Filter logic: prefer top-level categories
-                    // If the category is exactly one of our preferred generic ones, keep it.
-                    if (["calls", "sms", "phonenumbers", "recordings"].includes(r.category)) return true;
+                    // If explicitly allowed, keep it
+                    if (ALLOWED_CATEGORIES.has(r.category)) return true;
 
-                    // If it's a sub-category (like sms-inbound), ONLY keep it if we didn't already see the parent?
-                    // Actually, daily list might return them all.
-                    // Let's stick to a strict allowlist of mostly top-level items to avoid confusion.
-                    // If we miss something niche, it's better than confusing duplicates.
-                    return ["calls", "sms", "phonenumbers", "recordings", "totalprice"].includes(r.category);
+                    // Fallback: If description sounds like something we want?
+                    // Or just exclude known bad ones like totals
+                    if (r.category === 'totalprice') return false;
+
+                    // Default to true for unknown categories so we don't hide unexpected charges
+                    return true;
                 })
                 // Remove 'totalprice' explicitly if we want to show breakdown, 
                 // OR user might want to see daily total? 
