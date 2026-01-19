@@ -85,23 +85,87 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Revised Auth Logic using Redirect for Mobile Compatibility
 import { signInWithRedirect, getRedirectResult } from "firebase/auth";
 
+// Auth Debugging & State Management
+const AUTH_DEBUG = true; // Set to false in production
+const AUTH_PROCESSING_KEY = 'wisecat_auth_processing';
+const AUTH_STATE_KEY = 'wisecat_auth_state';
+const AUTH_REDIRECT_HANDLED_KEY = 'wisecat_redirect_handled';
+
+function authLog(...args: any[]) {
+    if (AUTH_DEBUG) {
+        const timestamp = new Date().toISOString();
+        console.log(`%c[AUTH DEBUG ${timestamp}]`, 'color: #3b82f6; font-weight: bold;', ...args);
+    }
+}
+
+function getAuthState() {
+    return {
+        processing: sessionStorage.getItem(AUTH_PROCESSING_KEY),
+        state: sessionStorage.getItem(AUTH_STATE_KEY),
+        redirectHandled: sessionStorage.getItem(AUTH_REDIRECT_HANDLED_KEY),
+        cachedUser: localStorage.getItem('wisecat_user'),
+        currentUser: auth.currentUser?.uid || null
+    };
+}
+
 async function checkRedirectResult() {
+    authLog('🔍 checkRedirectResult() called');
+    authLog('Current auth state:', getAuthState());
+
+    // Prevent duplicate processing
+    const redirectHandled = sessionStorage.getItem(AUTH_REDIRECT_HANDLED_KEY);
+    if (redirectHandled === 'true') {
+        authLog('⚠️ Redirect already handled in this session, skipping');
+        return;
+    }
+
+    const processing = sessionStorage.getItem(AUTH_PROCESSING_KEY);
+    if (processing === 'true') {
+        authLog('⚠️ Auth already processing, skipping duplicate call');
+        return;
+    }
+
+    authLog('🚀 Starting redirect result check...');
+    sessionStorage.setItem(AUTH_PROCESSING_KEY, 'true');
+    sessionStorage.setItem(AUTH_STATE_KEY, 'checking');
+
     try {
         const result = await getRedirectResult(auth);
         if (result) {
-            console.log('Redirect login success:', result.user.uid);
+            authLog('✅ Redirect result found:', {
+                uid: result.user.uid,
+                email: result.user.email,
+                displayName: result.user.displayName,
+                providerId: result.providerId
+            });
+            sessionStorage.setItem(AUTH_STATE_KEY, 'processing_login');
+            sessionStorage.setItem(AUTH_REDIRECT_HANDLED_KEY, 'true');
             await processLoginSuccess(result.user);
+        } else {
+            authLog('ℹ️ No redirect result (normal page load)');
+            sessionStorage.removeItem(AUTH_PROCESSING_KEY);
+            sessionStorage.setItem(AUTH_STATE_KEY, 'idle');
         }
     } catch (error: any) {
-        console.error('Redirect login error:', error);
+        authLog('❌ Redirect error:', {
+            code: error.code,
+            message: error.message,
+            stack: error.stack?.substring(0, 200)
+        });
+        sessionStorage.removeItem(AUTH_PROCESSING_KEY);
+        sessionStorage.setItem(AUTH_STATE_KEY, 'error');
         const authError = document.getElementById('authError');
         if (authError) authError.textContent = 'Auth error: ' + error.message;
     }
 }
 
 async function handleSocialLogin(provider: any) {
+    authLog('👆 User clicked login button');
+    authLog('Provider:', provider.providerId || 'unknown');
+
     const termsCheckbox = document.getElementById('termsCheckbox') as HTMLInputElement;
     if (termsCheckbox && !termsCheckbox.checked) {
+        authLog('⚠️ Terms not accepted');
         alert("Please agree to the terms and fraud prevention policy to continue.");
         return;
     }
@@ -110,27 +174,43 @@ async function handleSocialLogin(provider: any) {
     if (authError) authError.textContent = '';
 
     try {
-        // Enforce persistence explicitly
+        authLog('🔐 Setting persistence to LOCAL...');
         const { setPersistence, browserLocalPersistence } = await import("firebase/auth");
         await setPersistence(auth, browserLocalPersistence);
+
+        authLog('🌐 Initiating redirect to provider...');
+        // Clear previous state before redirect
+        sessionStorage.removeItem(AUTH_REDIRECT_HANDLED_KEY);
+        sessionStorage.setItem(AUTH_STATE_KEY, 'redirecting');
+        sessionStorage.setItem(AUTH_PROCESSING_KEY, 'false');
 
         // Switch to Redirect for mobile compatibility (avoids 403 disallowed_useragent)
         await signInWithRedirect(auth, provider);
         // The page will redirect; execution stops here.
 
     } catch (error: any) {
-        console.error('Social login init error:', error);
+        authLog('❌ Social login init error:', error);
+        sessionStorage.setItem(AUTH_STATE_KEY, 'error');
         if (authError) authError.textContent = 'Auth init error: ' + error.message;
     }
 }
 
 async function processLoginSuccess(user: any) {
+    authLog('🎉 processLoginSuccess() called for user:', user.uid);
+    authLog('User details:', {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        emailVerified: user.emailVerified
+    });
+
     // Robust Document ID: Always use UID as requested with prefix
     const userIdentifier = `uid_${user.uid}`;
     const userRef = doc(db, "users", userIdentifier);
 
-    console.log(`Connecting to DB: ${db.app.options.projectId}, DB ID: ${(db as any)._databaseId?.database || 'default'}`);
+    authLog(`📊 Connecting to Firestore: ${db.app.options.projectId}, DB: ${(db as any)._databaseId?.database || 'default'}`);
     const docSnap = await getDoc(userRef);
+    authLog('Firestore doc exists:', docSnap.exists());
 
     let sessionData;
 
@@ -159,18 +239,27 @@ async function processLoginSuccess(user: any) {
     }
 
     // Immediate Local Storage Save (Redundancy)
-    console.log("📝 Immediate Save from Login:", sessionData);
+    authLog("💾 Saving session to localStorage:", sessionData);
     localStorage.setItem('wisecat_user', JSON.stringify(sessionData));
 
     // --- Added for Robustness ---
     const verify = localStorage.getItem('wisecat_user');
-    console.log("📝 Value verification:", verify ? "EXISTS" : "MISSING");
+    authLog("✅ localStorage verification:", verify ? "EXISTS" : "❌ MISSING");
+    if (verify) {
+        authLog("📦 Stored data preview:", JSON.parse(verify));
+    }
 
     displayUserProfile(sessionData);
 
+    // Update state before redirect
+    sessionStorage.setItem(AUTH_STATE_KEY, 'success');
+    sessionStorage.removeItem(AUTH_PROCESSING_KEY);
+
     // Redirect after short delay to ensure storage commit
+    authLog("⏳ Waiting 500ms before redirect to ensure storage commit...");
     setTimeout(() => {
-        console.log("🚀 Redirecting to Dashboard...");
+        authLog("🚀 Redirecting to Dashboard...");
+        authLog('Final auth state before redirect:', getAuthState());
         window.location.href = '/dashboard.html';
     }, 500);
 }

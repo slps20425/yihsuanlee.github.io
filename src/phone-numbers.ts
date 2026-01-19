@@ -114,28 +114,44 @@ try {
 // Auth Check
 // Auth Check
 onAuthStateChanged(auth, async (user) => {
-    console.log("🔥 onAuthStateChanged event:", user ? `Logged in as ${user.uid}` : "Logged out (null)");
+    const timestamp = new Date().toISOString();
+    console.log(`%c[DASHBOARD AUTH ${timestamp}]`, 'color: #22c55e; font-weight: bold;',
+        user ? `✅ User logged in: ${user.uid}` : '❌ No user (logged out)');
+
     const headerUserName = document.getElementById('headerUserName');
-    // const headerCredits = document.getElementById('creditsDisplay'); // Commented out to fix lint warning
     const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement;
 
     if (!user) {
         // If we have a cached user, we can wait a bit longer for Firebase to catch up
-        // instead of redirecting immediately which might be a race condition.
         const cachedUser = localStorage.getItem('wisecat_user');
-        if (cachedUser) {
-            console.log("Wait for Firebase Auth (cached user exists)...");
-            // If it's been more than 3 seconds and still no user, then redirect
+        const authState = sessionStorage.getItem('wisecat_auth_state');
+
+        console.log(`%c[DASHBOARD AUTH]`, 'color: #f59e0b; font-weight: bold;', 'No user detected:', {
+            hasCachedUser: !!cachedUser,
+            authState: authState,
+            currentPath: window.location.pathname
+        });
+
+        if (cachedUser || authState === 'processing_login' || authState === 'checking') {
+            console.log(`%c[DASHBOARD AUTH]`, 'color: #3b82f6; font-weight: bold;',
+                '⏳ Waiting 5 seconds for Firebase Auth to catch up...');
+
+            // Increased from 3 seconds to 5 seconds
             setTimeout(() => {
                 if (!auth.currentUser) {
-                    console.log("Still no user after delay. Redirecting...");
+                    console.log(`%c[DASHBOARD AUTH]`, 'color: #ef4444; font-weight: bold;',
+                        '❌ Still no user after 5s delay. Redirecting to entry...');
                     window.location.href = '/Entry.html';
+                } else {
+                    console.log(`%c[DASHBOARD AUTH]`, 'color: #22c55e; font-weight: bold;',
+                        '✅ User authenticated after delay:', auth.currentUser.uid);
                 }
-            }, 3000);
+            }, 5000); // Increased from 3000
             return;
         }
 
-        console.log("No user logged in on dashboard. Redirecting to Entry.html...");
+        console.log(`%c[DASHBOARD AUTH]`, 'color: #ef4444; font-weight: bold;',
+            '🔄 No cached user or auth state. Redirecting immediately...');
         window.location.href = '/Entry.html';
         return;
     }

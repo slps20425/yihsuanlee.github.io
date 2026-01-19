@@ -7,11 +7,11 @@
 > - **Backend**: `getFirestore(app, "reservation");`
 
 ## Current Task
-- **Current Task**: [Refining Compliance UI and Logic]
-- **Feature**: Premium Custom Checkboxes and Consent Enforcement
+- **Current Task**: [Dashboard UI Fixes]
+- **Feature**: Session Timeout, Refresh Button Size, Avatar Clipping
 - **Status**: READY_FOR_QA
 - **Deploy URL**: https://wisecat-8df8d.web.app
-- **Task ID**: 0i0kdlWhPPFzVZZaGP6X
+- **Task ID**: dashboard-ui-fixes-20260119
 
 
 ## Workflow History
