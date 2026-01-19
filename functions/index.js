@@ -453,11 +453,13 @@ exports.getTransformedUsageHistory = onCall(
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             const startDateStr = thirtyDaysAgo.toISOString().split('T')[0]; // YYYY-MM-DD
 
-            // Fetch DAILY usage records provided explicit start date
+            // Fetch DAILY usage records provided explicit start date.
+            // Limit 1000 (Twilio max) to ensure we get past "Today's" empty records for all categories.
             let records = await subClient.usage.records.daily.list({
                 startDate: startDateStr,
-                limit: 100
+                limit: 1000
             });
+            console.log("DEBUG: Daily Records Fetched:", records.length);
 
             // Fallback: If no daily records found (sometimes takes time to populate or API quirk),
             // fetch the "All Time" summary so the user at least sees their balance/charges.
@@ -482,37 +484,43 @@ exports.getTransformedUsageHistory = onCall(
                 "trunking-origination", "trunking-termination"
             ]);
 
-            const usage = records.map(r => ({
-                category: r.category,
-                description: r.description,
-                usage: parseFloat(r.usage || 0),
-                unit: r.usageUnit,
-                base_price: parseFloat(r.price || 0),
-                user_price: parseFloat(r.price || 0) * multiplier,
-                currency: r.priceUnit,
-                // Serialize dates to prevent empty {} in JSON response
-                start_date: r.startDate ? new Date(r.startDate).toISOString() : null,
-                end_date: r.endDate ? new Date(r.endDate).toISOString() : null
-            }))
-                .filter(r => r.user_price > 0.001) // Filter checks > 0 cost
-                .filter(r => {
-                    // If explicitly allowed, keep it
-                    if (ALLOWED_CATEGORIES.has(r.category)) return true;
+            // Helper to transform records
+            const transformRecords = (recs) => {
+                return recs.map(r => ({
+                    category: r.category,
+                    description: r.description,
+                    usage: parseFloat(r.usage || 0),
+                    unit: r.usageUnit,
+                    base_price: parseFloat(r.price || 0),
+                    user_price: parseFloat(r.price || 0) * multiplier,
+                    currency: r.priceUnit,
+                    start_date: r.startDate ? new Date(r.startDate).toISOString() : null,
+                    end_date: r.endDate ? new Date(r.endDate).toISOString() : null
+                }))
+                    .filter(r => r.user_price > 0.001)
+                    .filter(r => {
+                        if (ALLOWED_CATEGORIES.has(r.category)) return true;
+                        if (r.category === 'totalprice') return false;
+                        return true;
+                    })
+                    .filter(r => r.category !== 'totalprice'); // Ensure totalprice is always removed
+            };
 
-                    // Fallback: If description sounds like something we want?
-                    // Or just exclude known bad ones like totals
-                    if (r.category === 'totalprice') return false;
+            let usage = transformRecords(records);
 
-                    // Default to true for unknown categories so we don't hide unexpected charges
-                    return true;
-                })
-                // Remove 'totalprice' explicitly if we want to show breakdown, 
-                // OR user might want to see daily total? 
-                // The UI is a list, so breakdowns (calls, sms) are better than just "total".
-                .filter(r => r.category !== 'totalprice');
+            // Fallback: If no VALID daily usage found (after filter), fetch Summary.
+            if (usage.length === 0) {
+                console.log("[Usage] Daily records empty/filtered, fetching summary fallback.");
+                const summaryRecords = await subClient.usage.records.list({ limit: 50 });
+                usage = transformRecords(summaryRecords);
+            }
 
-            // Sort by date desc
-            usage.sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
+            // Sort by date desc (if dates exist)
+            usage.sort((a, b) => {
+                if (!a.start_date) return 1;
+                if (!b.start_date) return -1;
+                return new Date(b.start_date) - new Date(a.start_date);
+            });
 
             return { usage, multiplier };
         } catch (e) {
