@@ -2682,3 +2682,60 @@ body.dashboard-layout {
         padding-left: 65px !important;
     }
 }
+
+/* Further reduce mobile navigation sizes - match smallest readable text */
+@media (max-width: 1023px) {
+    .bottom-nav .nav-item {
+        min-height: 40px !important;
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .bottom-nav .nav-icon {
+        font-size: 1rem !important;
+    }
+    
+    .bottom-nav .nav-label {
+        font-size: 0.75rem !important;
+    }
+    
+    /* Reduce dropdown items even more */
+    .nav-dropdown-item {
+        padding: 0.4rem 0.8rem !important;
+        padding-left: 2rem !important;
+        font-size: 0.75rem !important;
+        min-height: 36px !important;
+    }
+    
+    .nav-dropdown-item .nav-icon {
+        font-size: 0.9rem !important;
+    }
+    
+    .nav-dropdown-item .nav-label {
+        font-size: 0.7rem !important;
+    }
+    
+    /* Reduce user section */
+    .sidebar-user-section {
+        padding: 0.5rem !important;
+    }
+    
+    .sidebar-user-info img {
+        width: 32px !important;
+        height: 32px !important;
+    }
+    
+    .sidebar-user-text {
+        font-size: 0.75rem !important;
+    }
+    
+    .sidebar-user-text div {
+        font-size: 0.7rem !important;
+    }
+    
+    /* Reduce language selector */
+    .language-selector-sidebar {
+        font-size: 0.75rem !important;
+        padding: 0.3rem 0.5rem !important;
+    }
+}
