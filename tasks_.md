@@ -2,11 +2,7 @@
 
 ## High Priority (3+)
 
-- [/] **[P3] WiseCat header redirect** (ID: ATRp9AtafaPIvVfPPb1q)
-  - Header "WiseCat" text/logo should redirect to profile tab
-  - Apply to both web and mobile
-
-- [ ] **[P3] SMS inbox not displaying** (ID: Qg63xqPJLIbSwyMx2Di6)
+- [/] **[P3] SMS inbox not displaying** (ID: Qg63xqPJLIbSwyMx2Di6)
   - SMS received in webhook and stored in database
   - Frontend not showing messages
   - Need mechanism to pull existing messages from database
@@ -22,8 +18,9 @@
 ## Completed Today
 
 - [x] **[P3] Fix logout button styling** (ID: 3sb7PuQ0HcnI99VGH5DS) ✅
-  - Made logout button solid red with gradient
+- [x] **[P3] WiseCat header redirect** (ID: ATRp9AtafaPIvVfPPb1q) ✅
+- [x] n8n email attribution removal ✅
 - [x] Dashboard UI fixes (header spacing, language selector, sidebar positioning)
 - [x] Auth debugging with 5-minute expiry for redirect flag
 - [x] Animated refresh button with loading spinner
-- [x] Version checker in console
+- [x] Version checker in console (v2.1.0)

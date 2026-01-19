@@ -5,11 +5,15 @@ import { app, auth, db } from "./firebase-config"; // Use shared config
 import WiseCatI18n from "./i18n";
 import { ScamCheck } from "./scam-check";
 import { setupSessionTimeout } from "./session-timeout";
+import { initInbox } from "./inbox"; // Import inbox initialization
 
 const functions = getFunctions(app);
 
 // Initialize session timeout for dashboard
 setupSessionTimeout();
+
+// Initialize inbox to display SMS messages
+initInbox();
 
 
 // New Elements
