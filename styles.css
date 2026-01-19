@@ -1885,20 +1885,19 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     .bottom-nav {
         left: 0;
         right: auto;
+        top: 60px;
+        /* Position below header */
         bottom: 0;
-        /* Removed top: 0 - this was causing sidebar to cover entire viewport */
         width: 220px;
-        height: 100vh;
+        height: auto;
+        /* Let top/bottom control height */
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
-        /* Fix: Stop spacing items out perfectly */
         gap: 0.5rem;
-        /* Compact spacing */
         border-top: none;
         border-right: 1px solid var(--border-color);
         padding: 2rem 1rem;
-        /* Horizontal padding added */
         box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
         background: rgba(15, 23, 42, 0.95);
         backdrop-filter: blur(20px);
@@ -1906,7 +1905,6 @@ input[type="date"]::-webkit-datetime-edit-day-field {
         overflow-y: auto;
         overflow-x: hidden;
         z-index: 50;
-        /* Ensure it doesn't cover header */
     }
 
     .nav-item {
@@ -1972,14 +1970,6 @@ input[type="date"]::-webkit-datetime-edit-day-field {
         margin-bottom: 0;
         border-bottom: none;
         background: rgba(255, 255, 255, 0.02);
-    }
-
-
-
-    .top-header {
-        left: 220px;
-        width: calc(100% - 220px);
-        padding: 0 2rem;
     }
 
     .main-content {
