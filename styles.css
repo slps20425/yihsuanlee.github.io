@@ -1529,35 +1529,47 @@ input[type="date"]::-webkit-datetime-edit-day-field {
 
 /* Top Header */
 .top-header {
-    background: var(--card-bg);
-    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
-    padding: 1rem 1.5rem;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 10001;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    height: 70px;
+    height: 60px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
     display: flex;
     align-items: center;
+    padding: 0 1rem;
 }
 
 .header-content {
-    width: 100%;
-    margin: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 1.5rem;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    gap: 1rem;
+    /* Prevent overflow clipping */
+    overflow: visible;
 }
 
 .header-title {
-    font-size: 1.4rem;
+    font-size: 1.25rem;
     font-weight: 700;
     margin: 0;
+    color: var(--text-primary);
+    white-space: nowrap;
+    /* Allow title to shrink if needed */
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+/* Mobile Header Avatar - ensure visibility */
+#mobileHeaderAvatar {
+    flex-shrink: 0;
+    /* Prevent shrinking */
 }
 
 .profile-grid {

@@ -4,8 +4,13 @@ import { getFunctions, httpsCallable } from "firebase/functions";
 import { app, auth, db } from "./firebase-config"; // Use shared config
 import WiseCatI18n from "./i18n";
 import { ScamCheck } from "./scam-check";
+import { setupSessionTimeout } from "./session-timeout";
 
 const functions = getFunctions(app);
+
+// Initialize session timeout for dashboard
+setupSessionTimeout();
+
 
 // New Elements
 const rateCheckInput = document.getElementById('rateCheckInput') as HTMLInputElement | null;

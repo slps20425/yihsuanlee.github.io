@@ -7,11 +7,10 @@
 > - **Backend**: `getFirestore(app, "reservation");`
 
 ## Current Task
-- Current Task: [UI: Make profile logout button solid red]
-- Feature: UI: Make profile logout button solid red
-- Status: IN_PROGRESS
-- Deploy URL: https://wisecat-8df8d.web.app
-- Task ID: 3sb7PuQ0HcnI99VGH5DSmic order item list and optional menu upload for reservation pre-orders.
+- **Current Task**: [Refining Compliance UI and Logic]
+- **Feature**: Premium Custom Checkboxes and Consent Enforcement
+- **Status**: READY_FOR_QA
+- **Deploy URL**: https://wisecat-8df8d.web.app
 - **Task ID**: 0i0kdlWhPPFzVZZaGP6X
 
 
