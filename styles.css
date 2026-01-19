@@ -1544,14 +1544,6 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     padding: 0 1rem;
 }
 
-/* Desktop: Adjust header to not overlap sidebar */
-@media (min-width: 1024px) {
-    .top-header {
-        left: 220px;
-        width: calc(100% - 220px);
-        padding: 0 2rem;
-    }
-}
 
 .header-content {
     display: flex;
