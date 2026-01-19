@@ -2934,3 +2934,17 @@ body.dashboard-layout {
         max-width: 60vw !important;
     }
 }
+
+/* Reduce button height to half */
+@media (max-width: 1023px) {
+    .bottom-nav .nav-item {
+        min-height: 28px !important;
+        padding: 0.25rem 0.5rem !important;
+    }
+    
+    .nav-dropdown-item {
+        min-height: 24px !important;
+        padding: 0.2rem 0.5rem !important;
+        padding-left: 1.8rem !important;
+    }
+}
