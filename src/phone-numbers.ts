@@ -595,9 +595,28 @@ async function loadUsageHistory() {
 }
 
 if (refreshUsageBtn) {
-    refreshUsageBtn.addEventListener('click', () => {
-        usageTableBody!.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 2rem; color: var(--text-secondary);">Refreshing...</td></tr>';
-        loadUsageHistory();
+    refreshUsageBtn.addEventListener('click', async () => {
+        // Show loading animation
+        const spinner = document.getElementById('refreshSpinner') as HTMLVideoElement;
+        const gradient = document.getElementById('refreshGradient') as HTMLElement;
+
+        if (spinner && gradient) {
+            gradient.style.display = 'none';
+            spinner.style.display = 'block';
+            spinner.play();
+        }
+
+        try {
+            await loadUsageHistory();
+        } finally {
+            // Hide loading animation after refresh completes
+            if (spinner && gradient) {
+                spinner.pause();
+                spinner.currentTime = 0;
+                spinner.style.display = 'none';
+                gradient.style.display = 'block';
+            }
+        }
     });
 }
 

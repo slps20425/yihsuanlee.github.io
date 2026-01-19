@@ -90,7 +90,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/dashboard-BWu5mvr3.js"></script>
+  <script type="module" crossorigin src="/assets/dashboard-BqHkkeh4.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-CzG3mkee.js">
   <link rel="modulepreload" crossorigin href="/assets/i18n-EIgdHCRa.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-ebcnco9P.js">
@@ -210,11 +210,16 @@
                                 📜 Payment & Usage History
                             </h2>
                             <button id="refreshUsageBtn"
-                                style="width: 32px; height: 32px; border-radius: 50%; background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; padding: 0; overflow: hidden;"
-                                title="Refresh" onmouseover="this.querySelector('video').play()"
-                                onmouseout="this.querySelector('video').pause(); this.querySelector('video').currentTime = 0">
-                                <video width="28" height="28" loop muted playsinline
-                                    style="display: block; object-fit: cover;">
+                                style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; flex-shrink: 0; padding: 0; overflow: hidden; position: relative;"
+                                title="Refresh" onmouseover="this.style.transform='scale(1.1)'"
+                                onmouseout="this.style.transform='scale(1)'">
+                                <!-- Gradient circle (default) -->
+                                <div id="refreshGradient"
+                                    style="width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                </div>
+                                <!-- Loading animation (hidden by default) -->
+                                <video id="refreshSpinner" width="32" height="32" loop muted playsinline
+                                    style="display: none; position: absolute; top: 0; left: 0; object-fit: cover;">
                                     <source src="/assets/loading-spinner-IVHXyYeC.mp4" type="video/mp4">
                                 </video>
                             </button>
