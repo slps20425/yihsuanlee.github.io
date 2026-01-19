@@ -2255,10 +2255,13 @@ body.dashboard-layout {
     justify-content: center;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 14px;
+    font-size: 20px;
+    /* Larger for &times; */
     line-height: 1;
     transition: all 0.2s ease;
     padding: 0;
+    padding-bottom: 2px;
+    /* Center alignment adjustment for times char */
     z-index: 10;
 }
 

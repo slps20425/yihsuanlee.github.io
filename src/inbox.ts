@@ -222,7 +222,7 @@ function renderAlert(container: HTMLElement, id: string, title: string, body: st
             <div style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.4;">${escapeHtml(body)}</div>
         </div>
         <button class="dismiss-btn-circle">
-            <i class="bi bi-x-lg"></i>
+            &times;
         </button>
     `;
 
