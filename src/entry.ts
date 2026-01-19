@@ -112,11 +112,22 @@ async function checkRedirectResult() {
     authLog('🔍 checkRedirectResult() called');
     authLog('Current auth state:', getAuthState());
 
-    // Prevent duplicate processing
+    // Check if redirect was handled recently (within last 5 minutes)
     const redirectHandled = sessionStorage.getItem(AUTH_REDIRECT_HANDLED_KEY);
-    if (redirectHandled === 'true') {
-        authLog('⚠️ Redirect already handled in this session, skipping');
-        return;
+    const redirectTime = sessionStorage.getItem('wisecat_redirect_time');
+
+    if (redirectHandled === 'true' && redirectTime) {
+        const elapsed = Date.now() - parseInt(redirectTime);
+        const fiveMinutes = 5 * 60 * 1000;
+
+        if (elapsed < fiveMinutes) {
+            authLog(`⚠️ Redirect handled recently (${Math.floor(elapsed / 1000)}s ago), skipping`);
+            return;
+        } else {
+            authLog(`🕐 Redirect flag expired (${Math.floor(elapsed / 1000)}s old), clearing and checking again`);
+            sessionStorage.removeItem(AUTH_REDIRECT_HANDLED_KEY);
+            sessionStorage.removeItem('wisecat_redirect_time');
+        }
     }
 
     const processing = sessionStorage.getItem(AUTH_PROCESSING_KEY);
@@ -140,6 +151,7 @@ async function checkRedirectResult() {
             });
             sessionStorage.setItem(AUTH_STATE_KEY, 'processing_login');
             sessionStorage.setItem(AUTH_REDIRECT_HANDLED_KEY, 'true');
+            sessionStorage.setItem('wisecat_redirect_time', Date.now().toString());
             await processLoginSuccess(result.user);
         } else {
             authLog('ℹ️ No redirect result (normal page load)');
