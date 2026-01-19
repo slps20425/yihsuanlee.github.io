@@ -1546,7 +1546,7 @@ input[type="date"]::-webkit-datetime-edit-day-field {
 
 .header-content {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-evenly;
     align-items: center;
     width: 100%;
     max-width: 1400px;
@@ -1609,9 +1609,19 @@ input[type="date"]::-webkit-datetime-edit-day-field {
 
 .sidebar-user-section,
 .contact-link,
-.sidebar-top-section,
-.language-selector-header {
+.sidebar-top-section {
     display: none;
+}
+
+/* Show language selector on desktop */
+.language-selector-header {
+    display: block;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.875rem;
 }
 
 @media (max-width: 1023px) {
