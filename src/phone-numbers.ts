@@ -601,8 +601,9 @@ if (refreshUsageBtn) {
         const gradient = document.getElementById('refreshGradient') as HTMLElement;
 
         if (spinner && gradient) {
-            gradient.style.display = 'none';
-            spinner.style.display = 'block';
+            // Aggressively hide gradient
+            gradient.setAttribute('style', 'display: none !important; opacity: 0 !important; visibility: hidden !important;');
+            spinner.setAttribute('style', 'display: block !important; position: absolute; top: 0; left: 0; object-fit: cover; z-index: 10;');
             spinner.play();
         }
 
@@ -613,8 +614,8 @@ if (refreshUsageBtn) {
             if (spinner && gradient) {
                 spinner.pause();
                 spinner.currentTime = 0;
-                spinner.style.display = 'none';
-                gradient.style.display = 'block';
+                spinner.setAttribute('style', 'display: none; position: absolute; top: 0; left: 0; object-fit: cover; z-index: 10;');
+                gradient.setAttribute('style', 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;');
             }
         }
     });
