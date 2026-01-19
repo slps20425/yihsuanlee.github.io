@@ -32,7 +32,7 @@ export function initInbox() {
         if (user) {
             console.log("Inbox: User logged in, subscribing...");
 
-            const inboxRef = collection(db, `users/${user.uid}/inbound_messages`);
+            const inboxRef = collection(db, `users/uid_${user.uid}/inbound_messages`);
             const q = query(inboxRef, orderBy("receivedAt", "desc"), limit(50));
 
             unsubscribe = onSnapshot(q, (snapshot) => {
@@ -109,7 +109,7 @@ function renderMessages(messages: any[], container: HTMLDivElement | null) {
                 try {
                     const user = auth.currentUser;
                     if (user) {
-                        const docRef = doc(db, `users/${user.uid}/inbound_messages/${msg.id}`);
+                        const docRef = doc(db, `users/uid_${user.uid}/inbound_messages/${msg.id}`);
                         await updateDoc(docRef, { isRead: true });
                     }
                 } catch (e) {
