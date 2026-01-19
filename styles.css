@@ -2948,3 +2948,25 @@ body.dashboard-layout {
         padding-left: 1.8rem !important;
     }
 }
+
+/* Further reduce button height - half again */
+@media (max-width: 1023px) {
+    .bottom-nav .nav-item {
+        min-height: 20px !important;
+        padding: 0.15rem 0.4rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    .nav-dropdown-item {
+        min-height: 18px !important;
+        padding: 0.1rem 0.4rem !important;
+        padding-left: 1.5rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* Reduce sidebar width further */
+    .bottom-nav {
+        width: min(180px, 50vw) !important;
+        max-width: 50vw !important;
+    }
+}
