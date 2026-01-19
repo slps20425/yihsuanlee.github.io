@@ -2866,3 +2866,71 @@ body.dashboard-layout {
         width: 18px !important;
     }
 }
+
+/* CORRECT APPROACH: Reduce button size, keep text/icon readable */
+@media (max-width: 1023px) {
+    /* Reset font sizes to normal readable size */
+    .bottom-nav .nav-item {
+        min-height: 36px !important;
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.875rem !important;
+        gap: 0.5rem !important;
+    }
+    
+    .bottom-nav .nav-icon {
+        font-size: 1.1rem !important;
+    }
+    
+    .bottom-nav .nav-label {
+        font-size: 0.875rem !important;
+    }
+    
+    .nav-dropdown-item {
+        padding: 0.4rem 0.6rem !important;
+        padding-left: 2rem !important;
+        font-size: 0.875rem !important;
+        min-height: 32px !important;
+    }
+    
+    .nav-dropdown-item .nav-icon {
+        font-size: 1rem !important;
+    }
+    
+    .nav-dropdown-item .nav-label {
+        font-size: 0.875rem !important;
+    }
+}
+
+/* FINAL FIX: Normal readable text, compact buttons */
+@media (max-width: 1023px) {
+    /* Readable font sizes - override all previous tiny sizes */
+    .bottom-nav .nav-item,
+    .bottom-nav .nav-item .nav-label,
+    .nav-dropdown-item,
+    .nav-dropdown-item .nav-label {
+        font-size: 14px !important;
+    }
+    
+    .bottom-nav .nav-icon,
+    .nav-dropdown-item .nav-icon {
+        font-size: 18px !important;
+    }
+    
+    /* Compact button dimensions */
+    .bottom-nav .nav-item {
+        min-height: 40px !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    .nav-dropdown-item {
+        min-height: 36px !important;
+        padding: 0.45rem 0.75rem !important;
+        padding-left: 2.25rem !important;
+    }
+    
+    /* Sidebar width */
+    .bottom-nav {
+        width: min(220px, 60vw) !important;
+        max-width: 60vw !important;
+    }
+}
