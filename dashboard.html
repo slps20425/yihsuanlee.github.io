@@ -94,6 +94,17 @@
 </head>
 
 <body class="dashboard-layout">
+    <!-- Hamburger Menu (Mobile Only) -->
+    <button class="hamburger-menu" id="hamburgerMenu" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay"></div>
+
+
     <!-- Top Header -->
     <div class="top-header">
         <div class="header-content">
@@ -523,10 +534,28 @@
             <span class="nav-icon">📱</span>
             <span class="nav-label" data-i18n="nav_phone">Buy Number</span>
         </button>
-        <button class="nav-item" data-tab="ai">
-            <span class="nav-icon">🤖</span>
-            <span class="nav-label" data-i18n="nav_ai">AI Hub</span>
-        </button>
+        <!-- AI Services Dropdown -->
+        <div class="nav-dropdown">
+            <button class="nav-item nav-dropdown-toggle" id="aiDropdownToggle">
+                <span class="nav-icon">🤖</span>
+                <span class="nav-label" data-i18n="nav_ai">AI Services</span>
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <div class="nav-dropdown-menu" id="aiDropdownMenu">
+                <a href="/reservation/restaurant_reservation.html" class="nav-dropdown-item">
+                    <span class="nav-icon">🍽️</span>
+                    <span class="nav-label">Restaurant</span>
+                </a>
+                <a href="/reservation/mouthpiece.html" class="nav-dropdown-item">
+                    <span class="nav-icon">📢</span>
+                    <span class="nav-label">Mouthpiece</span>
+                </a>
+                <a href="/reservation/trial.html" class="nav-dropdown-item">
+                    <span class="nav-icon">🎁</span>
+                    <span class="nav-label">Trial</span>
+                </a>
+            </div>
+        </div>
         <button class="nav-item" data-tab="inbox">
             <span class="nav-icon">💬</span>
             <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
@@ -632,6 +661,63 @@
         import { initInbox } from './src/inbox.ts';
         // Initialize once DOM is ready or immediately
         initInbox();
+
+        // AI Services Dropdown Toggle
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropdownToggle = document.getElementById('aiDropdownToggle');
+            const dropdown = dropdownToggle?.parentElement;
+
+            if (dropdownToggle && dropdown) {
+                dropdownToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropdown.classList.toggle('open');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!dropdown.contains(e.target)) {
+                        dropdown.classList.remove('open');
+                    }
+                });
+            }
+
+            // Hamburger Menu Toggle
+            const hamburger = document.getElementById('hamburgerMenu');
+            const nav = document.querySelector('.bottom-nav');
+            const overlay = document.getElementById('mobileSidebarOverlay');
+
+            if (hamburger && nav && overlay) {
+                // Toggle menu
+                hamburger.addEventListener('click', () => {
+                    hamburger.classList.toggle('active');
+                    nav.classList.toggle('mobile-open');
+                    overlay.classList.toggle('show');
+                    document.body.classList.toggle('menu-open');
+                });
+
+                // Close on overlay click
+                overlay.addEventListener('click', () => {
+                    hamburger.classList.remove('active');
+                    nav.classList.remove('mobile-open');
+                    overlay.classList.remove('show');
+                    document.body.classList.remove('menu-open');
+                });
+
+                // Close on nav item click (for mobile)
+                const navItems = nav.querySelectorAll('.nav-item, .nav-dropdown-item');
+                navItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        if (window.innerWidth < 1024) {
+                            hamburger.classList.remove('active');
+                            nav.classList.remove('mobile-open');
+                            overlay.classList.remove('show');
+                            document.body.classList.remove('menu-open');
+                        }
+                    });
+                });
+            }
+        });
     </script>
 
     <!-- RAG Chatbot Widget -->

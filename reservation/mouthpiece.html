@@ -33,6 +33,17 @@
 </head>
 
 <body class="dashboard-layout">
+    <!-- Hamburger Menu (Mobile Only) -->
+    <button class="hamburger-menu" id="hamburgerMenu" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay"></div>
+
+
     <canvas id="bg-canvas"
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;"></canvas>
 
@@ -213,8 +224,48 @@
                 <option value="it">🇮🇹 Italiano</option>
             </select>
         </div>
+        <button class="nav-item" data-tab="profile" onclick="window.location.href='/dashboard.html?tab=profile'">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label" data-i18n="nav_profile">Profile</span>
+        </button>
+        <button class="nav-item" data-tab="add" onclick="window.location.href='/dashboard.html?tab=add'">
+            <span class="nav-icon">📱</span>
+            <span class="nav-label" data-i18n="nav_phone">Buy Number</span>
+        </button>
+        <!-- AI Services Dropdown -->
+        <div class="nav-dropdown open">
+            <button class="nav-item nav-dropdown-toggle" id="aiDropdownToggle">
+                <span class="nav-icon">🤖</span>
+                <span class="nav-label" data-i18n="nav_ai">AI Services</span>
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <div class="nav-dropdown-menu" id="aiDropdownMenu">
+                <a href="/reservation/restaurant_reservation.html" class="nav-dropdown-item">
+                    <span class="nav-icon">🍽️</span>
+                    <span class="nav-label">Restaurant</span>
+                </a>
+                <a href="/reservation/mouthpiece.html" class="nav-dropdown-item active">
+                    <span class="nav-icon">📢</span>
+                    <span class="nav-label">Mouthpiece</span>
+                </a>
+                <a href="/reservation/trial.html" class="nav-dropdown-item">
+                    <span class="nav-icon">🎁</span>
+                    <span class="nav-label">Trial</span>
+                </a>
+            </div>
+        </div>
+        <button class="nav-item" data-tab="inbox" onclick="window.location.href='/dashboard.html?tab=inbox'">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
+        </button>
 
-        <!-- Sidebar User Section (Desktop Only) - MOVED TO TOP -->
+        <!-- Contact -->
+        <a href="https://line.me/R/ti/p/@785ausca" target="_blank" class="nav-item contact-link">
+            <span class="nav-icon">🎧</span>
+            <span class="nav-label" data-i18n="nav_contact">Contacts</span>
+        </a>
+
+        <!-- Sidebar User Section (Desktop Only) -->
         <div class="sidebar-user-section">
             <div class="sidebar-user-info" onclick="window.location.href='/dashboard.html?tab=profile'">
                 <img id="headerUserAvatar" src="https://ui-avatars.com/api/?name=Guest" alt="Avatar">
@@ -227,27 +278,6 @@
                 <span data-i18n="nav_logout">Log out</span>
             </button>
         </div>
-
-        <a href="/dashboard.html?tab=calls" class="nav-item">
-            <span class="nav-icon">📞</span>
-            <span class="nav-label" data-i18n="nav_calls">Calls</span>
-        </a>
-        <a href="/dashboard.html?tab=profile" class="nav-item">
-            <span class="nav-icon">👤</span>
-            <span class="nav-label" data-i18n="nav_profile">Profile</span>
-        </a>
-        <a href="/dashboard.html?tab=add" class="nav-item">
-            <span class="nav-icon">📱</span>
-            <span class="nav-label" data-i18n="nav_phone">Phone Number</span>
-        </a>
-        <a href="/dashboard.html?tab=ai" class="nav-item active">
-            <span class="nav-icon">🤖</span>
-            <span class="nav-label" data-i18n="nav_ai">AI Hub</span>
-        </a>
-        <a href="/dashboard.html?tab=inbox" class="nav-item">
-            <span class="nav-icon">💬</span>
-            <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
-        </a>
     </nav>
 
     <!-- Help Buddy -->
@@ -275,6 +305,46 @@
     </div>
 
     <script type="module" src="../src/mouthpiece.ts"></script>
+
+    <script>
+        // Hamburger Menu Toggle
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburger = document.getElementById('hamburgerMenu');
+            const nav = document.querySelector('.bottom-nav');
+            const overlay = document.getElementById('mobileSidebarOverlay');
+            
+            if (hamburger && nav && overlay) {
+                // Toggle menu
+                hamburger.addEventListener('click', () => {
+                    hamburger.classList.toggle('active');
+                    nav.classList.toggle('mobile-open');
+                    overlay.classList.toggle('show');
+                    document.body.classList.toggle('menu-open');
+                });
+                
+                // Close on overlay click
+                overlay.addEventListener('click', () => {
+                    hamburger.classList.remove('active');
+                    nav.classList.remove('mobile-open');
+                    overlay.classList.remove('show');
+                    document.body.classList.remove('menu-open');
+                });
+                
+                // Close on nav item click (for mobile)
+                const navItems = nav.querySelectorAll('.nav-item, .nav-dropdown-item');
+                navItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        if (window.innerWidth < 1024) {
+                            hamburger.classList.remove('active');
+                            nav.classList.remove('mobile-open');
+                            overlay.classList.remove('show');
+                            document.body.classList.remove('menu-open');
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

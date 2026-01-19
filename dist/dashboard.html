@@ -90,15 +90,26 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/dashboard-BHXiCUod.js"></script>
+  <script type="module" crossorigin src="/assets/dashboard-DI8-Kfk4.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-BdKKplyx.js">
-  <link rel="modulepreload" crossorigin href="/assets/i18n-3bEdaJhx.js">
+  <link rel="modulepreload" crossorigin href="/assets/i18n-Cw9gFDQx.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-BVuuoQhp.js">
   <link rel="modulepreload" crossorigin href="/assets/session-timeout-D9VqzLIs.js">
-  <link rel="stylesheet" crossorigin href="/assets/i18n-DtTR3GGU.css">
+  <link rel="stylesheet" crossorigin href="/assets/i18n-CgM604QH.css">
 </head>
 
 <body class="dashboard-layout">
+    <!-- Hamburger Menu (Mobile Only) -->
+    <button class="hamburger-menu" id="hamburgerMenu" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay"></div>
+
+
     <!-- Top Header -->
     <div class="top-header">
         <div class="header-content">
@@ -528,10 +539,28 @@
             <span class="nav-icon">📱</span>
             <span class="nav-label" data-i18n="nav_phone">Buy Number</span>
         </button>
-        <button class="nav-item" data-tab="ai">
-            <span class="nav-icon">🤖</span>
-            <span class="nav-label" data-i18n="nav_ai">AI Hub</span>
-        </button>
+        <!-- AI Services Dropdown -->
+        <div class="nav-dropdown">
+            <button class="nav-item nav-dropdown-toggle" id="aiDropdownToggle">
+                <span class="nav-icon">🤖</span>
+                <span class="nav-label" data-i18n="nav_ai">AI Services</span>
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <div class="nav-dropdown-menu" id="aiDropdownMenu">
+                <a href="/reservation/restaurant_reservation.html" class="nav-dropdown-item">
+                    <span class="nav-icon">🍽️</span>
+                    <span class="nav-label">Restaurant</span>
+                </a>
+                <a href="/reservation/mouthpiece.html" class="nav-dropdown-item">
+                    <span class="nav-icon">📢</span>
+                    <span class="nav-label">Mouthpiece</span>
+                </a>
+                <a href="/reservation/trial.html" class="nav-dropdown-item">
+                    <span class="nav-icon">🎁</span>
+                    <span class="nav-label">Trial</span>
+                </a>
+            </div>
+        </div>
         <button class="nav-item" data-tab="inbox">
             <span class="nav-icon">💬</span>
             <span class="nav-label" data-i18n="nav_inbox">Inbox</span>

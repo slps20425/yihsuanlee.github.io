@@ -140,21 +140,27 @@ const WiseCatI18n: WiseCatI18nType = {
             helper_examples: {
                 res: [
                     { t: "Simple Reservation", v: "Reserve a table for 4 at [Restaurant Name] for tonight." },
-                    { t: "Item Pre-order", v: "Reserve a cake at the bakery before 5PM." },
-                    { t: "Holiday Inquiry", v: "Check if you are opening on the upcoming holiday." }
+                    { t: "Item Pre-order", v: "Reserve a cake at the bakery before 5PM." }
                 ],
                 mouth: [
-                    { t: "Tour Group Meetup", v: "Hello, we are XXX tour group. We will meet you at the Datong Road intersection." },
-                    { t: "Out-of-Service Urgent", v: "I'm in an out-of-service country, I need to call the driver now to sync up the meet up point." },
-                    { t: "Holiday Hours Check", v: "Checking urgent information: are you opening on certain holidays?" },
-                    { t: "Blocked Apology", v: "Hey XXX, I'm trying to call you but you blocked me. Here's the sorry I want to let you know." },
-                    { t: "General Contact", v: "Contact [someone] for [something] - I need to reach you urgently about an important matter." }
+                    { t: "Lost Item Inquiry", v: "Hello, I lost a black wallet at your store yesterday. Has anyone found it?", mission: "lost_item" },
+                    { t: "Holiday Hours Check", v: "Are you open during the Spring Festival? Any changes to business hours?", mission: "business_hours" },
+                    { t: "Package Tracking", v: "I'd like to check the delivery status of order number XXX.", mission: "package_tracking" },
+                    { t: "Event RSVP", v: "This is XXX, confirming I'll attend tomorrow's gathering on time.", mission: "event_rsvp" },
+                    { t: "Repair Appointment", v: "My air conditioner needs repair. When's the earliest you can send a technician?", mission: "repair_appointment" },
+                    { t: "Order Modification", v: "I need to modify my order. Can you change the address to XXX?", mission: "order_modification" },
+                    { t: "Emergency Notification", v: "Urgent! I'm abroad and can't answer calls. Please tell XXX I'll be late.", mission: "emergency_notification" },
+                    { t: "Schedule Verification", v: "Confirming tomorrow's 3 PM meeting. I'll be there on time.", mission: "schedule_verification" },
+                    { t: "Stock Inquiry", v: "Is XXX product still in stock? I'd like to purchase it.", mission: "stock_inquiry" },
+                    { t: "Dental Appointment", v: "I'd like to book a teeth cleaning. Any openings this week?", mission: "dental_appointment" },
+                    { t: "Salon Inquiry", v: "How long and how much for hair coloring plus haircut?", mission: "salon_inquiry" },
+                    { t: "Aesthetic Clinic", v: "I'd like to inquire about picosecond laser treatment. What options are available?", mission: "aesthetic_clinic" }
                 ]
             },
             nav_calls: "Calls",
             nav_profile: "Profile",
             nav_phone: "Phone Number",
-            nav_ai: "AI Hub",
+            nav_ai: "AI Services",
             nav_inbox: "Inbox",
             nav_logout: "Log out",
             nav_contact: "Contacts"
@@ -256,21 +262,27 @@ const WiseCatI18n: WiseCatI18nType = {
             helper_examples: {
                 res: [
                     { t: "簡單預約", v: "今晚在 [餐廳名稱] 預訂一桌 4 人位。" },
-                    { t: "品項預留", v: "在下午 5 點前到麵包店預留一個蛋糕。" },
-                    { t: "假日確認", v: "詢問特定節假日是否照常營業。" }
+                    { t: "品項預留", v: "在下午 5 點前到麵包店預留一個蛋糕。" }
                 ],
                 mouth: [
-                    { t: "旅遊團會合", v: "你好我們是XXX旅遊團，我們會在大同路轉角跟你碰面。" },
-                    { t: "境外緊急聯繫", v: "我目前在收訊不佳的國家，現在需要與司機同步會合地點。" },
-                    { t: "節日營業確認", v: "緊急確認：請問您在特定節假日是否照常營業？" },
-                    { t: "被封鎖道歉", v: "嘿XXX，我試著撥給你但你封鎖我了，這是我想讓你知道的道歉。" },
-                    { t: "一般聯繫", v: "聯繫[某人]關於[某事] - 我需要緊急與您聯繫重要事項。" }
+                    { t: "遺失物品查詢", v: "你好，我昨天在你們店裡遺失了一個黑色錢包，請問有人撿到嗎？", mission: "lost_item" },
+                    { t: "節日營業確認", v: "請問您在春節期間是否照常營業？營業時間有調整嗎？", mission: "business_hours" },
+                    { t: "包裹追蹤", v: "我想確認訂單編號XXX的包裹目前配送狀態。", mission: "package_tracking" },
+                    { t: "活動出席確認", v: "我是XXX，想確認明天的聚會我會準時出席。", mission: "event_rsvp" },
+                    { t: "維修預約", v: "我的冷氣需要維修，請問最快什麼時候可以安排師傅過來？", mission: "repair_appointment" },
+                    { t: "訂單修改", v: "我需要修改訂單內容，可以幫我把地址改成XXX嗎？", mission: "order_modification" },
+                    { t: "緊急通知", v: "緊急！我目前在國外無法接電話，請轉告XXX我會晚點到。", mission: "emergency_notification" },
+                    { t: "行程確認", v: "確認明天下午3點的會議，我會準時參加。", mission: "schedule_verification" },
+                    { t: "庫存查詢", v: "請問XXX商品目前還有庫存嗎？我想要購買。", mission: "stock_inquiry" },
+                    { t: "牙科預約", v: "我想預約洗牙，請問本週還有空檔嗎？", mission: "dental_appointment" },
+                    { t: "美髮沙龍諮詢", v: "請問染髮加剪髮大概需要多少時間和費用？", mission: "salon_inquiry" },
+                    { t: "醫美診所諮詢", v: "我想諮詢皮秒雷射的療程，請問有哪些方案？", mission: "aesthetic_clinic" }
                 ]
             },
             nav_calls: "通話管理",
             nav_profile: "個人帳戶",
             nav_phone: "電話號碼",
-            nav_ai: "工具箱",
+            nav_ai: "AI 服務",
             nav_inbox: "收件夾",
             nav_logout: "登出",
             nav_contact: "客服"
@@ -366,21 +378,27 @@ const WiseCatI18n: WiseCatI18nType = {
             helper_examples: {
                 res: [
                     { t: "簡単な予約", v: "今夜、[レストラン名]で4人のテーブルを予約してください。" },
-                    { t: "商品の予約", v: "午後5時までにパン屋でケーキを予約してください。" },
-                    { t: "休日の問い合わせ", v: "今度の祝日に営業しているか確認してください。" }
+                    { t: "商品の予約", v: "午後5時までにパン屋でケーキを予約してください。" }
                 ],
                 mouth: [
-                    { t: "ツアーグループ待ち合わせ", v: "こんにちは、XXXツアーグループです。大同路の交差点でお会いしましょう。" },
-                    { t: "圏外緊急連絡", v: "圏外の国にいるため、今すぐ運転手と待ち合わせ場所を確認する必要があります。" },
-                    { t: "休日営業確認", v: "緊急確認：特定の祝日に営業していますか？" },
-                    { t: "ブロック謝罪", v: "XXXさん、電話したけどブロックされています。お伝えしたい謝罪があります。" },
-                    { t: "一般連絡", v: "[誰か]に[何か]について連絡 - 重要な件で緊急に連絡する必要があります。" }
+                    { t: "遺失物問い合わせ", v: "こんにちは、昨日お店で黒い財布を失くしました。誰か見つけましたか？", mission: "lost_item" },
+                    { t: "休日営業確認", v: "春節期間中は営業していますか？営業時間の変更はありますか？", mission: "business_hours" },
+                    { t: "荷物追跡", v: "注文番号XXXの荷物の配送状況を確認したいです。", mission: "package_tracking" },
+                    { t: "イベント出席確認", v: "XXXです。明日の集まりに時間通り出席することを確認します。", mission: "event_rsvp" },
+                    { t: "修理予約", v: "エアコンの修理が必要です。最短でいつ技術者を派遣できますか？", mission: "repair_appointment" },
+                    { t: "注文変更", v: "注文内容を変更したいです。住所をXXXに変更できますか？", mission: "order_modification" },
+                    { t: "緊急通知", v: "緊急！海外にいて電話に出られません。XXXに遅れると伝えてください。", mission: "emergency_notification" },
+                    { t: "スケジュール確認", v: "明日の午後3時の会議を確認します。時間通りに参加します。", mission: "schedule_verification" },
+                    { t: "在庫確認", v: "XXX商品はまだ在庫がありますか？購入したいです。", mission: "stock_inquiry" },
+                    { t: "歯科予約", v: "歯のクリーニングを予約したいです。今週空きはありますか？", mission: "dental_appointment" },
+                    { t: "美容院問い合わせ", v: "カラーとカットで時間と料金はどのくらいですか？", mission: "salon_inquiry" },
+                    { t: "美容クリニック", v: "ピコ秒レーザー治療について相談したいです。どんなプランがありますか？", mission: "aesthetic_clinic" }
                 ]
             },
             nav_calls: "通話記録",
             nav_profile: "プロフィール",
             nav_phone: "電話番号",
-            nav_ai: "AIハブ",
+            nav_ai: "AI サービス",
             nav_inbox: "受信トレイ",
             nav_logout: "ログアウト",
             nav_contact: "お問い合わせ"
@@ -476,21 +494,27 @@ const WiseCatI18n: WiseCatI18nType = {
             helper_examples: {
                 res: [
                     { t: "간단한 예약", v: "오늘 밤 [식당 이름]에 4인 테이블을 예약해 주세요." },
-                    { t: "품목 예약", v: "오후 5시 이전에 빵집에서 케이크를 예약해 주세요." },
-                    { t: "공휴일 문의", v: "다가오는 공휴일에 영업하는지 확인해 주세요." }
+                    { t: "품목 예약", v: "오후 5시 이전에 빵집에서 케이크를 예약해 주세요." }
                 ],
                 mouth: [
-                    { t: "투어 그룹 만남", v: "안녕하세요, 저희는 XXX 투어 그룹입니다. 대동로 교차로에서 만나겠습니다." },
-                    { t: "해외 긴급 연락", v: "현재 서비스 지역 외 국가에 있어서 지금 당장 기사님과 만남 장소를 확인해야 합니다." },
-                    { t: "공휴일 영업 확인", v: "긴급 확인: 특정 공휴일에 영업하시나요?" },
-                    { t: "차단 사과", v: "XXX님, 전화를 드렸으나 차단된 것 같습니다. 전하고 싶은 사과가 있습니다." },
-                    { t: "일반 연락", v: "[누군가]에게 [무엇]에 대해 연락 - 중요한 사안으로 긴급히 연락드려야 합니다." }
+                    { t: "분실물 문의", v: "안녕하세요, 어제 가게에서 검은색 지갑을 잃어버렸습니다. 누가 찾았나요?", mission: "lost_item" },
+                    { t: "공휴일 영업 확인", v: "설날 기간에 영업하시나요? 영업 시간 변경이 있나요?", mission: "business_hours" },
+                    { t: "택배 추적", v: "주문 번호 XXX의 배송 상태를 확인하고 싶습니다.", mission: "package_tracking" },
+                    { t: "이벤트 참석 확인", v: "XXX입니다. 내일 모임에 정시에 참석하겠습니다.", mission: "event_rsvp" },
+                    { t: "수리 예약", v: "에어컨 수리가 필요합니다. 가장 빠른 기사님 방문 시간은 언제인가요?", mission: "repair_appointment" },
+                    { t: "주문 변경", v: "주문 내용을 변경하고 싶습니다. 주소를 XXX로 변경할 수 있나요?", mission: "order_modification" },
+                    { t: "긴급 알림", v: "긴급! 해외에 있어 전화를 받을 수 없습니다. XXX에게 늦는다고 전해주세요.", mission: "emergency_notification" },
+                    { t: "일정 확인", v: "내일 오후 3시 회의를 확인합니다. 정시에 참석하겠습니다.", mission: "schedule_verification" },
+                    { t: "재고 확인", v: "XXX 제품이 아직 재고가 있나요? 구매하고 싶습니다.", mission: "stock_inquiry" },
+                    { t: "치과 예약", v: "스케일링 예약을 하고 싶습니다. 이번 주에 빈 시간이 있나요?", mission: "dental_appointment" },
+                    { t: "미용실 문의", v: "염색과 커트 시간과 비용은 얼마나 되나요?", mission: "salon_inquiry" },
+                    { t: "피부과 상담", v: "피코 레이저 시술에 대해 상담하고 싶습니다. 어떤 옵션이 있나요?", mission: "aesthetic_clinic" }
                 ]
             },
             nav_calls: "통화 내역",
             nav_profile: "프로필",
             nav_phone: "전화번호",
-            nav_ai: "AI 허브",
+            nav_ai: "AI 서비스",
             nav_inbox: "받은편지함",
             nav_logout: "로그아웃",
             nav_contact: "고객 지원"
@@ -586,21 +610,27 @@ const WiseCatI18n: WiseCatI18nType = {
             helper_examples: {
                 res: [
                     { t: "Reserva Simple", v: "Reserva una mesa para 4 en [Nombre del Restaurante] para esta noche." },
-                    { t: "Pedido de Artículo", v: "Reserva un pastel en la panadería antes de las 5 PM." },
-                    { t: "Consulta de Festivo", v: "Consulta si abren en el próximo día festivo." }
+                    { t: "Pedido de Artículo", v: "Reserva un pastel en la panadería antes de las 5 PM." }
                 ],
                 mouth: [
-                    { t: "Encuentro Grupo Turístico", v: "Hola, somos el grupo turístico XXX. Nos encontraremos en la intersección de Datong Road." },
-                    { t: "Urgente Sin Servicio", v: "Estoy en un país sin servicio, necesito llamar al conductor ahora para coordinar el punto de encuentro." },
-                    { t: "Consulta Horario Festivo", v: "Consulta urgente: ¿abren en ciertos días festivos?" },
-                    { t: "Disculpa por Bloqueo", v: "Hola XXX, traté de llamarte pero me bloqueaste. Aquí está la disculpa que quiero que sepas." },
-                    { t: "Contacto General", v: "Contactar a [alguien] por [algo] - Necesito comunicarme urgentemente sobre un asunto importante." }
+                    { t: "Consulta Objeto Perdido", v: "Hola, perdí una cartera negra en su tienda ayer. ¿Alguien la encontró?", mission: "lost_item" },
+                    { t: "Horario Festivo", v: "¿Están abiertos durante el Festival de Primavera? ¿Hay cambios en el horario?", mission: "business_hours" },
+                    { t: "Seguimiento Paquete", v: "Quisiera verificar el estado de entrega del pedido número XXX.", mission: "package_tracking" },
+                    { t: "Confirmación Evento", v: "Soy XXX, confirmando que asistiré a la reunión de mañana a tiempo.", mission: "event_rsvp" },
+                    { t: "Cita Reparación", v: "Mi aire acondicionado necesita reparación. ¿Cuándo pueden enviar un técnico?", mission: "repair_appointment" },
+                    { t: "Modificación Pedido", v: "Necesito modificar mi pedido. ¿Pueden cambiar la dirección a XXX?", mission: "order_modification" },
+                    { t: "Notificación Urgente", v: "¡Urgente! Estoy en el extranjero y no puedo contestar. Dígale a XXX que llegaré tarde.", mission: "emergency_notification" },
+                    { t: "Verificación Agenda", v: "Confirmando la reunión de mañana a las 3 PM. Estaré allí a tiempo.", mission: "schedule_verification" },
+                    { t: "Consulta Stock", v: "¿El producto XXX todavía está en stock? Me gustaría comprarlo.", mission: "stock_inquiry" },
+                    { t: "Cita Dental", v: "Quisiera reservar una limpieza dental. ¿Tienen disponibilidad esta semana?", mission: "dental_appointment" },
+                    { t: "Consulta Salón", v: "¿Cuánto tiempo y cuánto cuesta teñir y cortar el cabello?", mission: "salon_inquiry" },
+                    { t: "Clínica Estética", v: "Quisiera consultar sobre el tratamiento láser picosegundo. ¿Qué opciones hay?", mission: "aesthetic_clinic" }
                 ]
             },
             nav_calls: "Llamadas",
             nav_profile: "Perfil",
             nav_phone: "Teléfono",
-            nav_ai: "Herramientas",
+            nav_ai: "Servicios IA",
             nav_inbox: "Bandeja",
             nav_logout: "Cerrar sesión",
             nav_contact: "Soporte y Ayuda"
@@ -696,21 +726,27 @@ const WiseCatI18n: WiseCatI18nType = {
             helper_examples: {
                 res: [
                     { t: "Réservation Simple", v: "Réservez une table pour 4 à [Nom du Restaurant] pour ce soir." },
-                    { t: "Commande d'Article", v: "Réservez un gâteau à la boulangerie avant 17h00." },
-                    { t: "Demande de Congé", v: "Vérifiez si vous êtes ouvert lors du prochain jour férié." }
+                    { t: "Commande d'Article", v: "Réservez un gâteau à la boulangerie avant 17h00." }
                 ],
                 mouth: [
-                    { t: "Rencontre Groupe Touristique", v: "Bonjour, nous sommes le groupe touristique XXX. Nous vous rencontrerons à l'intersection de Datong Road." },
-                    { t: "Urgence Hors Service", v: "Je suis dans un pays sans service, je dois appeler le chauffeur maintenant pour coordonner le point de rencontre." },
-                    { t: "Vérification Horaires Férié", v: "Vérification urgente : êtes-vous ouvert certains jours fériés ?" },
-                    { t: "Excuses Blocage", v: "Salut XXX, j'ai essayé de t'appeler mais tu m'as bloqué. Voici les excuses que je veux que tu saches." },
-                    { t: "Contact Général", v: "Contacter [quelqu'un] pour [quelque chose] - Je dois vous joindre de toute urgence pour une affaire importante." }
+                    { t: "Objet Perdu", v: "Bonjour, j'ai perdu un portefeuille noir dans votre magasin hier. Quelqu'un l'a trouvé?", mission: "lost_item" },
+                    { t: "Horaires Férié", v: "Êtes-vous ouvert pendant le Nouvel An chinois? Y a-t-il des changements d'horaires?", mission: "business_hours" },
+                    { t: "Suivi Colis", v: "Je voudrais vérifier l'état de livraison de la commande numéro XXX.", mission: "package_tracking" },
+                    { t: "Confirmation Événement", v: "C'est XXX, je confirme ma présence à la réunion de demain à l'heure.", mission: "event_rsvp" },
+                    { t: "Rendez-vous Réparation", v: "Mon climatiseur a besoin de réparation. Quand pouvez-vous envoyer un technicien?", mission: "repair_appointment" },
+                    { t: "Modification Commande", v: "Je dois modifier ma commande. Pouvez-vous changer l'adresse en XXX?", mission: "order_modification" },
+                    { t: "Notification Urgente", v: "Urgent! Je suis à l'étranger et ne peux pas répondre. Dites à XXX que je serai en retard.", mission: "emergency_notification" },
+                    { t: "Vérification Agenda", v: "Confirmation de la réunion de demain à 15h. Je serai là à l'heure.", mission: "schedule_verification" },
+                    { t: "Vérification Stock", v: "Le produit XXX est-il toujours en stock? Je voudrais l'acheter.", mission: "stock_inquiry" },
+                    { t: "Rendez-vous Dentaire", v: "Je voudrais réserver un détartrage. Avez-vous des disponibilités cette semaine?", mission: "dental_appointment" },
+                    { t: "Consultation Salon", v: "Combien de temps et combien coûte une coloration plus coupe?", mission: "salon_inquiry" },
+                    { t: "Clinique Esthétique", v: "Je voudrais me renseigner sur le traitement laser picoseconde. Quelles options sont disponibles?", mission: "aesthetic_clinic" }
                 ]
             },
             nav_calls: "Appels",
             nav_profile: "Profil",
             nav_phone: "Téléphone",
-            nav_ai: "Outils",
+            nav_ai: "Services IA",
             nav_inbox: "Boîte",
             nav_logout: "Déconnexion",
             nav_contact: "Support & Aide"
@@ -820,7 +856,7 @@ const WiseCatI18n: WiseCatI18nType = {
             nav_calls: "Chiamate",
             nav_profile: "Profilo",
             nav_phone: "Telefono",
-            nav_ai: "Strumenti",
+            nav_ai: "Servizi IA",
             nav_inbox: "Posta",
             nav_logout: "Esci",
             nav_contact: "Supporto e Aiuto"
@@ -937,6 +973,17 @@ const WiseCatI18n: WiseCatI18nType = {
                         text = text.replace('{email}', email);
                     }
                     textarea.value = text;
+
+                    // Auto-select mission if specified
+                    if (type === 'mouth' && ex.mission) {
+                        const missionSelect = document.getElementById('mission') as HTMLSelectElement;
+                        if (missionSelect) {
+                            missionSelect.value = ex.mission;
+                            // Trigger change event to update mission description
+                            missionSelect.dispatchEvent(new Event('change'));
+                        }
+                    }
+
                     helperPanel.classList.remove('show');
                     textarea.focus();
                 }

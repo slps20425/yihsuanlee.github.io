@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "generated": "2026-01-19T08:55:07.831Z",
+  "generated": "2026-01-19T15:48:25.674Z",
   "metadata": {
-    "lastUpdated": "2026-01-19T08:55:07.764Z",
+    "lastUpdated": "2026-01-19T15:48:25.638Z",
     "deployment": {
-      "timestamp": "2026-01-19T08:55:07.765Z",
-      "gitCommit": "4bde96991a539d89d60efa2cb2f8b7e5910aa69f",
+      "timestamp": "2026-01-19T15:48:25.639Z",
+      "gitCommit": "da7b7d414b2ee23246c8420c2a8b98f601b2bcf3",
       "gitBranch": "main"
     },
     "modules": {},
@@ -18,6 +18,13 @@
         "lastModified": "2026-01-16T06:23:20.165Z"
       },
       {
+        "path": "src/chat-assistant.ts",
+        "size": 4378,
+        "lines": 137,
+        "type": ".ts",
+        "lastModified": "2026-01-19T09:19:54.314Z"
+      },
+      {
         "path": "src/entry.ts",
         "size": 18356,
         "lines": 480,
@@ -26,10 +33,10 @@
       },
       {
         "path": "src/firebase-config.ts",
-        "size": 986,
-        "lines": 30,
+        "size": 1085,
+        "lines": 32,
         "type": ".ts",
-        "lastModified": "2026-01-18T16:19:43.826Z"
+        "lastModified": "2026-01-19T09:29:08.020Z"
       },
       {
         "path": "src/i18n.ts",
@@ -61,10 +68,10 @@
       },
       {
         "path": "src/mouthpiece.ts",
-        "size": 46100,
-        "lines": 1139,
+        "size": 51002,
+        "lines": 1229,
         "type": ".ts",
-        "lastModified": "2026-01-19T05:10:54.824Z"
+        "lastModified": "2026-01-19T15:39:49.161Z"
       },
       {
         "path": "src/nav-active.ts",
@@ -75,17 +82,17 @@
       },
       {
         "path": "src/phone-numbers.ts",
-        "size": 40223,
-        "lines": 883,
+        "size": 43356,
+        "lines": 946,
         "type": ".ts",
-        "lastModified": "2026-01-19T04:53:40.010Z"
+        "lastModified": "2026-01-19T14:39:30.400Z"
       },
       {
         "path": "src/reservation.ts",
-        "size": 76434,
-        "lines": 1932,
+        "size": 83896,
+        "lines": 2072,
         "type": ".ts",
-        "lastModified": "2026-01-19T05:10:56.276Z"
+        "lastModified": "2026-01-19T15:41:42.023Z"
       },
       {
         "path": "src/scam-check.ts",
@@ -110,10 +117,10 @@
       },
       {
         "path": "src/trial.ts",
-        "size": 26261,
-        "lines": 683,
+        "size": 33533,
+        "lines": 838,
         "type": ".ts",
-        "lastModified": "2026-01-19T05:10:17.877Z"
+        "lastModified": "2026-01-19T15:43:07.759Z"
       },
       {
         "path": "src/version.ts",
@@ -124,10 +131,10 @@
       },
       {
         "path": "functions/index.js",
-        "size": 59741,
-        "lines": 1337,
+        "size": 72150,
+        "lines": 1644,
         "type": ".js",
-        "lastModified": "2026-01-19T04:35:16.094Z"
+        "lastModified": "2026-01-19T15:38:21.666Z"
       },
       {
         "path": "admin/tasks.html",
@@ -137,88 +144,95 @@
         "lastModified": "2026-01-16T06:37:05.699Z"
       },
       {
-        "path": "dashboard.html",
-        "size": 32252,
-        "lines": 639,
+        "path": "components/chat-widget.html",
+        "size": 7049,
+        "lines": 283,
         "type": ".html",
-        "lastModified": "2026-01-19T03:08:09.726Z"
+        "lastModified": "2026-01-19T10:15:16.510Z"
+      },
+      {
+        "path": "dashboard.html",
+        "size": 40282,
+        "lines": 922,
+        "type": ".html",
+        "lastModified": "2026-01-19T10:15:57.332Z"
       },
       {
         "path": "dist/admin/tasks.html",
         "size": 15957,
         "lines": 569,
         "type": ".html",
-        "lastModified": "2026-01-19T05:17:27.705Z"
+        "lastModified": "2026-01-19T15:45:14.688Z"
       },
       {
         "path": "dist/dashboard.html",
-        "size": 32530,
-        "lines": 639,
+        "size": 40416,
+        "lines": 920,
         "type": ".html",
-        "lastModified": "2026-01-19T05:17:27.707Z"
+        "lastModified": "2026-01-19T15:45:14.690Z"
       },
       {
         "path": "dist/entry.html",
         "size": 9630,
         "lines": 164,
         "type": ".html",
-        "lastModified": "2026-01-19T05:17:27.707Z"
+        "lastModified": "2026-01-19T15:45:14.690Z"
       },
       {
         "path": "dist/login-success.html",
         "size": 1465,
         "lines": 57,
         "type": ".html",
-        "lastModified": "2026-01-19T05:17:27.707Z"
+        "lastModified": "2026-01-19T15:45:14.690Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_guide.html",
         "size": 14461,
         "lines": 442,
         "type": ".html",
-        "lastModified": "2026-01-19T05:17:27.521Z"
+        "lastModified": "2026-01-19T15:45:14.559Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_mobile.html",
         "size": 15624,
         "lines": 425,
         "type": ".html",
-        "lastModified": "2026-01-19T05:17:27.522Z"
+        "lastModified": "2026-01-19T15:45:14.560Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/dp_indexing_mobile_full.html",
         "size": 7293,
         "lines": 198,
         "type": ".html",
-        "lastModified": "2026-01-19T05:17:27.523Z"
+        "lastModified": "2026-01-19T15:45:14.561Z"
       },
       {
         "path": "dist/reservation/mouthpiece.html",
-        "size": 15112,
-        "lines": 272,
+        "size": 15660,
+        "lines": 285,
         "type": ".html",
-        "lastModified": "2026-01-19T05:17:27.705Z"
+        "lastModified": "2026-01-19T15:45:14.690Z"
       },
       {
         "path": "dist/reservation/restaurant_reservation.html",
-        "size": 25688,
-        "lines": 578,
+        "size": 24559,
+        "lines": 509,
         "type": ".html",
-        "lastModified": "2026-01-19T05:17:27.707Z"
+        "lastModified": "2026-01-19T15:45:14.690Z"
       },
       {
         "path": "dist/reservation/trial.html",
-        "size": 10081,
-        "lines": 212,
+        "size": 11387,
+        "lines": 235,
         "type": ".html",
-        "lastModified": "2026-01-19T05:17:27.707Z"
+        "lastModified": "2026-01-19T15:45:14.690Z"
       },
       {
         "path": "dist/resume/index.html",
         "size": 38970,
         "lines": 659,
         "type": ".html",
-        "lastModified": "2026-01-19T05:17:27.707Z"
+        "lastModified": "2026-01-19T15:45:14.688Z"
       },
       {
         "path": "entry.html",
@@ -264,24 +278,24 @@
       },
       {
         "path": "reservation/mouthpiece.html",
-        "size": 14588,
-        "lines": 266,
+        "size": 15215,
+        "lines": 280,
         "type": ".html",
-        "lastModified": "2026-01-19T05:09:27.727Z"
+        "lastModified": "2026-01-19T15:18:47.597Z"
       },
       {
         "path": "reservation/restaurant_reservation.html",
-        "size": 25242,
-        "lines": 573,
+        "size": 24192,
+        "lines": 505,
         "type": ".html",
-        "lastModified": "2026-01-19T05:09:29.874Z"
+        "lastModified": "2026-01-19T15:19:08.141Z"
       },
       {
         "path": "reservation/trial.html",
-        "size": 9635,
-        "lines": 207,
+        "size": 11020,
+        "lines": 231,
         "type": ".html",
-        "lastModified": "2026-01-19T05:08:57.965Z"
+        "lastModified": "2026-01-19T15:18:51.008Z"
       },
       {
         "path": "resume/index.html",
@@ -300,6 +314,8 @@
     ],
     "dependencies": {
       "production": {
+        "@google/generative-ai": "^0.24.1",
+        "@pinecone-database/pinecone": "^6.1.3",
         "firebase": "^12.7.0",
         "firebase-admin": "^13.6.0",
         "twilio": "^5.11.2"
@@ -316,8 +332,8 @@
     "cloud-functions": {
       "title": "Cloud Functions Module",
       "file": "modules/cloud-functions.md",
-      "size": 18684,
-      "lastModified": "2026-01-19T08:49:23.609Z"
+      "size": 18379,
+      "lastModified": "2026-01-19T15:43:34.822Z"
     },
     "i18n-system": {
       "title": "Internationalization (i18n) System Module",
@@ -346,8 +362,8 @@
     "task-system": {
       "title": "Task System Module",
       "file": "modules/task-system.md",
-      "size": 14119,
-      "lastModified": "2026-01-19T08:27:45.201Z"
+      "size": 14315,
+      "lastModified": "2026-01-19T15:43:52.301Z"
     },
     "user-management": {
       "title": "User Management Module",
