@@ -472,18 +472,25 @@ exports.getTransformedUsageHistory = onCall(
             const multiplier = billing.common_multiplier || 3.0;
 
             // Define categories to display.
-            // We include both high-level and common granular ones to ensure we don't hide data if high-level is missing.
-            // But we exclude 'totalprice' to avoid double-counting everything.
+            // STRICT list to prevent duplicates (e.g. 'sms' covers 'sms-inbound' and 'sms-inbound-longcode')
+            // Debugging confirmed that 'daily' records include these high-level aggregates.
             const ALLOWED_CATEGORIES = new Set([
-                "calls", "calls-inbound", "calls-outbound",
-                "sms", "sms-inbound", "sms-outbound",
-                "phonenumbers", "phonenumbers-local", "phonenumbers-mobile", "phonenumbers-tollfree",
+                "calls",
+                "sms",
+                "mms",
+                "phonenumbers",
+                "phonenumbers-local", // Keep just in case generic is missing, but usually 'phonenumbers' covers it? 
+                // Debug showed 'phonenumbers' exists. But let's keep 'phonenumbers-local' just in case of specific types if 'phonenumbers' is 0?
+                // Actually debug showed: phonenumbers ($1.15) AND phonenumbers-local ($1.15).
+                // So we MUST remove phonenumbers-local to avoid duplicate!
+                // "phonenumbers-local", "phonenumbers-mobile", "phonenumbers-tollfree",
                 "recordings",
                 "voice-insights",
                 "monitor-storage",
-                "trunking-origination", "trunking-termination"
+                // "trunking-origination", "trunking-termination" // trunking often overlaps with calls? or separate?
+                // Trunking is SIP. If using SIP, it might be separate. But 'calls' might include it?
+                // Safest to keep trunking if they use it, but maybe hidden if 0.
             ]);
-
             // Helper to transform records
             const transformRecords = (recs) => {
                 return recs.map(r => ({
@@ -499,11 +506,10 @@ exports.getTransformedUsageHistory = onCall(
                 }))
                     .filter(r => r.user_price > 0.001)
                     .filter(r => {
+                        // Strict Allow Check
                         if (ALLOWED_CATEGORIES.has(r.category)) return true;
-                        if (r.category === 'totalprice') return false;
-                        return true;
-                    })
-                    .filter(r => r.category !== 'totalprice'); // Ensure totalprice is always removed
+                        return false;
+                    });
             };
 
             let usage = transformRecords(records);
