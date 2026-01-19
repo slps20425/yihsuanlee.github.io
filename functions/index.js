@@ -448,8 +448,23 @@ exports.getTransformedUsageHistory = onCall(
 
             const subClient = twilio(settings.twilioSubaccountSid, settings.twilioSubaccountAuthToken);
 
-            // Fetch DAILY usage records (last 90 days roughly, limit higher to catch multiple categories per day)
-            const records = await subClient.usage.records.daily.list({ limit: 100 });
+            // Calculate 30 days ago for explicit range
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const startDateStr = thirtyDaysAgo.toISOString().split('T')[0]; // YYYY-MM-DD
+
+            // Fetch DAILY usage records provided explicit start date
+            let records = await subClient.usage.records.daily.list({
+                startDate: startDateStr,
+                limit: 100
+            });
+
+            // Fallback: If no daily records found (sometimes takes time to populate or API quirk),
+            // fetch the "All Time" summary so the user at least sees their balance/charges.
+            if (!records || records.length === 0) {
+                console.log("[Usage] Daily records empty, fetching summary fallback.");
+                records = await subClient.usage.records.list({ limit: 50 });
+            }
 
             const billing = await getBillingConfig(db);
             const multiplier = billing.common_multiplier || 3.0;
