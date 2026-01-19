@@ -2620,3 +2620,45 @@ body.dashboard-layout {
         align-items: stretch !important;
     }
 }
+
+/* Optimize mobile navigation - reduce sizes to fit more items */
+@media (max-width: 1023px) {
+    .bottom-nav .nav-item {
+        min-height: 44px !important;
+        padding: 0.5rem 1rem !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .bottom-nav .nav-icon {
+        font-size: 1.2rem !important;
+    }
+    
+    .bottom-nav .nav-label {
+        font-size: 0.85rem !important;
+    }
+    
+    /* Reduce dropdown item sizes */
+    .nav-dropdown-item {
+        padding: 0.5rem 1rem !important;
+        padding-left: 2.5rem !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .nav-dropdown-item .nav-icon {
+        font-size: 1rem !important;
+    }
+    
+    /* Reduce user section size */
+    .sidebar-user-section {
+        padding: 0.75rem !important;
+    }
+    
+    .sidebar-user-info img {
+        width: 36px !important;
+        height: 36px !important;
+    }
+    
+    .sidebar-user-text {
+        font-size: 0.85rem !important;
+    }
+}
