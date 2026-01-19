@@ -2754,3 +2754,11 @@ body.dashboard-layout {
         padding-left: 65px !important;
     }
 }
+
+/* Reduce mobile sidebar width to 200px */
+@media (max-width: 1023px) {
+    .bottom-nav {
+        width: 200px !important;
+        max-width: 75% !important;
+    }
+}
