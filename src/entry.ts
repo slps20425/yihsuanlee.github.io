@@ -26,6 +26,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize i18n explicitly
     WiseCatI18n.init();
 
+    // CRITICAL FIX: Clear stale auth flags if user is NOT logged in
+    // This prevents the "redirect_handled" flag from blocking re-login after logout
+    authLog('🔍 Checking for stale auth flags on entry page load...');
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        const hadStaleFlags = sessionStorage.getItem(AUTH_REDIRECT_HANDLED_KEY) ||
+            sessionStorage.getItem(AUTH_PROCESSING_KEY);
+        if (hadStaleFlags) {
+            authLog('🧹 Clearing stale auth flags (user not logged in)');
+            sessionStorage.removeItem(AUTH_REDIRECT_HANDLED_KEY);
+            sessionStorage.removeItem(AUTH_PROCESSING_KEY);
+            sessionStorage.setItem(AUTH_STATE_KEY, 'idle');
+        } else {
+            authLog('✅ No stale flags found');
+        }
+    } else {
+        authLog('ℹ️ User already logged in, keeping auth state');
+    }
+
     // Check if returning from a redirect login
     checkRedirectResult();
 
@@ -282,14 +301,23 @@ function handleLineLogin() {
 }
 
 function logout() {
+    authLog('👋 Logout initiated');
     signOut(auth)
         .then(() => {
-            console.log('User signed out.');
+            authLog('✅ Firebase signOut successful');
+            // Clear user data
             localStorage.removeItem('wisecat_user');
+            // CRITICAL: Clear all auth state flags to allow re-login
+            authLog('🧹 Clearing all auth state flags');
+            sessionStorage.removeItem(AUTH_REDIRECT_HANDLED_KEY);
+            sessionStorage.removeItem(AUTH_PROCESSING_KEY);
+            sessionStorage.removeItem(AUTH_STATE_KEY);
             // Redirect to entry page
+            authLog('🔄 Redirecting to entry page');
             window.location.href = '/entry.html';
         })
         .catch((error: any) => {
+            authLog('❌ Sign out error:', error);
             console.error('Sign out error', error);
         });
 }
