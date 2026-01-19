@@ -2739,3 +2739,18 @@ body.dashboard-layout {
         padding: 0.3rem 0.5rem !important;
     }
 }
+
+/* Fix hamburger positioning - use top-header instead of header */
+@media (max-width: 1023px) {
+    .hamburger-menu {
+        position: fixed !important;
+        top: 15px !important;
+        left: 15px !important;
+        transform: none !important;
+        z-index: 10001 !important;
+    }
+    
+    .top-header {
+        padding-left: 65px !important;
+    }
+}
