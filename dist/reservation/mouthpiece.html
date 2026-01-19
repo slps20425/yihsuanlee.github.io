@@ -29,14 +29,13 @@
             display: block;
         }
     </style>
-  <script type="module" crossorigin src="/assets/mouthpiece-DzGfbS3b.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-CzG3mkee.js">
-  <link rel="modulepreload" crossorigin href="/assets/i18n-BAi60655.js">
+  <script type="module" crossorigin src="/assets/mouthpiece-ChPQ96X-.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-BdKKplyx.js">
+  <link rel="modulepreload" crossorigin href="/assets/i18n-3bEdaJhx.js">
   <link rel="modulepreload" crossorigin href="/assets/version-DCg5g3Z2.js">
-  <link rel="modulepreload" crossorigin href="/assets/firebase-config-ebcnco9P.js">
+  <link rel="modulepreload" crossorigin href="/assets/firebase-config-BVuuoQhp.js">
   <link rel="modulepreload" crossorigin href="/assets/timezones-DRXziDFl.js">
-  <link rel="modulepreload" crossorigin href="/assets/scam-check-uUnS0lE2.js">
-  <link rel="stylesheet" crossorigin href="/assets/i18n-ByI8ZRLs.css">
+  <link rel="stylesheet" crossorigin href="/assets/i18n-DtTR3GGU.css">
 </head>
 
 <body class="dashboard-layout">
@@ -265,6 +264,20 @@
             <span class="helper-close" id="helperClose">✕</span>
         </div>
         <!-- Examples are rendered dynamically from i18n.js -->
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 data-i18n="modal_confirm_title">Confirm Selection</h3>
+            <div id="confirmDetails" class="modal-details">
+                <!-- Details injected here -->
+            </div>
+            <div class="modal-actions">
+                <button id="modalCancel" class="modal-btn cancel" data-i18n="modal_cancel_btn">Cancel</button>
+                <button id="modalConfirm" class="modal-btn confirm" data-i18n="modal_confirm_btn">Confirm</button>
+            </div>
+        </div>
     </div>
 
 </body>

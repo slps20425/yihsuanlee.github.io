@@ -16,6 +16,7 @@ const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
 const VAPI_API_KEY = defineSecret("VAPI_API_KEY");
+const PINECONE_API_KEY = defineSecret("PINECONE_API_KEY");
 
 // ... (Existing code remains the same until exports.checkMessageSafety)
 
@@ -24,71 +25,7 @@ const { getFirestore } = require("firebase-admin/firestore"); // Import getFires
 
 // ...
 
-exports.checkMessageSafety = onCall({ secrets: [OPENAI_API_KEY] }, async (request) => {
-    try {
-        const { text } = request.data;
-        if (!text) throw new HttpsError("invalid-argument", "Text is required.");
-
-        console.log(`[Security Check] Analyzing text: "${text.substring(0, 50)}..."`);
-
-        // 1. FIREBASE KEYWORD CHECK (Local/Fast) - "reservation" database
-        let blacklist = [];
-        try {
-            const db = getFirestore(admin.app(), "reservation");
-            const settings = await db.doc("configuration/settings").get();
-            const data = settings.data() || {};
-            const customKeywords = data.custom_scam_keywords || "";
-
-            if (Array.isArray(customKeywords)) {
-                blacklist = customKeywords.map(k => String(k).trim().toLowerCase());
-            } else {
-                blacklist = String(customKeywords).split(/[\n,]+/).map(k => k.trim().toLowerCase()).filter(k => k.length > 0);
-            }
-            console.log(`[Security Check] Loaded ${blacklist.length} rules from Firestore.`);
-        } catch (e) {
-            console.error("[Security Check] Firestore Policy Read Error (Falling back to default list):", e);
-        }
-
-        // Hardcoded Fallback (Golden List)
-        const fallbackKeywords = [
-            "crypto", "investment", "profit", "jackpot", "lottery", "giveaway",
-            "投資獲利", "加賴", "加line", "兼職", "獲利", "高報酬", "博弈"
-        ];
-
-        const combined = new Set([...blacklist, ...fallbackKeywords]);
-        const lowerText = text.toLowerCase();
-
-        for (const word of combined) {
-            if (lowerText.includes(word)) {
-                console.warn(`[Security Check] BLOCKED: Found keyword "${word}"`);
-                return { status: "blocked", reason: `Keyword Match: ${word}` };
-            }
-        }
-
-        // 2. OPENAI MODERATION API
-        try {
-            const openai = new OpenAI({ apiKey: OPENAI_API_KEY.value() });
-            const moderation = await openai.moderations.create({
-                model: "omni-moderation-latest",
-                input: text,
-            });
-            const result = moderation.results[0];
-            if (result.flagged || result.categories.illicit || result.categories['illicit/violent']) {
-                console.warn("[Security Check] BLOCKED: OpenAI Flagged");
-                return { status: "blocked", reason: "AI Security Block" };
-            }
-        } catch (aiError) {
-            console.error("[Security Check] OpenAI API Fail:", aiError);
-            // Fail open (safe) if AI fails
-        }
-
-        return { status: "safe" };
-
-    } catch (criticalError) {
-        console.error("[Security Check] CRITICAL FUNC ERROR:", criticalError);
-        return { status: "safe", warning: "System Error - Failed Open" };
-    }
-});
+// checkMessageSafety logic merged into validateMissionDescription to reduce cloud invocation costs.
 
 // Global set for debouncing duplicate requests
 const processedCodes = new Set();
@@ -371,13 +308,61 @@ async function getBillingConfig(db) {
         return data.billing || {
             number_multiplier: 2.0,
             common_multiplier: 3.0,
+            sms_common_multiplier: 2.0,
             services: { mouthpiece: 4.0, restaurant: 4.0 },
             country_multipliers: {}
         };
     } catch (e) {
         console.error("Error fetching billing config:", e);
-        return { number_multiplier: 2.0, common_multiplier: 3.0, services: {}, country_multipliers: {} };
+        return {
+            number_multiplier: 2.0,
+            common_multiplier: 3.0,
+            sms_common_multiplier: 2.0,
+            services: {},
+            country_multipliers: {}
+        };
     }
+}
+
+const PRICING_CACHE_TTL = 86400000; // 24 hours
+
+/**
+ * Helper to cache Twilio pricing in Firestore to reduce API calls and costs
+ */
+async function withPricingCache(db, country, type, fetchFn) {
+    const countryUpper = country.toUpperCase();
+    const cacheRef = db.doc(`configuration/pricing_cache/countries/${countryUpper}_${type}`);
+
+    try {
+        const snap = await cacheRef.get();
+        const now = Date.now();
+
+        if (snap.exists) {
+            const data = snap.data();
+            // Use cache if within TTL (24 hours)
+            if (data.lastUpdated && (now - data.lastUpdated < PRICING_CACHE_TTL)) {
+                console.log(`[PricingCache] HIT for ${countryUpper}_${type}`);
+                return data.payload;
+            }
+        }
+    } catch (e) {
+        console.error(`[PricingCache] Read error for ${countryUpper}_${type}:`, e);
+    }
+
+    console.log(`[PricingCache] MISS/STALE for ${countryUpper}_${type}. Fetching fresh data...`);
+    const payload = await fetchFn();
+
+    try {
+        await cacheRef.set({
+            payload,
+            lastUpdated: Date.now(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+    } catch (e) {
+        console.error(`[PricingCache] Write error for ${countryUpper}_${type}:`, e);
+    }
+
+    return payload;
 }
 
 /**
@@ -392,35 +377,85 @@ exports.getCallRates = onCall(
 
         try {
             const billing = await getBillingConfig(db);
-            // Case-insensitive lookup for country multiplier
             const countryKey = Object.keys(billing.country_multipliers || {}).find(k => k.toUpperCase() === country.toUpperCase());
             const multiplier = countryKey ? billing.country_multipliers[countryKey] : (billing.common_multiplier || 3.0);
 
-            const client = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
-            // Fetch Voice Pricing
-            const pricing = await client.pricing.v1.voice.countries(country).fetch();
+            const pricingData = await withPricingCache(db, country, 'voice', async () => {
+                const client = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
+                const pricing = await client.pricing.v1.voice.countries(country).fetch();
+                return {
+                    currency: pricing.priceUnit,
+                    outbound: pricing.outboundPrefixPrices.map(p => ({
+                        prefix: p.prefixes[0],
+                        base_price: parseFloat(p.currentPrice || p.current_price || 0),
+                        friendly_name: p.friendlyName
+                    })).slice(0, 50),
+                    inbound: pricing.inboundCallPrices.map(p => ({
+                        type: p.numberType,
+                        base_price: parseFloat(p.currentPrice || p.current_price || 0),
+                        description: "Per minute cost to receive"
+                    }))
+                };
+            });
 
             return {
                 country,
-                currency: pricing.priceUnit,
+                currency: pricingData.currency,
                 multiplier,
-                outbound: pricing.outboundPrefixPrices.map(p => ({
-                    prefix: p.prefixes[0],
-                    base_price: parseFloat(p.currentPrice || p.current_price || 0), // Try both casing
-                    user_price: parseFloat(p.currentPrice || p.current_price || 0) * multiplier,
-                    friendly_name: p.friendlyName,
-                    debug_raw_price: p.currentPrice // Temporary debug
-                })).slice(0, 50), // Limit to top 50 to avoid huge payload
-                inbound: pricing.inboundCallPrices.map(p => ({
-                    type: p.numberType, // e.g., "local", "mobile"
-                    base_price: parseFloat(p.currentPrice || p.current_price || 0),
-                    user_price: parseFloat(p.currentPrice || p.current_price || 0) * multiplier,
-                    description: "Per minute cost to receive",
-                    debug_raw_price: p.currentPrice // Temporary debug
+                outbound: pricingData.outbound.map(p => ({
+                    ...p,
+                    user_price: p.base_price * multiplier
+                })),
+                inbound: pricingData.inbound.map(p => ({
+                    ...p,
+                    user_price: p.base_price * multiplier
                 }))
             };
         } catch (e) {
             console.error("[getCallRates] Error:", e);
+            throw new HttpsError("internal", e.message);
+        }
+    }
+);
+
+/**
+ * Get SMS Rates
+ */
+exports.getSMSRates = onCall(
+    { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN] },
+    async (request) => {
+        if (!request.auth) throw new HttpsError("unauthenticated", "Auth required");
+        const { country = 'US' } = request.data;
+        const db = getFirestore(admin.app(), "reservation");
+
+        try {
+            const billing = await getBillingConfig(db);
+            const smsMultiplier = billing.sms_common_multiplier || 2.0;
+
+            const pricingData = await withPricingCache(db, country, 'messaging', async () => {
+                const client = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
+                const pricing = await client.pricing.v1.messaging.countries(country).fetch();
+                return {
+                    currency: pricing.priceUnit,
+                    rates: (pricing.inboundSmsPrices || []).map(p => ({
+                        type: p.numberType,
+                        base_price: parseFloat(p.currentPrice || p.current_price || 0),
+                        description: "Cost per inbound SMS"
+                    }))
+                };
+            });
+
+            return {
+                country,
+                currency: pricingData.currency,
+                multiplier: smsMultiplier,
+                rates: pricingData.rates.map(p => ({
+                    ...p,
+                    user_price: p.base_price * smsMultiplier
+                }))
+            };
+        } catch (e) {
+            console.error("[getSMSRates] Error:", e);
             throw new HttpsError("internal", e.message);
         }
     }
@@ -1197,69 +1232,136 @@ exports.validateMissionDescription = onCall(
         }
 
         try {
-            const { GoogleGenerativeAI } = require("@google/generative-ai");
+            // --- 1. Combined Security Check (Keywords + OpenAI) ---
+            const { getFirestore } = require("firebase-admin/firestore");
+            const OpenAI = require("openai");
 
-            // Initialize Gemini with the secret API key
+            // Keyword Check
+            let blacklist = [];
+            try {
+                const adminApp = require("firebase-admin").app();
+                const dbRes = getFirestore(adminApp, "reservation");
+                const settings = await dbRes.doc("configuration/settings").get();
+                const configData = settings.data() || {};
+                const customKeywords = configData.custom_scam_keywords || "";
+
+                if (Array.isArray(customKeywords)) {
+                    blacklist = customKeywords.map(k => String(k).trim().toLowerCase());
+                } else {
+                    blacklist = String(customKeywords).split(/[\n,]+/).map(k => k.trim().toLowerCase()).filter(k => k.length > 0);
+                }
+            } catch (e) {
+                console.error("[Backend Validation] Firestore Policy Read Error:", e);
+            }
+
+            const fallbackKeywords = ["crypto", "investment", "profit", "jackpot", "lottery", "giveaway", "投資獲利", "加賴", "加line", "兼職", "獲利", "高報酬", "博弈"];
+            const combinedKeywords = new Set([...blacklist, ...fallbackKeywords]);
+            const lowerText = description.toLowerCase();
+
+            for (const word of combinedKeywords) {
+                if (lowerText.includes(word)) {
+                    console.warn(`[Backend Validation] BLOCKED: Found keyword "${word}"`);
+                    return { valid: false, explanation: `Security Block: Found suspicious keyword "${word}".` };
+                }
+            }
+
+            // OpenAI Moderation
+            try {
+                const openai = new OpenAI({ apiKey: OPENAI_API_KEY.value() });
+                const moderation = await openai.moderations.create({
+                    model: "omni-moderation-latest",
+                    input: description,
+                });
+                const modResult = moderation.results[0];
+                if (modResult.flagged || modResult.categories.illicit || modResult.categories['illicit/violent']) {
+                    console.warn("[Backend Validation] BLOCKED: OpenAI Flagged");
+                    return { valid: false, explanation: "Security Block: Content violated safety policies." };
+                }
+            } catch (aiError) {
+                console.error("[Backend Validation] OpenAI API Fail:", aiError);
+            }
+
+            // --- 2. AI Refinement (Gemini) ---
+            const { GoogleGenerativeAI } = require("@google/generative-ai");
             const genAI = new GoogleGenerativeAI(GEMINI_API_KEY.value());
 
-            // Use gemini-2.5-flash-lite (not the deprecated 1.5 version)
             const model = genAI.getGenerativeModel({
-                model: "gemini-2.5-flash-lite",
+                model: "gemini-2.0-flash-lite",
                 generationConfig: {
-                    temperature: 0.1,
-                    maxOutputTokens: 10,
+                    temperature: 0.2,
+                    maxOutputTokens: 800,
+                    responseMimeType: "application/json"
                 }
             });
 
-            // Language-specific instructions
             const systemInstructions = {
-                en: "You are a task validator. Determine if the description matches the mission category.",
-                zh: "你是任務審核員。判斷描述內容是否屬於該任務類別。",
-                jp: "あなたはタスク検証者です。説明が任務カテゴリーと一致するかどうかを判断してください。",
-                kr: "당신은 작업 검證자입니다. 설명이 임무 카테고리와 일치하는지 판단하세요.",
-                es: "Eres un validador de tareas. Determina si la descripción coincide con la categoría de misión.",
-                fr: "Vous êtes un validateur de tâches. Déterminez si la description correspond à la catégorie de mission.",
-                it: "Sei un validatore di compiti. Determina se la descrizione corrisponde alla categoria della missione."
+                en: "You are a professional task assistant. Validate the description and provide a more professional version.",
+                zh: "你是專業任務助手。請驗證描述內容，並提供一個更專業的版本。",
+                jp: "あなたはプロのタスクアシスタントです。説明を検証し、よりプロフェッショナルな版本を提供してください。",
+                kr: "당신은 전문 작업 조수입니다. 설명을 검증하고 더專業적인 버전을 제공하세요.",
+                es: "Eres un asistente de tareas profesional. Valida la descripción y proporciona una versión más profesional.",
+                fr: "Vous êtes un assistant de tâche professionnel. Validez la description et fournissez une version plus professionnelle.",
+                it: "Sei un assistente di compiti professionale. Valida la descrizione e fornisci una versione più professionale."
             };
 
             const instruction = systemInstructions[language] || systemInstructions.en;
 
             const prompt = `${instruction}
 
-Mission: ${missionName}
-Description: ${description}
+Mission Category: ${missionName}
+User's Description: ${description}
 
 Instructions:
-- If the description clearly relates to the mission, respond: MATCH
-- If the description does NOT relate to the mission, respond: NOT_MATCH
-- Be somewhat lenient - if there's reasonable connection, say MATCH
+1. Determine if the description matches the mission category (be lenient but ensure relevance).
+2. If it matches, provide a "refinedText" that is a professional, grammatically correct version optimized for a phone call (spoken style).
+   - **CRITICAL**: Remove filler words, stuttering, and informal interjections (e.g., "uh", "um", "俄", "呃", "欸").
+   - Fix all grammar errors, typos, and spelling mistakes (e.g., "我得" -> "我的", "ㄋ" -> "你").
+   - Elevate the tone to be polite and professional, but keep it natural for a phone conversation.
+   - If the original text is already perfect, "refinedText" can be identical.
+3. Provide a brief "explanation" of the improvements made or confirm why it's already professional.
+4. Response MUST be in the same language as the User's Description.
 
-Respond with ONLY the word "MATCH" or "NOT_MATCH". Nothing else.`;
+Return ONLY a JSON object:
+{
+  "valid": boolean,
+  "refinedText": "string",
+  "explanation": "string"
+}
+`;
 
-            // Call Gemini AI
             const result = await model.generateContent(prompt);
-            const response = result.response.text().trim().toUpperCase();
+            let responseText = result.response.text().trim();
 
-            // Parse response
-            const isMatch = response.includes("MATCH") && !response.includes("NOT_MATCH");
+            if (responseText.startsWith("```json")) {
+                responseText = responseText.replace(/```json|```/g, "").trim();
+            }
 
-            // Log for monitoring
+            let aiResult;
+            try {
+                aiResult = JSON.parse(responseText);
+            } catch (e) {
+                console.error("Failed to parse Gemini JSON:", responseText);
+                aiResult = {
+                    valid: responseText.toUpperCase().includes("TRUE"),
+                    refinedText: description,
+                    explanation: "AI feedback malformed."
+                };
+            }
+
             console.log({
                 missionId,
                 missionName,
-                descriptionLength: description.length,
-                result: isMatch ? "MATCH" : "NOT_MATCH",
+                description,
+                refinedText: aiResult.refinedText,
+                valid: aiResult.valid,
                 userId: request.auth?.uid || "anonymous"
             });
 
-            return {
-                valid: isMatch
-            };
+            return aiResult;
 
         } catch (error) {
-            console.error("Gemini API Error:", error);
-            console.warn("Validation failed, allowing request to proceed");
-            return { valid: true };
+            console.error("Validation Logic Error:", error);
+            return { valid: true, refinedText: description, explanation: "System error occurred." };
         }
     }
 );
@@ -1334,3 +1436,208 @@ exports.twilioInboundWebhook = onRequest(async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+
+// ============================================================================
+// RAG Chatbot - Knowledge Query Function
+// ============================================================================
+
+/**
+ * Query the knowledge base using RAG (Retrieval Augmented Generation)
+ * Uses Gemini Flash for embeddings and LLM, Pinecone for vector search
+ * Includes rate limiting (5 questions/hour) and smart filtering
+ */
+exports.queryKnowledge = onCall(
+    {
+        secrets: [GEMINI_API_KEY, PINECONE_API_KEY],
+        cors: true
+    },
+    async (request) => {
+        try {
+            // Authentication check
+            if (!request.auth) {
+                throw new HttpsError("unauthenticated", "Please sign in to use the chatbot");
+            }
+
+            const { question } = request.data;
+            const userId = request.auth.uid;
+
+            if (!question || question.trim().length === 0) {
+                throw new HttpsError("invalid-argument", "Question is required");
+            }
+
+            console.log(`[queryKnowledge] User: ${userId}, Question: "${question}"`);
+
+            // Correct way to access a named database in Firebase Admin SDK
+            const reservationDb = getFirestore("reservation");
+
+            // Rate limiting: 5 questions per hour
+            const rateLimitRef = reservationDb.collection('chatbot_rate_limits').doc(userId);
+            const rateLimitDoc = await rateLimitRef.get();
+            const now = Date.now();
+            const oneHour = 3600000; // 1 hour in ms
+
+            let queryHistory = [];
+            if (rateLimitDoc.exists) {
+                queryHistory = rateLimitDoc.data().queries || [];
+                // Filter queries in last hour
+                queryHistory = queryHistory.filter(t => now - t < oneHour);
+            }
+
+            if (queryHistory.length >= 5) {
+                throw new HttpsError(
+                    'resource-exhausted',
+                    'You have reached the limit of 5 questions per hour. Please try again later.'
+                );
+            }
+
+            // Initialize clients
+            const { GoogleGenerativeAI } = require('@google/generative-ai');
+            const { Pinecone } = require('@pinecone-database/pinecone');
+
+            const genAI = new GoogleGenerativeAI(GEMINI_API_KEY.value());
+            const pinecone = new Pinecone({ apiKey: PINECONE_API_KEY.value() });
+            const index = pinecone.index('wisecat-knowledge');
+
+            // 1. Embed the question using Gemini (FREE!)
+            const embeddingModel = genAI.getGenerativeModel({ model: 'text-embedding-004' });
+            const embeddingResult = await embeddingModel.embedContent(question);
+            const questionEmbedding = embeddingResult.embedding.values;
+
+            // 2. Search Pinecone for relevant chunks
+            const searchResults = await index.query({
+                vector: questionEmbedding,
+                topK: 3,
+                includeMetadata: true
+            });
+
+            console.log(`[queryKnowledge] Found ${searchResults.matches.length} matches`);
+
+            // 3. LAYER 1: Check relevance threshold
+            const topScore = searchResults.matches[0]?.score || 0;
+            console.log(`[queryKnowledge] Top relevance score: ${topScore.toFixed(3)}`);
+
+            if (topScore < 0.5) {
+                console.log(`[queryKnowledge] ❌ Rejected: Low relevance (${topScore.toFixed(3)})`);
+                return {
+                    answer: "I'm sorry, but I can only help with questions about the **WiseCat platform**.\n\nI can assist you with:\n- 💰 Credits and billing\n- 📞 Making calls (Mouthpiece, Trial, Restaurant)\n- 📱 Phone number management\n- 🔐 Account and login issues\n- 📝 Writing AI scripts\n- 🔧 Troubleshooting\n\nPlease ask a question related to WiseCat!",
+                    isOffTopic: true,
+                    relevanceScore: topScore
+                };
+            }
+
+            // 4. Build context from top results
+            const context = searchResults.matches
+                .map(match => match.metadata.content)
+                .join('\n\n---\n\n');
+
+            // 5. LAYER 2: System instruction with strict rules
+            const systemInstruction = `You are a helpful assistant ONLY for the WiseCat platform.
+
+STRICT RULES:
+1. ONLY answer questions about WiseCat features, services, and usage
+2. If asked about anything else (weather, news, general knowledge, jokes, etc.), respond with: "I can only help with WiseCat platform questions."
+3. Be concise and helpful for WiseCat-related questions
+4. Use markdown formatting for better readability
+5. Include relevant links when helpful
+
+WiseCat Topics You CAN Answer:
+- Credits and billing
+- Making calls (Mouthpiece, Trial, Restaurant)
+- Phone number management
+- Account and login issues
+- AI script writing
+- Features and services
+- Troubleshooting
+- N8N workflows
+- Cloud Functions
+- i18n and languages
+
+Topics You MUST REFUSE:
+- Weather, news, current events
+- General knowledge questions
+- Jokes, stories, entertainment
+- Cooking, recipes
+- Math problems (unless WiseCat pricing)
+- Any non-WiseCat topics
+
+If unsure, refuse politely.`;
+
+            // 6. Generate answer with Gemini 2.5 Flash-Lite (with Retry Logic)
+            const chatModel = genAI.getGenerativeModel({
+                model: 'gemini-2.5-flash-lite'
+            });
+
+            const prompt = `${systemInstruction}\n\nContext from WiseCat documentation:\n\n${context}\n\nUser Question: ${question}\n\nProvide a helpful answer based on the context above. If the question is not related to WiseCat, politely refuse.`;
+
+            // Robust retry wrapper for 429s
+            async function generateWithRetry(model, prompt, maxRetries = 3) {
+                for (let i = 0; i < maxRetries; i++) {
+                    try {
+                        const result = await model.generateContent(prompt);
+                        return result.response.text();
+                    } catch (err) {
+                        if (err.status === 429 && i < maxRetries - 1) {
+                            const delay = (i + 1) * 2000; // 2s, 4s, 6s...
+                            console.warn(`[queryKnowledge] Rate limit hit. Retrying in ${delay}ms...`);
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue;
+                        }
+                        throw err;
+                    }
+                }
+            }
+
+            const answer = await generateWithRetry(chatModel, prompt);
+
+            // 7. LAYER 3: Check if Gemini refused
+            const refusalKeywords = [
+                "I can only help with WiseCat",
+                "not related to WiseCat",
+                "outside my scope",
+                "I cannot assist with"
+            ];
+
+            const isRefusal = refusalKeywords.some(keyword =>
+                answer.toLowerCase().includes(keyword.toLowerCase())
+            );
+
+            if (isRefusal) {
+                console.log(`[queryKnowledge] ❌ Rejected: Gemini detected off-topic`);
+                return {
+                    answer: "I'm sorry, but I can only help with questions about the **WiseCat platform**. Please ask about our features, services, or how to use WiseCat!",
+                    isOffTopic: true,
+                    relevanceScore: topScore
+                };
+            }
+
+            // 8. Update rate limit
+            await rateLimitRef.set({
+                queries: [...queryHistory, now],
+                lastQuery: now
+            });
+
+            console.log(`[queryKnowledge] ✅ Answer generated (${answer.length} chars)`);
+
+            return {
+                answer,
+                sources: searchResults.matches.map(m => ({
+                    path: m.metadata.path,
+                    type: m.metadata.documentType,
+                    relevance: m.score
+                })),
+                relevanceScore: topScore,
+                isOffTopic: false,
+                queriesRemaining: 5 - queryHistory.length - 1
+            };
+
+        } catch (error) {
+            console.error("[queryKnowledge] Error:", error);
+
+            if (error.code === 'resource-exhausted') {
+                throw error; // Re-throw rate limit errors
+            }
+
+            throw new HttpsError("internal", "Failed to process your question. Please try again.");
+        }
+    }
+);

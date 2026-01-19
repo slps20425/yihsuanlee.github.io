@@ -260,6 +260,20 @@
         <!-- Examples are rendered dynamically from i18n.js -->
     </div>
 
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 data-i18n="modal_confirm_title">Confirm Selection</h3>
+            <div id="confirmDetails" class="modal-details">
+                <!-- Details injected here -->
+            </div>
+            <div class="modal-actions">
+                <button id="modalCancel" class="modal-btn cancel" data-i18n="modal_cancel_btn">Cancel</button>
+                <button id="modalConfirm" class="modal-btn confirm" data-i18n="modal_confirm_btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="../src/mouthpiece.ts"></script>
 </body>
 

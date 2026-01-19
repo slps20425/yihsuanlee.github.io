@@ -1,0 +1,367 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-01-19T08:55:07.831Z",
+  "metadata": {
+    "lastUpdated": "2026-01-19T08:55:07.764Z",
+    "deployment": {
+      "timestamp": "2026-01-19T08:55:07.765Z",
+      "gitCommit": "4bde96991a539d89d60efa2cb2f8b7e5910aa69f",
+      "gitBranch": "main"
+    },
+    "modules": {},
+    "files": [
+      {
+        "path": "src/admin/tasks.ts",
+        "size": 16617,
+        "lines": 457,
+        "type": ".ts",
+        "lastModified": "2026-01-16T06:23:20.165Z"
+      },
+      {
+        "path": "src/entry.ts",
+        "size": 18356,
+        "lines": 480,
+        "type": ".ts",
+        "lastModified": "2026-01-19T02:48:41.344Z"
+      },
+      {
+        "path": "src/firebase-config.ts",
+        "size": 986,
+        "lines": 30,
+        "type": ".ts",
+        "lastModified": "2026-01-18T16:19:43.826Z"
+      },
+      {
+        "path": "src/i18n.ts",
+        "size": 51264,
+        "lines": 1006,
+        "type": ".ts",
+        "lastModified": "2026-01-18T14:07:27.066Z"
+      },
+      {
+        "path": "src/inbox.ts",
+        "size": 10467,
+        "lines": 276,
+        "type": ".ts",
+        "lastModified": "2026-01-19T05:17:21.623Z"
+      },
+      {
+        "path": "src/login-success.ts",
+        "size": 3851,
+        "lines": 81,
+        "type": ".ts",
+        "lastModified": "2026-01-17T05:16:41.752Z"
+      },
+      {
+        "path": "src/mission-scenarios.ts",
+        "size": 11744,
+        "lines": 238,
+        "type": ".ts",
+        "lastModified": "2026-01-17T15:53:50.247Z"
+      },
+      {
+        "path": "src/mouthpiece.ts",
+        "size": 46100,
+        "lines": 1139,
+        "type": ".ts",
+        "lastModified": "2026-01-19T05:10:54.824Z"
+      },
+      {
+        "path": "src/nav-active.ts",
+        "size": 911,
+        "lines": 22,
+        "type": ".ts",
+        "lastModified": "2026-01-17T16:12:09.713Z"
+      },
+      {
+        "path": "src/phone-numbers.ts",
+        "size": 40223,
+        "lines": 883,
+        "type": ".ts",
+        "lastModified": "2026-01-19T04:53:40.010Z"
+      },
+      {
+        "path": "src/reservation.ts",
+        "size": 76434,
+        "lines": 1932,
+        "type": ".ts",
+        "lastModified": "2026-01-19T05:10:56.276Z"
+      },
+      {
+        "path": "src/scam-check.ts",
+        "size": 3044,
+        "lines": 87,
+        "type": ".ts",
+        "lastModified": "2026-01-15T14:48:24.789Z"
+      },
+      {
+        "path": "src/session-timeout.ts",
+        "size": 5461,
+        "lines": 170,
+        "type": ".ts",
+        "lastModified": "2026-01-19T01:01:49.252Z"
+      },
+      {
+        "path": "src/timezones.ts",
+        "size": 7259,
+        "lines": 253,
+        "type": ".ts",
+        "lastModified": "2026-01-11T03:51:37.656Z"
+      },
+      {
+        "path": "src/trial.ts",
+        "size": 26261,
+        "lines": 683,
+        "type": ".ts",
+        "lastModified": "2026-01-19T05:10:17.877Z"
+      },
+      {
+        "path": "src/version.ts",
+        "size": 1170,
+        "lines": 34,
+        "type": ".ts",
+        "lastModified": "2026-01-19T03:05:17.074Z"
+      },
+      {
+        "path": "functions/index.js",
+        "size": 59741,
+        "lines": 1337,
+        "type": ".js",
+        "lastModified": "2026-01-19T04:35:16.094Z"
+      },
+      {
+        "path": "admin/tasks.html",
+        "size": 15859,
+        "lines": 568,
+        "type": ".html",
+        "lastModified": "2026-01-16T06:37:05.699Z"
+      },
+      {
+        "path": "dashboard.html",
+        "size": 32252,
+        "lines": 639,
+        "type": ".html",
+        "lastModified": "2026-01-19T03:08:09.726Z"
+      },
+      {
+        "path": "dist/admin/tasks.html",
+        "size": 15957,
+        "lines": 569,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:17:27.705Z"
+      },
+      {
+        "path": "dist/dashboard.html",
+        "size": 32530,
+        "lines": 639,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:17:27.707Z"
+      },
+      {
+        "path": "dist/entry.html",
+        "size": 9630,
+        "lines": 164,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:17:27.707Z"
+      },
+      {
+        "path": "dist/login-success.html",
+        "size": 1465,
+        "lines": 57,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:17:27.707Z"
+      },
+      {
+        "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_guide.html",
+        "size": 14461,
+        "lines": 442,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:17:27.521Z"
+      },
+      {
+        "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_mobile.html",
+        "size": 15624,
+        "lines": 425,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:17:27.522Z"
+      },
+      {
+        "path": "dist/projects/backtrack-dfs-guide/dp_indexing_mobile_full.html",
+        "size": 7293,
+        "lines": 198,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:17:27.523Z"
+      },
+      {
+        "path": "dist/reservation/mouthpiece.html",
+        "size": 15112,
+        "lines": 272,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:17:27.705Z"
+      },
+      {
+        "path": "dist/reservation/restaurant_reservation.html",
+        "size": 25688,
+        "lines": 578,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:17:27.707Z"
+      },
+      {
+        "path": "dist/reservation/trial.html",
+        "size": 10081,
+        "lines": 212,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:17:27.707Z"
+      },
+      {
+        "path": "dist/resume/index.html",
+        "size": 38970,
+        "lines": 659,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:17:27.707Z"
+      },
+      {
+        "path": "entry.html",
+        "size": 9173,
+        "lines": 159,
+        "type": ".html",
+        "lastModified": "2026-01-18T16:58:46.031Z"
+      },
+      {
+        "path": "login-success.html",
+        "size": 1265,
+        "lines": 55,
+        "type": ".html",
+        "lastModified": "2026-01-09T09:12:38.230Z"
+      },
+      {
+        "path": "public/entry.html",
+        "size": 8106,
+        "lines": 149,
+        "type": ".html",
+        "lastModified": "2026-01-14T17:35:22.364Z"
+      },
+      {
+        "path": "public/projects/backtrack-dfs-guide/backtrack_dfs_guide.html",
+        "size": 14461,
+        "lines": 442,
+        "type": ".html",
+        "lastModified": "2025-11-01T06:44:42.258Z"
+      },
+      {
+        "path": "public/projects/backtrack-dfs-guide/backtrack_dfs_mobile.html",
+        "size": 15624,
+        "lines": 425,
+        "type": ".html",
+        "lastModified": "2025-11-02T10:49:24.600Z"
+      },
+      {
+        "path": "public/projects/backtrack-dfs-guide/dp_indexing_mobile_full.html",
+        "size": 7293,
+        "lines": 198,
+        "type": ".html",
+        "lastModified": "2025-11-03T16:24:36.190Z"
+      },
+      {
+        "path": "reservation/mouthpiece.html",
+        "size": 14588,
+        "lines": 266,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:09:27.727Z"
+      },
+      {
+        "path": "reservation/restaurant_reservation.html",
+        "size": 25242,
+        "lines": 573,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:09:29.874Z"
+      },
+      {
+        "path": "reservation/trial.html",
+        "size": 9635,
+        "lines": 207,
+        "type": ".html",
+        "lastModified": "2026-01-19T05:08:57.965Z"
+      },
+      {
+        "path": "resume/index.html",
+        "size": 38970,
+        "lines": 659,
+        "type": ".html",
+        "lastModified": "2026-01-11T04:09:35.748Z"
+      },
+      {
+        "path": "terms.html",
+        "size": 18082,
+        "lines": 335,
+        "type": ".html",
+        "lastModified": "2026-01-18T16:51:16.493Z"
+      }
+    ],
+    "dependencies": {
+      "production": {
+        "firebase": "^12.7.0",
+        "firebase-admin": "^13.6.0",
+        "twilio": "^5.11.2"
+      },
+      "development": {
+        "@types/google.maps": "^3.58.1",
+        "@types/node": "^25.0.3",
+        "typescript": "^5.9.3",
+        "vite": "^5.4.21"
+      }
+    }
+  },
+  "modules": {
+    "cloud-functions": {
+      "title": "Cloud Functions Module",
+      "file": "modules/cloud-functions.md",
+      "size": 18684,
+      "lastModified": "2026-01-19T08:49:23.609Z"
+    },
+    "i18n-system": {
+      "title": "Internationalization (i18n) System Module",
+      "file": "modules/i18n-system.md",
+      "size": 14108,
+      "lastModified": "2026-01-19T08:55:05.610Z"
+    },
+    "n8n-workflows": {
+      "title": "N8N Workflow System Module",
+      "file": "modules/n8n-workflows.md",
+      "size": 12965,
+      "lastModified": "2026-01-19T08:40:16.303Z"
+    },
+    "payment-system": {
+      "title": "Payment System Module",
+      "file": "modules/payment-system.md",
+      "size": 12671,
+      "lastModified": "2026-01-19T08:33:17.721Z"
+    },
+    "scenario-templates": {
+      "title": "Scenario Templates & Examples",
+      "file": "modules/scenario-templates.md",
+      "size": 11961,
+      "lastModified": "2026-01-19T08:46:04.578Z"
+    },
+    "task-system": {
+      "title": "Task System Module",
+      "file": "modules/task-system.md",
+      "size": 14119,
+      "lastModified": "2026-01-19T08:27:45.201Z"
+    },
+    "user-management": {
+      "title": "User Management Module",
+      "file": "modules/user-management.md",
+      "size": 7274,
+      "lastModified": "2026-01-19T08:26:17.687Z"
+    }
+  },
+  "diagrams": {
+    "README.md": {
+      "path": "diagrams/README.md",
+      "type": ".md",
+      "lastModified": "2026-01-19T08:33:19.744Z"
+    }
+  },
+  "schemas": {}
+}

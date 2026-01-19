@@ -23,6 +23,45 @@ const rateResult = document.getElementById('rateResult') as HTMLElement | null;
 const refreshUsageBtn = document.getElementById('refreshUsageBtn') as HTMLButtonElement | null;
 const usageTableBody = document.getElementById('usageHistoryBody') as HTMLElement | null;
 
+// --- SMS Rate Caching Logic ---
+const smsRateCache: Record<string, { rate: number, currency: string }> = {};
+
+async function getCachedSMSRate(country: string): Promise<{ rate: number, currency: string }> {
+    if (smsRateCache[country]) return smsRateCache[country];
+
+    // Check sessionStorage to fulfill "do not like request all the time"
+    const cacheKey = `wisecat_sms_rate_${country}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+        try {
+            smsRateCache[country] = JSON.parse(cached);
+            return smsRateCache[country];
+        } catch (e) {
+            sessionStorage.removeItem(cacheKey);
+        }
+    }
+
+    try {
+        const getSMSRates = httpsCallable(functions, 'getSMSRates');
+        const result = await getSMSRates({ country });
+        const data = result.data as any;
+
+        // Find local/mobile rate or default to 0.05
+        const bestRate = data.rates?.find((r: any) => r.type === 'local' || r.type === 'mobile') || data.rates?.[0] || { user_price: 0.10 };
+        const rateData = {
+            rate: bestRate.user_price,
+            currency: data.currency === 'USD' ? '$' : (data.currency || '$')
+        };
+
+        smsRateCache[country] = rateData;
+        sessionStorage.setItem(cacheKey, JSON.stringify(rateData));
+        return rateData;
+    } catch (e) {
+        console.error("Failed to fetch SMS rate for", country, e);
+        return { rate: 0.10, currency: '$' };
+    }
+}
+
 
 // State
 let currentUser: any = null;
@@ -304,6 +343,9 @@ function loadUserSettings() {
                         <tr>
                             <td style="padding: 10px; font-weight: bold; color: var(--success); vertical-align: middle;">
                                 ${settings.phoneNumber}
+                                <div id="myNumberSmsRate" style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; margin-top: 2px;">
+                                    Fetching SMS rate...
+                                </div>
                             </td>
                             <td style="padding: 10px; font-family: monospace; color: var(--text-secondary); vertical-align: middle;">
                                 ${maskedId}
@@ -332,6 +374,16 @@ function loadUserSettings() {
                             </td>
                         </tr>
                     `;
+
+                    // Update SMS rate asynchronously
+                    (async () => {
+                        const countryCode = settings.phoneNumber.startsWith('+1') ? 'US' : 'GB'; // Simple heuristic or improve later
+                        const rateInfo = await getCachedSMSRate(countryCode);
+                        const rateEl = document.getElementById('myNumberSmsRate');
+                        if (rateEl) {
+                            rateEl.innerHTML = `<i class="bi bi-chat-dots"></i> Inbound SMS: ${rateInfo.currency}${rateInfo.rate.toFixed(3)}/msg`;
+                        }
+                    })();
 
                     // Safe Date Parsing Logic
                     const getJsDate = (val: any) => {
@@ -529,6 +581,9 @@ if (searchBtn) {
                     </div>
                     <div class="number-card-capabilities">
                         ${badges.join('')}
+                        <div class="sms-rate-badge" data-country="${country}" style="font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; margin-top: 4px; color: var(--text-muted);">
+                            Loading SMS rate...
+                        </div>
                     </div>
                     <div class="buy-button-container">
                         <button class="btn btn-primary btn-full">Buy $${monthlyPrice.toFixed(2)}/mo</button>
@@ -539,6 +594,14 @@ if (searchBtn) {
                 buyBtn.addEventListener('click', () => openPurchaseDialog(number, monthlyPrice));
 
                 numbersList.appendChild(card);
+            });
+
+            // Update SMS rates in search results (only when searched)
+            const rateBadges = document.querySelectorAll('.sms-rate-badge');
+            rateBadges.forEach(async (badge) => {
+                const countryCode = badge.getAttribute('data-country') || 'US';
+                const rateInfo = await getCachedSMSRate(countryCode);
+                badge.innerHTML = `<i class="bi bi-chat-dots"></i> SMS Rx: ${rateInfo.currency}${rateInfo.rate.toFixed(3)}/msg`;
             });
 
         } catch (error: any) {

@@ -2,7 +2,7 @@ import "./version";
 import WiseCatI18n from './i18n';
 import { auth } from './firebase-config';
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { ScamCheck } from './scam-check';
+// import { ScamCheck } from './scam-check'; // Now handled by validateMissionDescription
 
 // Declare globals from CDNs
 declare var google: any;
@@ -38,20 +38,8 @@ let minPreorderDays = 3; // Default 3 days
 // Cache
 const placeDetailsCache: Record<string, any> = {};
 
-// Scam Detector
-const ScamDetector = {
-    patterns: [
-        /投資獲利|飆股|加賴|加LINE|賺錢|兼職|獲利|高報酬|博弈/i,
-        /investment|profit|crypto|jackpot|lottery|free money|giveaway/i,
-        /恭喜中獎|領取獎品|點擊連結|驗證身分|帳戶異常/i,
-        /congratulations|winner|claim prize|verify account|unusual activity/i,
-        /kiếm tiền|nhận thưởng|หัวหน้า|โบนัส/i
-    ],
-    isScam(text: string): boolean {
-        const cleanText = text.replace(/[^\w\s\u4e00-\u9fa5]/gi, '').replace(/\s+/g, '');
-        return this.patterns.some(regex => regex.test(cleanText));
-    }
-};
+// Local ScamDetector removed as logic is now consolidated into the backend validation function.
+
 
 // --- Initialization ---
 
@@ -680,13 +668,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                 div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
 
                 div.innerHTML = `
-                    < input type = "text" placeholder = "Item Name (e.g. Burger)" class="order-item-name"
-                style = "flex: 1; min-width: 150px; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: white;" >
-                    <input type="number" value = "1" min = "1" max = "99" class="order-item-qty"
-                style = "width: 50px; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: white; text-align: center;" >
-                    <button type="button" class="remove-item-btn"
-                style = "flex: 0 0 auto; width: 24px; height: 24px; padding: 0; background: none; border: none; color: #ff4444; font-size: 16px; line-height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;" >& times; </button>
-                    `;
+                    <input type="text" placeholder="Item Name (e.g. Burger)" class="order-item-name" 
+                        style="flex: 1; min-width: 150px; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: white;">
+                    <input type="number" value="1" min="1" max="99" class="order-item-qty" 
+                        style="width: 50px; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: white; text-align: center;">
+                    <button type="button" class="remove-item-btn" 
+                        style="flex: 0 0 auto; width: 24px; height: 24px; padding: 0; background: none; border: none; color: #ff4444; font-size: 16px; line-height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
+                `;
 
                 div.querySelector('.remove-item-btn')?.addEventListener('click', () => {
                     div.remove();
@@ -1500,6 +1488,50 @@ function applyPlaceSelection(place: any) {
 
 // --- Form Handler ---
 
+async function showConfirmationModal(details: { label: string, value: string }[]): Promise<boolean> {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirmModal') as HTMLElement;
+        const detailsContainer = document.getElementById('confirmDetails') as HTMLElement;
+        const cancelBtn = document.getElementById('modalCancel') as HTMLButtonElement;
+        const confirmBtn = document.getElementById('modalConfirm') as HTMLButtonElement;
+
+        if (!modal || !detailsContainer || !cancelBtn || !confirmBtn) {
+            console.error("Confirmation modal elements missing");
+            resolve(true);
+            return;
+        }
+
+        detailsContainer.innerHTML = details.map(item => `
+            <div class="detail-item" style="margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px;">${item.label}</div>
+                <div style="font-size: 14px; color: #fff; white-space: pre-wrap; word-break: break-word;">${item.value || 'N/A'}</div>
+            </div>
+        `).join('');
+
+        modal.style.display = 'flex';
+
+        const onCancel = () => {
+            modal.style.display = 'none';
+            cleanup();
+            resolve(false);
+        };
+
+        const onConfirm = () => {
+            modal.style.display = 'none';
+            cleanup();
+            resolve(true);
+        };
+
+        const cleanup = () => {
+            cancelBtn.removeEventListener('click', onCancel);
+            confirmBtn.removeEventListener('click', onConfirm);
+        };
+
+        cancelBtn.addEventListener('click', onCancel);
+        confirmBtn.addEventListener('click', onConfirm);
+    });
+}
+
 async function handleFormSubmit(e: Event) {
     e.preventDefault();
 
@@ -1515,21 +1547,18 @@ async function handleFormSubmit(e: Event) {
         return;
     }
 
-    // Scam Detection Check
+    // Security and refinement is now handled unified by the 'Check Description' AI call before final submission.
+    if (!isContentSafe) {
+        alert("⚠️ Suspicious content detected or mission mismatch, please check your input.");
+        return;
+    }
+
     const nameInput = document.getElementById('userName') as HTMLInputElement;
     const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
     const noteInput = document.getElementById('note') as HTMLTextAreaElement;
 
     const name = nameInput.value;
-    const phone = phoneInput.value;
     const note = noteInput.value;
-    const userInput = name + phone + note;
-
-    if (ScamDetector.isScam(userInput)) {
-        alert("⚠️ Suspicious content detected, please check your input.");
-        return;
-    }
-
     const btn = document.getElementById('submitBtn') as HTMLButtonElement;
     btn.disabled = true;
 
@@ -1759,16 +1788,13 @@ async function handleFormSubmit(e: Event) {
     }
 
 
-    // 4. Force Final Safety Check (Note)
-    if (payload.note) {
-        const safetyResult = await ScamCheck.validate(payload.note);
-        if (!safetyResult.safe) {
-            btn.disabled = true;
-            btn.innerText = "⚠️ Content Unsafe";
-            (window as any).showToast("Content blocked by security policy.", "error");
-            return;
-        }
+    // 4. Force Final Safety Check (Note) - Now handled by isContentSafe toggle from validateNote
+    if (!isContentSafe) {
+        (window as any).showToast("Content blocked by security policy or mission mismatch.", "error");
+        btn.disabled = false;
+        return;
     }
+
 
     // 1. Transaction: Check Credits -> Deduct -> Create Task
     try {
@@ -1781,6 +1807,22 @@ async function handleFormSubmit(e: Event) {
         const userDocRef = doc(db, 'users', `uid_${auth.currentUser.uid}`);
         const settingsRef = doc(db, 'users', `uid_${auth.currentUser.uid}`, 'settings', 'settings');
         const cost = currentCost;
+
+        // Final Confirmation Modal
+        const details = [
+            { label: "Restaurant", value: (document.getElementById('restaurantName') as HTMLInputElement).value },
+            { label: "Date & Time", value: `${resDateInput.value} ${resTimeInput.value}` },
+            { label: "Party Size", value: partySizeInput.value },
+            { label: "Target Phone", value: fullPhoneNumber },
+            { label: "Special Requests", value: noteInput.value || 'None' },
+            { label: "Service Charge", value: `$${cost.toFixed(2)}` }
+        ];
+
+        const confirmed = await showConfirmationModal(details);
+        if (!confirmed) {
+            btn.disabled = false;
+            return;
+        }
 
         await runTransaction(db, async (transaction) => {
             const userDoc = await transaction.get(userDocRef);
@@ -1901,31 +1943,129 @@ function calculateReservationUTC(dateStr: string, timeStr: string, utcOffsetMinu
 let isContentSafe = true;
 
 // Add generic safety check listener to input fields
-function attachSafetyCheck(elementId: string) {
-    const el = document.getElementById(elementId) as HTMLInputElement | HTMLTextAreaElement;
-    if (el) {
-        el.addEventListener('blur', async () => {
-            const text = el.value;
-            if (text) {
-                // Show checking state? 
-                const result = await ScamCheck.validate(text);
-                isContentSafe = result.safe;
+// attachSafetyCheck removed as security logic is now consolidated into the backend validation function.
 
-                // Re-validate submit button
-                validateForm();
 
-                if (!result.safe) {
-                    el.style.borderColor = "red";
-                } else {
-                    el.style.borderColor = "";
-                }
-            }
+// --- AI Note Validation & Refinement ---
+
+async function validateNote() {
+    const validateBtn = document.getElementById('validateBtn') as HTMLButtonElement;
+    const feedbackDiv = document.getElementById('validationFeedback');
+    const noteTextarea = document.getElementById('note') as HTMLTextAreaElement;
+    const missionSelect = document.getElementById('mission') as HTMLSelectElement;
+
+    if (!noteTextarea || !feedbackDiv || !validateBtn || !missionSelect) return;
+
+    const description = noteTextarea.value.trim();
+    if (!description) return;
+
+    if (description.length < 10) {
+        feedbackDiv.innerText = '❌ Request is too short. Please provide at least 10 characters.';
+        feedbackDiv.style.display = 'block';
+        feedbackDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+        feedbackDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        feedbackDiv.style.color = '#f87171';
+        return;
+    }
+
+    // Show loading state
+    validateBtn.disabled = true;
+    validateBtn.textContent = '⏳ Checking...';
+    feedbackDiv.style.display = 'block';
+    feedbackDiv.textContent = 'Checking with AI...';
+    feedbackDiv.style.background = 'rgba(59, 130, 246, 0.1)';
+    feedbackDiv.style.border = '1px solid rgba(59, 130, 246, 0.3)';
+    feedbackDiv.style.color = '#60a5fa';
+
+    try {
+        const { getFunctions, httpsCallable } = await import("firebase/functions");
+        const functions = getFunctions();
+        const validateFunction = httpsCallable(functions, 'validateMissionDescription');
+
+        const missionId = missionSelect.value;
+        const currentLang = WiseCatI18n.currentLang;
+        const missionName = missionSelect.selectedOptions[0]?.text || missionId;
+
+        const result: any = await validateFunction({
+            missionId,
+            missionName,
+            description,
+            language: currentLang
         });
+
+        const data = result.data as { valid: boolean; refinedText?: string; explanation?: string };
+
+        if (data.valid) {
+            isContentSafe = true;
+            (document.getElementById('submitBtn') as HTMLButtonElement).disabled = false;
+
+            noteTextarea.style.border = '2px solid #10b981';
+            noteTextarea.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+            feedbackDiv.style.background = 'rgba(16, 185, 129, 0.1)';
+            feedbackDiv.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            feedbackDiv.style.color = '#10b981';
+
+            // Handle Refinement Suggestion
+            const originalNote = noteTextarea.value.trim();
+            const refinedNote = data.refinedText ? data.refinedText.trim() : originalNote;
+            const isDifferent = refinedNote.replace(/\s/g, '') !== originalNote.replace(/\s/g, '');
+
+            if (isDifferent) {
+                feedbackDiv.innerHTML = `
+                    <div style="margin-bottom: 10px;">✅ <strong>Mission Matched!</strong></div>
+                    <div style="margin-bottom: 12px; font-style: italic; color: #9ca3af; border-left: 2px solid #10b981; padding-left: 10px;">
+                        "${data.explanation || 'I have a more professional suggestion for your request.'}"
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 12px; white-space: pre-wrap;">${data.refinedText}</div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn-refine-apply" style="flex: 1; padding: 8px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Apply Suggestion</button>
+                        <button type="button" class="btn-refine-keep" style="flex: 1; padding: 8px; background: transparent; color: #9ca3af; border: 1px solid #444; border-radius: 6px; cursor: pointer;">Keep Original</button>
+                    </div>
+                `;
+
+                const applyBtn = feedbackDiv.querySelector('.btn-refine-apply');
+                const keepBtn = feedbackDiv.querySelector('.btn-refine-keep');
+
+                if (applyBtn) {
+                    applyBtn.addEventListener('click', () => {
+                        noteTextarea.value = data.refinedText || '';
+                        feedbackDiv.innerHTML = '✅ Applied professional refinement!';
+                        setTimeout(() => { feedbackDiv.style.display = 'none'; }, 2000);
+                    });
+                }
+                if (keepBtn) {
+                    keepBtn.addEventListener('click', () => {
+                        feedbackDiv.innerHTML = '✅ Using your original version.';
+                        setTimeout(() => { feedbackDiv.style.display = 'none'; }, 2000);
+                    });
+                }
+            } else {
+                feedbackDiv.textContent = '✅ Request looks great and is safe!';
+            }
+        } else {
+            isContentSafe = false;
+            (document.getElementById('submitBtn') as HTMLButtonElement).disabled = true;
+            noteTextarea.style.border = '2px solid #ef4444';
+            noteTextarea.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+            feedbackDiv.textContent = `❌ ${data.explanation || "Request doesn't match or is unsafe. Please revise."}`;
+            feedbackDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+            feedbackDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+            feedbackDiv.style.color = '#f87171';
+        }
+    } catch (error) {
+        console.error('Validation error:', error);
+        feedbackDiv.innerText = '⚠️ Validation service unavailable. Proceeding...';
+    } finally {
+        validateBtn.disabled = false;
+        validateBtn.innerHTML = '<span data-i18n="validate_btn">🔍 Check Description</span>';
     }
 }
 
-// Attach to note field
+// Security and refinement is now verified by the unified 'Check Description' call.
 document.addEventListener('DOMContentLoaded', () => {
-    attachSafetyCheck('note');
+    // attachSafetyCheck('note');
+    const validateBtn = document.getElementById('validateBtn');
+    if (validateBtn) validateBtn.addEventListener('click', validateNote);
 });
+
 

@@ -3,7 +3,8 @@ import WiseCatI18n from './i18n';
 import { auth } from './firebase-config';
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { countryTimezones } from './timezones';
-import { ScamCheck } from './scam-check';
+// import { ScamCheck } from './scam-check'; // Logic merged into validateMissionDescription
+
 import './nav-active'; // Set active navigation item
 import { MISSION_SCENARIOS } from './mission-scenarios';
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -11,30 +12,15 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 // ... (Existing code)
 
 // --- Safety Check State ---
-let isContentSafe = true;
+let isContentSafe = true; // Still used for form validation, updated by validateMissionDescription
 
-function attachSafetyCheck(elementId: string) {
-    const el = document.getElementById(elementId) as HTMLInputElement | HTMLTextAreaElement;
-    if (el) {
-        el.addEventListener('blur', async () => {
-            const text = el.value;
-            if (text) {
-                const result = await ScamCheck.validate(text);
-                isContentSafe = result.safe;
-                validateForm();
-                if (!result.safe) {
-                    el.style.borderColor = "red";
-                } else {
-                    el.style.borderColor = "";
-                }
-            }
-        });
-    }
-}
 
+// attachSafetyCheck and blur listener removed to reduce Cloud Function calls.
+// Security check is now consolidated into the 'Check Description' AI call.
 document.addEventListener('DOMContentLoaded', () => {
-    attachSafetyCheck('script');
+    // attachSafetyCheck('script');
 });
+
 
 // Update validateForm to include safety check
 // (Appending this logic is tricky with replace_file_content if I can't find the insertion point perfectly.
@@ -659,6 +645,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
+    async function showConfirmationModal(details: { label: string, value: string }[]): Promise<boolean> {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('confirmModal') as HTMLElement;
+            const detailsContainer = document.getElementById('confirmDetails') as HTMLElement;
+            const cancelBtn = document.getElementById('modalCancel') as HTMLButtonElement;
+            const confirmBtn = document.getElementById('modalConfirm') as HTMLButtonElement;
+
+            if (!modal || !detailsContainer || !cancelBtn || !confirmBtn) {
+                console.error("Confirmation modal elements missing");
+                resolve(true);
+                return;
+            }
+
+            detailsContainer.innerHTML = details.map(item => `
+                <div class="detail-item" style="margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                    <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px;">${item.label}</div>
+                    <div style="font-size: 14px; color: #fff; white-space: pre-wrap; word-break: break-word;">${item.value || 'N/A'}</div>
+                </div>
+            `).join('');
+
+            modal.style.display = 'flex';
+
+            const onCancel = () => {
+                modal.style.display = 'none';
+                cleanup();
+                resolve(false);
+            };
+
+            const onConfirm = () => {
+                modal.style.display = 'none';
+                cleanup();
+                resolve(true);
+            };
+
+            const cleanup = () => {
+                cancelBtn.removeEventListener('click', onCancel);
+                confirmBtn.removeEventListener('click', onConfirm);
+            };
+
+            cancelBtn.addEventListener('click', onCancel);
+            confirmBtn.addEventListener('click', onConfirm);
+        });
+    }
+
     async function handleFormSubmit(e: Event) {
         e.preventDefault();
 
@@ -672,8 +702,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const btn = document.getElementById('submitBtn') as HTMLButtonElement;
         btn.disabled = true;
 
-        // TEMPORARY DISABLE REMOVED
-
         // Elements
         const missionEl = document.getElementById('mission') as HTMLSelectElement;
         const customMissionEl = document.getElementById('customMission') as HTMLInputElement;
@@ -683,6 +711,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const scriptEl = document.getElementById('script') as HTMLTextAreaElement;
         const schedulePreferenceEl = document.getElementById('schedulePreference') as HTMLSelectElement;
         const scriptLanguageEl = document.getElementById('scriptLanguage') as HTMLSelectElement;
+
+        // ... language logic ...
 
         const { doc, collection, serverTimestamp, runTransaction } = await import("firebase/firestore");
         const { db } = await import("./firebase-config");
@@ -830,16 +860,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
 
-        // 4. Force Final Safety Check
-        const script = document.getElementById('script') as HTMLTextAreaElement;
-        if (script && script.value) {
-            const safetyResult = await ScamCheck.validate(script.value);
-            if (!safetyResult.safe) {
-                btn.disabled = true;
-                btn.innerText = "⚠️ Content Unsafe";
-                (window as any).showToast("Content blocked by security policy.", "error");
-                return;
-            }
+        // 4. Force Final Safety Check (Now handled by validateMissionDescription)
+        if (!isContentSafe) {
+            (window as any).showToast("Content blocked by security policy or mission mismatch.", "error");
+            btn.disabled = false;
+            return;
         }
 
         // 1. Transaction...
@@ -853,6 +878,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             const userDocRef = doc(db, 'users', `uid_${auth.currentUser.uid}`);
             const settingsRef = doc(db, 'users', `uid_${auth.currentUser.uid}`, 'settings', 'settings');
             const cost = currentCost;
+
+            // Final Confirmation Modal
+            const details = [
+                { label: "Mission", value: payload.missionDescription },
+                { label: "Recipient", value: payload.recipientName },
+                { label: "Target Phone", value: payload.targetPhoneNumber },
+                { label: "Script", value: payload.script },
+                { label: "Schedule", value: payload.schedulePreference === 'scheduled' ? (payload as any).scheduleCallTime : "ASAP" },
+                { label: "Service Charge", value: `$${cost.toFixed(2)}` }
+            ];
+
+            const confirmed = await showConfirmationModal(details);
+            if (!confirmed) {
+                btn.disabled = false;
+                return;
+            }
 
             await runTransaction(db, async (transaction) => {
                 const userDoc = await transaction.get(userDocRef);
@@ -999,8 +1040,8 @@ async function validateMissionDescription() {
 
     const description = scriptTextarea.value.trim();
     const missionId = missionSelect.value;
-    const selectedOption = missionSelect.selectedOptions[0];
-    const missionNameKey = selectedOption.getAttribute('data-mission-name');
+    // const selectedOption = missionSelect.selectedOptions[0]; // Unused
+    // const missionNameKey = selectedOption.getAttribute('data-mission-name'); // Unused
 
     if (description.length < 10) {
         feedbackDiv.textContent = '❌ Description is too short. Please provide at least 10 characters.';
@@ -1037,19 +1078,68 @@ async function validateMissionDescription() {
 
 
 
-        if (result.data.valid) {
+        const data = result.data as { valid: boolean; refinedText?: string; explanation?: string };
+
+        if (data.valid) {
+            isContentSafe = true; // Content is verified safe by backend
+            validateForm();
+
             // Success - green border
             scriptTextarea.style.border = '2px solid #10b981';
             scriptTextarea.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
-            feedbackDiv.textContent = '✅ Description matches the mission!';
+
             feedbackDiv.style.background = 'rgba(16, 185, 129, 0.1)';
             feedbackDiv.style.border = '1px solid rgba(16, 185, 129, 0.3)';
             feedbackDiv.style.color = '#10b981';
+
+            // Handle Refinement Suggestion
+            // Use a more lenient comparison to ensure localized differences don't block the UI
+            const isDifferent = data.refinedText && data.refinedText.trim().replace(/\s/g, '') !== description.trim().replace(/\s/g, '');
+
+            if (isDifferent) {
+
+                feedbackDiv.innerHTML = `
+                    <div style="margin-bottom: 10px;">✅ <strong>Mission Matched!</strong></div>
+                    <div style="margin-bottom: 12px; font-style: italic; color: #9ca3af; border-left: 2px solid #10b981; padding-left: 10px;">
+                        "${data.explanation || 'I have a more professional suggestion for your message.'}"
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 12px; white-space: pre-wrap;">${data.refinedText}</div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn-refine-apply" style="flex: 1; padding: 8px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Apply Suggestion</button>
+                        <button type="button" class="btn-refine-keep" style="flex: 1; padding: 8px; background: transparent; color: #9ca3af; border: 1px solid #444; border-radius: 6px; cursor: pointer;">Keep Original</button>
+                    </div>
+                `;
+
+                // Add event listeners for the buttons
+                const applyBtn = feedbackDiv.querySelector('.btn-refine-apply');
+                const keepBtn = feedbackDiv.querySelector('.btn-refine-keep');
+
+                if (applyBtn) {
+                    applyBtn.addEventListener('click', () => {
+                        scriptTextarea.value = data.refinedText || '';
+                        feedbackDiv.innerHTML = '✅ Applied professional refinement!';
+                        setTimeout(() => { feedbackDiv.style.display = 'none'; }, 2000);
+                        validateForm();
+                    });
+                }
+
+                if (keepBtn) {
+                    keepBtn.addEventListener('click', () => {
+                        feedbackDiv.innerHTML = '✅ Using your original version.';
+                        setTimeout(() => { feedbackDiv.style.display = 'none'; }, 2000);
+                    });
+                }
+            } else {
+                feedbackDiv.textContent = '✅ Description matches the mission and is safe!';
+            }
         } else {
+            isContentSafe = false;
+            validateForm();
             // Fail - red border
+
             scriptTextarea.style.border = '2px solid #ef4444';
             scriptTextarea.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
-            feedbackDiv.textContent = '❌ Description doesn\'t match the mission. Please revise.';
+            feedbackDiv.textContent = `❌ ${data.explanation || "Description doesn't match the mission. Please revise."}`;
             feedbackDiv.style.background = 'rgba(239, 68, 68, 0.1)';
             feedbackDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
             feedbackDiv.style.color = '#f87171';

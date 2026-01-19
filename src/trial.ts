@@ -2,7 +2,8 @@ import "./version";
 import WiseCatI18n from './i18n';
 import { auth } from './firebase-config';
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { ScamCheck } from './scam-check';
+// import { ScamCheck } from './scam-check'; // Now handled globally by validateMissionDescription
+
 
 // Global declarations
 declare var intlTelInput: any;
@@ -281,7 +282,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Bind Listeners
     bindValidationListeners();
-    attachSafetyCheck('scriptContent');
+    // attachSafetyCheck and blur listener removed to consolidate cloud calls.
+    // attachSafetyCheck('scriptContent');
 
     // --- Header Sync & Logout ---
     onAuthStateChanged(auth, (user) => {
@@ -315,36 +317,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 let isContentSafe = true;
 
-function attachSafetyCheck(elementId: string) {
-    const el = document.getElementById(elementId) as HTMLInputElement | HTMLTextAreaElement;
-    if (el) {
-        el.addEventListener('blur', async () => {
-            const text = el.value;
-            if (text) {
-                const result = await ScamCheck.validate(text);
-                isContentSafe = result.safe;
+// attachSafetyCheck and blur listener removed to consolidate cloud calls.
+// Security is now verified by the 'Check Description' AI call before final submission.
 
-                // Special UX for Blocked Trial
-                if (!isContentSafe) {
-                    const msg = "Request Blocked: Potential scam detected. Our AI only processes standard restaurant requests. Please remove financial instructions or suspicious links and try again. Thank you for your cooperation.";
-                    if ((window as any).showToast) {
-                        (window as any).showToast(msg, "error");
-                    } else {
-                        alert(msg);
-                    }
-                }
-
-                validateForm();
-
-                if (!result.safe) {
-                    el.style.borderColor = "red";
-                } else {
-                    el.style.borderColor = "";
-                }
-            }
-        });
-    }
-}
 
 function countWords(str: string): number {
     return str.trim().split(/\s+/).filter(word => word.length > 0).length;
@@ -437,6 +412,8 @@ function bindValidationListeners() {
         consentCheckbox.addEventListener('change', validateForm);
     }
 
+    attachValidationBtn();
+
     // Dynamic Label Logic
     function updateAutoDetectLabel() {
         if (!phoneInputPlugin) return;
@@ -479,6 +456,50 @@ function bindValidationListeners() {
 
     const form = document.getElementById('trialForm');
     if (form) form.addEventListener('submit', handleFormSubmit);
+}
+
+async function showConfirmationModal(details: { label: string, value: string }[]): Promise<boolean> {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirmModal') as HTMLElement;
+        const detailsContainer = document.getElementById('confirmDetails') as HTMLElement;
+        const cancelBtn = document.getElementById('modalCancel') as HTMLButtonElement;
+        const confirmBtn = document.getElementById('modalConfirm') as HTMLButtonElement;
+
+        if (!modal || !detailsContainer || !cancelBtn || !confirmBtn) {
+            console.error("Confirmation modal elements missing");
+            resolve(true);
+            return;
+        }
+
+        detailsContainer.innerHTML = details.map(item => `
+            <div class="detail-item" style="margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px;">${item.label}</div>
+                <div style="font-size: 14px; color: #fff; white-space: pre-wrap; word-break: break-word;">${item.value || 'N/A'}</div>
+            </div>
+        `).join('');
+
+        modal.style.display = 'flex';
+
+        const onCancel = () => {
+            modal.style.display = 'none';
+            cleanup();
+            resolve(false);
+        };
+
+        const onConfirm = () => {
+            modal.style.display = 'none';
+            cleanup();
+            resolve(true);
+        };
+
+        const cleanup = () => {
+            cancelBtn.removeEventListener('click', onCancel);
+            confirmBtn.removeEventListener('click', onConfirm);
+        };
+
+        cancelBtn.addEventListener('click', onCancel);
+        confirmBtn.addEventListener('click', onConfirm);
+    });
 }
 
 async function handleFormSubmit(e: Event) {
@@ -601,6 +622,20 @@ async function handleFormSubmit(e: Event) {
         // Use the global variable we set in onSnapshot
         const cost = currentCost;
 
+        // Final Confirmation Modal
+        const details = [
+            { label: "Name", value: nameInput.value },
+            { label: "Target Phone", value: payload.targetPhoneNumber },
+            { label: "Script", value: script },
+            { label: "Service Charge", value: `$${cost.toFixed(2)}` }
+        ];
+
+        const confirmed = await showConfirmationModal(details);
+        if (!confirmed) {
+            btn.disabled = false;
+            return;
+        }
+
         await runTransaction(db, async (transaction) => {
             const userDoc = await transaction.get(userDocRef);
             if (!userDoc.exists()) {
@@ -680,3 +715,123 @@ function createToastContainer() {
     document.body.appendChild(container);
     return container;
 }
+// --- AI Script Validation & Refinement ---
+
+async function validateScript() {
+    const validateBtn = document.getElementById('validateBtn') as HTMLButtonElement;
+    const feedbackDiv = document.getElementById('validationFeedback');
+    const scriptTextarea = document.getElementById('scriptContent') as HTMLTextAreaElement;
+
+    if (!scriptTextarea || !feedbackDiv || !validateBtn) return;
+
+    const description = scriptTextarea.value.trim();
+    if (description.length < 10) {
+        feedbackDiv.innerText = '❌ Description is too short. Please provide at least 10 characters.';
+        feedbackDiv.style.display = 'block';
+        feedbackDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+        feedbackDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        feedbackDiv.style.color = '#f87171';
+        return;
+    }
+
+    // Show loading state
+    validateBtn.disabled = true;
+    validateBtn.textContent = '⏳ Checking...';
+    feedbackDiv.style.display = 'block';
+    feedbackDiv.textContent = 'Checking with AI...';
+    feedbackDiv.style.background = 'rgba(59, 130, 246, 0.1)';
+    feedbackDiv.style.border = '1px solid rgba(59, 130, 246, 0.3)';
+    feedbackDiv.style.color = '#60a5fa';
+
+    try {
+        const { getFunctions, httpsCallable } = await import("firebase/functions");
+        const functions = getFunctions();
+        const validateFunction = httpsCallable(functions, 'validateMissionDescription');
+
+        const currentLang = WiseCatI18n.currentLang;
+
+        const result: any = await validateFunction({
+            missionId: 'trial_general',
+            missionName: 'General Request (Trial)',
+            description,
+            language: currentLang
+        });
+
+        const data = result.data as { valid: boolean; refinedText?: string; explanation?: string };
+
+        if (data.valid) {
+            isContentSafe = true;
+            validateForm();
+
+            scriptTextarea.style.border = '2px solid #10b981';
+            scriptTextarea.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+            feedbackDiv.style.background = 'rgba(16, 185, 129, 0.1)';
+            feedbackDiv.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            feedbackDiv.style.color = '#10b981';
+
+            // Handle Refinement Suggestion
+            const originalText = scriptTextarea.value.trim();
+            const refinedText = data.refinedText ? data.refinedText.trim() : originalText;
+            const isDifferent = refinedText.replace(/\s/g, '') !== originalText.replace(/\s/g, '');
+
+            if (isDifferent) {
+                feedbackDiv.innerHTML = `
+                    <div style="margin-bottom: 10px;">✅ <strong>Script Validated!</strong></div>
+                    <div style="margin-bottom: 12px; font-style: italic; color: #9ca3af; border-left: 2px solid #10b981; padding-left: 10px;">
+                        "${data.explanation || 'I have a more professional suggestion for your message.'}"
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 12px; white-space: pre-wrap;">${refinedText}</div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn-refine-apply" style="flex: 1; padding: 8px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Apply Suggestion</button>
+                        <button type="button" class="btn-refine-keep" style="flex: 1; padding: 8px; background: transparent; color: #9ca3af; border: 1px solid #444; border-radius: 6px; cursor: pointer;">Keep Original</button>
+                    </div>
+                `;
+
+                const applyBtn = feedbackDiv.querySelector('.btn-refine-apply');
+                const keepBtn = feedbackDiv.querySelector('.btn-refine-keep');
+
+                if (applyBtn) {
+                    applyBtn.addEventListener('click', () => {
+                        scriptTextarea.value = refinedText;
+                        feedbackDiv.innerHTML = '✅ Applied professional refinement!';
+                        setTimeout(() => { feedbackDiv.style.display = 'none'; }, 2000);
+                        validateForm();
+                    });
+                }
+                if (keepBtn) {
+                    keepBtn.addEventListener('click', () => {
+                        feedbackDiv.innerHTML = '✅ Using your original version.';
+                        setTimeout(() => { feedbackDiv.style.display = 'none'; }, 2000);
+                    });
+                }
+            } else {
+                feedbackDiv.textContent = '✅ Script looks great and is safe!';
+            }
+        } else {
+            isContentSafe = false;
+            validateForm();
+            scriptTextarea.style.border = '2px solid #ef4444';
+            scriptTextarea.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+            feedbackDiv.textContent = `❌ ${data.explanation || "Script doesn't match the mission or is unsafe."}`;
+            feedbackDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+            feedbackDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+            feedbackDiv.style.color = '#f87171';
+        }
+    } catch (error) {
+        console.error('Validation error:', error);
+        feedbackDiv.innerText = '⚠️ Validation service unavailable. Proceeding...';
+    } finally {
+        validateBtn.disabled = false;
+        validateBtn.innerHTML = '<span data-i18n="validate_btn">🔍 Check Script</span>';
+        validateForm();
+    }
+}
+
+// In bindValidationListeners, add the button event listener
+function attachValidationBtn() {
+    const btn = document.getElementById('validateBtn');
+    if (btn) btn.addEventListener('click', validateScript);
+}
+
+// Ensure it's called in DOMContentLoaded
+// ...

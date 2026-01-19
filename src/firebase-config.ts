@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getFunctions } from "firebase/functions";
 
 // Configuration
 const firebaseConfig = {
@@ -16,6 +17,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const functions = getFunctions(app);
 
 // Explicitly set persistence to LOCAL (default, but good for clarity/robustness)
 import { setPersistence, browserLocalPersistence } from "firebase/auth";
@@ -26,4 +28,4 @@ setPersistence(auth, browserLocalPersistence).catch((error) => {
 // Connect to the specific "reservation" database
 const db = getFirestore(app, "reservation");
 
-export { app, auth, db };
+export { app, auth, db, functions };

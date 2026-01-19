@@ -129,6 +129,16 @@
                     0 / 30 words
                 </div>
 
+                <!-- Validation Button and Feedback -->
+                <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                    <button type="button" id="validateBtn"
+                        style="flex: 1; padding: 10px 16px; background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        <span data-i18n="validate_btn">🔍 Check Script</span>
+                    </button>
+                </div>
+                <div id="validationFeedback"
+                    style="margin-top: 8px; padding: 10px; border-radius: 8px; font-size: 13px; display: none;"></div>
+
                 <div id="turnstile-widget" style="margin-top: 20px;"></div>
 
                 <!-- Call Consent Agreement -->
@@ -200,6 +210,20 @@
             <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
         </a>
     </nav>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 data-i18n="modal_confirm_title">Confirm Selection</h3>
+            <div id="confirmDetails" class="modal-details">
+                <!-- Details injected here -->
+            </div>
+            <div class="modal-actions">
+                <button id="modalCancel" class="modal-btn cancel" data-i18n="modal_cancel_btn">Cancel</button>
+                <button id="modalConfirm" class="modal-btn confirm" data-i18n="modal_confirm_btn">Confirm</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module" src="../src/trial.ts"></script>
 </body>
