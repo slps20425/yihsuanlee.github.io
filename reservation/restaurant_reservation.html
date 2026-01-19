@@ -548,7 +548,7 @@
                 });
                 
                 // Close on nav item click (for mobile)
-                const navItems = nav.querySelectorAll('.nav-item, .nav-dropdown-item');
+                const navItems = nav.querySelectorAll('.nav-item:not(.nav-dropdown-toggle), .nav-dropdown-item');
                 navItems.forEach(item => {
                     item.addEventListener('click', () => {
                         if (window.innerWidth < 1024) {
