@@ -1,132 +1,32 @@
-# Tasks
+# WiseCat AI - Task List
 
-> [!IMPORTANT]
-> **ARCHITECTURE RULE**: ALL Firestore operations must use the named database `reservation`.
-> - **Frontend**: Import `db` from `src/firebase-config.ts`. NEVER use `getFirestore()` (default DB).
-> - **Backend**: Use `getFirestore(app, "reservation")`.
+## High Priority (3+)
 
-## High Priority
-- [ ] [GOOGLE_LOGIN_403] Bug: Fix Google Login 403 on Mobile
-  - Priority: 5 (Critical)
-  - Error: 403 disallowed_useragent
-  - Context: User reported issue in mobile WebView/App.
-  - Proposed Solution: Use Capacitor Firebase Auth or switch to signInWithRedirect.
-- [x] [6XnvNW9fYT9kRrL0kE2D] Bug: Fix not able to access mouthpiece page
-  - Priority: 5 (Critical)
-  - Content: Bug - fix not able to access mouthpiece page
-- [x] [Hp5FtA9AHQEAKzSoedUM] Task: Check Retry Mechanism
-  - Verify if current retry default is 5.
-  - Check if it's taken from `configuration/settings`.
-  - Implement if missing.
-- [x] [yS9l5F3BObN6lUm12ufo] Bug: Task Description Truncation
-  - Fix inability to see full content of description in dev task (admin/tasks).
-- [x] [9RAUQv9hE2YHUqBK2EZa] Feature: Limit Delete to Owner
-  - Restrict delete action in admin/tasks to the task creator.
-- [x] [fZJDQD3vJY0Wx9IHmJyc] Feature: Admin Page Pagination & Numbers
-  - Add No. column.
-  - Add pagination.
-- [x] [izTTdOpGx6bpCmm6P5HX] Feature: Scam Detector Enhancement
-  - Phase 1: Firestore Config (Golden List).
-  - Phase 2: Backend (Cloud Function `checkMessageSafety`).
-  - Phase 3: Frontend UX (Validation, Toaster, Alarm).
-  - Phase 4: Trial Message Copy.
-- [x] [JQyKbEfDmJhOspkQq2PE] Feature: Partial Quantity Acceptance
-  - Default "Agree to partial quantity" to enabled.
-  - If disabled, disallow reservation with food-preorder.
-- [x] [EhmQowE8UVc0g5Ti9Nev] Bug: Login Unstable (Session Lost)
-  - Login lost when switching tabs.
-  - Increase session timeout.
-- [x] [jUqXhbjuhvx7t76psGnP] Feature: Session Timeout Popup
-  - Change browser default popup to centered toaster.
-- [x] [1kyakEzZmNXTBLlof6Bj] Bug: Fix able to delete other user task
-  - "not allow to delete other user task"
-- [x] [t7UZtginqdVTuIlyYcmm] Feature: Allow admin dev task to be editable
-  - "allow admin dev task is editable for pending task"
-- [x] [SORT_BUG] Bug: Fix sorting in admin tasks
-  - Report: "why the sorting function not working in admin/tasks please check"
+- [/] **[P3] Fix logout button styling** (ID: 3sb7PuQ0HcnI99VGH5DS)
+  - Make logout button solid red color fill
+  - Location: Profile section
+
+- [ ] **[P3] WiseCat header redirect** (ID: ATRp9AtafaPIvVfPPb1q)
+  - Header "WiseCat" should redirect to profile tab
+  - Apply to both web and mobile
+
+- [ ] **[P3] SMS inbox not displaying** (ID: Qg63xqPJLIbSwyMx2Di6)
+  - SMS received in webhook and stored in database
+  - Frontend not showing messages
+  - Need mechanism to pull existing messages from database
+
+- [ ] **[P3] Redefine mouthpiece templates** (ID: ntKzXumIvynq8NHnGAko)
+  - Update templates to match new mouthpiece mission structure
+
+## Medium Priority (2)
+
+- [ ] **[P2] Background consistency** (ID: NL8cMOdrF8yjasb8LmqN)
+  - Change trial and mouthpiece backgrounds to match entry page
 
 ## Completed
-- [x] [Ex2Sn0N8oTrc5ZlZAUD5] Feature: Admin Page Improvements
-- [x] [3kAIBjSwvfRexWbMDgYQ] Feature: Restaurant Pre-order Warning Popup
-- [x] [xp3T5gfbXd4pEtknJn5z] New Feature: Pre-order Date Logic
-- [x] [qD0bKDvf7jL0pdTLFz0i] New Feature: Delete Dev Task
-- [x] [VekLP5lAdUq2A7IU26xA] bug fix: Infinite URL Redirection
-- [x] [sOguqwdjXXewt2IAY3I7] feature dev_task adding new field
-- [x] [Nb677QYLmAYmapGgbh6f] Create Task Entry Page (/admin/tasks)
-- [x] [ADMIN_PROFILE] Feature: Improve Admin Profile Display
-- [x] [INTL_TEL_BUG] Bug: Fix Intl-Tel-Input Initialization
-  - "phone number country code not display required a refresh"
-  - Investigate `onload` race condition.
 
-
-## Pending Tasks
-- [/] [VyD5R9OUuGKx79NUScto] Feature: Subaccount & Phone Number Management  
-  - Priority: 5 (HIGH)
-  - Implement Twilio subaccount creation per user
-  - Phone number purchase flow with Vapi integration
-  - Backend GCF: purchasePhoneNumber, searchNumbers
-  - Frontend: Purchase confirmation dialog
-  - Firestore schema updates for settings
-- [x] [D3EwAFfOxo7SUyojiv4C] Feature: SMS Inbox
-  - Priority: 4
-  - Create personal inbox for each user to receive SMS
-  - For announcements, ads, and policy notifications
-  - Each user has their own phone number
-
-- [x] [87VX2nLsZQj45c7CCven] Feature: Restaurant Page UI Enhancement
-  - Priority: 3
-  - Add increment/decrement buttons for party size and quantity
-  - Ensure UI alignment with other elements
-- [x] [BadQpTrsAQjiNEjoH30c] Bug: Fix Admin Task Upload (CORS Issue)
-  - Priority: 3
-  - Fix CORS preflight issue preventing screenshot uploads
-  - Error: HTTP status of preflight request didn't indicate success
-  - Note: Fixed by initializing Firebase Storage (not CORS)
-- [x] [l2SHMD6EKvJAgFSSPZ05] Bug: Admin Page Mobile UI
-  - Priority: 3
-  - Fix admin page UI that looks messy on mobile
-  - Note: Added responsive CSS with media queries for mobile/tablet
-- [x] [zCsqtM37u6uWLkrGgNuN] Feature: Enhanced Success Message
-  - Priority: 3
-  - Update success messages for all services (restaurant, mouthpiece, trial)
-  - Template: "Dear {{client_name}} we've receive the task. we will schedule your call ASAP. once finished will send result to {{client_email}}."
-- [x] [oqP2PhTxaP1YYGfX5EVr] Bug: Fix Chinese Contact Label
-  - Priority: 3
-  - Change "客服與回饋" to "客服"
-- [x] [oNzRJ7gPcxYBVTjLL0yn] Feature: Mobile Contact Integration in Mouthpiece
-  - Priority: 3
-  - Add "Load Contact" feature from mobile native contacts
-- [x] [ViHAP25BidK8HUZYsP15] Feature: Revert to Microsoft Login
-  - Priority: 3
-  - Change back to Microsoft login (replace Apple ID)
-- [x] [bJfhytdpcQupkHsZmicg] Bug: Rate Checking Shows 0
-  - Priority: 3
-  - Rate checking currently all show 0, need investigate
-- [x] [0OcQudGdi98PIztEoQWA] Bug: Profile Avatar Layout
-  - Priority: 3
-  - No room to display user profile avatar with logout button in bottom panel or header
-  - Resolution: Added avatar to mobile header (top right) which links to profile tab.
-- [x] [0i0kdlWhPPFzVZZaGP6X] Feature: Reservation Menu with Pre-order
-  - Priority: 3
-  - Content: adding menu for reservation with pre-order or upload a menu
-- [/] [3sb7PuQ0HcnI99VGH5DS] UI: Make profile logout button solid red
-  - Priority: 3
-  - Content: fix the profile logout button should fill with red color ? make it solid
-- [ ] [ATRp9AtafaPIvVfPPb1q] UI: Header WiseCat Redirect to Profile
-  - Priority: 3
-  - Content: in both Web/Mobile the header WiseCat should always redirect user to profile tab
-- [ ] [UpOhJ0ng4LqxVIoRCfra] Bug: Redundant credits text in top up button
-  - Priority: 3
-  - Content: bug redundant credits text in top up button
-- [ ] [NL8cMOdrF8yjasb8LmqN] UI: Unify Trial/Mouthpiece Background
-  - Priority: 2
-  - Content: fix change the trial and mouthpiece background to be same as entry
-- [ ] **UI Polish (Dashboard & Profile)** <!-- id: 24 -->
-    - [x] Make profile logout button solid red <!-- id: 25 -->
-    - [x] Make "Payment & Usage History" header one line <!-- id: 26 -->
-    - [x] Replace refresh emoji with SVG icon <!-- id: 27 -->
-    - [x] Remove redundant "Credits" text from Top Up buttons <!-- id: 28 -->
-    - [ ] Fix header layout (logo visibility + profile alignment) <!-- id: 29 -->
-
-## Backlog
-- [ ] Example Task 1
+- [x] Dashboard UI fixes (session timeout, refresh button, avatar clipping)
+- [x] Auth debugging implementation
+- [x] Header z-index fixes
+- [x] Animated refresh button with loading spinner
+- [x] Header spacing and language selector visibility
