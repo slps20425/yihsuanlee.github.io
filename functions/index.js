@@ -448,23 +448,63 @@ exports.getTransformedUsageHistory = onCall(
 
             const subClient = twilio(settings.twilioSubaccountSid, settings.twilioSubaccountAuthToken);
 
-            // Fetch usage records (summary of last 30 days is standard if no date range provided)
-            const records = await subClient.usage.records.list({ limit: 50 });
+            // Fetch DAILY usage records (last 30 days) to populate the "Date" column
+            const records = await subClient.usage.records.daily.list({ limit: 30 });
 
             const billing = await getBillingConfig(db);
             const multiplier = billing.common_multiplier || 3.0;
 
+            // Define high-level categories to display (prevents redundancy)
+            // Twilio returns both aggregates (e.g. "sms") and specifics (e.g. "sms-inbound")
+            // specific codes: https://www.twilio.com/docs/usage/api/usage-record#usage-categories
+            const ALLOWED_CATEGORIES = new Set([
+                "calls",
+                "sms",
+                "phonenumbers",
+                "phonenumbers-local", // sometimes phonenumbers is empty but local is set
+                "recordings",
+                "voice-insights",
+                "monitor-storage",
+                "trunking-origination",
+                "trunking-termination"
+            ]);
+
+            // Helper to prioritize: if 'sms' exists, don't show 'sms-inbound' etc? 
+            // Actually 'sms' is the sum. So if we show 'sms', we cover all sms.
+            // But we need to be careful not to show BOTH 'sms' and 'sms-inbound'.
+            // Simple approach: Allow only the top-level aggregates where possible.
+
             const usage = records.map(r => ({
-                category: r.category, // e.g., "calls", "phonenumbers"
+                category: r.category,
                 description: r.description,
                 usage: parseFloat(r.usage || 0),
                 unit: r.usageUnit,
                 base_price: parseFloat(r.price || 0),
                 user_price: parseFloat(r.price || 0) * multiplier,
                 currency: r.priceUnit,
-                start_date: r.startDate,
-                end_date: r.endDate
-            })).filter(r => r.usage > 0 || r.base_price > 0); // Hide empty records
+                // Serialize dates to prevent empty {} in JSON response
+                start_date: r.startDate ? new Date(r.startDate).toISOString() : null,
+                end_date: r.endDate ? new Date(r.endDate).toISOString() : null
+            }))
+                .filter(r => r.user_price > 0.001) // Filter checks > 0 cost
+                .filter(r => {
+                    // Filter logic: prefer top-level categories
+                    // If the category is exactly one of our preferred generic ones, keep it.
+                    if (["calls", "sms", "phonenumbers", "recordings"].includes(r.category)) return true;
+
+                    // If it's a sub-category (like sms-inbound), ONLY keep it if we didn't already see the parent?
+                    // Actually, daily list might return them all.
+                    // Let's stick to a strict allowlist of mostly top-level items to avoid confusion.
+                    // If we miss something niche, it's better than confusing duplicates.
+                    return ["calls", "sms", "phonenumbers", "recordings", "totalprice"].includes(r.category);
+                })
+                // Remove 'totalprice' explicitly if we want to show breakdown, 
+                // OR user might want to see daily total? 
+                // The UI is a list, so breakdowns (calls, sms) are better than just "total".
+                .filter(r => r.category !== 'totalprice');
+
+            // Sort by date desc
+            usage.sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
 
             return { usage, multiplier };
         } catch (e) {
