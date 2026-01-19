@@ -313,7 +313,13 @@ function loadUserSettings() {
                             </td>
                             <!-- Added Purchased Date Column -->
                             <td style="padding: 10px; color: var(--text-muted); font-size: 0.9rem; vertical-align: middle;">
-                                ${settings.phoneNumberPurchasedAt ? new Date(settings.phoneNumberPurchasedAt).toLocaleDateString() : 'N/A'}
+                                ${(() => {
+                            if (!settings.phoneNumberPurchasedAt) return 'N/A';
+                            const d = typeof settings.phoneNumberPurchasedAt.toDate === 'function'
+                                ? settings.phoneNumberPurchasedAt.toDate()
+                                : new Date(settings.phoneNumberPurchasedAt);
+                            return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString();
+                        })()}
                             </td>
                             <td style="padding: 10px; vertical-align: middle;">
                                 ${capsHtml}
@@ -323,10 +329,24 @@ function loadUserSettings() {
                             </td>
                         </tr>
                     `;
+
+                    // Safe Date Parsing Logic
+                    const getJsDate = (val: any) => {
+                        if (!val) return null;
+                        const d = typeof val.toDate === 'function' ? val.toDate() : new Date(val);
+                        return isNaN(d.getTime()) ? null : d;
+                    };
+
+                    const purchaseDate = getJsDate(settings.phoneNumberPurchasedAt);
+                    const renewDateStr = purchaseDate
+                        ? new Date(purchaseDate.getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()
+                        : 'Monthly';
+
                     // Add Renewal Warning Footer
                     const warningConfig = {
-                        monthlyCost: settings.monthlyCost || '$3.45', // Default if not in settings
-                        renewDate: settings.phoneNumberPurchasedAt ? new Date(new Date(settings.phoneNumberPurchasedAt).setDate(new Date(settings.phoneNumberPurchasedAt).getDate() + 30)).toLocaleDateString() : 'Monthly'
+                        monthlyCost: settings.monthlyCost || '$3.45',
+                        renewDate: renewDateStr,
+                        purchaseDateStr: purchaseDate ? purchaseDate.toLocaleDateString() : 'N/A'
                     };
 
                     const footer = document.createElement('div');
@@ -344,7 +364,9 @@ function loadUserSettings() {
                                 <strong>Monthly Cost:</strong> ${warningConfig.monthlyCost} (Auto-renews). 
                                 Please ensure you have sufficient credits. 
                                 <br>
-                                <span style="font-size: 0.8rem; opacity: 0.8;">Next billing estimate: ${warningConfig.renewDate}</span>
+                                <span style="font-size: 0.8rem; opacity: 0.8;">
+                                    Purchased: ${warningConfig.purchaseDateStr} | Next billing estimate: ${warningConfig.renewDate}
+                                </span>
                             </span>
                         </div>
                     `;
