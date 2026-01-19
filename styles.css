@@ -2662,3 +2662,23 @@ body.dashboard-layout {
         font-size: 0.85rem !important;
     }
 }
+
+/* Position hamburger inside header instead of fixed */
+@media (max-width: 1023px) {
+    .hamburger-menu {
+        position: absolute !important;
+        top: 50% !important;
+        left: 15px !important;
+        transform: translateY(-50%) !important;
+        z-index: 100 !important;
+    }
+    
+    /* Adjust header to accommodate hamburger */
+    header {
+        position: relative;
+    }
+    
+    .top-header {
+        padding-left: 65px !important;
+    }
+}
