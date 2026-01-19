@@ -479,7 +479,7 @@ exports.getTransformedUsageHistory = onCall(
                 "sms",
                 "mms",
                 "phonenumbers",
-                "phonenumbers-local", // Keep just in case generic is missing, but usually 'phonenumbers' covers it? 
+                // "phonenumbers-local", // REMOVED to prevent duplicate with 'phonenumbers'
                 // Debug showed 'phonenumbers' exists. But let's keep 'phonenumbers-local' just in case of specific types if 'phonenumbers' is 0?
                 // Actually debug showed: phonenumbers ($1.15) AND phonenumbers-local ($1.15).
                 // So we MUST remove phonenumbers-local to avoid duplicate!
