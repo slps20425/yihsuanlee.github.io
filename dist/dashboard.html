@@ -93,13 +93,13 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/dashboard-mHf_cunE.js"></script>
+  <script type="module" crossorigin src="/assets/dashboard-CHFGyd2A.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-CylzzTV9.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-Duw_bSyU.js">
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-CBvvgv5q.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-BjSOMP8w.js">
   <link rel="modulepreload" crossorigin href="/assets/i18n-ogW5lcZj.js">
   <link rel="modulepreload" crossorigin href="/assets/session-timeout-DU3YVDUK.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-DR3umQsW.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-bMDOkAjc.css">
 </head>
 
 <body class="dashboard-layout">
@@ -516,10 +516,75 @@
     </div>
 
     <!-- Bottom Navigation (Mobile) / Side Navigation (Desktop) -->
-    <nav class="bottom-nav">
-        <!-- Sidebar Top Section (Desktop Only) -->
-        <div class="sidebar-top-section">
-            <select id="languageSelector" class="language-selector-sidebar">
+    <!-- Sidebar Navigation (Refactored for Frontend Design Skill) -->
+    <nav class="sidebar-navigation">
+        <div class="sidebar-header">
+            <div class="sidebar-logo-text">🐱 WiseCat AI</div>
+        </div>
+
+        <div class="nav-list">
+            <!-- Hidden Dashboard Tab (preserved logic) -->
+            <button class="nav-item" data-tab="dashboard" style="display:none;">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </button>
+
+            <button class="nav-item" data-tab="profile">
+                <span class="nav-icon">👤</span>
+                <span class="nav-label" data-i18n="nav_profile">Profile</span>
+            </button>
+
+            <button class="nav-item" data-tab="add">
+                <span class="nav-icon">📱</span>
+                <span class="nav-label" data-i18n="nav_phone">Buy Number</span>
+            </button>
+
+            <!-- AI Services Dropdown -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-dropdown-toggle" id="aiDropdownToggle" data-tab="ai">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <span class="nav-icon">🤖</span>
+                        <span class="nav-label" data-i18n="nav_ai">AI Services</span>
+                    </div>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="nav-dropdown-menu" id="aiDropdownMenu">
+                    <a href="/reservation/restaurant_reservation.html" class="nav-dropdown-item">
+                        <span class="nav-icon">🍽️</span>
+                        <span class="nav-label">Restaurant</span>
+                    </a>
+                    <a href="/reservation/mouthpiece.html" class="nav-dropdown-item">
+                        <span class="nav-icon">📢</span>
+                        <span class="nav-label">Mouthpiece</span>
+                    </a>
+                    <a href="/reservation/trial.html" class="nav-dropdown-item">
+                        <span class="nav-icon">🎁</span>
+                        <span class="nav-label">Trial</span>
+                    </a>
+                </div>
+            </div>
+
+            <button class="nav-item" data-tab="inbox">
+                <span class="nav-icon">💬</span>
+                <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
+            </button>
+
+            <a href="https://line.me/R/ti/p/@785ausca" target="_blank" class="nav-item contact-link">
+                <span class="nav-icon">🎧</span>
+                <span class="nav-label" data-i18n="nav_contact">Contacts</span>
+            </a>
+
+            <!-- Ask AI Button -->
+            <button id="chatToggle" class="nav-item"
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 10px; box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);">
+                <span class="nav-icon">🐱</span>
+                <span class="nav-label">Ask AI</span>
+            </button>
+        </div>
+
+        <!-- Sidebar Footer (User & Lang) -->
+        <div class="sidebar-footer">
+            <select id="languageSelector" class="language-selector-sidebar" style="width: 100%; margin-bottom: 0;">
                 <option value="en">🇺🇸 English</option>
                 <option value="zh">🇹🇼 繁體中文</option>
                 <option value="jp">🇯🇵 日本語</option>
@@ -528,71 +593,19 @@
                 <option value="fr">🇫🇷 Français</option>
                 <option value="it">🇮🇹 Italiano</option>
             </select>
-        </div>
-        <button class="nav-item" data-tab="dashboard" style="display:none;">
-            <span class="nav-icon">📊</span>
-            <span class="nav-label">Dashboard</span>
-        </button>
-        <!-- Hiding redundant tabs -->
-        <!-- Hiding redundant tabs -->
-        <button class="nav-item" data-tab="profile">
-            <span class="nav-icon">👤</span>
-            <span class="nav-label" data-i18n="nav_profile">Profile</span>
-        </button>
-        <button class="nav-item" data-tab="add">
-            <span class="nav-icon">📱</span>
-            <span class="nav-label" data-i18n="nav_phone">Buy Number</span>
-        </button>
-        <!-- AI Services Dropdown -->
-        <div class="nav-dropdown">
-            <button class="nav-item nav-dropdown-toggle" id="aiDropdownToggle" data-tab="ai">
-                <span class="nav-icon">🤖</span>
-                <span class="nav-label" data-i18n="nav_ai">AI Services</span>
-                <span class="dropdown-arrow">▼</span>
-            </button>
-            <div class="nav-dropdown-menu" id="aiDropdownMenu">
-                <a href="/reservation/restaurant_reservation.html" class="nav-dropdown-item">
-                    <span class="nav-icon">🍽️</span>
-                    <span class="nav-label">Restaurant</span>
-                </a>
-                <a href="/reservation/mouthpiece.html" class="nav-dropdown-item">
-                    <span class="nav-icon">📢</span>
-                    <span class="nav-label">Mouthpiece</span>
-                </a>
-                <a href="/reservation/trial.html" class="nav-dropdown-item">
-                    <span class="nav-icon">🎁</span>
-                    <span class="nav-label">Trial</span>
-                </a>
-            </div>
-        </div>
-        <button class="nav-item" data-tab="inbox">
-            <span class="nav-icon">💬</span>
-            <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
-        </button>
 
-        <!-- Contact (Renamed & Moved) -->
-        <a href="https://line.me/R/ti/p/@785ausca" target="_blank" class="nav-item contact-link">
-            <span class="nav-icon">🎧</span>
-            <span class="nav-label" data-i18n="nav_contact">Contacts</span>
-        </a>
-
-        <!-- Ask AI Button (Sidebar) -->
-        <button id="chatToggle" class="nav-item"
-            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 10px; margin-bottom: 10px; border-radius: 12px; border: none;">
-            <span class="nav-icon">🐱</span>
-            <span class="nav-label">Ask AI</span>
-        </button>
-
-        <!-- Sidebar User Section (Desktop Only) -->
-        <div class="sidebar-user-section">
-            <div class="sidebar-user-info" onclick="document.querySelector('[data-tab=profile]').click();">
+            <div class="user-snippet" onclick="document.querySelector('[data-tab=profile]').click();">
                 <img id="headerUserAvatar" src="https://ui-avatars.com/api/?name=Guest" alt="Avatar">
-                <div class="sidebar-user-text">
-                    <div id="headerUserName">Guest</div>
-                    <div id="creditsDisplay" class="sidebar-credits">$0.00</div>
+                <div class="user-details">
+                    <div class="user-snippet-name" id="headerUserName">Guest</div>
+                    <div class="user-snippet-credits" id="creditsDisplay">$0.00</div>
                 </div>
             </div>
-            <button id="headerLogoutBtn" class="sidebar-logout-btn">
+            <!-- Logout is handled by text-only button or small icon if needed, or we keep existing logic? 
+                 The original had a logout button. Let's add it back small or integrate it. 
+                 User requested profile not to be discarded. -->
+            <button id="headerLogoutBtn"
+                style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px; font-size: 12px; margin-top: 4px;">
                 <span data-i18n="nav_logout">Log out</span>
             </button>
         </div>
