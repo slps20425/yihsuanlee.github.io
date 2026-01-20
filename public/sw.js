@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wisecat-v2';
+const CACHE_NAME = 'wisecat-v3';
 const urlsToCache = [
     '/',
     '/entry.html',
@@ -9,7 +9,6 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', (event) => {
-    // Force this new SW to become the active one, kicking out the old one
     self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -21,7 +20,6 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-    // Claim any clients immediately, so they use the new logic without reload
     event.waitUntil(clients.claim());
     const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
@@ -40,18 +38,28 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
 
-    // CRITICAL FIX: Ignore ALL cross-origin requests (Firebase, Google APIs, CDNs)
-    // We only want to cache our own assets.
+    // 1. Ignore Cross-Origin (API/Auth/Images from external)
     if (url.origin !== location.origin) {
         return;
     }
 
-    // Bypass for API routes or specific local exclusions if needed
-    if (url.pathname.startsWith('/api/') ||
-        url.pathname.startsWith('/__/')) {
+    // 2. Ignore API/Firebase routes
+    if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/__/')) {
         return;
     }
 
+    // 3. Network-First for HTML/Navigations
+    if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/') {
+        event.respondWith(
+            fetch(event.request)
+                .catch(() => {
+                    return caches.match(event.request);
+                })
+        );
+        return;
+    }
+
+    // 4. Cache-First for Assets (JS/CSS/Images)
     event.respondWith(
         caches.match(event.request)
             .then((response) => {
