@@ -8,6 +8,12 @@
 - **Completed**: 2026-01-19 (Current)
 - **Deploy URL**: https://wisecat-8df8d.web.app
 
+## Deployment Standards
+> [!IMPORTANT]
+> **Always use `npm run ship`** for full deployments.
+> Use `npx firebase deploy ...` for partial deployments.
+> **DO NOT** rely on the global `firebase` command as it may be missing in the agent environment.
+
 ## Summary of Changes
 1. ✅ **Backend Consolidation** - Merged local keyword checks and OpenAI moderation into `validateMissionDescription`. Removed deprecated `checkMessageSafety`.
 2. ✅ **Unified Frontend Refactoring** - `mouthpiece.ts`, `reservation.ts`, and `trial.ts` now use the unified validation result.

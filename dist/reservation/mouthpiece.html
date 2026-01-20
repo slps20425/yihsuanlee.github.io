@@ -29,13 +29,13 @@
             display: block;
         }
     </style>
-  <script type="module" crossorigin src="/assets/mouthpiece-1A6zbP3v.js"></script>
+  <script type="module" crossorigin src="/assets/mouthpiece-BkzFzbZu.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-BdKKplyx.js">
-  <link rel="modulepreload" crossorigin href="/assets/i18n-SeeXw-i_.js">
+  <link rel="modulepreload" crossorigin href="/assets/i18n-BTkLMre_.js">
   <link rel="modulepreload" crossorigin href="/assets/version-DCg5g3Z2.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-BVuuoQhp.js">
   <link rel="modulepreload" crossorigin href="/assets/timezones-DRXziDFl.js">
-  <link rel="stylesheet" crossorigin href="/assets/i18n-vhaAuNRk.css">
+  <link rel="stylesheet" crossorigin href="/assets/i18n-BRQmiSar.css">
 </head>
 
 <body class="dashboard-layout">
@@ -75,15 +75,7 @@
 
     <div class="main-content">
         <div class="card" style="max-width: 600px; margin: 0 auto;">
-            <select id="languageSelector" class="language-selector">
-                <option value="en">🇺🇸 English</option>
-                <option value="zh">🇹🇼 繁體中文</option>
-                <option value="jp">🇯🇵 日本語</option>
-                <option value="kr">🇰🇷 한국어</option>
-                <option value="es">🇪🇸 Español</option>
-                <option value="fr">🇫🇷 Français</option>
-                <option value="it">🇮🇹 Italiano</option>
-            </select>
+
 
             <div style="text-align: center; margin-bottom: 10px;">
                 <a href="/dashboard.html" style="display: inline-block;">
@@ -317,7 +309,7 @@
             const hamburger = document.getElementById('hamburgerMenu');
             const nav = document.querySelector('.bottom-nav');
             const overlay = document.getElementById('mobileSidebarOverlay');
-            
+
             if (hamburger && nav && overlay) {
                 // Toggle menu
                 hamburger.addEventListener('click', () => {
@@ -326,7 +318,7 @@
                     overlay.classList.toggle('show');
                     document.body.classList.toggle('menu-open');
                 });
-                
+
                 // Close on overlay click
                 overlay.addEventListener('click', () => {
                     hamburger.classList.remove('active');
@@ -334,7 +326,7 @@
                     overlay.classList.remove('show');
                     document.body.classList.remove('menu-open');
                 });
-                
+
                 // Close on nav item click (for mobile)
                 const navItems = nav.querySelectorAll('.nav-item:not(.nav-dropdown-toggle), .nav-dropdown-item');
                 navItems.forEach(item => {

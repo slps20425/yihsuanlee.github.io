@@ -903,9 +903,34 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedTab && document.getElementById(`${savedTab}Tab`)) {
         activateTab(savedTab);
     } else {
-        activateTab('profile'); // Default fallback
+        activateTab('ai'); // Default fallback to AI Services
     }
 });
+
+// AI Dropdown Logic
+const aiDropdownToggle = document.getElementById('aiDropdownToggle');
+const aiDropdownMenu = document.getElementById('aiDropdownMenu');
+
+if (aiDropdownToggle && aiDropdownMenu) {
+    aiDropdownToggle.addEventListener('click', (e) => {
+        // Toggle dropdown visibility
+        aiDropdownMenu.classList.toggle('show');
+        e.stopPropagation();
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (aiDropdownMenu.classList.contains('show')) {
+            if (!aiDropdownToggle.contains(e.target as Node) && !aiDropdownMenu.contains(e.target as Node)) {
+                aiDropdownMenu.classList.remove('show');
+            }
+        }
+    });
+
+    // Also close on tab switch if not AI? 
+    // Actually, if we switch away from AI tab, we probably want to close it?
+    // Let's leave it simple for now.
+}
 // --- Logout Logic ---
 function handleLogout() {
     signOut(auth).then(() => {

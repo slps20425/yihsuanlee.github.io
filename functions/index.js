@@ -512,19 +512,17 @@ exports.getTransformedUsageHistory = onCall(
             const ALLOWED_CATEGORIES = new Set([
                 "calls",
                 "sms",
+                "sms-inbound",
+                "sms-outbound",
+                "sms-messages-carrierfees",
                 "mms",
                 "phonenumbers",
-                // "phonenumbers-local", // REMOVED to prevent duplicate with 'phonenumbers'
-                // Debug showed 'phonenumbers' exists. But let's keep 'phonenumbers-local' just in case of specific types if 'phonenumbers' is 0?
-                // Actually debug showed: phonenumbers ($1.15) AND phonenumbers-local ($1.15).
-                // So we MUST remove phonenumbers-local to avoid duplicate!
-                // "phonenumbers-local", "phonenumbers-mobile", "phonenumbers-tollfree",
                 "recordings",
                 "voice-insights",
                 "monitor-storage",
-                // "trunking-origination", "trunking-termination" // trunking often overlaps with calls? or separate?
-                // Trunking is SIP. If using SIP, it might be separate. But 'calls' might include it?
-                // Safest to keep trunking if they use it, but maybe hidden if 0.
+                "voice-minutes",
+                "voice-minutes-inbound",
+                "voice-minutes-outbound"
             ]);
             // Helper to transform records
             const transformRecords = (recs) => {

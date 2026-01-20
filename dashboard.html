@@ -536,7 +536,7 @@
         </button>
         <!-- AI Services Dropdown -->
         <div class="nav-dropdown">
-            <button class="nav-item nav-dropdown-toggle" id="aiDropdownToggle">
+            <button class="nav-item nav-dropdown-toggle" id="aiDropdownToggle" data-tab="ai">
                 <span class="nav-icon">🤖</span>
                 <span class="nav-label" data-i18n="nav_ai">AI Services</span>
                 <span class="dropdown-arrow">▼</span>
@@ -681,7 +681,6 @@
                     }
                 });
             }
-
             // Hamburger Menu Toggle
             const hamburger = document.getElementById('hamburgerMenu');
             const nav = document.querySelector('.bottom-nav');
@@ -696,7 +695,7 @@
                     document.body.classList.toggle('menu-open');
                 });
 
-                // Close on overlay click
+                // Close on click
                 overlay.addEventListener('click', () => {
                     hamburger.classList.remove('active');
                     nav.classList.remove('mobile-open');
@@ -704,7 +703,7 @@
                     document.body.classList.remove('menu-open');
                 });
 
-                // Close on nav item click (for mobile)
+                // Close on nav item click
                 const navItems = nav.querySelectorAll('.nav-item:not(.nav-dropdown-toggle), .nav-dropdown-item');
                 navItems.forEach(item => {
                     item.addEventListener('click', () => {
