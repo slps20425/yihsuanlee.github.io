@@ -40,13 +40,13 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/reservation-Bn-vJ9SN.js"></script>
+  <script type="module" crossorigin src="/assets/reservation-CKC-cc6y.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-CylzzTV9.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-Duw_bSyU.js">
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-Cyf4weKB.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-CBvvgv5q.js">
   <link rel="modulepreload" crossorigin href="/assets/version-DCg5g3Z2.js">
   <link rel="modulepreload" crossorigin href="/assets/i18n-ogW5lcZj.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-DR6gQxHB.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-DR3umQsW.css">
 </head>
 
 <body class="dashboard-layout">
@@ -147,12 +147,27 @@
                     <div class="custom-time-display" id="resTimeDisplay">Select time</div>
                     <div class="custom-time-dropdown" id="resTimeDropdown">
                         <div class="time-picker-row">
-                            <select class="time-picker-select" id="resTimeHour">
-                                <option value="">Hour</option>
-                            </select>
-                            <select class="time-picker-select" id="resTimeMinute">
-                                <option value="">Min</option>
-                            </select>
+                            <!-- Custom Hour Selector -->
+                            <div class="custom-select-wrapper" id="resTimeHourWrapper">
+                                <div class="custom-select-trigger" style="min-width: 80px;">
+                                    <span id="hourTriggerText">Hour</span>
+                                </div>
+                                <div class="custom-select-options custom-scroll" id="hourOptions">
+                                    <!-- Populated by JS -->
+                                </div>
+                                <input type="hidden" id="resTimeHour" value="">
+                            </div>
+
+                            <!-- Custom Minute Selector -->
+                            <div class="custom-select-wrapper" id="resTimeMinuteWrapper">
+                                <div class="custom-select-trigger" style="min-width: 80px;">
+                                    <span id="minuteTriggerText">Min</span>
+                                </div>
+                                <div class="custom-select-options" id="minuteOptions">
+                                    <!-- Populated by JS -->
+                                </div>
+                                <input type="hidden" id="resTimeMinute" value="">
+                            </div>
                         </div>
                         <div class="time-picker-ampm">
                             <button type="button" class="time-ampm-btn active" data-period="AM">AM</button>
@@ -189,18 +204,22 @@
                     </div>
                 </div>
 
+                <!-- Custom Mission Selector -->
                 <label data-i18n="label_mission">🎯 Choose Mission</label>
-                <select id="mission" required
-                    style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;">
-                    <option value="reservation_new" data-i18n="opt_res_new" selected>Restaurant Reservation
-                    </option>
-                    <option value="reservation_update_cancel" data-i18n="opt_res_update">Reservation Update or
-                        Cancel
-                    </option>
-                    <option value="reservation_food_preorder" data-i18n="opt_res_food">Reservation with Food
-                        Pre-order
-                    </option>
-                </select>
+                <div class="custom-select-wrapper" id="missionSelectWrapper">
+                    <div class="custom-select-trigger">
+                        <span id="missionTriggerText" data-i18n="opt_res_new">Restaurant Reservation</span>
+                    </div>
+                    <div class="custom-select-options">
+                        <span class="custom-option selected" data-value="reservation_new"
+                            data-i18n="opt_res_new">Restaurant Reservation</span>
+                        <span class="custom-option" data-value="reservation_update_cancel"
+                            data-i18n="opt_res_update">Reservation Update or Cancel</span>
+                        <span class="custom-option" data-value="reservation_food_preorder"
+                            data-i18n="opt_res_food">Reservation with Food Pre-order</span>
+                    </div>
+                    <input type="hidden" id="mission" value="reservation_new">
+                </div>
 
                 <div id="preorderFields"
                     style="display: none; margin-top: 15px; padding: 10px; border: 1px solid #444; border-radius: 8px; background: #222;">
@@ -232,10 +251,21 @@
                     style="display: none; margin-top: 15px; padding: 10px; border: 1px dashed #555; border-radius: 8px;">
                     <label data-i18n="label_preorder_backup" style="font-size: 13px; color: #aaa;">If food is
                         unavailable:</label>
-                    <select id="preorderBackupChoice" style="margin-top: 5px;">
-                        <option value="cancel" data-i18n="opt_backup_cancel">Cancel Reservation</option>
-                        <option value="proceed" data-i18n="opt_backup_proceed" selected>Proceed anyway</option>
-                    </select>
+
+                    <!-- Custom Backup Choice Selector -->
+                    <div class="custom-select-wrapper" id="preorderBackupSelectWrapper" style="margin-top: 5px;">
+                        <div class="custom-select-trigger">
+                            <span data-i18n="opt_backup_proceed">Proceed anyway</span>
+                        </div>
+                        <div class="custom-select-options">
+                            <span class="custom-option" data-value="cancel" data-i18n="opt_backup_cancel">Cancel
+                                Reservation</span>
+                            <span class="custom-option selected" data-value="proceed"
+                                data-i18n="opt_backup_proceed">Proceed anyway</span>
+                        </div>
+                        <input type="hidden" id="preorderBackupChoice" value="proceed">
+                    </div>
+
                 </div>
 
                 <label data-i18n="label_phone" style="margin-top: 20px;">📞 Phone</label>
@@ -269,11 +299,21 @@
 
                 <label data-i18n="label_schedule" style="margin-top: 20px;">Schedule Call Preference</label>
                 <div class="schedule-options" style="margin-bottom: 15px;">
-                    <select id="schedulePreference"
-                        style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;">
-                        <option value="open" data-i18n="option_open">Call when restaurant open</option>
-                        <option value="scheduled" data-i18n="option_scheduled">Schedule a specific time</option>
-                    </select>
+
+                    <!-- Custom Schedule Preference Selector -->
+                    <div class="custom-select-wrapper" id="schedulePrefSelectWrapper" style="margin-bottom: 10px;">
+                        <div class="custom-select-trigger">
+                            <span data-i18n="option_open">Call when restaurant open</span>
+                        </div>
+                        <div class="custom-select-options">
+                            <span class="custom-option selected" data-value="open" data-i18n="option_open">Call when
+                                restaurant open</span>
+                            <span class="custom-option" data-value="scheduled" data-i18n="option_scheduled">Schedule a
+                                specific time</span>
+                        </div>
+                        <input type="hidden" id="schedulePreference" value="open">
+                    </div>
+
 
                     <div id="scheduleContainer" style="display: none; padding-left: 10px; border-left: 2px solid #555;">
                         <label data-i18n="label_call_time">Call Time</label>
@@ -534,7 +574,7 @@
             const hamburger = document.getElementById('hamburgerMenu');
             const nav = document.querySelector('.bottom-nav');
             const overlay = document.getElementById('mobileSidebarOverlay');
-            
+
             if (hamburger && nav && overlay) {
                 // Toggle menu
                 hamburger.addEventListener('click', () => {
@@ -543,7 +583,7 @@
                     overlay.classList.toggle('show');
                     document.body.classList.toggle('menu-open');
                 });
-                
+
                 // Close on overlay click
                 overlay.addEventListener('click', () => {
                     hamburger.classList.remove('active');
@@ -551,7 +591,7 @@
                     overlay.classList.remove('show');
                     document.body.classList.remove('menu-open');
                 });
-                
+
                 // Close on nav item click (for mobile)
                 const navItems = nav.querySelectorAll('.nav-item:not(.nav-dropdown-toggle), .nav-dropdown-item');
                 navItems.forEach(item => {

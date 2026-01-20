@@ -386,33 +386,110 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
 
-    // Initialize Custom Time Picker
+    // --- Custom Dropdown Logic (Replaces Native Selects) ---
+    const initCustomDropdowns = () => {
+        const wrappers = document.querySelectorAll('.custom-select-wrapper');
+
+        wrappers.forEach(wrapper => {
+            const trigger = wrapper.querySelector('.custom-select-trigger');
+            const options = wrapper.querySelector('.custom-select-options');
+            const input = wrapper.querySelector('input[type="hidden"]') as HTMLInputElement;
+            const triggerText = trigger?.querySelector('span');
+
+            if (!trigger || !options || !input) return;
+
+            // Toggle Open/Close
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Close others
+                document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+                    if (w !== wrapper) w.classList.remove('open');
+                });
+                wrapper.classList.toggle('open');
+            });
+
+            // Handle Option Click
+            const optionElements = options.querySelectorAll('.custom-option');
+            optionElements.forEach(opt => {
+                opt.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const value = opt.getAttribute('data-value');
+                    const text = opt.textContent;
+
+                    // Update UI
+                    if (triggerText && text) triggerText.textContent = text;
+
+                    // Update Hidden Input
+                    if (value !== null) {
+                        input.value = value;
+                        // Trigger 'change' event manually for listeners
+                        const event = new Event('change', { bubbles: true });
+                        input.dispatchEvent(event);
+                    }
+
+                    // Update Selected State
+                    options.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+
+                    // Close
+                    wrapper.classList.remove('open');
+                });
+            });
+        });
+
+        // Close all when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!(e.target as Element).closest('.custom-select-wrapper')) {
+                document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+            }
+        });
+    };
+
+    // Initialize generic dropdowns first
+    initCustomDropdowns();
+
+
+    // Initialize Custom Time Picker (Updated for Custom Dropdowns)
     const timeDisplay = document.getElementById('resTimeDisplay');
     const timeDropdown = document.getElementById('resTimeDropdown');
-    const timeHourSelect = document.getElementById('resTimeHour') as HTMLSelectElement;
-    const timeMinuteSelect = document.getElementById('resTimeMinute') as HTMLSelectElement;
+    const timeHourInput = document.getElementById('resTimeHour') as HTMLInputElement;
+    const timeMinuteInput = document.getElementById('resTimeMinute') as HTMLInputElement;
     const timeInput = document.getElementById('resTime') as HTMLInputElement;
     const ampmButtons = document.querySelectorAll('.time-ampm-btn');
 
-    if (timeDisplay && timeDropdown && timeHourSelect && timeMinuteSelect) {
-        // Populate hours (1-12)
+    // Populate Custom Hour Options
+    const hourOptionsContainer = document.getElementById('hourOptions');
+    if (hourOptionsContainer) {
+        hourOptionsContainer.innerHTML = '';
         for (let i = 1; i <= 12; i++) {
-            const option = document.createElement('option');
-            option.value = i.toString();
-            option.textContent = i.toString();
-            timeHourSelect.appendChild(option);
+            const div = document.createElement('div');
+            div.className = 'custom-option';
+            div.setAttribute('data-value', i.toString());
+            div.textContent = i.toString();
+            hourOptionsContainer.appendChild(div);
         }
+    }
 
-        // Populate minutes (00, 15, 30, 45)
+    // Populate Custom Minute Options
+    const minuteOptionsContainer = document.getElementById('minuteOptions');
+    if (minuteOptionsContainer) {
+        minuteOptionsContainer.innerHTML = '';
         [0, 15, 30, 45].forEach(min => {
-            const option = document.createElement('option');
+            const div = document.createElement('div');
+            div.className = 'custom-option';
             const minStr = min.toString().padStart(2, '0');
-            option.value = minStr;
-            option.textContent = minStr;
-            timeMinuteSelect.appendChild(option);
+            div.setAttribute('data-value', minStr);
+            div.textContent = minStr;
+            minuteOptionsContainer.appendChild(div);
         });
+    }
 
-        // Toggle dropdown
+    // Re-bind listeners for the newly populated options
+    initCustomDropdowns();
+
+    if (timeDisplay && timeDropdown && timeHourInput && timeMinuteInput) {
+
+        // Toggle dropdown (Time Picker Main)
         timeDisplay.addEventListener('click', () => {
             timeDropdown.classList.toggle('show');
         });
@@ -426,8 +503,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         // Update time when selections change
         const updateTime = () => {
-            const hour = timeHourSelect.value;
-            const minute = timeMinuteSelect.value;
+            const hour = timeHourInput.value;
+            const minute = timeMinuteInput.value;
             const activePeriod = document.querySelector('.time-ampm-btn.active')?.getAttribute('data-period');
 
             if (hour && minute && activePeriod) {
@@ -449,8 +526,8 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         };
 
-        timeHourSelect.addEventListener('change', updateTime);
-        timeMinuteSelect.addEventListener('change', updateTime);
+        timeHourInput.addEventListener('change', updateTime);
+        timeMinuteInput.addEventListener('change', updateTime);
 
         // AM/PM toggle
         ampmButtons.forEach(btn => {
@@ -461,6 +538,59 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
         });
     }
+
+
+
+
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    // Update header
+    dateMonthYear.textContent = `${monthNames[month]} ${year}`;
+
+    // Clear calendar
+    // dateCalendar.innerHTML = ''; 
+    // ... omitting full calendar redraw for brevity in this specific tool call if existing logic was correct. 
+    // Wait, I cannot omit logic in a replace_content. I must include the full block if I am replacing the surrounding area.
+    // Let's look at the EndLine. It is 800. The original file goes to ~2000.
+    // I should replace ONLY the initialization logic for the time picker and dropdowns.
+
+    // Re-evaluating the replace block size.
+    // My previous thought was to replace lines 643-657 (Mission Logic) as well since it uses `change` event.
+    // I need to ensure the MISSION change listener still works.
+    // The code above triggers `input.dispatchEvent(new Event('change', ...))` so existing logic should ideally work if it listens on the generic input.
+    // BUT, the original code had: `const missionSelect = document.getElementById('mission') as HTMLSelectElement;`
+    // Now `mission` is an `<input type="hidden">`.
+    // So I MUST update the Mission Logic block (around line 643) as well.
+
+    // Let's refine the replacement strategy. I will emit a SEPARATE replacement for the Mission Logic block later.
+    // This replacement handles the Generic Dropdown + Time Picker Init.
+
+    // Wait, line 389 was "Initialize Custom Time Picker".
+    // I am replacing from ~390 to ~463.
+
+    // I will use `multi_replace_file_content` for better precision.
+    // Actually, `default_api:replace_file_content` is being used here.
+    // I will replace the Time Picker section only in this call.
+    // And use another call for the `initCustomDropdowns` insertion.
+
+    // Changing strategy: One big replace for the Time Picker logic since it's contiguous.
+    // I will replace `// Initialize Custom Time Picker` block.
+
+    // I ALSO need to insert `initCustomDropdowns` earlier or inside the `DOMContentLoaded`.
+    // I'll put it right after `// Check if script already loaded before us` block (around line 304) OR replace the Time Picker block entirely and include it there.
+    // Replacing Time Picker block seems safest.
+
+    // Wait, the `initCustomDropdowns` needs to run for ALL dropdowns (Mission, Schedule, Time).
+    // I should add it once.
+
+    // Let's execute this tool call to REPLACE the Time Picker logic with the NEW logic + `initCustomDropdowns` definition.
+    // BUT `initCustomDropdowns` handles ALL wrappers.
+
+    // I will replace the block from `// Initialize Custom Time Picker` (line 389) down to the end of the time picker logic (line 463).
+
+
 
     // Initialize Custom Date Picker
     const dateDisplay = document.getElementById('resDateDisplay');
