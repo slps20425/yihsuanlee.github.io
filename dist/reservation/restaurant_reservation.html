@@ -40,13 +40,13 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/reservation-CBRfwR7B.js"></script>
+  <script type="module" crossorigin src="/assets/reservation-Cgb2L9Ku.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-CylzzTV9.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-Duw_bSyU.js">
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-BK9aFoIB.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-DJJTCioI.js">
   <link rel="modulepreload" crossorigin href="/assets/version-DCg5g3Z2.js">
   <link rel="modulepreload" crossorigin href="/assets/i18n-ogW5lcZj.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-BswiMtw-.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-Bxppcf5p.css">
 </head>
 
 <body class="dashboard-layout">
@@ -589,6 +589,18 @@
             const hamburger = document.getElementById('hamburgerMenu');
             const nav = document.querySelector('.sidebar-navigation');
             const overlay = document.getElementById('mobileSidebarOverlay');
+
+            // AI Services Dropdown Toggle (Added for subpages)
+            const dropdownToggle = document.getElementById('aiDropdownToggle');
+            const dropdown = dropdownToggle?.parentElement;
+            if (dropdownToggle && dropdown) {
+                dropdownToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Dropdown toggled');
+                    dropdown.classList.toggle('open');
+                });
+            }
 
             if (hamburger && nav && overlay) {
                 // Toggle menu

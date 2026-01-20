@@ -271,6 +271,18 @@
             const nav = document.querySelector('.sidebar-navigation');
             const overlay = document.getElementById('mobileSidebarOverlay');
 
+            // AI Services Dropdown Toggle (Added for subpages)
+            const dropdownToggle = document.getElementById('aiDropdownToggle');
+            const dropdown = dropdownToggle?.parentElement;
+            if (dropdownToggle && dropdown) {
+                dropdownToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Dropdown toggled');
+                    dropdown.classList.toggle('open');
+                });
+            }
+
             if (hamburger && nav && overlay) {
                 // Toggle menu
                 hamburger.addEventListener('click', () => {

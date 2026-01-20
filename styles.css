@@ -3595,4 +3595,26 @@ body.dashboard-layout {
     visibility: visible !important;
     min-height: 44px;
     /* Touchable area */
+}/* =========================================
+   💄 SUBPAGE POLISH (Header Overlap & Dropdown Fixes)
+   ========================================= */
+
+/* 1. Fix Desktop Header Overlap */
+/* Increase top padding/margin for main-content on desktop */
+@media (min-width: 1024px) {
+    .main-content {
+        /* Was 50px margin-top + 2.5rem padding. 
+           Header is 60px. 
+           Let's increase spacing to ensure clear separation. */
+        margin-top: 80px !important;
+        padding-top: 2rem !important;
+    }
+}
+
+/* 2. Fix Mobile Header Overlap */
+@media (max-width: 1023px) {
+    .main-content {
+        /* Was 60px margin-top */
+        margin-top: 80px !important;
+    }
 }
