@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "firebase/auth";
 import { getFirestore, collection, addDoc, serverTimestamp, query, onSnapshot, deleteDoc, updateDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import WiseCatI18n from "../i18n";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDMjzdCgNbI9W8pUd6AJoGRQlYDqKNcf_c",
@@ -209,7 +210,7 @@ function renderTable() {
         if (data.createdAt) {
             // Handle Firestore Timestamp or Date object
             const dateObj = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-            dateHtml = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            dateHtml = WiseCatI18n.formatDate(dateObj) + ' ' + dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
         // Attachment Link

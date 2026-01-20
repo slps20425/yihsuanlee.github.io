@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Dashboard | WiseCat</title>
     <link rel="stylesheet" href="./styles.css">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <meta name="theme-color" content="#0f172a">
     <style>
         :root {
             /* Keep local design tokens for now */
@@ -659,6 +662,10 @@
     <script type="module" src="./src/phone-numbers.ts"></script>
     <script type="module">
         import { initInbox } from './src/inbox.ts';
+        import { registerPWA } from './src/pwa.ts';
+
+        registerPWA();
+
         // Initialize once DOM is ready or immediately
         initInbox();
 

@@ -14,6 +14,7 @@ interface WiseCatI18nType {
     phoneRules: { [key: string]: RegExp };
     validatePhone: (code: string, number: string) => boolean;
     detectLanguage: (text: string) => string;
+    formatDate: (date: Date, options?: Intl.DateTimeFormatOptions) => string;
 }
 
 const WiseCatI18n: WiseCatI18nType = {
@@ -1044,6 +1045,20 @@ const WiseCatI18n: WiseCatI18nType = {
     validatePhone(code: string, number: string) {
         const rule = this.phoneRules[code] || this.phoneRules['default'];
         return rule.test(number.replace(/\D/g, ''));
+    },
+
+    formatDate(date: Date, options?: Intl.DateTimeFormatOptions): string {
+        const langMap: { [key: string]: string } = {
+            'en': 'en-US',
+            'zh': 'zh-TW',
+            'jp': 'ja-JP',
+            'kr': 'ko-KR',
+            'fr': 'fr-FR',
+            'it': 'it-IT',
+            'es': 'es-ES'
+        };
+        const locale = langMap[this.currentLang] || 'en-US';
+        return date.toLocaleDateString(locale, options);
     }
 };
 

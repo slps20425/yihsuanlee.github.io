@@ -537,7 +537,7 @@ exports.getTransformedUsageHistory = onCall(
                     start_date: r.startDate ? new Date(r.startDate).toISOString() : null,
                     end_date: r.endDate ? new Date(r.endDate).toISOString() : null
                 }))
-                    .filter(r => r.user_price > 0.0000001)
+                    .filter(r => r.user_price > 0 || r.usage > 0)
                     .filter(r => {
                         const BLOCKED_CATEGORIES = new Set([
                             "totalprice",       // Confusion: Looks like a separate charge
@@ -558,6 +558,9 @@ exports.getTransformedUsageHistory = onCall(
 
             let usage = transformRecords(records);
 
+            // Capture raw categories for debugging
+            const allRawCategories = records.map(r => r.category);
+
             // Fallback: If no VALID daily usage found (after filter), fetch Summary.
             if (usage.length === 0) {
                 console.log("[Usage] Daily records empty/filtered, fetching summary fallback.");
@@ -572,7 +575,22 @@ exports.getTransformedUsageHistory = onCall(
                 return new Date(b.start_date) - new Date(a.start_date);
             });
 
-            return { usage, multiplier };
+            // Capture raw SMS records for deep debugging
+            const smsRawDetails = records
+                .filter(r => r.category.includes('sms'))
+                .map(r => ({
+                    cat: r.category,
+                    usage: r.usage,
+                    price: r.price,
+                    date: r.startDate
+                }));
+
+            return {
+                usage,
+                multiplier,
+                _debug_categories: [...new Set(allRawCategories)],
+                _debug_sms_details: smsRawDetails // [DEBUG] Show exact values for SMS
+            };
         } catch (e) {
             console.error("[getTransformedUsageHistory] Error:", e);
             throw new HttpsError("internal", e.message);

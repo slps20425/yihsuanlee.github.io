@@ -1,4 +1,7 @@
 import "./version";
+import { registerPWA } from './pwa';
+registerPWA();
+
 import WiseCatI18n from './i18n';
 import { setupSessionTimeout } from './session-timeout';
 

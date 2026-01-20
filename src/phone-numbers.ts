@@ -366,7 +366,7 @@ function loadUserSettings() {
                             const d = typeof settings.phoneNumberPurchasedAt.toDate === 'function'
                                 ? settings.phoneNumberPurchasedAt.toDate()
                                 : new Date(settings.phoneNumberPurchasedAt);
-                            return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString();
+                            return isNaN(d.getTime()) ? 'N/A' : WiseCatI18n.formatDate(d);
                         })()}
                             </td>
                             <td style="padding: 10px; vertical-align: middle;">
@@ -397,14 +397,14 @@ function loadUserSettings() {
 
                     const purchaseDate = getJsDate(settings.phoneNumberPurchasedAt);
                     const renewDateStr = purchaseDate
-                        ? new Date(purchaseDate.getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()
+                        ? WiseCatI18n.formatDate(new Date(purchaseDate.getTime() + 30 * 24 * 60 * 60 * 1000))
                         : 'Monthly';
 
                     // Add Renewal Warning Footer
                     const warningConfig = {
                         monthlyCost: settings.monthlyCost || '$3.45',
                         renewDate: renewDateStr,
-                        purchaseDateStr: purchaseDate ? purchaseDate.toLocaleDateString() : 'N/A'
+                        purchaseDateStr: purchaseDate ? WiseCatI18n.formatDate(purchaseDate) : 'N/A'
                     };
 
                     const footer = document.createElement('div');
@@ -703,7 +703,7 @@ async function loadUsageHistory() {
                 if (item.start_date) {
                     const d = new Date(item.start_date);
                     // Daily records usually start at 00:00 UTC, so just showing Date is cleaner than time
-                    dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                    dateStr = WiseCatI18n.formatDate(d, { month: 'short', day: 'numeric', year: 'numeric' });
                 }
             } catch (e) {
                 console.warn("Date parse error", e);
