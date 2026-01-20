@@ -2235,9 +2235,9 @@ dialog::backdrop {
         flex-direction: column;
         align-items: stretch !important;
         max-width: none !important;
-        width: calc(100% - 220px) !important;
+        width: calc(100% - 280px) !important;
         /* Adjust for sidebar */
-        margin-left: 220px !important;
+        margin-left: 280px !important;
         padding: 2.5rem;
         box-sizing: border-box;
         margin-right: 0 !important;
@@ -3411,4 +3411,188 @@ body.dashboard-layout {
     .sidebar-footer {
         padding-bottom: env(safe-area-inset-bottom, 20px);
     }
+}
+
+/* =========================================
+   💄 SIDEBAR POLISH (Centering, Logout, Mobile Fixes)
+   ========================================= */
+
+/* 1. Force Center Alignment */
+.nav-item {
+    justify-content: center !important;
+    /* Centers the content */
+    text-align: center !important;
+    /* Centers text if it wraps or is block */
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Fix for AI Services Dropdown Toggle to center its inner content */
+.nav-dropdown-toggle {
+    display: flex !important;
+    justify-content: center !important;
+    /* Center the wrapper and arrow group */
+    align-items: center !important;
+    position: relative;
+    /* For absolute positioning of arrow if needed, but let's keep it flush */
+}
+
+/* The wrapper div inside Dropdown Toggle */
+.nav-dropdown-toggle>div {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    /* Reduce gap slightly */
+    justify-content: center;
+}
+
+/* Move arrow to the right edge or keep it close?
+   User said "make all center". Usually that means icon/text group. 
+   If we center the group, the arrow might look weird floating. 
+   Let's nudge the arrow to be absolutely positioned on the right 
+   to keep the main label perfectly centered. */
+
+.dropdown-arrow {
+    position: absolute;
+    right: 16px;
+}
+
+/* 2. Improve Logout Button Visibility */
+#headerLogoutBtn {
+    background: rgba(239, 68, 68, 0.15) !important;
+    /* Red tint */
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    color: #fca5a5 !important;
+    /* Lighter red text */
+    font-weight: 600 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border-radius: 12px;
+}
+
+#headerLogoutBtn:hover {
+    background: rgba(239, 68, 68, 0.25) !important;
+    color: #fff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* Add an icon to logout button via pseudo-element for better visibility */
+#headerLogoutBtn span::before {
+    content: '🚪';
+    margin-right: 6px;
+    font-size: 1.1em;
+}
+
+/* 3. Mobile Animation & Visibility Fixes */
+@media (max-width: 1024px) {
+    .sidebar-navigation {
+        transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        /* Smarter easing */
+        background: #0f172a !important;
+        /* Solid background to prevent see-through */
+        box-shadow: 10px 0 50px rgba(0, 0, 0, 0.5) !important;
+        /* Ensure z-index is top */
+        z-index: 99999 !important;
+    }
+
+    /* Ensure content inside doesn't fade or glitch */
+    .sidebar-navigation * {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Ensure header/logo is visible */
+    .sidebar-header {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    /* Fix mobile overlay alignment */
+    .mobile-sidebar-overlay {
+        z-index: 99990 !important;
+        /* Just below sidebar */
+        backdrop-filter: blur(4px);
+    }
+}/* =========================================
+   💄 SIDEBAR POLISH V2 (Footer Spacing & Scroll Fixes)
+   ========================================= */
+
+/* 1. Ensure Logout Button is Visible & Footer Spacing */
+.sidebar-navigation {
+    /* Ensure flex column allows scrolling if height is small */
+    display: flex;
+    flex-direction: column;
+    /* Add padding at bottom to prevent cutoff */
+    padding-bottom: 30px !important;
+    overflow-y: auto;
+    /* Enable custom scrollbar for sidebar if content overflows */
+}
+
+/* Custom Scrollbar for sidebar to look premium */
+.sidebar-navigation::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-navigation::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-navigation::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.sidebar-navigation::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Ensure footer has space */
+.sidebar-footer {
+    flex-shrink: 0;
+    /* Don't shrink footer */
+    margin-top: auto;
+    /* Push to bottom */
+    padding-top: 20px;
+    padding-bottom: 10px;
+    /* Extra internal padding */
+    gap: 16px;
+    /* Space between user snippet and logout */
+}/* =========================================
+   💄 SIDEBAR FINAL CHECK (Logout VISIBILITY)
+   ========================================= */
+
+/* Ensure the sidebar navigation container allows enough scroll space */
+.sidebar-navigation {
+    padding-bottom: 120px !important;
+    /* Huge padding to force scroll availability */
+    box-sizing: border-box !important;
+}
+
+/* Ensure the footer sits properly at the bottom */
+.sidebar-footer {
+    padding-bottom: 20px !important;
+    /* Physical padding inside footer */
+    margin-bottom: 0 !important;
+    background: transparent;
+    /* Ensure no background covers it */
+}
+
+/* Ensure body doesn't clip */
+body.dashboard-layout {
+    height: 100vh;
+    overflow: hidden;
+    /* Main body shouldn't scroll, only main-content and sidebar */
+}
+
+/* Button Visibility Polish */
+#headerLogoutBtn {
+    opacity: 1 !important;
+    visibility: visible !important;
+    min-height: 44px;
+    /* Touchable area */
 }
