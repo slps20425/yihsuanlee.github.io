@@ -537,7 +537,7 @@ exports.getTransformedUsageHistory = onCall(
                     start_date: r.startDate ? new Date(r.startDate).toISOString() : null,
                     end_date: r.endDate ? new Date(r.endDate).toISOString() : null
                 }))
-                    .filter(r => r.user_price > 0.001)
+                    .filter(r => r.user_price > 0.0000001)
                     .filter(r => {
                         // Strict Allow Check
                         if (ALLOWED_CATEGORIES.has(r.category)) return true;

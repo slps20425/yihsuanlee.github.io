@@ -2979,8 +2979,41 @@ body.dashboard-layout {
     }
 
     /* Reduce sidebar width further */
+    /* Reduce sidebar width further */
     .bottom-nav {
         width: min(180px, 50vw) !important;
         max-width: 50vw !important;
+        /* Ensure items stretch to fill height */
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    /* Force all main nav items to share vertical space equally */
+    .bottom-nav>.nav-item,
+    .bottom-nav>.nav-dropdown,
+    .bottom-nav>a.nav-item {
+        flex: 1 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        max-height: 80px;
+        /* Prevent being too tall on large phones */
+    }
+
+    /* AI Services Wrapper specifically */
+    .bottom-nav>.nav-dropdown {
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        /* Allow dropdown to expand downwards */
+    }
+
+    /* AI Toggle Button to fill the wrapper */
+    .nav-dropdown-toggle {
+        height: 100% !important;
+        width: 100% !important;
+        flex: 1 !important;
+        max-height: 80px;
     }
 }

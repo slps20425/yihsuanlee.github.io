@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "generated": "2026-01-19T18:50:30.573Z",
+  "generated": "2026-01-20T01:20:40.198Z",
   "metadata": {
-    "lastUpdated": "2026-01-19T18:50:30.540Z",
+    "lastUpdated": "2026-01-20T01:20:40.153Z",
     "deployment": {
-      "timestamp": "2026-01-19T18:50:30.540Z",
-      "gitCommit": "ebbd4a902b9cb523cff09f493f1e6bb80b30d0e4",
+      "timestamp": "2026-01-20T01:20:40.153Z",
+      "gitCommit": "c4def7b7c96121701fc723f7fd809470548ee7b9",
       "gitBranch": "main"
     },
     "modules": {},
@@ -82,10 +82,10 @@
       },
       {
         "path": "src/phone-numbers.ts",
-        "size": 43356,
-        "lines": 946,
+        "size": 44259,
+        "lines": 971,
         "type": ".ts",
-        "lastModified": "2026-01-19T14:39:30.400Z"
+        "lastModified": "2026-01-20T01:09:44.743Z"
       },
       {
         "path": "src/reservation.ts",
@@ -131,10 +131,10 @@
       },
       {
         "path": "functions/index.js",
-        "size": 72150,
-        "lines": 1644,
+        "size": 71571,
+        "lines": 1642,
         "type": ".js",
-        "lastModified": "2026-01-19T15:38:21.666Z"
+        "lastModified": "2026-01-20T01:08:46.495Z"
       },
       {
         "path": "admin/tasks.html",
@@ -152,87 +152,87 @@
       },
       {
         "path": "dashboard.html",
-        "size": 44008,
-        "lines": 1008,
+        "size": 44000,
+        "lines": 1007,
         "type": ".html",
-        "lastModified": "2026-01-19T18:44:26.865Z"
+        "lastModified": "2026-01-20T01:10:36.418Z"
       },
       {
         "path": "dist/admin/tasks.html",
         "size": 15957,
         "lines": 569,
         "type": ".html",
-        "lastModified": "2026-01-19T18:49:26.265Z"
+        "lastModified": "2026-01-20T01:18:31.673Z"
       },
       {
         "path": "dist/dashboard.html",
-        "size": 41654,
+        "size": 41668,
         "lines": 949,
         "type": ".html",
-        "lastModified": "2026-01-19T18:49:26.265Z"
+        "lastModified": "2026-01-20T01:18:31.673Z"
       },
       {
         "path": "dist/entry.html",
         "size": 9630,
         "lines": 164,
         "type": ".html",
-        "lastModified": "2026-01-19T18:49:26.265Z"
+        "lastModified": "2026-01-20T01:18:31.673Z"
       },
       {
         "path": "dist/login-success.html",
         "size": 1465,
         "lines": 57,
         "type": ".html",
-        "lastModified": "2026-01-19T18:49:26.265Z"
+        "lastModified": "2026-01-20T01:18:31.673Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_guide.html",
         "size": 14461,
         "lines": 442,
         "type": ".html",
-        "lastModified": "2026-01-19T18:49:26.126Z"
+        "lastModified": "2026-01-20T01:18:31.532Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_mobile.html",
         "size": 15624,
         "lines": 425,
         "type": ".html",
-        "lastModified": "2026-01-19T18:49:26.127Z"
+        "lastModified": "2026-01-20T01:18:31.533Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/dp_indexing_mobile_full.html",
         "size": 7293,
         "lines": 198,
         "type": ".html",
-        "lastModified": "2026-01-19T18:49:26.128Z"
+        "lastModified": "2026-01-20T01:18:31.534Z"
       },
       {
         "path": "dist/reservation/mouthpiece.html",
-        "size": 18923,
-        "lines": 355,
+        "size": 18399,
+        "lines": 347,
         "type": ".html",
-        "lastModified": "2026-01-19T18:49:26.265Z"
+        "lastModified": "2026-01-20T01:18:31.673Z"
       },
       {
         "path": "dist/reservation/restaurant_reservation.html",
         "size": 27342,
         "lines": 571,
         "type": ".html",
-        "lastModified": "2026-01-19T18:49:26.265Z"
+        "lastModified": "2026-01-20T01:18:31.673Z"
       },
       {
         "path": "dist/reservation/trial.html",
         "size": 14170,
         "lines": 297,
         "type": ".html",
-        "lastModified": "2026-01-19T18:49:26.266Z"
+        "lastModified": "2026-01-20T01:18:31.673Z"
       },
       {
         "path": "dist/resume/index.html",
         "size": 38970,
         "lines": 659,
         "type": ".html",
-        "lastModified": "2026-01-19T18:49:26.265Z"
+        "lastModified": "2026-01-20T01:18:31.671Z"
       },
       {
         "path": "entry.html",
@@ -278,10 +278,10 @@
       },
       {
         "path": "reservation/mouthpiece.html",
-        "size": 18478,
-        "lines": 350,
+        "size": 17954,
+        "lines": 342,
         "type": ".html",
-        "lastModified": "2026-01-19T18:44:26.866Z"
+        "lastModified": "2026-01-20T01:17:57.824Z"
       },
       {
         "path": "reservation/restaurant_reservation.html",
