@@ -7,7 +7,7 @@
             "namespace": "android_app",
             "package_name": "cc.wise_catty.twa",
             "sha256_cert_fingerprints": [
-                "REPLACE_WITH_YOUR_SHA256_FINGERPRINT_FROM_PWABUILDER"
+                "87:43:02:BD:91:70:E5:19:AC:90:70:FE:15:0E:B7:C8:44:9C:80:B5:7D:21:95:8C:89:14:14:02:2E:AF:FA:FC"
             ]
         }
     }
