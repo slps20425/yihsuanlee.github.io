@@ -3023,6 +3023,20 @@ body.dashboard-layout {
         /* Allow growing */
         max-height: none !important;
         /* Remove limit */
+        min-height: 160px !important;
+        /* FORCE it to be tall (approx 2-3 cells) */
         gap: 4px !important;
+    }
+
+    /* Ensure inner menu also expands fully */
+    .bottom-nav .nav-dropdown.open .nav-dropdown-menu {
+        max-height: none !important;
+        position: relative !important;
+        /* In flow, not absolute */
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+        overflow: visible !important;
     }
 }

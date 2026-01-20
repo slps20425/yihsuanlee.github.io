@@ -531,7 +531,7 @@ exports.getTransformedUsageHistory = onCall(
                     description: r.description,
                     usage: parseFloat(r.usage || 0),
                     unit: r.usageUnit,
-                    base_price: parseFloat(r.price || 0),
+                    // base_price removed for user privacy
                     user_price: parseFloat(r.price || 0) * multiplier,
                     currency: r.priceUnit,
                     start_date: r.startDate ? new Date(r.startDate).toISOString() : null,
@@ -542,7 +542,7 @@ exports.getTransformedUsageHistory = onCall(
                         const BLOCKED_CATEGORIES = new Set([
                             "totalprice",       // Confusion: Looks like a separate charge
                             "voice-minutes",    // Confusion: Duplicates "voice-minutes-outbound/inbound"
-                            "sms",              // Confusion: Duplicates "sms-outbound/inbound"
+                            // "sms",           // UNBLOCKING SMS to see if it fixes the missing log issue
                             "calls"             // Confusion: Duplicates specific call types
                         ]);
                         if (BLOCKED_CATEGORIES.has(r.category)) return false;
