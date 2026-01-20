@@ -15,6 +15,18 @@
     <script type="module" crossorigin src="/assets/main-B00tlXve.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/i18n-DkJrAHgg.js">
     <link rel="stylesheet" crossorigin href="/assets/i18n-CscEOELR.css">
+
+    <!-- PWA Manifest & SW Registration (Explicit for Detection) -->
+    <link rel="manifest" href="/manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW Registered (Inline):', reg.scope))
+                    .catch(err => console.log('SW Registration Failed:', err));
+            });
+        }
+    </script>
 </head>
 
 <body>
