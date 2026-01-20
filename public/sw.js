@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wisecat-v1';
+const CACHE_NAME = 'wisecat-v2';
 const urlsToCache = [
     '/',
     '/entry.html',
