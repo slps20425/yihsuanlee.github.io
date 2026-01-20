@@ -5,6 +5,7 @@ import { app, auth, db } from "./firebase-config"; // Use shared config
 import WiseCatI18n from "./i18n";
 import { ScamCheck } from "./scam-check";
 import { setupSessionTimeout } from "./session-timeout";
+import { initSessionEnforcement, clearSessionEnforcement } from "./session-enforcement"; // [NEW] Single Session
 import { initInbox, updateInboxCredits } from "./inbox"; // Import inbox initialization
 
 const functions = getFunctions(app);
@@ -195,12 +196,14 @@ onAuthStateChanged(auth, async (user) => {
 
         console.log(`%c[DASHBOARD AUTH]`, 'color: #ef4444; font-weight: bold;',
             '🔄 No cached user or auth state. Redirecting immediately...');
+        clearSessionEnforcement();
         window.location.href = '/Entry.html';
         return;
     }
     currentUser = user;
 
     if (user) {
+        initSessionEnforcement(user); // [NEW] Start session enforcement
         // Update user info in Profile tab
         if (userName) userName.textContent = user.displayName || 'User';
         if (userEmail) userEmail.textContent = user.email || '';
@@ -933,6 +936,7 @@ if (aiDropdownToggle && aiDropdownMenu) {
 }
 // --- Logout Logic ---
 function handleLogout() {
+    clearSessionEnforcement(); // [NEW] Stop listening
     signOut(auth).then(() => {
         localStorage.removeItem('wisecat_user');
         window.location.href = '/Entry.html';
