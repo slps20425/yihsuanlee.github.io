@@ -9,6 +9,8 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', (event) => {
+    // Force this new SW to become the active one, kicking out the old one
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
@@ -18,28 +20,9 @@ self.addEventListener('install', (event) => {
     );
 });
 
-self.addEventListener('fetch', (event) => {
-    const url = new URL(event.request.url);
-
-    // Bypass for Firebase Auth, APIs, and non-GET requests
-    if (url.pathname.startsWith('/__/') ||
-        url.pathname.startsWith('/api/') ||
-        event.request.method !== 'GET') {
-        return;
-    }
-
-    event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                if (response) {
-                    return response;
-                }
-                return fetch(event.request);
-            })
-    );
-});
-
 self.addEventListener('activate', (event) => {
+    // Claim any clients immediately, so they use the new logic without reload
+    event.waitUntil(clients.claim());
     const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
         caches.keys().then((cacheNames) => {
@@ -51,5 +34,31 @@ self.addEventListener('activate', (event) => {
                 })
             );
         })
+    );
+});
+
+self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
+
+    // CRITICAL FIX: Ignore ALL cross-origin requests (Firebase, Google APIs, CDNs)
+    // We only want to cache our own assets.
+    if (url.origin !== location.origin) {
+        return;
+    }
+
+    // Bypass for API routes or specific local exclusions if needed
+    if (url.pathname.startsWith('/api/') ||
+        url.pathname.startsWith('/__/')) {
+        return;
+    }
+
+    event.respondWith(
+        caches.match(event.request)
+            .then((response) => {
+                if (response) {
+                    return response;
+                }
+                return fetch(event.request);
+            })
     );
 });
