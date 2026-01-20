@@ -3617,4 +3617,80 @@ body.dashboard-layout {
         /* Was 60px margin-top */
         margin-top: 80px !important;
     }
+}/* =========================================
+   MOBILE SIDEBAR RESIZE (Slimmer & Shorter)
+   ========================================= */
+
+@media (max-width: 1024px) {
+
+    /* 1. Slimmer Sidebar Container */
+    .sidebar-navigation {
+        /* Was 85vw / 320px. Reducing to make it less bulky. */
+        width: 70vw !important;
+        max-width: 260px !important;
+    }
+
+    /* 2. Compact Navigation Items (Half Height) */
+    .nav-item {
+        /* Reduce padding significantly */
+        padding: 8px 12px !important;
+        /* Enforce shorter height */
+        min-height: 38px !important;
+        /* Smaller font */
+        font-size: 0.85rem !important;
+        /* Smaller gap */
+        gap: 8px !important;
+        /* Reduce margin between items */
+        margin-bottom: 4px !important;
+    }
+
+    /* Smaller Icons */
+    .nav-icon {
+        font-size: 1.1rem !important;
+        min-width: 20px !important;
+        /* Prevent squishing */
+    }
+
+    /* Compact User Snippet */
+    .user-snippet {
+        padding: 8px !important;
+        gap: 8px !important;
+    }
+
+    .user-snippet img {
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+    .user-snippet-name {
+        font-size: 13px !important;
+    }
+
+    .user-snippet-credits {
+        font-size: 11px !important;
+    }
+
+    /* Compact Header */
+    .sidebar-header {
+        margin-top: 15px !important;
+        padding-bottom: 10px !important;
+    }
+
+    .sidebar-logo-text {
+        font-size: 1.2rem !important;
+    }
+
+    /* Compact Language Selector */
+    .language-selector-sidebar {
+        padding: 6px !important;
+        font-size: 12px !important;
+        margin-top: 5px !important;
+    }
+
+    /* Logout Button Compact */
+    #headerLogoutBtn {
+        min-height: 36px !important;
+        font-size: 12px !important;
+        padding: 6px !important;
+    }
 }
