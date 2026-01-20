@@ -427,6 +427,10 @@ function displayUserProfile(user: any) {
 function startBackgroundAnimation() {
     const canvas = document.getElementById('bg-canvas') as HTMLCanvasElement;
     if (!canvas) return;
+    // CRITICAL FIX: Ensure canvas never blocks clicks
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '1';
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
