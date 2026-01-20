@@ -2526,10 +2526,14 @@ body.dashboard-layout {
     z-index: 9999;
     opacity: 0;
     transition: opacity 0.3s ease;
+    pointer-events: none;
+    /* Fix: Don't block clicks when invisible */
 }
 
 .mobile-sidebar-overlay.show {
     opacity: 1;
+    pointer-events: auto;
+    /* Fix: Block clicks only when visible */
 }
 
 /* Mobile Navigation Behavior */
