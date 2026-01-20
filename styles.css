@@ -3016,4 +3016,13 @@ body.dashboard-layout {
         flex: 1 !important;
         max-height: 80px;
     }
+
+    /* Allow dropdown to grow when open */
+    .bottom-nav>.nav-dropdown.open {
+        flex: 0 0 auto !important;
+        /* Allow growing */
+        max-height: none !important;
+        /* Remove limit */
+        gap: 4px !important;
+    }
 }

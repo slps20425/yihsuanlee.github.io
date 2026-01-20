@@ -539,10 +539,21 @@ exports.getTransformedUsageHistory = onCall(
                 }))
                     .filter(r => r.user_price > 0.0000001)
                     .filter(r => {
-                        // Strict Allow Check
-                        if (ALLOWED_CATEGORIES.has(r.category)) return true;
-                        return false;
+                        const BLOCKED_CATEGORIES = new Set([
+                            "totalprice",       // Confusion: Looks like a separate charge
+                            "voice-minutes",    // Confusion: Duplicates "voice-minutes-outbound/inbound"
+                            "sms",              // Confusion: Duplicates "sms-outbound/inbound"
+                            "calls"             // Confusion: Duplicates specific call types
+                        ]);
+                        if (BLOCKED_CATEGORIES.has(r.category)) return false;
+                        return true;
                     });
+                // .filter(r => {
+                //     // Strict Allow Check REMOVED to show all usage
+                //     // if (ALLOWED_CATEGORIES.has(r.category)) return true;
+                //     // return false;
+                //     return true; 
+                // });
             };
 
             let usage = transformRecords(records);
