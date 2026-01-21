@@ -4009,13 +4009,20 @@ body.dashboard-layout {
         gap: 12px;
         /* Space between profile and language selector */
     }
+
+    /* Fix mobile header avatar alignment - Mobile Only */
+    #mobileHeaderAvatar {
+        margin-right: 0 !important;
+        display: inline-block !important;
+        vertical-align: middle !important;
+    }
 }
 
-/* Fix mobile header avatar alignment */
-#mobileHeaderAvatar {
-    margin-right: 0 !important;
-    display: inline-block !important;
-    vertical-align: middle !important;
+/* Ensure hidden on desktop */
+@media (min-width: 1025px) {
+    #mobileHeaderAvatar {
+        display: none !important;
+    }
 }
 
 /* 🔧 WEB SCROLL & UI FIXES */
