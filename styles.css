@@ -3768,8 +3768,8 @@ body.dashboard-layout {
 
     .header-content {
         height: 60px !important;
-        padding: 0 8px !important;
-        /* Reduced padding to move hamburger left */
+        padding: 0 4px !important;
+        /* Minimized padding */
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
@@ -3786,7 +3786,8 @@ body.dashboard-layout {
         height: 36px !important;
         padding: 0 !important;
         margin: 0 !important;
-        /* Remove margins */
+        margin-left: 0 !important;
+        /* Ensure flush left */
         border-radius: 8px;
         background: rgba(255, 255, 255, 0.05) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
