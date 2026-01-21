@@ -3,11 +3,11 @@
 ## Current Status: READY_FOR_QA
 
 ## Last Completed Task
-- **Task ID**: UI_Fixes_Date_Time_Header
-- **Title**: Reservation UI Fixes & Header Logic
-- **Completed**: 2026-01-21T16:05:00+08:00
+- **Task ID**: Validation_UX_Improvement
+- **Title**: Form Validation UX Overhaul
+- **Completed**: 2026-01-21T16:15:00+08:00
 - **Deploy URL**: https://wisecat-8df8d.web.app/
-- **Notes**: Fixed Date/Time picker sizing and interaction. Fixed "Schedule Preference" dropdown. Dynamic Tab text in Header.
+- **Notes**: Enabled submit button by default. Clicking checks all fields, lists errors in toast, and scrolls to first error.
 
 ## Deployment Standards
 > [!IMPORTANT]

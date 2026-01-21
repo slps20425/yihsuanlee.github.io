@@ -2150,9 +2150,10 @@ async function validateNote() {
     const validateBtn = document.getElementById('validateBtn') as HTMLButtonElement;
     const feedbackDiv = document.getElementById('validationFeedback');
     const noteTextarea = document.getElementById('note') as HTMLTextAreaElement;
-    const missionSelect = document.getElementById('mission') as HTMLSelectElement;
+    // 'mission' is now a hidden input in the custom dropdown
+    const missionInput = document.getElementById('mission') as HTMLInputElement;
 
-    if (!noteTextarea || !feedbackDiv || !validateBtn || !missionSelect) return;
+    if (!noteTextarea || !feedbackDiv || !validateBtn || !missionInput) return;
 
     const description = noteTextarea.value.trim();
     if (!description) return;
@@ -2180,9 +2181,15 @@ async function validateNote() {
         const functions = getFunctions();
         const validateFunction = httpsCallable(functions, 'validateMissionDescription');
 
-        const missionId = missionSelect.value;
-        const currentLang = WiseCatI18n.currentLang;
-        const missionName = missionSelect.selectedOptions[0]?.text || missionId;
+        const missionId = missionInput.value;
+        const currentLang = (window as any).WiseCatI18n ? (window as any).WiseCatI18n.currentLang : 'en';
+
+        // Get mission name from the custom dropdown trigger text if available
+        let missionName = missionId;
+        const missionTriggerText = document.getElementById('missionTriggerText');
+        if (missionTriggerText && missionTriggerText.innerText) {
+            missionName = missionTriggerText.innerText;
+        }
 
         const result: any = await validateFunction({
             missionId,
