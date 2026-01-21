@@ -3726,66 +3726,55 @@ body.dashboard-layout {
 }
 
 /* Mobile Bottom Sheet Style for Chat Panel */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .chat-panel {
-        /* Reset desktop styles */
         top: auto !important;
-        right: 0 !important;
         left: 0 !important;
-        bottom: -100% !important;
-        /* Start off-screen */
+        right: 0 !important;
+        bottom: 0 !important;
         width: 100% !important;
-        height: 85vh !important;
-        max-height: 85vh !important;
-        border-radius: 20px 20px 0 0 !important;
-        transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2) !important;
+        max-width: 100% !important;
+        height: 80vh !important;
+        max-height: 80vh !important;
+        border-radius: 24px 24px 0 0 !important;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3) !important;
+        margin: 0 !important;
+        transform: translateY(110%);
+        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+        display: flex !important;
     }
 
     .chat-panel[style*="display: flex"] {
-        bottom: 0 !important;
-        display: flex !important;
+        transform: translateY(0) !important;
     }
 }
 
 /* 🍔 Mobile Hamburger Fix */
 @media (max-width: 1024px) {
     .hamburger-menu {
-        position: static !important;
-        /* Was absolute */
-        padding: 8px !important;
-        margin-right: 8px !important;
-        background: transparent !important;
-        /* Ensure it fits in header flow */
+        position: relative !important;
         display: flex !important;
-        flex-direction: column;
-        justify-content: center;
-        gap: 5px;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        margin-right: 8px !important;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         z-index: 1002;
-        /* Above everything */
-        border: none !important;
-        cursor: pointer;
     }
 
-    .hamburger-menu span {
-        display: block;
-        width: 24px;
-        height: 2px;
-        background-color: var(--text-primary);
-        border-radius: 2px;
-        transition: all 0.3s ease;
-    }
-
-    /* Adjust header content layout for mobile */
     .header-content {
+        height: 70px !important;
         padding: 0 16px !important;
-        justify-content: flex-start !important;
-        /* Align left */
+        display: flex !important;
+        align-items: center !important;
     }
 
-    /* Push title slightly right */
     .header-title {
-        margin-right: auto !important;
+        font-size: 1.1rem !important;
     }
 }
 
