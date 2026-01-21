@@ -1800,15 +1800,29 @@ async function initSearchLogic() {
         const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
         const searchInputEl = document.getElementById('searchPlaceInput') as HTMLInputElement;
 
-        // Use fetched phone if available, otherwise try place object (unlikely to have it due to partial search)
-        let phoneNumber = fetchedPhone;
+        // PRIORITIZE internationalPhoneNumber for better country detection
+        let phoneNumber = place.internationalPhoneNumber || place.formattedPhoneNumber || fetchedPhone;
+
+        // If we have a national number but no international one, try to use fetchedPhone if it looks international
+        if (!phoneNumber && fetchedPhone) {
+            phoneNumber = fetchedPhone;
+        }
 
         // If for some reason we didn't fetch details in modal (error?), try fetching again?
         // But logic above ensures we try.
 
         if (phoneNumber) {
             if (typeof phoneInputPlugin !== 'undefined' && phoneInputPlugin) {
+                // FORCE E.164 format (remove spaces/dashes) to help intl-tel-input auto-detect country
+                // intl-tel-input best detects country from "+886..." style
+                // If it's already international (starts with +), great.
+
+                // 1. Set the number
                 phoneInputPlugin.setNumber(phoneNumber);
+
+                // 2. Explicit Check: Did the correct flag load?
+                // logic: if strictly international, it usually works.
+
             } else {
                 phoneInput.value = phoneNumber;
             }

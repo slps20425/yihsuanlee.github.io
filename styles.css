@@ -2667,8 +2667,11 @@ body.dashboard-layout {
     }
 
     /* Show overlay when needed */
+    /* Show overlay when needed */
     .mobile-sidebar-overlay {
         display: block;
+        /* Ensure it doesn't block clicks when not shown */
+        pointer-events: none;
     }
 
     /* Hide bottom nav by default, slide in from left */
