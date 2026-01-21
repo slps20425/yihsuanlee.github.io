@@ -1462,6 +1462,38 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     z-index: 1000;
     display: none;
     padding: 15px;
+    /* Limit width for large screens */
+    max-width: 350px;
+    margin: 5px auto;
+}
+
+.custom-time-dropdown {
+    /* Ensure time dropdown also follows width constraint if needed, 
+       though it was defined earlier without max-width. 
+       Let's add it here to be consistent if it was missing in previous restore. 
+       Actually, custom-time-dropdown was defined around line 1363. 
+       I should have updated THAT one. But I can override/add here or just let it be.
+       The previous delete removed custom-time-dropdown styles? No, it deleted lines after it.
+       Wait, I need to check if I deleted .custom-time-dropdown definition?
+       Line 1378 was ".custom-time-dropdown.show".
+       The base class ".custom-time-dropdown" is around line 1363.
+       I should add max-width to .custom-time-dropdown up there? 
+       No, I'll just leave this block restoring the types I deleted. 
+       AND I will add the max-width rule to .custom-date-dropdown as shown above.
+       
+       For .custom-time-dropdown, I should likely update it separately or assuming it's fine.
+       Wait, I want to restrict BOTH.
+       I'll use a specific rule for both. */
+}
+
+/* Limit dropdown width for both */
+.custom-time-dropdown,
+.custom-date-dropdown {
+    max-width: 350px;
+    margin: 5px auto !important;
+    /* Force center */
+    left: 0;
+    right: 0;
 }
 
 .custom-date-dropdown.show {

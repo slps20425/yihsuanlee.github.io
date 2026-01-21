@@ -411,39 +411,38 @@ document.addEventListener("DOMContentLoaded", async function () {
                 wrapper.classList.toggle('open');
             });
 
-            // Handle Option Click
-            const optionElements = options.querySelectorAll('.custom-option');
-            optionElements.forEach(opt => {
-                opt.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const value = opt.getAttribute('data-value');
-                    const text = opt.textContent;
+            // Handle Option Click (Event Delegation)
+            options.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const opt = (e.target as HTMLElement).closest('.custom-option');
+                if (!opt) return;
 
-                    // Update UI
-                    if (triggerText && text) triggerText.textContent = text;
+                const value = opt.getAttribute('data-value');
+                const text = opt.textContent;
 
-                    // Update Hidden Input
-                    if (value !== null) {
-                        input.value = value;
-                        // Trigger 'change' event manually for listeners
-                        const event = new Event('change', { bubbles: true });
-                        input.dispatchEvent(event);
-                    }
+                // Update UI
+                if (triggerText && text) triggerText.textContent = text;
 
-                    // Update Selected State
-                    options.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
-                    opt.classList.add('selected');
+                // Update Hidden Input
+                if (value !== null) {
+                    input.value = value;
+                    // Trigger 'change' event manually for listeners
+                    const event = new Event('change', { bubbles: true });
+                    input.dispatchEvent(event);
+                }
 
-                    // Close
-                    wrapper.classList.remove('open');
-                });
+                // Update Selected State
+                options.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+
+                // Close
+                wrapper.classList.remove('open');
             });
 
             wrapper.setAttribute('data-initialized', 'true');
         });
 
         // Close all when clicking outside (Only add once globally or ensure harmless redundancy)
-        // Ideally should be outside this function or checked, but for now simple check:
         if (!document.body.hasAttribute('data-click-listener-attached')) {
             document.addEventListener('click', (e) => {
                 if (!(e.target as Element).closest('.custom-select-wrapper')) {
