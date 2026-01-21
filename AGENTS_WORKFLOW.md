@@ -3,9 +3,9 @@
 ## Current Status: READY_FOR_QA
 
 ## Last Completed Task
-- **Task ID**: Security_AI_Consolidation
-- **Title**: Consolidated Security & AI Mission Refinement
-- **Completed**: 2026-01-19 (Current)
+- **Task ID**: UI_UX_Polish_Fixes
+- **Title**: Mobile UI/UX Polish & Bug Fixes
+- **Completed**: 2026-01-20 (Current)
 - **Deploy URL**: https://wisecat-8df8d.web.app
 
 ## Deployment Standards
@@ -15,14 +15,13 @@
 > **DO NOT** rely on the global `firebase` command as it may be missing in the agent environment.
 
 ## Summary of Changes
-1. ✅ **Backend Consolidation** - Merged local keyword checks and OpenAI moderation into `validateMissionDescription`. Removed deprecated `checkMessageSafety`.
-2. ✅ **Unified Frontend Refactoring** - `mouthpiece.ts`, `reservation.ts`, and `trial.ts` now use the unified validation result.
-3. ✅ **AI Suggestion Improvements** - Enhanced Gemini prompt for cleaner rephrasing and improved "Apply Suggestion" UI logic.
-4. ✅ **Knowledge Base Updates** - Updated `cloud-functions.md` and `task-system.md` with new architecture diagrams and flow descriptions.
+1. ✅ **Mobile Scroll Fix** - Adjusted `dashboard-layout` and `main-content` CSS to allow scrolling on mobile subpages.
+2. ✅ **Helper Buddy Fix** - Increased z-index to 9000 and fixed template click handler in `src/i18n.ts` (corrected textarea ID target).
+3. ✅ **Ask AI Mobile UI** - Implemented blurred backdrop and bottom-sheet style for mobile chat.
+4. ✅ **Navigation Polish** - Repositioned hamburger menu, fixed Contacts alignment, and resized mobile sidebar.
 
 ## QA Testing Checklist
-- [ ] **Security Validation**: Enter "crypto" in any description field. Click "Check". Verify it is blocked.
-- [ ] **AI Refinement**: Enter an informal message (e.g., "i want to book a table for 2"). Click "Check". Verify professional suggestion appears.
-- [ ] **Apply Logic**: Click "Apply Suggestion". Verify textarea updates with new text.
-- [ ] **Submit Verification**: Complete the submission flow and ensure task document is created in Firestore.
-- [ ] **Docs Review**: Check `knowledge/` modules for updated Mermaid diagrams.
+- [ ] **Mobile Scroll**: Open Restaurant/Mouthpiece page on mobile. Verify scrolling works immediately without tapping fields.
+- [ ] **Helper Buddy**: Tap the cat icon on mobile. Tap a template. Verify text is inserted into the script/note field.
+- [ ] **Ask AI**: Tap "Ask AI" on mobile. Verify blurred backdrop appears and panel slides up. Tap backdrop to close.
+- [ ] **Navigation**: Verify hamburger menu is in the header and Contacts button aligns correctly.
