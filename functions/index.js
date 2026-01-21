@@ -1232,163 +1232,138 @@ const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
  * Returns: { valid: boolean }
  */
 exports.validateMissionDescription = onCall(
-    { secrets: [GEMINI_API_KEY] },
+    { secrets: [GEMINI_API_KEY, OPENAI_API_KEY] }, // Added OpenAI key just in case
     async (request) => {
         const { missionId, missionName, description, language } = request.data;
+        const auth = request.auth;
 
         // Validate inputs
         if (!missionId || !missionName || !description) {
-            throw new HttpsError(
-                "invalid-argument",
-                "Missing required parameters: missionId, missionName, or description"
-            );
+            throw new HttpsError("invalid-argument", "Missing required parameters.");
         }
 
         if (description.length < 10) {
-            throw new HttpsError(
-                "invalid-argument",
-                "Description is too short. Please provide at least 10 characters."
-            );
-        }
-
-        if (description.length > 1000) {
-            throw new HttpsError(
-                "invalid-argument",
-                "Description is too long. Please keep it under 1000 characters."
-            );
+            throw new HttpsError("invalid-argument", "Description too short.");
         }
 
         try {
-            // --- 1. Combined Security Check (Keywords + OpenAI) ---
             const { getFirestore } = require("firebase-admin/firestore");
-            const OpenAI = require("openai");
+            const adminApp = require("firebase-admin").app();
+            const dbRes = getFirestore(adminApp, "reservation");
 
-            // Keyword Check
+            // --- 1. Security & Scam Check ---
+            // (Keeping existing keyword check logic for performance, but adding LLM instructions)
             let blacklist = [];
             try {
-                const adminApp = require("firebase-admin").app();
-                const dbRes = getFirestore(adminApp, "reservation");
                 const settings = await dbRes.doc("configuration/settings").get();
                 const configData = settings.data() || {};
                 const customKeywords = configData.custom_scam_keywords || "";
+                blacklist = Array.isArray(customKeywords) ? customKeywords : String(customKeywords).split(/[\n,]+/).map(k => k.trim().toLowerCase()).filter(k => k.length > 0);
+            } catch (e) { console.error("Firestore Read Error:", e); }
 
-                if (Array.isArray(customKeywords)) {
-                    blacklist = customKeywords.map(k => String(k).trim().toLowerCase());
-                } else {
-                    blacklist = String(customKeywords).split(/[\n,]+/).map(k => k.trim().toLowerCase()).filter(k => k.length > 0);
-                }
-            } catch (e) {
-                console.error("[Backend Validation] Firestore Policy Read Error:", e);
-            }
-
-            const fallbackKeywords = ["crypto", "investment", "profit", "jackpot", "lottery", "giveaway", "投資獲利", "加賴", "加line", "兼職", "獲利", "高報酬", "博弈"];
-            const combinedKeywords = new Set([...blacklist, ...fallbackKeywords]);
             const lowerText = description.toLowerCase();
-
-            for (const word of combinedKeywords) {
+            const fallbackKeywords = ["crypto", "investment", "profit", "jackpot", "lottery", "giveaway", "投資獲利", "加賴", "加line", "兼職", "獲利", "高報酬", "博弈"];
+            for (const word of [...blacklist, ...fallbackKeywords]) {
                 if (lowerText.includes(word)) {
-                    console.warn(`[Backend Validation] BLOCKED: Found keyword "${word}"`);
-                    return { valid: false, explanation: `Security Block: Found suspicious keyword "${word}".` };
+                    return { valid: false, explanation: `Security Block: Suspicious keyword "${word}".`, refinedText: null, suggestedMissionId: null };
                 }
             }
 
-            // OpenAI Moderation
-            try {
-                const openai = new OpenAI({ apiKey: OPENAI_API_KEY.value() });
-                const moderation = await openai.moderations.create({
-                    model: "omni-moderation-latest",
-                    input: description,
-                });
-                const modResult = moderation.results[0];
-                if (modResult.flagged || modResult.categories.illicit || modResult.categories['illicit/violent']) {
-                    console.warn("[Backend Validation] BLOCKED: OpenAI Flagged");
-                    return { valid: false, explanation: "Security Block: Content violated safety policies." };
-                }
-            } catch (aiError) {
-                console.error("[Backend Validation] OpenAI API Fail:", aiError);
-            }
+            // --- 2. Fetch All Missions for AI Dispatching ---
+            const missionsSnapshot = await dbRes.collection("missions").get();
+            const availableMissions = missionsSnapshot.docs.map(doc => {
+                const d = doc.data();
+                const nameObj = d.name || { en: d.mission_name || doc.id };
+                const primaryLang = language ? language.split('-')[0] : 'en';
+                const localizedName = nameObj[language] || nameObj[primaryLang] || nameObj['en'] || doc.id;
+                const keywords = d.keywords_pool || [];
+                return `- ID: "${doc.id}", Name: "${localizedName}", Keywords: [${keywords.join(', ')}]`;
+            }).join('\n');
 
-            // --- 2. AI Refinement (Gemini) ---
+            // --- 3. AI Analysis (Gemini) ---
             const { GoogleGenerativeAI } = require("@google/generative-ai");
             const genAI = new GoogleGenerativeAI(GEMINI_API_KEY.value());
-
             const model = genAI.getGenerativeModel({
                 model: "gemini-2.0-flash-lite",
-                generationConfig: {
-                    temperature: 0.2,
-                    maxOutputTokens: 800,
-                    responseMimeType: "application/json"
-                }
+                generationConfig: { temperature: 0.1, maxOutputTokens: 1000, responseMimeType: "application/json" }
             });
 
-            const systemInstructions = {
-                en: "You are a professional task assistant. Validate the description and provide a more professional version.",
-                zh: "你是專業任務助手。請驗證描述內容，並提供一個更專業的版本。",
-                jp: "あなたはプロのタスクアシスタントです。説明を検証し、よりプロフェッショナルな版本を提供してください。",
-                kr: "당신은 전문 작업 조수입니다. 설명을 검증하고 더專業적인 버전을 제공하세요.",
-                es: "Eres un asistente de tareas profesional. Valida la descripción y proporciona una versión más profesional.",
-                fr: "Vous êtes un assistant de tâche professionnel. Validez la description et fournissez une version plus professionnelle.",
-                it: "Sei un assistente di compiti professionale. Valida la descrizione e fornisci una versione più professionale."
-            };
+            const primaryLang = language ? language.split('-')[0] : 'en';
+            const langMap = { zh: "Traditional Chinese (繁體中文)", jp: "Japanese (日本語)", ja: "Japanese (日本語)", kr: "Korean (한국어)", ko: "Korean (한국어)", es: "Spanish", fr: "French", it: "Italian" };
+            const targetLangLabel = langMap[primaryLang] || "English";
 
-            const instruction = systemInstructions[language] || systemInstructions.en;
+            const prompt = `
+Role: You are the Lead Dispatcher & Security Officer for "WiseCat AI".
+Goal: Analyze a user's request against a selected mission. Verify validity, safety, and suggest the correct mission if the current one is wrong.
 
-            const prompt = `${instruction}
+Current Context:
+- **Selected Mission**: "${missionName}" (ID: ${missionId})
+- **User Task Description**: "${description}"
+- **Language**: ${language}
 
-Mission Category: ${missionName}
-User's Description: ${description}
+Mission Database:
+${availableMissions}
 
-Instructions:
-1. Determine if the description matches the mission category (be lenient but ensure relevance).
-2. If it matches, provide a "refinedText" that is a professional, grammatically correct version optimized for a phone call (spoken style).
-   - **CRITICAL**: Remove filler words, stuttering, and informal interjections (e.g., "uh", "um", "俄", "呃", "欸").
-   - Fix all grammar errors, typos, and spelling mistakes (e.g., "我得" -> "我的", "ㄋ" -> "你").
-   - Elevate the tone to be polite and professional, but keep it natural for a phone conversation.
-   - If the original text is already perfect, "refinedText" can be identical.
-3. Provide a brief "explanation" of the improvements made or confirm why it's already professional.
-4. Response MUST be in the same language as the User's Description.
+Your Decision Logic:
+1. **Security Check**: Does this content seem like a scam or fraud? If so, set valid=false and explanation="SCAM_ALERT: Policy violation."
+2. **Semantic Match**: Does the description match the selected mission? If yes, set valid=true.
+3. **Smart Dispatch**: If valid=false and NOT a scam, find the BEST matching mission from the Database.
+   - If a strong match exists (e.g., "haircut" matches "salon_reservation"):
+     - Set "suggestedMissionId" to that ID.
+     - Set "refinedText" to a professional version of the request in ${targetLangLabel}, optimized for the SUGGESTED mission.
+   - If no match found: Set "suggestedMissionId" to null.
 
-Return ONLY a JSON object:
+Output Format (JSON):
 {
   "valid": boolean,
-  "refinedText": "string",
-  "explanation": "string"
+  "explanation": "Brief explanation in ${targetLangLabel}.",
+  "refinedText": "Professional version in ${targetLangLabel}",
+  "suggestedMissionId": "ID string or null"
 }
+
+Answer strictly in ${targetLangLabel}.
 `;
 
             const result = await model.generateContent(prompt);
             let responseText = result.response.text().trim();
+            if (responseText.startsWith("```")) responseText = responseText.replace(/```json|```/g, "").trim();
 
-            if (responseText.startsWith("```json")) {
-                responseText = responseText.replace(/```json|```/g, "").trim();
-            }
+            const aiResult = JSON.parse(responseText);
+            let suggestedMissionName = null;
 
-            let aiResult;
-            try {
-                aiResult = JSON.parse(responseText);
-            } catch (e) {
-                console.error("Failed to parse Gemini JSON:", responseText);
-                aiResult = {
-                    valid: responseText.toUpperCase().includes("TRUE"),
-                    refinedText: description,
-                    explanation: "AI feedback malformed."
-                };
+            if (aiResult.suggestedMissionId) {
+                try {
+                    const suggDoc = await dbRes.collection("missions").doc(aiResult.suggestedMissionId).get();
+                    if (suggDoc.exists) {
+                        const d = suggDoc.data();
+                        const nameObj = d.name || {};
+                        const primaryLang = language ? language.split('-')[0] : 'en';
+                        suggestedMissionName = nameObj[language] || nameObj[primaryLang] || nameObj['en'] || aiResult.suggestedMissionId;
+                    }
+                } catch (e) {
+                    console.error("Error fetching suggested mission name:", e);
+                }
             }
 
             console.log({
                 missionId,
-                missionName,
-                description,
-                refinedText: aiResult.refinedText,
+                description: description.substring(0, 50),
                 valid: aiResult.valid,
-                userId: request.auth?.uid || "anonymous"
+                suggestedId: aiResult.suggestedMissionId,
+                uid: auth?.uid || "anonymous"
             });
 
-            return aiResult;
+            return {
+                valid: aiResult.valid,
+                explanation: aiResult.explanation,
+                refinedText: aiResult.refinedText,
+                suggestedMissionId: aiResult.suggestedMissionId,
+                suggestedMissionName: suggestedMissionName
+            };
 
         } catch (error) {
-            console.error("Validation Logic Error:", error);
-            return { valid: true, refinedText: description, explanation: "System error occurred." };
+            console.error("Critical Validation Error:", error);
+            return { valid: true, refinedText: description, explanation: "System recovered after error.", suggestedMissionId: null };
         }
     }
 );

@@ -92,8 +92,9 @@ export const validateMissionDescription = functions.https.onCall(
                 }
             };
 
-            // Determine service type from missionId or default to mouthpiece
-            const serviceType = missionId === 'restaurant_booking' ? 'restaurant' : 'mouthpiece';
+            // Determine service type from missionId
+            // restaurant_booking is the legacy ID, reservation_* are the new ones
+            const serviceType = (missionId === 'restaurant_booking' || missionId.startsWith('reservation_')) ? 'restaurant' : 'mouthpiece';
             const prompt = await buildValidationPrompt(missionId, missionName, description, language, serviceType);
 
             const result = await model.generateContent({
@@ -191,7 +192,8 @@ async function buildValidationPrompt(missionId: string, missionName: string, des
     const allMissions = await getMissions();
     // Build a detailed list for the AI
     const availableMissionsList = allMissions.map(m => {
-        const localizedName = m.nameObj[language] || m.nameObj['en'] || m.id;
+        const primaryLang = language.split('-')[0];
+        const localizedName = m.nameObj[language] || m.nameObj[primaryLang] || m.nameObj['en'] || m.id;
         const keywords = m.keywords.length > 0 ? ` Keywords: [${m.keywords.join(', ')}]` : '';
         return `- ID: "${m.id}", Name: "${localizedName}"${keywords}`;
     }).join('\n');
@@ -226,36 +228,42 @@ async function buildValidationPrompt(missionId: string, missionName: string, des
     }
 
     return `
-Role: You are a helpful AI assistant for "WiseCat", a human-in-the-loop task service.
-Goal: Validate if the User Description matches the selected Mission.
+Role: You are the Lead Dispatcher & Security Officer for "WiseCat AI".
+Goal: Analyze a user's request against a selected mission. You must verify validity, safety (scam detection), and suggest the correct mission if the current one is wrong.
 
 Current Context:
-- Target Mission: "${missionName}" (ID: ${missionId})
-- User Input: "${description}"
-- Language: ${language}
+- **Selected Mission**: "${missionName}" (ID: ${missionId})
+- **User Task Description**: "${description}"
+- **Language**: ${language}
 
-Available Mission Categories:
+Mission Database (ID, Name, Keywords):
 ${availableMissionsList}
 
-Validation Steps:
-1. MATCH CHECK: Does the intent in "User Input" generally align with "Target Mission"?
-   - If YES: Set "valid": true.
-   - If NO: Set "valid": false and PROCEED TO STEP 2.
+Your Decision Logic:
+1. **Security Check (CRITICAL)**:
+   - Does this request content seem like a scam, fraud, or phishing attempt?
+   - Examples: "You won a prize, call this number", "Your bank account is locked", "Grandson in trouble".
+   - If it feels like a scam (SCAM_LIKELY): Set valid=false, suggestedMissionId=null, and explanation="SCAM_ALERT: This request violates our safety policy."
 
-2. SEARCH & SUGGEST: If invalid, find the SINGLE BEST MATCH in "Available Mission Categories".
-   - Look at Name and Keywords (e.g., "美髮" matches "salon_reservation").
-   - If a strong match is found:
-     - Set "suggestedMissionId" to that Mission ID.
-     - Set "refinedText" to a professional, polite version of the user request optimized for THAT suggested mission.
-   - If NO match found: Set "suggestedMissionId": null.
+2. **Semantic Match Check**:
+   - If not a scam, does the "User Task Description" align with the "Selected Mission"?
+   - If it matches: Set valid=true, suggestedMissionId=null.
+   - If it DOES NOT match (e.g., user wants to find lost glasses but selected Dental): Set valid=false and PROCEED to step 3.
 
-Output Requirements:
-- Format: JSON
-- Keys: 
-  - "valid": boolean
-  - "explanation": Short reason (1 sentence) for your decision in ${language}.
-  - "refinedText": Professional version of user request in ${language}. If "suggestedMissionId" is set, optimize for that mission.
-  - "suggestedMissionId": The ID of the suggested mission, or null.
+3. **Intelligent Dispatch**:
+   - Scan the "Mission Database" for the best possible match based on keywords and context.
+   - If a strong match is found (e.g., "lost my glasses" matches "lost_item"):
+     - Set "suggestedMissionId" to the exact ID from the list (e.g., "lost_item").
+     - Set "refinedText" to a professional, polite version of the request optimized for THAT mission in ${language}.
+   - If no reasonable mission matches: Set "suggestedMissionId" to null.
+
+Output Format (Strict JSON):
+{
+  "valid": boolean,
+  "explanation": "Brief explanation in ${language}.",
+  "refinedText": "Professional version of the task in ${language}. If valid=false and suggestedMissionId is not null, optimize for the suggested mission instead.",
+  "suggestedMissionId": "The mission ID string" or null
+}
 
 ${langInstruction}
 `;

@@ -22,15 +22,76 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // AI Services Dropdown Logic (New)
+    const dropdownToggle = document.getElementById('aiDropdownToggle');
+    const dropdown = dropdownToggle?.parentElement; // .nav-dropdown
+
+    if (dropdownToggle && dropdown) {
+        dropdownToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropdown.classList.toggle('open');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target as Node)) {
+                dropdown.classList.remove('open');
+            }
+        });
+    }
+
+    // Logout Button
+    const headerLogoutBtn = document.getElementById('headerLogoutBtn');
+    if (headerLogoutBtn) {
+        headerLogoutBtn.addEventListener('click', async () => {
+            // We can import signOut or use auth directly
+            const { signOut } = await import("firebase/auth");
+            try {
+                await signOut(auth);
+                window.location.href = '/Entry.html';
+            } catch (e) {
+                console.error("Logout failed", e);
+            }
+        });
+    }
+
     // 4. Session Timeout
     setupSessionTimeout();
 
-    // 5. Auth State (Optional for FAQ, but good for consistent UI)
+    // 5. Auth State for Sidebar
     onAuthStateChanged(auth, (user) => {
-        if (!user) {
-            // If user is not logged in, we can still show FAQ, 
-            // but maybe hide some dashboard-specific sidebars?
-            // For now, let's just keep it visible.
+        const headerUserName = document.getElementById('headerUserName');
+        const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement;
+        const creditsDisplay = document.getElementById('creditsDisplay');
+
+        if (user) {
+            // Update User Info
+            if (headerUserName) headerUserName.textContent = user.displayName || 'User';
+            if (headerUserAvatar) {
+                headerUserAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`;
+            }
+
+            // Fetch Credits (optional, reused from phone-numbers logic or local storage)
+            // For now, let's try to get from localStorage for instant feedback
+            const cachedUser = localStorage.getItem('wisecat_user');
+            if (cachedUser) {
+                try {
+                    const u = JSON.parse(cachedUser);
+                    if (u.credits !== undefined) {
+                        if (creditsDisplay) creditsDisplay.textContent = `$${parseFloat(u.credits).toFixed(2)}`;
+                    }
+                } catch (e) { }
+            }
+
+            // Also could listen to Firestore if we wanted real-time credits here, 
+            // but for FAQ page, static or cached is probably fine.
+
+        } else {
+            // Guest
+            if (headerUserName) headerUserName.textContent = 'Guest';
+            if (headerUserAvatar) headerUserAvatar.src = 'https://ui-avatars.com/api/?name=Guest';
+            if (creditsDisplay) creditsDisplay.textContent = '$0.00';
         }
     });
 });

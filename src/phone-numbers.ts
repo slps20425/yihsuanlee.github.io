@@ -969,7 +969,11 @@ navItems.forEach(navItem => {
 // Restore Tab on Load
 // Restore Tab on Load
 document.addEventListener('DOMContentLoaded', () => {
-    let savedTab = localStorage.getItem('wisecat_active_tab');
+    // Check URL Params first
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabFromUrl = urlParams.get('tab');
+
+    let savedTab = tabFromUrl || localStorage.getItem('wisecat_active_tab');
     if (savedTab === 'dashboard') savedTab = 'profile'; // Handle grandfathered 'dashboard' state
 
     // Check if tab element exists

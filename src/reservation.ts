@@ -2457,57 +2457,71 @@ async function validateNote() {
             // Check for Mission Suggestion
             if ((data as any).suggestedMissionId) {
                 const suggestedId = (data as any).suggestedMissionId;
+                const suggestedNameFromBackend = (data as any).suggestedMissionName;
+
                 const missions = dynamicMissions.length > 0 ? dynamicMissions : [];
                 const scenario = missions.find(m => m.id === suggestedId);
+                const currentLang = WiseCatI18n.currentLang;
+                let suggestedName = suggestedNameFromBackend;
 
-                if (scenario) {
-                    const currentLang = WiseCatI18n.currentLang;
-                    let suggestedName = scenario.name[currentLang as keyof typeof scenario.name] || scenario.name['en'];
-                    const refinedText = data.refinedText || '';
-
-                    // Localized Labels
-                    const labels: Record<string, any> = {
-                        zh: { title: '❌ 任務不匹配', suggest: '💡 AI 建議', text: `看來您正在詢問關於 <strong>${suggestedName}</strong>。`, btn: '切換並更新' },
-                        en: { title: '❌ Mission Mismatch', suggest: '💡 AI Suggestion', text: `It looks like you are asking about <strong>${suggestedName}</strong>.`, btn: 'Switch & Update' },
-                        jp: { title: '❌ ミッションの不一致', suggest: '💡 AIの提案', text: `<strong>${suggestedName}</strong> についてのご質問のようです。`, btn: '切り替えて更新' },
-                        kr: { title: '❌ 미션 불일치', suggest: '💡 AI 제안', text: `<strong>${suggestedName}</strong>에 대해 문의하시는 것 같습니다.`, btn: '전환 및 업데이트' },
-                    };
-                    const lbl = labels[currentLang.split('-')[0]] || labels['en'];
-
-                    feedbackDiv.innerHTML = `
-                        <div style="margin-bottom: 10px;">${lbl.title}</div>
-                        <div style="margin-bottom: 10px;">${data.explanation || "This description doesn't match the current mission."}</div>
-                        <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 12px;">
-                            <div style="color: #93c5fd; font-size: 13px; margin-bottom: 6px;">${lbl.suggest}</div>
-                            <div style="color: #fff; margin-bottom: 10px;">${lbl.text}</div>
-                            ${refinedText ? `<div style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; margin-bottom: 10px; font-size: 0.9em; color: #e5e7eb;">${refinedText}</div>` : ''}
-                            <button type="button" class="btn-switch-mission" data-mission-id="${suggestedId}" style="width: 100%; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">${lbl.btn}</button>
-                        </div>
-                   `;
-
-                    const switchBtn = feedbackDiv.querySelector('.btn-switch-mission');
-                    if (switchBtn) {
-                        switchBtn.addEventListener('click', () => {
-                            const missionInput = document.getElementById('mission') as HTMLInputElement;
-                            const triggerText = document.getElementById('missionTriggerText');
-                            if (missionInput && triggerText) {
-                                missionInput.value = suggestedId;
-                                triggerText.textContent = suggestedName;
-
-                                if (data.refinedText) {
-                                    noteTextarea.value = data.refinedText;
-                                }
-
-                                noteTextarea.style.border = '';
-                                noteTextarea.style.boxShadow = '';
-                                feedbackDiv.style.display = 'none';
-
-                                (window as any).showToast(`Switched to ${suggestedName} and updated text!`, 'success');
-                            }
-                        });
-                    }
-                    return;
+                if (!suggestedName && scenario) {
+                    suggestedName = scenario.name[currentLang as keyof typeof scenario.name] || scenario.name['en'];
                 }
+
+                if (!suggestedName) {
+                    suggestedName = suggestedId; // Last resort
+                }
+
+                const refinedText = data.refinedText || '';
+
+                // Localized Labels
+                const labels: Record<string, any> = {
+                    zh: { title: '❌ 任務不匹配', suggest: '💡 AI 建議', text: `看來您正在詢問關於 <strong>${suggestedName}</strong>。`, btn: '切換並更新' },
+                    en: { title: '❌ Mission Mismatch', suggest: '💡 AI Suggestion', text: `It looks like you are asking about <strong>${suggestedName}</strong>.`, btn: 'Switch & Update' },
+                    jp: { title: '❌ ミッションの不一致', suggest: '💡 AIの提案', text: `<strong>${suggestedName}</strong> についてのご質問のようです。`, btn: '切り替えて更新' },
+                    kr: { title: '❌ 미션 불일치', suggest: '💡 AI 제안', text: `<strong>${suggestedName}</strong>에 대해 문의하시는 것 같습니다.`, btn: '전환 및 업데이트' },
+                };
+                const lbl = labels[currentLang.split('-')[0]] || labels['en'];
+
+                feedbackDiv.innerHTML = `
+                    <div style="margin-bottom: 10px;">${lbl.title}</div>
+                    <div style="margin-bottom: 10px;">${data.explanation || "This description doesn't match the current mission."}</div>
+                    <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 12px;">
+                        <div style="color: #93c5fd; font-size: 13px; margin-bottom: 6px;">${lbl.suggest}</div>
+                        <div style="color: #fff; margin-bottom: 10px;">${lbl.text}</div>
+                        ${refinedText ? `<div style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; margin-bottom: 10px; font-size: 0.9em; color: #e5e7eb;">${refinedText}</div>` : ''}
+                        <button type="button" class="btn-switch-mission" data-mission-id="${suggestedId}" style="width: 100%; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">${lbl.btn}</button>
+                    </div>
+               `;
+
+                const switchBtn = feedbackDiv.querySelector('.btn-switch-mission');
+                if (switchBtn) {
+                    switchBtn.addEventListener('click', () => {
+                        const missionInput = document.getElementById('mission') as HTMLInputElement;
+                        const triggerText = document.getElementById('missionTriggerText');
+                        if (missionInput && triggerText) {
+                            // Verify if it's a valid mission for this service
+                            // In reservation, it's more dynamic, so we just check if it's findable
+                            missionInput.value = suggestedId;
+                            triggerText.textContent = suggestedName;
+
+                            if (data.refinedText) {
+                                noteTextarea.value = data.refinedText;
+                            }
+
+                            // Since AI suggests this, we assume the content is now safe for the new mission
+                            isContentSafe = true;
+                            (document.getElementById('submitBtn') as HTMLButtonElement).disabled = false;
+
+                            noteTextarea.style.border = '';
+                            noteTextarea.style.boxShadow = '';
+                            feedbackDiv.style.display = 'none';
+
+                            (window as any).showToast(`Switched to ${suggestedName} and updated text!`, 'success');
+                        }
+                    });
+                }
+                return;
             }
 
             feedbackDiv.textContent = `❌ ${data.explanation || "Request doesn't match or is unsafe. Please revise."}`;
