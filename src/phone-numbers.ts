@@ -711,6 +711,23 @@ async function loadUsageHistory() {
         usageTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 2rem; color: var(--text-secondary);">Loading usage data...</td></tr>';
     }
 
+    // Guest Mode Check
+    if (currentUser && currentUser.isGuest) {
+        usageTableBody.innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align:center; padding: 3rem 1rem;">
+                    <div style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 1rem;">
+                        Authentication required to view payment & usage history.
+                    </div>
+                    <button class="btn btn-primary" onclick="window.location.href='/Entry.html'">
+                        Sign In / Sign Up
+                    </button>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
     try {
         const getTransformedUsageHistory = httpsCallable(functions, 'getTransformedUsageHistory');
         const result = await getTransformedUsageHistory();

@@ -2,6 +2,7 @@ import "./version";
 import WiseCatI18n from './i18n';
 import { auth } from './firebase-config';
 import { onAuthStateChanged, signOut } from "firebase/auth";
+import './chat-assistant'; // Enable Chat Widget
 // import { ScamCheck } from './scam-check'; // Now handled by validateMissionDescription
 
 // Declare globals from CDNs
@@ -543,11 +544,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
 
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
 
-    // Update header
-    dateMonthYear.textContent = `${monthNames[month]} ${year}`;
 
     // Clear calendar
     // dateCalendar.innerHTML = ''; 
