@@ -1686,6 +1686,8 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     margin: 0;
     color: var(--text-primary);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     /* Allow title to shrink if needed */
     flex-shrink: 1;
     min-width: 0;
@@ -4039,10 +4041,16 @@ body.dashboard-layout {
     }
 
     .header-title {
+        font-size: 1rem !important;
+        text-align: left;
+        margin-left: 0;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         order: 2 !important;
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
+        position: static;
+        transform: none;
         width: auto !important;
     }
 
