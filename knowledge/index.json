@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "generated": "2026-01-21T02:31:40.007Z",
+  "generated": "2026-01-21T02:33:55.944Z",
   "metadata": {
-    "lastUpdated": "2026-01-21T02:31:39.938Z",
+    "lastUpdated": "2026-01-21T02:33:55.884Z",
     "deployment": {
-      "timestamp": "2026-01-21T02:31:39.939Z",
-      "gitCommit": "355fa46223e1cedff1b3aa04a1783b4da27f56ea",
+      "timestamp": "2026-01-21T02:33:55.885Z",
+      "gitCommit": "6f2e1753cd7df3b706d6763a491fe7dc1a6b03b7",
       "gitBranch": "main"
     },
     "modules": {},
@@ -176,77 +176,77 @@
         "size": 16030,
         "lines": 570,
         "type": ".html",
-        "lastModified": "2026-01-21T02:30:57.708Z"
+        "lastModified": "2026-01-21T02:33:11.800Z"
       },
       {
         "path": "dist/dashboard.html",
         "size": 36200,
         "lines": 728,
         "type": ".html",
-        "lastModified": "2026-01-21T02:30:57.709Z"
+        "lastModified": "2026-01-21T02:33:11.803Z"
       },
       {
         "path": "dist/entry.html",
         "size": 11390,
         "lines": 211,
         "type": ".html",
-        "lastModified": "2026-01-21T02:30:57.710Z"
+        "lastModified": "2026-01-21T02:33:11.802Z"
       },
       {
         "path": "dist/login-success.html",
         "size": 1465,
         "lines": 57,
         "type": ".html",
-        "lastModified": "2026-01-21T02:30:57.710Z"
+        "lastModified": "2026-01-21T02:33:11.802Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_guide.html",
         "size": 14461,
         "lines": 442,
         "type": ".html",
-        "lastModified": "2026-01-21T02:30:57.011Z"
+        "lastModified": "2026-01-21T02:33:11.532Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_mobile.html",
         "size": 15624,
         "lines": 425,
         "type": ".html",
-        "lastModified": "2026-01-21T02:30:57.013Z"
+        "lastModified": "2026-01-21T02:33:11.532Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/dp_indexing_mobile_full.html",
         "size": 7293,
         "lines": 198,
         "type": ".html",
-        "lastModified": "2026-01-21T02:30:57.015Z"
+        "lastModified": "2026-01-21T02:33:11.533Z"
       },
       {
         "path": "dist/reservation/mouthpiece.html",
         "size": 21057,
         "lines": 401,
         "type": ".html",
-        "lastModified": "2026-01-21T02:30:57.710Z"
+        "lastModified": "2026-01-21T02:33:11.802Z"
       },
       {
         "path": "dist/reservation/restaurant_reservation.html",
         "size": 32169,
         "lines": 670,
         "type": ".html",
-        "lastModified": "2026-01-21T02:30:57.707Z"
+        "lastModified": "2026-01-21T02:33:11.801Z"
       },
       {
         "path": "dist/reservation/trial.html",
         "size": 16406,
         "lines": 347,
         "type": ".html",
-        "lastModified": "2026-01-21T02:30:57.710Z"
+        "lastModified": "2026-01-21T02:33:11.802Z"
       },
       {
         "path": "dist/resume/index.html",
         "size": 41474,
         "lines": 688,
         "type": ".html",
-        "lastModified": "2026-01-21T02:30:57.707Z"
+        "lastModified": "2026-01-21T02:33:11.802Z"
       },
       {
         "path": "entry.html",
