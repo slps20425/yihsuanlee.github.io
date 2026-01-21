@@ -2,6 +2,7 @@ import "./version";
 import WiseCatI18n from './i18n';
 import { auth } from './firebase-config';
 import { onAuthStateChanged, signOut } from "firebase/auth";
+import './chat-assistant'; // Enable Chat Widget
 // import { ScamCheck } from './scam-check'; // Now handled globally by validateMissionDescription
 
 

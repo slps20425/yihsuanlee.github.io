@@ -3,6 +3,7 @@ import WiseCatI18n from './i18n';
 import { auth } from './firebase-config';
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { countryTimezones } from './timezones';
+import './chat-assistant'; // Enable Chat Widget
 // import { ScamCheck } from './scam-check'; // Logic merged into validateMissionDescription
 
 import './nav-active'; // Set active navigation item
