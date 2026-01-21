@@ -3767,14 +3767,51 @@ body.dashboard-layout {
     }
 
     .header-content {
-        height: 70px !important;
-        padding: 0 16px !important;
+        height: 60px !important;
+        padding: 0 8px !important;
+        /* Reduced padding to move hamburger left */
         display: flex !important;
         align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0 !important;
+    }
+
+    .hamburger-menu {
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 36px !important;
+        /* Slightly smaller to fit better */
+        height: 36px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        /* Remove margins */
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        z-index: 1002;
+        flex-shrink: 0;
     }
 
     .header-title {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
         font-size: 1.1rem !important;
+        white-space: nowrap;
+        margin: 0 !important;
+        padding: 0 !important;
+        text-align: center;
+        width: auto !important;
+    }
+
+    .header-right-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px !important;
+        margin-left: auto !important;
+        /* Push to right */
     }
 }
 
