@@ -5,8 +5,9 @@
 ## Last Completed Task
 - **Task ID**: Chat_Widget_UI_Refinement
 - **Title**: Chat Widget UI Refinements & Bug Fixes
-- **Completed**: 2026-01-21 (Current)
-- **Deploy URL**: https://wisecat-8df8d.web.app
+- **Completed**: 2026-01-21T07:12:00Z
+- **Deploy URL**: https://wisecat-8df8d.web.app/
+- **Notes**: Removed MMS/Fax features and implemented Resize UI and Logic in Mouthpiece.
 
 ## Deployment Standards
 > [!IMPORTANT]
