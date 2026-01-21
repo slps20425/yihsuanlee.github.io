@@ -97,10 +97,49 @@
             </div>
 
             <!-- Guest Access (QA/Testing) -->
-            <button type="button" id="guestLoginBtn"
-                style="background: transparent; color: rgba(255,255,255,0.5); border: 1px dashed rgba(255,255,255,0.2); width: 100%; height: 36px; border-radius: 8px; font-size: 0.8rem; margin-top: 10px; cursor: pointer; transition: all 0.2s;">
-                🕵️ Continue as Guest (Non-Login)
+            <!-- Guest Access (QA/Testing) -->
+            <button type="button" id="guestLoginBtn" class="guest-btn">
+                <span class="icon">🕵️</span>
+                <span class="text">Continue as Guest</span>
             </button>
+
+            <style>
+                .guest-btn {
+                    background: rgba(255, 255, 255, 0.03);
+                    color: rgba(255, 255, 255, 0.6);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    width: 100%;
+                    height: 42px;
+                    border-radius: 12px;
+                    font-size: 0.85rem;
+                    margin-top: 16px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                    font-weight: 500;
+                    letter-spacing: 0.01em;
+                }
+
+                .guest-btn:hover {
+                    background: rgba(255, 255, 255, 0.08);
+                    border-color: rgba(255, 255, 255, 0.2);
+                    color: rgba(255, 255, 255, 0.9);
+                    transform: translateY(-1px);
+                }
+
+                .guest-btn:active {
+                    transform: translateY(0);
+                    background: rgba(255, 255, 255, 0.05);
+                }
+
+                .guest-btn .icon {
+                    font-size: 1.1em;
+                    opacity: 0.8;
+                }
+            </style>
 
             <div style="font-size: 10px; color: #666; margin-top: 25px; text-align: center; line-height: 1.4; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;"
                 data-i18n="login_privacy_notice">
