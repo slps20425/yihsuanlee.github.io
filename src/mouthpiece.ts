@@ -37,6 +37,8 @@ let turnstileValidated = false;
 let phoneInputPlugin: any = null;
 let currentCost = 3; // Default cost for mouthpiece
 let defaultRetryCount = 5; // Default retry count if config missing
+let retryCostPerAttempt = 0.3; // Default 0.3 credits per retry
+let retryInterval = 10; // Default 10 minutes
 
 // ... (omitted shared code)
 
@@ -200,9 +202,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 currentCost = Number(data.cost_mouthpiece);
             }
 
-            // Dynamic Retry Count
+            // Dynamic Retry Config
             if (data.default_retry_count !== undefined) {
                 defaultRetryCount = Number(data.default_retry_count);
+            }
+            if (data.retry_cost_per_attempt !== undefined) {
+                retryCostPerAttempt = Number(data.retry_cost_per_attempt);
+            }
+            if (data.retry_interval !== undefined) {
+                retryInterval = Number(data.retry_interval);
             }
 
             // Update Retry Label & Warning UI
@@ -213,8 +221,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 retryLabel.textContent = `Re-try ${defaultRetryCount} time(s)`;
             }
             if (retryWarning) {
-                const totalMaxCost = currentCost + defaultRetryCount;
-                retryWarning.textContent = `(Max cost: ${totalMaxCost} credits if all retries used)`;
+                const totalMaxCost = currentCost + (defaultRetryCount * retryCostPerAttempt);
+                // Format to max 1 decimal place if integer, else 2
+                const costStr = Number.isInteger(totalMaxCost) ? totalMaxCost : totalMaxCost.toFixed(1);
+
+                // Construct message: "(Max cost: 4.5 credits (tries every 10m))"
+                retryWarning.textContent = `(Max cost: ${costStr} credits | Tries every ${retryInterval}m)`;
                 (retryWarning as HTMLElement).style.color = "#ff4444";
             }
 
@@ -764,6 +776,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 (localStorage.getItem('wisecat_user') ? (JSON.parse(localStorage.getItem('wisecat_user') || '{}').email || 'N/A') : 'N/A'),
             userCredits: (localStorage.getItem('wisecat_user') ? Number(JSON.parse(localStorage.getItem('wisecat_user') || '{}').credits || 0) : 0),
             retry_count: (document.getElementById('retryOption') as HTMLInputElement)?.checked ? defaultRetryCount : 0,
+            retry_interval: retryInterval,
             createdAt: new Date().toISOString()
         };
 
