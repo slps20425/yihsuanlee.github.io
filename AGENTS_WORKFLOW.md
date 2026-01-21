@@ -15,13 +15,13 @@
 > **DO NOT** rely on the global `firebase` command as it may be missing in the agent environment.
 
 ## Summary of Changes
-1. ✅ **Mobile Scroll Fix** - Adjusted `dashboard-layout` and `main-content` CSS to allow scrolling on mobile subpages.
-2. ✅ **Helper Buddy Fix** - Increased z-index to 9000 and fixed template click handler in `src/i18n.ts` (corrected textarea ID target).
-3. ✅ **Ask AI Mobile UI** - Implemented blurred backdrop and bottom-sheet style for mobile chat.
-4. ✅ **Navigation Polish** - Repositioned hamburger menu, fixed Contacts alignment, and resized mobile sidebar.
+1. ✅ **Mobile Scroll RESTORED** - Reverted `position: fixed` on body to unlock scrolling on subpages (`mobile_scroll_restore.css`).
+2. ✅ **Ask AI Button Fix** - Styled dismiss button as a small icon and added robust inline click handler (`chat_button_fix.css`).
+3. ✅ **Dynamic Mobile Header** - Used Flexbox to reliably position Hamburger (Left), Title (Center), and Profile (Right) (`mobile_polish_final.css`).
+4. ✅ **Mobile Top Gap Fix** - Replaced `margin-top` with `padding-top` to eliminate non-scrollable dead zone.
 
 ## QA Testing Checklist
-- [ ] **Mobile Scroll**: Open Restaurant/Mouthpiece page on mobile. Verify scrolling works immediately without tapping fields.
-- [ ] **Helper Buddy**: Tap the cat icon on mobile. Tap a template. Verify text is inserted into the script/note field.
-- [ ] **Ask AI**: Tap "Ask AI" on mobile. Verify blurred backdrop appears and panel slides up. Tap backdrop to close.
-- [ ] **Navigation**: Verify hamburger menu is in the header and Contacts button aligns correctly.
+- [ ] **Mobile Scroll**: Open subpages (Mouthpiece, etc.). Verify you can scroll the entire page naturally.
+- [ ] **Ask AI**: Open chat. Verify "X" button is small and circular. Click it. Verify panel closes immediately.
+- [ ] **Hamburger**: Verify menu is on the Top Left. Title is centered.
+- [ ] **Header Gap**: Verify no black block freezes at the top when scrolling.
