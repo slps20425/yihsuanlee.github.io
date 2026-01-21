@@ -961,7 +961,7 @@ const WiseCatI18n: WiseCatI18nType = {
             const div = document.createElement('div');
             div.className = 'helper-example';
             div.onclick = () => {
-                const targetId = type === 'mouth' ? 'scriptContent' : 'note';
+                const targetId = type === 'mouth' ? 'script' : 'note';
                 const textarea = document.getElementById(targetId) as HTMLTextAreaElement;
                 if (textarea) {
                     let text = ex.v;

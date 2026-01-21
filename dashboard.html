@@ -98,11 +98,7 @@
 
 <body class="dashboard-layout">
     <!-- Hamburger Menu (Mobile Only) -->
-    <button class="hamburger-menu" id="hamburgerMenu" aria-label="Menu">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
+    <!-- Hamburger Menu (Mobile Only) - Moved to Header -->
 
     <!-- Mobile Sidebar Overlay -->
     <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay"></div>
@@ -111,6 +107,12 @@
     <!-- Top Header -->
     <div class="top-header">
         <div class="header-content">
+            <!-- Hamburger Menu (Mobile Only) -->
+            <button class="hamburger-menu" id="hamburgerMenu" aria-label="Menu" style="margin-right: 12px;">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <h1 class="header-title" onclick="switchTab('profile')" style="cursor: pointer;">🐱 WiseCat AI</h1>
             <div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">
                 <!-- Mobile Avatar -->
@@ -563,10 +565,10 @@
                 <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
             </button>
 
-            <a href="https://line.me/R/ti/p/@785ausca" target="_blank" class="nav-item contact-link">
+            <button class="nav-item" onclick="window.open('https://line.me/R/ti/p/@785ausca', '_blank')">
                 <span class="nav-icon">🎧</span>
                 <span class="nav-label" data-i18n="nav_contact">Contacts</span>
-            </a>
+            </button>
 
             <!-- Ask AI Button -->
             <button id="chatToggle" class="nav-item"
@@ -1016,6 +1018,44 @@
             }
         }
     </style>
+
+    <!-- Chat Widget -->
+    <div id="chatBackdrop" class="chat-backdrop"></div>
+    <div id="chatPanel" class="chat-panel">
+        <div class="chat-header">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">✨</span>
+                <span class="font-semibold text-white">Ask AI</span>
+            </div>
+            <button id="chatClose" class="text-white/60 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-x">
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                </svg>
+            </button>
+        </div>
+        <div id="chatMessages" class="chat-messages">
+            <!-- Messages will appear here -->
+            <div class="chat-message bot">
+                <div class="message-content">
+                    Hi! I can answer questions about the restaurant or help you with your reservation. How can I help?
+                </div>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Ask a question..." autocomplete="off">
+            <button id="chatSend" class="chat-send-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-send">
+                    <path d="m22 2-7 20-4-9-9-4Z" />
+                    <path d="M22 2 11 13" />
+                </svg>
+            </button>
+        </div>
+    </div>
 
     <script type="module" src="/src/chat-assistant.ts"></script>
 </body>

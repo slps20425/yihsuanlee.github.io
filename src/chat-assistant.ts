@@ -8,19 +8,40 @@ const chatClose = document.getElementById('chatClose') as HTMLButtonElement;
 const chatInput = document.getElementById('chatInput') as HTMLInputElement;
 const chatSend = document.getElementById('chatSend') as HTMLButtonElement;
 const chatMessages = document.getElementById('chatMessages') as HTMLDivElement;
+const chatBackdrop = document.getElementById('chatBackdrop') as HTMLDivElement;
+
 
 // Toggle chat panel
 chatToggle?.addEventListener('click', () => {
     const isVisible = chatPanel.style.display === 'flex';
-    chatPanel.style.display = isVisible ? 'none' : 'flex';
-    if (!isVisible) {
-        chatInput.focus();
-    }
+    toggleChat(!isVisible);
 });
 
+function toggleChat(show: boolean) {
+    chatPanel.style.display = show ? 'flex' : 'none';
+
+    if (show) {
+        chatInput.focus();
+        chatBackdrop?.classList.add('active');
+        chatBackdrop.style.display = 'block';
+    } else {
+        chatBackdrop?.classList.remove('active');
+        setTimeout(() => {
+            if (chatBackdrop) chatBackdrop.style.display = 'none';
+        }, 300); // Wait for fade out
+    }
+}
+
+
 chatClose?.addEventListener('click', () => {
-    chatPanel.style.display = 'none';
+    toggleChat(false);
 });
+
+// Close when clicking backdrop
+chatBackdrop?.addEventListener('click', () => {
+    toggleChat(false);
+});
+
 
 // Send message
 async function sendMessage() {

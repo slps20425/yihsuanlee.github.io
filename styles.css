@@ -3693,4 +3693,126 @@ body.dashboard-layout {
         font-size: 12px !important;
         padding: 6px !important;
     }
+}/* Chat Backdrop & Mobile Polish */
+.chat-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 997;
+    /* Just below chat panel (998) */
+    display: none;
+    /* Hidden by default */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.chat-backdrop.active {
+    opacity: 1;
+}
+
+/* Mobile Bottom Sheet Style for Chat Panel */
+@media (max-width: 768px) {
+    .chat-panel {
+        /* Reset desktop styles */
+        top: auto !important;
+        right: 0 !important;
+        left: 0 !important;
+        bottom: -100% !important;
+        /* Start off-screen */
+        width: 100% !important;
+        height: 85vh !important;
+        max-height: 85vh !important;
+        border-radius: 20px 20px 0 0 !important;
+        transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .chat-panel[style*="display: flex"] {
+        bottom: 0 !important;
+        display: flex !important;
+    }
+}/* 🍔 Mobile Hamburger Fix */
+@media (max-width: 1024px) {
+    .hamburger-menu {
+        position: static !important;
+        /* Was absolute */
+        padding: 8px !important;
+        margin-right: 8px !important;
+        background: transparent !important;
+        /* Ensure it fits in header flow */
+        display: flex !important;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        z-index: 1002;
+        /* Above everything */
+        border: none !important;
+        cursor: pointer;
+    }
+
+    .hamburger-menu span {
+        display: block;
+        width: 24px;
+        height: 2px;
+        background-color: var(--text-primary);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
+
+    /* Adjust header content layout for mobile */
+    .header-content {
+        padding: 0 16px !important;
+        justify-content: flex-start !important;
+        /* Align left */
+    }
+
+    /* Push title slightly right */
+    .header-title {
+        margin-right: auto !important;
+    }
+}/* 🔧 FIXED: Mobile Scroll & Helper Z-Index */
+
+/* 1. Unlock Scroll on Mobile Main Content */
+@media (max-width: 1024px) {
+    body.dashboard-layout {
+        /* Ensure body is fixed to prevent bounce, but main-content scrolls */
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .main-content {
+        /* Force scroll capability */
+        height: 100vh;
+        /* Use full height */
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 120px !important;
+        /* Extra space for bottom elements */
+    }
+}
+
+/* 2. Helper Buddy Visibility & Z-Index Bump */
+.helper-buddy {
+    z-index: 9000 !important;
+    /* Ensure it's above cards/canvas but below mobile menu (99990) */
+}
+
+.helper-panel {
+    z-index: 9001 !important;
+}
+
+/* 3. Ensure Chat Elements don't block helper */
+.chat-panel {
+    z-index: 998;
+    /* Keep below helper (conceptually? No, chat should potentially overlap everything) 
+                   Actually, if Chat is open, maybe we don't care about helper. 
+                   But Helper is 9000 now, creating conflict? 
+                   Let's keep helper accessible. */
 }

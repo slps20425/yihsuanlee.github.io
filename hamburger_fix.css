@@ -1,0 +1,40 @@
+/* 🍔 Mobile Hamburger Fix */
+@media (max-width: 1024px) {
+    .hamburger-menu {
+        position: static !important;
+        /* Was absolute */
+        padding: 8px !important;
+        margin-right: 8px !important;
+        background: transparent !important;
+        /* Ensure it fits in header flow */
+        display: flex !important;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        z-index: 1002;
+        /* Above everything */
+        border: none !important;
+        cursor: pointer;
+    }
+
+    .hamburger-menu span {
+        display: block;
+        width: 24px;
+        height: 2px;
+        background-color: var(--text-primary);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
+
+    /* Adjust header content layout for mobile */
+    .header-content {
+        padding: 0 16px !important;
+        justify-content: flex-start !important;
+        /* Align left */
+    }
+
+    /* Push title slightly right */
+    .header-title {
+        margin-right: auto !important;
+    }
+}

@@ -1,0 +1,41 @@
+/* 🔧 FIXED: Mobile Scroll & Helper Z-Index */
+
+/* 1. Unlock Scroll on Mobile Main Content */
+@media (max-width: 1024px) {
+    body.dashboard-layout {
+        /* Ensure body is fixed to prevent bounce, but main-content scrolls */
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .main-content {
+        /* Force scroll capability */
+        height: 100vh;
+        /* Use full height */
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 120px !important;
+        /* Extra space for bottom elements */
+    }
+}
+
+/* 2. Helper Buddy Visibility & Z-Index Bump */
+.helper-buddy {
+    z-index: 9000 !important;
+    /* Ensure it's above cards/canvas but below mobile menu (99990) */
+}
+
+.helper-panel {
+    z-index: 9001 !important;
+}
+
+/* 3. Ensure Chat Elements don't block helper */
+.chat-panel {
+    z-index: 998;
+    /* Keep below helper (conceptually? No, chat should potentially overlap everything) 
+                   Actually, if Chat is open, maybe we don't care about helper. 
+                   But Helper is 9000 now, creating conflict? 
+                   Let's keep helper accessible. */
+}
