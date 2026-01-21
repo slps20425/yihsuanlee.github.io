@@ -15,13 +15,13 @@
 > **DO NOT** rely on the global `firebase` command as it may be missing in the agent environment.
 
 ## Summary of Changes
-1. ✅ **Missing Missions Restored** - Re-added Salon, Aesthetic, and Dental options to Mouthpiece dropdown.
-2. ✅ **Sticky Mobile Header** - header is now `position: fixed` on mobile, visible on all pages during scroll (`header_sticky_fix.css`).
-3. ✅ **Hamburger Top-Left** - Reinforced Flexbox `order: 1` and `margin-right: auto` to guarantee left positioning.
-4. ✅ **Mobile Scroll RESTORED** - Reverted `position: fixed` on body to unlock scrolling on subpages (`mobile_scroll_restore.css`).
+1. ✅ **Web Scroll FIXED** - Explicitly forced `overflow-y: auto` and `position: static` for desktop view (`min-width: 1025px`).
+2. ✅ **Ask AI Web Fix** - Pinned Chat Panel to bottom-right (20px) on desktop to avoid sidebar overlap.
+3. ✅ **Missing Missions Restored** - Re-added Salon, Aesthetic, and Dental options.
+4. ✅ **Sticky Mobile Header** - Fixed header on mobile for consistent navigation availability.
 
 ## QA Testing Checklist
-- [ ] **Missions**: Open Mouthpiece page. Verify Salon, Aesthetic, Dental options are available.
-- [ ] **Sticky Header**: Scroll down on any page (Mouthpiece, Dashboard). Verify header stays attached to top.
-- [ ] **Hamburger Position**: Verify hamburger menu is strictly on the left.
-- [ ] **Mobile Scroll**: Verify scrolling works on subpages.
+- [ ] **Web Scroll**: Open subpages on Desktop. Verify you can scroll.
+- [ ] **Ask AI (Web)**: Click Ask AI. Verify chat panel opens at bottom-right and stays fixed.
+- [ ] **Missions**: Verify missing missions are present.
+- [ ] **Mobile**: Verify mobile scroll and header still work.

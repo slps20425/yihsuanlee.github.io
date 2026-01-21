@@ -52,6 +52,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (lineLoginBtn) lineLoginBtn.addEventListener('click', handleLineLogin);
 
+    // Guest Login
+    const guestLoginBtn = document.getElementById('guestLoginBtn');
+    if (guestLoginBtn) guestLoginBtn.addEventListener('click', handleGuestLogin);
+
     // Expose logout globally for the inline onclick handler in HTML (or we can bind it here)
     (window as any).logout = logout;
     const logoutBtn = document.querySelector('.logout-btn');
@@ -294,6 +298,31 @@ function handleLineLogin() {
     const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${channelId}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}`;
 
     window.location.href = lineAuthUrl;
+}
+
+function handleGuestLogin() {
+    authLog('🕵️ Guest login initiated');
+
+    // Create Guest Session
+    const guestUser = {
+        name: "Guest User",
+        email: "guest@wisecat.ai",
+        uid: "guest_" + Date.now(),
+        picture: "https://ui-avatars.com/api/?name=Guest+User&background=random",
+        credits: 100.00, // Free credits for testing
+        isGuest: true,
+        createdAt: Date.now()
+    };
+
+    authLog("💾 Saving GUEST session to localStorage:", guestUser);
+    localStorage.setItem('wisecat_user', JSON.stringify(guestUser));
+
+    // Clear any auth state that might block us
+    sessionStorage.removeItem(AUTH_STATE_KEY);
+    sessionStorage.removeItem(AUTH_PROCESSING_KEY);
+
+    // Redirect
+    window.location.href = '/dashboard.html';
 }
 
 function logout() {

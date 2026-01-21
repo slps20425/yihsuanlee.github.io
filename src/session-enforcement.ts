@@ -58,7 +58,7 @@ function showSessionExpiredAlert() {
 }
 
 export async function initSessionEnforcement(user: any) {
-    if (isEnforcementActive || !user) return;
+    if (isEnforcementActive || !user || user.isGuest) return;
     const uid = user.uid;
     const userSessionRef = doc(db, `users/${uid}/private/session`);
 

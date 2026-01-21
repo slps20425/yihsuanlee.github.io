@@ -177,12 +177,30 @@ onAuthStateChanged(auth, async (user) => {
         });
 
         if (cachedUser || authState === 'processing_login' || authState === 'checking') {
+            // Check if it is a Guest User
+            try {
+                const u = JSON.parse(cachedUser || '{}');
+                if (u.isGuest) {
+                    console.log("🕵️ Guest access detected. Skipping auth enforcement.");
+                    currentUser = u;
+                    initDashboardUI(u);
+                    return; // Allow access
+                }
+            } catch (e) { }
+
             console.log(`%c[DASHBOARD AUTH]`, 'color: #3b82f6; font-weight: bold;',
                 '⏳ Waiting 5 seconds for Firebase Auth to catch up...');
 
             // Increased from 3 seconds to 5 seconds
             setTimeout(() => {
                 if (!auth.currentUser) {
+                    // Last Guest Check before redirect
+                    const finalCache = localStorage.getItem('wisecat_user');
+                    if (finalCache && JSON.parse(finalCache).isGuest) {
+                        console.log("🕵️ Guest access confirmed during timeout.");
+                        return;
+                    }
+
                     console.log(`%c[DASHBOARD AUTH]`, 'color: #ef4444; font-weight: bold;',
                         '❌ Still no user after 5s delay. Redirecting to entry...');
                     window.location.href = '/Entry.html';
@@ -204,37 +222,46 @@ onAuthStateChanged(auth, async (user) => {
 
     if (user) {
         initSessionEnforcement(user); // [NEW] Start session enforcement
-        // Update user info in Profile tab
-        if (userName) userName.textContent = user.displayName || 'User';
-        if (userEmail) userEmail.textContent = user.email || '';
-        if (userAvatar && user.photoURL) {
-            userAvatar.src = user.photoURL;
-        }
+        initDashboardUI(user);
+    }
+});
 
-        // Update header info
-        if (headerUserName) {
-            headerUserName.textContent = user.displayName || 'User';
-            // Remove redirect onclick if logged in, or make it go to profile
-            headerUserName.onclick = () => {
-                const profileTab = document.querySelector('[data-tab="profile"]') as HTMLElement;
-                if (profileTab) profileTab.click();
-            };
-        }
-        if (headerUserAvatar && user.photoURL) {
-            headerUserAvatar.src = user.photoURL;
-        } else if (headerUserAvatar) {
-            headerUserAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`;
-        }
+function initDashboardUI(user: any) {
+    const headerUserName = document.getElementById('headerUserName');
+    const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement;
 
-        // Mobile Header Avatar
-        const mobileHeaderAvatar = document.getElementById('mobileHeaderAvatar') as HTMLImageElement;
-        if (mobileHeaderAvatar) {
-            const picUrl = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`;
-            mobileHeaderAvatar.src = picUrl;
-            mobileHeaderAvatar.style.display = 'block'; // Show it now that we have data
-        }
+    // Update user info in Profile tab
+    if (userName) userName.textContent = user.displayName || user.name || 'User';
+    if (userEmail) userEmail.textContent = user.email || '';
+    if (userAvatar && (user.photoURL || user.picture)) {
+        userAvatar.src = user.photoURL || user.picture;
+    }
 
-        // --- SELF-HEALING: Update LocalStorage Cache ---
+    // Update header info
+    if (headerUserName) {
+        headerUserName.textContent = user.displayName || user.name || 'User';
+        // Remove redirect onclick if logged in, or make it go to profile
+        headerUserName.onclick = () => {
+            const profileTab = document.querySelector('[data-tab="profile"]') as HTMLElement;
+            if (profileTab) profileTab.click();
+        };
+    }
+    if (headerUserAvatar && (user.photoURL || user.picture)) {
+        headerUserAvatar.src = user.photoURL || user.picture;
+    } else if (headerUserAvatar) {
+        headerUserAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.name || 'User')}`;
+    }
+
+    // Mobile Header Avatar
+    const mobileHeaderAvatar = document.getElementById('mobileHeaderAvatar') as HTMLImageElement;
+    if (mobileHeaderAvatar) {
+        const picUrl = user.photoURL || user.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.name || 'User')}`;
+        mobileHeaderAvatar.src = picUrl;
+        mobileHeaderAvatar.style.display = 'block'; // Show it now that we have data
+    }
+
+    // --- SELF-HEALING: Update LocalStorage Cache ---
+    if (!user.isGuest) {
         const sessionData: any = {
             uid: user.uid,
             email: user.email,
@@ -252,11 +279,16 @@ onAuthStateChanged(auth, async (user) => {
         }
         console.log("💾 Dashboard: Healing localStorage session cache.");
         localStorage.setItem('wisecat_user', JSON.stringify(sessionData));
-        // -----------------------------------------------
-
         loadUserSettings();
+    } else {
+        // Guest Mode: Just load credits from object
+        const formattedCredits = `$${(user.credits || 100).toFixed(2)}`;
+        if (creditsDisplay) creditsDisplay.textContent = formattedCredits;
+        const profileCredits = document.getElementById('profileCredits');
+        if (profileCredits) profileCredits.textContent = formattedCredits;
     }
-});
+    // -----------------------------------------------
+}
 
 // Load User Settings
 function loadUserSettings() {
