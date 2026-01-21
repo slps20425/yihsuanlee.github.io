@@ -1,0 +1,36 @@
+/* 🔧 WEB SCROLL & UI FIXES */
+
+/* 1. Force Scroll on Desktop */
+@media (min-width: 1025px) {
+    body.dashboard-layout {
+        position: static !important;
+        overflow-y: auto !important;
+        height: auto !important;
+    }
+
+    .main-content {
+        height: auto !important;
+        overflow: visible !important;
+        padding-bottom: 5rem !important;
+    }
+}
+
+/* 2. Fix Ask AI Button visibility/positioning on Desktop */
+/* Ensure the sidebar chat toggle is visible and clickable */
+.sidebar-footer .chat-toggle-btn {
+    pointer-events: auto !important;
+    z-index: 100 !important;
+    position: relative !important;
+    /* Ensure it doesn't get hidden behind fixed elements */
+}
+
+/* Ensure chat panel is positioned correctly on desktop relative to viewport */
+@media (min-width: 1025px) {
+    .chat-panel {
+        position: fixed !important;
+        bottom: 90px !important;
+        left: 270px;
+        /* Aligned with sidebar width */
+        z-index: 2000 !important;
+    }
+}
