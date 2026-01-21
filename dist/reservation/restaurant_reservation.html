@@ -40,14 +40,14 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/reservation-C1zSmQY2.js"></script>
+  <script type="module" crossorigin src="/assets/reservation-3WkcfGdP.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-CTlrI_wY.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-DIvedLFQ.js">
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-vSQymJI5.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-CffoEnuX.js">
   <link rel="modulepreload" crossorigin href="/assets/version-DCg5g3Z2.js">
   <link rel="modulepreload" crossorigin href="/assets/i18n-CnU3a9SV.js">
   <link rel="modulepreload" crossorigin href="/assets/chat-assistant-CHrSp6YG.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-B04h_kdG.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-Bem74BGg.css">
 </head>
 
 <body class="dashboard-layout">
@@ -60,6 +60,90 @@
 
     <!-- Mobile Sidebar Overlay -->
     <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay"></div>
+
+    <!-- Sidebar Navigation (Synced from Dashboard) -->
+    <nav class="sidebar-navigation">
+        <div class="sidebar-header" style="text-align: center; padding: 0; width: 100%; overflow: hidden;">
+            <!-- Sidebar Header Image - Full Width to Boundary -->
+            <img src="/logo.png" alt="WiseCat AI" style="width: 100%; height: auto; display: block; object-fit: cover;">
+        </div>
+
+        <div class="nav-list">
+            <!-- Hidden Dashboard Tab (preserved logic) -->
+            <button class="nav-item" data-tab="dashboard" style="display:none;"
+                onclick="window.location.href='/dashboard.html'">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </button>
+
+            <button class="nav-item" data-tab="profile" onclick="window.location.href='/dashboard.html?tab=profile'">
+                <span class="nav-icon">👤</span>
+                <span class="nav-label" data-i18n="nav_profile">Profile</span>
+            </button>
+
+            <button class="nav-item" data-tab="add" onclick="window.location.href='/dashboard.html?tab=add'">
+                <span class="nav-icon">📱</span>
+                <span class="nav-label" data-i18n="nav_phone">Buy Number</span>
+            </button>
+
+            <!-- AI Services Dropdown -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-dropdown-toggle" id="aiDropdownToggle" data-tab="ai">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <span class="nav-icon">🤖</span>
+                        <span class="nav-label" data-i18n="nav_ai">AI Services</span>
+                    </div>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="nav-dropdown-menu" id="aiDropdownMenu">
+                    <a href="/reservation/restaurant_reservation.html" class="nav-dropdown-item active">
+                        <span class="nav-icon">🍽️</span>
+                        <span class="nav-label">Restaurant</span>
+                    </a>
+                    <a href="/reservation/mouthpiece.html" class="nav-dropdown-item">
+                        <span class="nav-icon">📢</span>
+                        <span class="nav-label">Mouthpiece</span>
+                    </a>
+                    <a href="/reservation/trial.html" class="nav-dropdown-item">
+                        <span class="nav-icon">🎁</span>
+                        <span class="nav-label">Trial</span>
+                    </a>
+                </div>
+            </div>
+
+            <button class="nav-item" data-tab="inbox" onclick="window.location.href='/dashboard.html?tab=inbox'">
+                <span class="nav-icon">💬</span>
+                <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
+            </button>
+
+            <button class="nav-item" onclick="window.open('https://line.me/R/ti/p/@785ausca', '_blank')">
+                <span class="nav-icon">🎧</span>
+                <span class="nav-label" data-i18n="nav_contact">Contacts</span>
+            </button>
+
+            <!-- Ask AI Button -->
+            <button id="chatToggle" class="nav-item"
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 10px; box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);">
+                <span class="nav-icon">🐱</span>
+                <span class="nav-label" style="font-weight: 600;">Ask WiseCat AI</span>
+            </button>
+        </div>
+
+        <!-- Sidebar Footer (User) -->
+        <div class="sidebar-footer">
+            <div class="user-snippet" onclick="window.location.href='/dashboard.html?tab=profile'">
+                <img id="headerUserAvatar" src="https://ui-avatars.com/api/?name=Guest" alt="Avatar">
+                <div class="user-details">
+                    <div class="user-snippet-name" id="headerUserName">Guest</div>
+                    <div class="user-snippet-credits" id="creditsDisplay">$0.00</div>
+                </div>
+            </div>
+            <button id="headerLogoutBtn"
+                style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px; font-size: 12px; margin-top: 4px;">
+                <span data-i18n="nav_logout">Log out</span>
+            </button>
+        </div>
+    </nav>
 
 
     <canvas id="bg-canvas"
@@ -377,90 +461,7 @@
         </div>
     </div>
 
-    <!-- Sidebar Navigation (Refactored for Frontend Design Skill) -->
-    <nav class="sidebar-navigation">
-        <div class="sidebar-header">
-            <div class="sidebar-logo-text">🐱 WiseCat AI</div>
-        </div>
 
-        <div class="nav-list">
-            <!-- Hidden Dashboard Tab (preserved logic) -->
-            <button class="nav-item" data-tab="dashboard" style="display:none;"
-                onclick="window.location.href='/dashboard.html'">
-                <span class="nav-icon">📊</span>
-                <span class="nav-label">Dashboard</span>
-            </button>
-
-            <button class="nav-item" data-tab="profile" onclick="window.location.href='/dashboard.html?tab=profile'">
-                <span class="nav-icon">👤</span>
-                <span class="nav-label" data-i18n="nav_profile">Profile</span>
-            </button>
-
-            <button class="nav-item" data-tab="add" onclick="window.location.href='/dashboard.html?tab=add'">
-                <span class="nav-icon">📱</span>
-                <span class="nav-label" data-i18n="nav_phone">Buy Number</span>
-            </button>
-
-            <!-- AI Services Dropdown -->
-            <div class="nav-dropdown">
-                <button class="nav-item nav-dropdown-toggle" id="aiDropdownToggle" data-tab="ai">
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <span class="nav-icon">🤖</span>
-                        <span class="nav-label" data-i18n="nav_ai">AI Services</span>
-                    </div>
-                    <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="nav-dropdown-menu" id="aiDropdownMenu">
-                    <a href="/reservation/restaurant_reservation.html" class="nav-dropdown-item active">
-                        <span class="nav-icon">🍽️</span>
-                        <span class="nav-label">Restaurant</span>
-                    </a>
-                    <a href="/reservation/mouthpiece.html" class="nav-dropdown-item">
-                        <span class="nav-icon">📢</span>
-                        <span class="nav-label">Mouthpiece</span>
-                    </a>
-                    <a href="/reservation/trial.html" class="nav-dropdown-item">
-                        <span class="nav-icon">🎁</span>
-                        <span class="nav-label">Trial</span>
-                    </a>
-                </div>
-            </div>
-
-            <button class="nav-item" data-tab="inbox" onclick="window.location.href='/dashboard.html?tab=inbox'">
-                <span class="nav-icon">💬</span>
-                <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
-            </button>
-
-            <a href="https://line.me/R/ti/p/@785ausca" target="_blank" class="nav-item contact-link">
-                <span class="nav-icon">🎧</span>
-                <span class="nav-label" data-i18n="nav_contact">Contacts</span>
-            </a>
-
-            <!-- Ask AI Button -->
-            <button id="chatToggle" class="nav-item"
-                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 10px; box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);">
-                <span class="nav-icon">🐱</span>
-                <span class="nav-label">Ask AI</span>
-            </button>
-        </div>
-
-        <!-- Sidebar Footer (User) -->
-        <div class="sidebar-footer">
-
-            <div class="user-snippet" onclick="document.querySelector('[data-tab=profile]').click();">
-                <img id="headerUserAvatar" src="https://ui-avatars.com/api/?name=Guest" alt="Avatar">
-                <div class="user-details">
-                    <div class="user-snippet-name" id="headerUserName">Guest</div>
-                    <div class="user-snippet-credits" id="creditsDisplay">$0.00</div>
-                </div>
-            </div>
-
-            <button id="headerLogoutBtn"
-                style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px; font-size: 12px; margin-top: 4px;">
-                <span data-i18n="nav_logout">Log out</span>
-            </button>
-        </div>
-    </nav>
 
     <div
         style="position: fixed; bottom: 10px; right: 10px; font-size: 10px; color: #444; pointer-events: none; z-index: 10000;">
@@ -638,28 +639,25 @@
     <!-- Chat Panel (Shared) -->
     <div class="chat-panel" id="chatPanel" style="display: none;">
         <div class="chat-header">
-            <span>🐱 WiseCat Assistant</span>
+            <span>🐱 WiseCat AI Assistant</span>
             <button class="chat-close-btn" id="chatClose">✕</button>
         </div>
 
         <div class="chat-messages" id="chatMessages">
             <div class="chat-message bot">
-                <div class="message-content">
-                    Hi! I'm your WiseCat assistant 🐱<br><br>
-                    I can help you with:<br>
-                    • 💰 Credits and billing<br>
-                    • 📞 Making calls (Mouthpiece, Trial, Restaurant)<br>
-                    • 📱 Phone numbers<br>
-                    • 🔧 Troubleshooting<br>
-                    • ❓ Any WiseCat questions<br><br>
-                    Just ask me anything about WiseCat!
+                <div class="message-content"
+                    style="display: flex; flex-direction: row; align-items: flex-start; gap: 12px; max-width: 90%;">
+                    <img src="/icon-512.png" alt="WiseCat AI" class="chat-welcome-logo"
+                        style="width: 40px; height: 40px; flex-shrink: 0; margin-top: 2px;">
+                    <div>Hi! I'm your WiseCat AI assistant. I can help you with credits, calls, phone numbers, and
+                        troubleshooting. Just ask me anything about WiseCat AI!</div>
                 </div>
             </div>
         </div>
 
         <div class="chat-input-container">
             <div class="chat-input-wrapper">
-                <input type="text" id="chatInput" placeholder="Ask about WiseCat..." autocomplete="off" />
+                <input type="text" id="chatInput" placeholder="Ask about WiseCat AI..." autocomplete="off" />
             </div>
             <button id="chatSend" class="chat-send-btn">Send</button>
         </div>

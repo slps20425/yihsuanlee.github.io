@@ -11,7 +11,7 @@
     <div class="chat-header">
         <div class="flex items-center gap-2">
             <img src="/logo.png" alt="WiseCat AI" style="height: 28px; object-fit: contain;">
-            <!-- <span class="font-semibold text-white">WiseCat Assistant</span> -->
+            <span>🐱 WiseCat AI Assistant</span>
         </div>
         <button id="chatClose" class="chat-close-btn" aria-label="Close Chat">
             ✕
@@ -20,24 +20,19 @@
     <div id="chatMessages" class="chat-messages">
         <!-- Default Welcome Message -->
         <div class="chat-message bot">
-            <div class="message-content">Hi! I'm your WiseCat assistant <img src="/icon-512.png" alt="WiseCat"
-                    class="chat-welcome-logo"
-                    style="width:20px; height:20px; vertical-align: middle; display: inline-block;">
-
-                I can help you with:
-                • 💰 Credits and billing
-                • 📞 Making calls (Mouthpiece, Trial, Restaurant)
-                • 📱 Phone numbers
-                • 🔧 Troubleshooting
-                • ❓ Any WiseCat questions
-
-                Just ask me anything about WiseCat!</div>
+            <div class="message-content"
+                style="display: flex; flex-direction: row; align-items: flex-start; gap: 12px; max-width: 90%;">
+                <img src="/icon-512.png" alt="WiseCat AI" class="chat-welcome-logo"
+                    style="width: 40px; height: 40px; flex-shrink: 0; margin-top: 2px;">
+                <div>Hi! I'm your WiseCat AI assistant. I can help you with credits, calls, phone numbers, and
+                    troubleshooting. Just ask me anything about WiseCat AI!</div>
+            </div>
         </div>
     </div>
 
     <div class="chat-input-container">
         <div class="chat-input-wrapper">
-            <input type="text" id="chatInput" placeholder="Ask about WiseCat..." autocomplete="off" />
+            <input type="text" id="chatInput" placeholder="Ask about WiseCat AI..." autocomplete="off" />
         </div>
         <button id="chatSend" class="chat-send-btn">Send</button>
     </div>
@@ -164,7 +159,6 @@
         padding: 10px 14px;
         border-radius: 12px;
         line-height: 1.5;
-        white-space: pre-wrap;
     }
 
     .chat-message.user .message-content {

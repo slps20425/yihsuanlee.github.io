@@ -36,7 +36,12 @@
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
     --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.6);
+
+    /* Dashboard Compatibility Tokens */
+    --bg-dark: #0f172a;
+    --border: #334155;
 }
 
 body {
@@ -4170,7 +4175,6 @@ body.dashboard-layout {
     padding: 10px 14px;
     border-radius: 12px;
     line-height: 1.5;
-    white-space: pre-wrap;
     font-size: 14px;
 }
 

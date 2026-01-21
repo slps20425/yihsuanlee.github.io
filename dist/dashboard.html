@@ -93,14 +93,14 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/dashboard-C3pHZIDR.js"></script>
+  <script type="module" crossorigin src="/assets/dashboard-DhAtMu_H.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-CTlrI_wY.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-DIvedLFQ.js">
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-vSQymJI5.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-CffoEnuX.js">
   <link rel="modulepreload" crossorigin href="/assets/i18n-CnU3a9SV.js">
   <link rel="modulepreload" crossorigin href="/assets/session-timeout-CJUmU25q.js">
   <link rel="modulepreload" crossorigin href="/assets/chat-assistant-CHrSp6YG.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-B04h_kdG.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-Bem74BGg.css">
 </head>
 
 <body class="dashboard-layout">
@@ -580,10 +580,9 @@
 
             <!-- Ask AI Button -->
             <button id="chatToggle" class="nav-item"
-                style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; margin-top: 10px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
-                <img src="/logo.png" alt="WiseCat" class="nav-icon"
-                    style="width: 24px; height: 24px; object-fit: contain;">
-                <span class="nav-label" style="font-weight: 600;">WiseCat</span>
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 10px; box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);">
+                <span class="nav-icon">🐱</span>
+                <span class="nav-label" style="font-weight: 600;">Ask WiseCat AI</span>
             </button>
         </div>
 
@@ -687,30 +686,25 @@
 
     <div class="chat-panel" id="chatPanel" style="display: none;">
         <div class="chat-header">
-            <span>🐱 WiseCat Assistant</span>
+            <span>🐱 WiseCat AI Assistant</span>
             <button class="chat-close-btn" id="chatClose">✕</button>
         </div>
 
         <div class="chat-messages" id="chatMessages">
             <div class="chat-message bot">
-                <div class="message-content">
-                    Hi! I'm your WiseCat assistant 🐱
-
-                    I can help you with:
-                    • 💰 Credits and billing
-                    • 📞 Making calls (Mouthpiece, Trial, Restaurant)
-                    • 📱 Phone numbers
-                    • 🔧 Troubleshooting
-                    • ❓ Any WiseCat questions
-
-                    Just ask me anything about WiseCat!
+                <div class="message-content"
+                    style="display: flex; flex-direction: row; align-items: flex-start; gap: 12px; max-width: 90%;">
+                    <img src="/icon-512.png" alt="WiseCat AI" class="chat-welcome-logo"
+                        style="width: 40px; height: 40px; flex-shrink: 0; margin-top: 2px;">
+                    <div>Hi! I'm your WiseCat AI assistant. I can help you with credits, calls, phone numbers, and
+                        troubleshooting. Just ask me anything about WiseCat AI!</div>
                 </div>
             </div>
         </div>
 
         <div class="chat-input-container">
             <div class="chat-input-wrapper">
-                <input type="text" id="chatInput" placeholder="Ask about WiseCat..." autocomplete="off" />
+                <input type="text" id="chatInput" placeholder="Ask about WiseCat AI..." autocomplete="off" />
             </div>
             <button id="chatSend" class="chat-send-btn">Send</button>
         </div>
