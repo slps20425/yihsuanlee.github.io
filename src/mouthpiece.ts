@@ -1167,7 +1167,7 @@ async function validateMissionDescription() {
             // Check for Mission Suggestion
             if ((data as any).suggestedMissionId) {
                 const suggestedId = (data as any).suggestedMissionId;
-                const supportedMissions = ['lost_item', 'business_hours', 'restaurant_booking', 'package_tracking', 'event_rsvp', 'repair_appointment', 'order_modification', 'emergency_notification', 'schedule_verification', 'stock_inquiry'];
+                const supportedMissions = ['lost_item', 'business_hours', 'restaurant_booking', 'package_tracking', 'event_rsvp', 'repair_appointment', 'order_modification', 'emergency_notification', 'schedule_verification', 'stock_inquiry', 'medical_appointment'];
 
                 // Only show if it's a valid mission we handle
                 if (supportedMissions.includes(suggestedId)) {
@@ -1180,13 +1180,17 @@ async function validateMissionDescription() {
                         suggestedName = scenario.name[currentLang as keyof typeof scenario.name] || scenario.name['en'];
                     }
 
+                    // Include refined text if available
+                    const refinedText = data.refinedText || '';
+
                     feedbackDiv.innerHTML = `
                         <div style="margin-bottom: 10px;">❌ <strong>Mission Mismatch</strong></div>
                         <div style="margin-bottom: 10px;">${data.explanation || "This description doesn't match the current mission."}</div>
                         <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 12px;">
                             <div style="color: #93c5fd; font-size: 13px; margin-bottom: 6px;">💡 AI Suggestion</div>
-                            <div style="color: #fff; margin-bottom: 10px;">It looks like you are asking about <strong>${suggestedName}</strong>. Switch to that mission?</div>
-                            <button type="button" class="btn-switch-mission" data-mission-id="${suggestedId}" style="width: 100%; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Switch to ${suggestedName}</button>
+                            <div style="color: #fff; margin-bottom: 10px;">It looks like you are asking about <strong>${suggestedName}</strong>.</div>
+                            ${refinedText ? `<div style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; margin-bottom: 10px; font-size: 0.9em; color: #e5e7eb;">${refinedText}</div>` : ''}
+                            <button type="button" class="btn-switch-mission" data-mission-id="${suggestedId}" style="width: 100%; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Switch & Update</button>
                         </div>
                    `;
 
@@ -1196,15 +1200,23 @@ async function validateMissionDescription() {
                             const targetId = (e.target as HTMLElement).getAttribute('data-mission-id');
                             if (targetId && missionSelect) {
                                 missionSelect.value = targetId;
+
+                                // Also update the description with refined text if available
+                                if (data.refinedText) {
+                                    scriptTextarea.value = data.refinedText;
+                                }
+
                                 // Trigger change event manually
                                 updateMissionDescription();
                                 // Clear error state
                                 scriptTextarea.style.borderColor = '';
                                 scriptTextarea.style.boxShadow = '';
                                 feedbackDiv.style.display = 'none';
-                                // Optional: Re-validate immediately or let user do it?
-                                // Let's just switch for now.
-                                (window as any).showToast(`Switched mission to ${suggestedName}`, 'success');
+
+                                (window as any).showToast(`Switched to ${suggestedName} and updated text!`, 'success');
+
+                                // Optional: Re-validate immediately
+                                setTimeout(() => validateForm(), 100);
                             }
                         });
                     }

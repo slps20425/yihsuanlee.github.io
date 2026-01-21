@@ -233,5 +233,26 @@ export const MISSION_SCENARIOS: MissionScenario[] = [
             fr: 'Appeler un magasin pour demander si un modèle de produit spécifique est actuellement en stock et s\'il peut être réservé.',
             it: 'Chiama un negozio per chiedere se un modello di prodotto specifico è attualmente disponibile e se può essere riservato.'
         }
+    },
+    {
+        id: 'medical_appointment',
+        name: {
+            en: 'Medical/Dental Appointment',
+            zh: '醫療/牙醫預約',
+            jp: '医療・歯科予約',
+            kr: '의료/치과 예약',
+            es: 'Cita médica/mental',
+            fr: 'Rendez-vous médical/dentaire',
+            it: 'Appuntamento medico/dentistico'
+        },
+        description: {
+            en: 'Call a clinic, hospital, or dentist to schedule an appointment or consultation.',
+            zh: '撥給診所、醫院或牙醫預約看診、諮詢或檢查時間。',
+            jp: '診療所、病院、または歯科医に電話して、診察や相談の予約をする。',
+            kr: '병원, 의원 또는 치과에 전화하여 진료 또는 상담 예약을 잡습니다.',
+            es: 'Llama a una clínica, hospital o dentista para programar una cita o consulta.',
+            fr: 'Appeler une clinique, un hôpital ou un dentiste pour prendre rendez-vous ou une consultation.',
+            it: 'Chiama una clinica, un ospedale o un dentista per fissare un appuntamento o una consultazione.'
+        }
     }
 ];

@@ -153,7 +153,8 @@ const ALL_MISSIONS = [
     { id: 'order_modification', name: 'Order Modification', desc: 'Change product/quantity' },
     { id: 'emergency_notification', name: 'Emergency Notification', desc: 'Relay urgent message' },
     { id: 'schedule_verification', name: 'Schedule Verification', desc: 'Confirm meeting time/loc' },
-    { id: 'stock_inquiry', name: 'Stock Inquiry', desc: 'Check product availability' }
+    { id: 'stock_inquiry', name: 'Stock Inquiry', desc: 'Check product availability' },
+    { id: 'medical_appointment', name: 'Medical/Dental Appointment', desc: 'Schedule doctor/dentist visit' }
 ];
 
 /**
