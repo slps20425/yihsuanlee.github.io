@@ -3,11 +3,11 @@
 ## Current Status: READY_FOR_QA
 
 ## Last Completed Task
-- **Task ID**: Chat_Widget_UI_Refinement
-- **Title**: Chat Widget UI Refinements & Bug Fixes
-- **Completed**: 2026-01-21T07:23:00Z
+- **Task ID**: UI_Fixes_Date_Time_Header
+- **Title**: Reservation UI Fixes & Header Logic
+- **Completed**: 2026-01-21T16:05:00+08:00
 - **Deploy URL**: https://wisecat-8df8d.web.app/
-- **Notes**: Implemented dynamic retry cost (0.3 rate) and interval (10m). Left-aligned UI.
+- **Notes**: Fixed Date/Time picker sizing and interaction. Fixed "Schedule Preference" dropdown. Dynamic Tab text in Header.
 
 ## Deployment Standards
 > [!IMPORTANT]

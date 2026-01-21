@@ -1111,18 +1111,12 @@ function validateForm() {
         }
     }
 
-    // 3. Combined Logic
-    const hasRestaurant = !!selectedRestaurantData;
-    const isConsentGiven = consentCheckbox ? consentCheckbox.checked : false;
+    // 3. Combined Logic (Validation status only, do not disable button)
+    // We want the button to remain clickable so we can show errors on click.
+    btn.disabled = false;
+    btn.style.opacity = "1";
 
-    // Check isUserPhoneValid as well
-    if (credits > 0 && turnstileValidated && isPhoneValid && isUserPhoneValid && isTimeValid && hasRestaurant && isConsentGiven) {
-        btn.disabled = false;
-        btn.style.opacity = "1";
-    } else {
-        btn.disabled = true;
-        btn.style.opacity = "0.5";
-    }
+    // Optional: Visual indicator could go here, but for now we rely on click feedback.
 }
 
 function validateReservationTime(): boolean {
@@ -1669,15 +1663,85 @@ async function showConfirmationModal(details: { label: string, value: string }[]
 async function handleFormSubmit(e: Event) {
     e.preventDefault();
 
-    // Opening Hours Validation
-    if (!validateReservationTime()) {
-        return;
+    // --- 1. Comprehensive Validation Gate ---
+    const errors: string[] = [];
+    let firstErrorEl: HTMLElement | null = null;
+
+    // A. Restaurant
+    if (!selectedRestaurantData) {
+        errors.push("Please select a restaurant.");
+        const el = document.getElementById('restaurantSearch');
+        if (el && !firstErrorEl) firstErrorEl = el;
+        if (el) el.style.borderColor = "red";
     }
 
-    // Call Consent Validation
+    // B. Reservation Date/Time
+    const isTimeValid = validateReservationTime();
+    if (!isTimeValid) {
+        errors.push("Please select a valid date and time.");
+        const el = document.getElementById('resDate');
+        if (el && !firstErrorEl) firstErrorEl = el;
+    }
+
+    // C. Phone Number (Restaurant)
+    const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
+    let isPhoneValid = false;
+    if (phoneInput && phoneInput.value) {
+        const validCharsOnly = /^[\d\s\-\(\)\+]+$/.test(phoneInput.value);
+        const digitsOnly = phoneInput.value.replace(/\D/g, '');
+        isPhoneValid = validCharsOnly && digitsOnly.length >= 5;
+    }
+    if (!isPhoneValid) {
+        errors.push("Please enter a valid restaurant phone number.");
+        if (phoneInput) {
+            phoneInput.style.borderColor = "red";
+            if (!firstErrorEl) firstErrorEl = phoneInput;
+        }
+    }
+
+    // D. User Phone Number
+    const userPhoneInput = document.getElementById('userPhone') as HTMLInputElement;
+    let isUserPhoneValid = false;
+    if (userPhoneInput && userPhoneInput.value) {
+        const validCharsOnly = /^[\d\s\-\(\)\+]+$/.test(userPhoneInput.value);
+        const digitsOnly = userPhoneInput.value.replace(/\D/g, '');
+        isUserPhoneValid = validCharsOnly && digitsOnly.length >= 5;
+    }
+    if (!isUserPhoneValid) {
+        errors.push("Please enter your phone number.");
+        if (userPhoneInput) {
+            userPhoneInput.style.borderColor = "red";
+            if (!firstErrorEl) firstErrorEl = userPhoneInput;
+        }
+    }
+
+    // E. Consent
     const consentCheckbox = document.getElementById('consentCheckbox') as HTMLInputElement;
     if (consentCheckbox && !consentCheckbox.checked) {
-        alert("Please agree to let the AI call on your behalf to continue.");
+        errors.push("Please agree to the terms.");
+        if (!firstErrorEl) firstErrorEl = consentCheckbox.parentElement; // Highlight wrapper
+    }
+
+    // F. Turnstile
+    if (!turnstileValidated) {
+        errors.push("Please complete the security check.");
+        const el = document.getElementById('turnstile-widget');
+        if (el && !firstErrorEl) firstErrorEl = el;
+    }
+
+    // Final Check
+    if (errors.length > 0) {
+        const msg = errors[0]; // Show first error or generic
+        if ((window as any).showToast) {
+            (window as any).showToast(`⚠️ ${msg}`, "error");
+        } else {
+            alert(`⚠️ ${msg}`);
+        }
+
+        if (firstErrorEl) {
+            firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstErrorEl.focus();
+        }
         return;
     }
 
@@ -1688,7 +1752,7 @@ async function handleFormSubmit(e: Event) {
     }
 
     const nameInput = document.getElementById('userName') as HTMLInputElement;
-    const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
+    // phoneInput already declared above
     const noteInput = document.getElementById('note') as HTMLTextAreaElement;
 
     const name = nameInput.value;
@@ -1702,7 +1766,7 @@ async function handleFormSubmit(e: Event) {
         fullPhoneNumber = phoneInputPlugin.getNumber(); // Get full global number including country code
     }
 
-    const userPhoneInput = document.getElementById('userPhone') as HTMLInputElement;
+    // userPhoneInput already declared above
     let userPhoneNumberFull = userPhoneInput.value;
     if (userPhonePlugin) {
         userPhoneNumberFull = userPhonePlugin.getNumber();
