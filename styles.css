@@ -4004,7 +4004,18 @@ body.dashboard-layout {
     .header-right-actions {
         order: 3 !important;
         margin-left: auto !important;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        /* Space between profile and language selector */
     }
+}
+
+/* Fix mobile header avatar alignment */
+#mobileHeaderAvatar {
+    margin-right: 0 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
 }
 
 /* 🔧 WEB SCROLL & UI FIXES */
