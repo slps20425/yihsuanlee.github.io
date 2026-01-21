@@ -927,6 +927,26 @@ function activateTab(tabName: string) {
     // Show selected tab
     targetTab.classList.add('active');
 
+    // Update Header Title
+    const headerTitle = document.querySelector('.header-title');
+    if (headerTitle) {
+        let title = 'WiseCat AI - Dashboard';
+        switch (tabName) {
+            case 'profile':
+                title = 'WiseCat AI - Profile';
+                break;
+            case 'add':
+                title = 'WiseCat AI - Phone Number';
+                break;
+            case 'inbox':
+                title = 'WiseCat AI - Inbox';
+                break;
+            default:
+                title = 'WiseCat AI - Dashboard';
+        }
+        headerTitle.textContent = title;
+    }
+
     // Persist to localStorage
     localStorage.setItem('wisecat_active_tab', tabName);
 
@@ -935,6 +955,9 @@ function activateTab(tabName: string) {
         loadUsageHistory();
     }
 }
+
+// Expose to window for inline onclick handlers
+(window as any).switchTab = activateTab;
 
 navItems.forEach(navItem => {
     navItem.addEventListener('click', () => {
