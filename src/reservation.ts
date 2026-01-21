@@ -1,7 +1,7 @@
 import "./version";
 import WiseCatI18n from './i18n';
 import { auth, db } from './firebase-config';
-import { getDoc, doc, setDoc, getDocs, collection } from "firebase/firestore";
+import { getDoc, doc, setDoc, getDocs, collection, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import './chat-assistant'; // Enable Chat Widget
 
@@ -482,7 +482,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Moved mission functions to top level
 
     // --- Custom Dropdown Logic (Replaces Native Selects) ---
-    const initCustomDropdowns = () => {
+    function initCustomDropdowns() {
         const wrappers = document.querySelectorAll('.custom-select-wrapper');
 
         wrappers.forEach(wrapper => {
@@ -545,7 +545,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
             document.body.setAttribute('data-click-listener-attached', 'true');
         }
-    };
+    }
 
     // Initialize generic dropdowns first
     initCustomDropdowns();
