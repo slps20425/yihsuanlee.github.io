@@ -92,7 +92,9 @@ export const validateMissionDescription = functions.https.onCall(
                 }
             };
 
-            const prompt = buildValidationPrompt(missionName, description, language);
+            // Determine service type from missionId or default to mouthpiece
+            const serviceType = missionId === 'restaurant_booking' ? 'restaurant' : 'mouthpiece';
+            const prompt = await buildValidationPrompt(missionId, missionName, description, language, serviceType);
 
             const result = await model.generateContent({
                 contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -142,36 +144,65 @@ export const validateMissionDescription = functions.https.onCall(
     }
 );
 
-// Simplified list of missions for AI context (English only is enough for context matching)
-const ALL_MISSIONS = [
-    { id: 'lost_item', name: 'Lost Item Inquiry', desc: 'Call location about lost item' },
-    { id: 'business_hours', name: 'Business Hours Confirmation', desc: 'Check operating status' },
-    { id: 'restaurant_booking', name: 'Restaurant Reservation', desc: 'Book a table' },
-    { id: 'package_tracking', name: 'Package Tracking', desc: 'Check delivery status' },
-    { id: 'event_rsvp', name: 'Event RSVP', desc: 'Confirm attendance' },
-    { id: 'repair_appointment', name: 'Repair Appointment', desc: 'Schedule repair service' },
-    { id: 'order_modification', name: 'Order Modification', desc: 'Change product/quantity' },
-    { id: 'emergency_notification', name: 'Emergency Notification', desc: 'Relay urgent message' },
-    { id: 'schedule_verification', name: 'Schedule Verification', desc: 'Confirm meeting time/loc' },
-    { id: 'stock_inquiry', name: 'Stock Inquiry', desc: 'Check product availability' },
-    { id: 'medical_appointment', name: 'Medical/Dental Appointment', desc: 'Schedule doctor/dentist visit' }
-];
+import { getFirestore } from 'firebase-admin/firestore';
+
+// Cache for missions to reduce Firestore reads
+let missionsCache: { [key: string]: any[] } = {};
+let cacheTimestamp: { [key: string]: number } = {};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Fetch missions from Firestore with caching
+ */
+async function getMissions(): Promise<any[]> {
+    const collectionName = 'missions';
+    const now = Date.now();
+
+    // Return cached if valid for the centralized missions collection
+    if (missionsCache[collectionName] && cacheTimestamp[collectionName] && (now - cacheTimestamp[collectionName] < CACHE_TTL)) {
+        return missionsCache[collectionName];
+    }
+
+    // Fetch from Firestore named database "reservation"
+    const db = getFirestore('reservation');
+    const snapshot = await db.collection(collectionName).get();
+
+    const missions = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            // Pass the whole name object if available for localized matching
+            nameObj: data.name || { en: data.mission_name || doc.id },
+            keywords: data.keywords_pool || []
+        };
+    });
+
+    // Update cache
+    missionsCache[collectionName] = missions;
+    cacheTimestamp[collectionName] = now;
+
+    return missions;
+}
 
 /**
  * Build the validation prompt for Gemini
  */
-function buildValidationPrompt(missionName: string, description: string, language: string): string {
-    // Language-specific instructions
-    // CRITICAL: Explicitly handle Traditional Chinese (zh-TW) vs Simplified Chinese (zh-CN)
-    let langInstruction = "";
+async function buildValidationPrompt(missionId: string, missionName: string, description: string, language: string, serviceType: string = 'mouthpiece'): Promise<string> {
+    const allMissions = await getMissions();
+    // Build a detailed list for the AI
+    const availableMissionsList = allMissions.map(m => {
+        const localizedName = m.nameObj[language] || m.nameObj['en'] || m.id;
+        const keywords = m.keywords.length > 0 ? ` Keywords: [${m.keywords.join(', ')}]` : '';
+        return `- ID: "${m.id}", Name: "${localizedName}"${keywords}`;
+    }).join('\n');
 
-    switch (language) {
+    // Language-specific instructions
+    let langInstruction = "";
+    const primaryLang = language.split('-')[0]; // Handle zh-TW, en-US, etc.
+
+    switch (primaryLang) {
         case 'zh':
-        case 'zh-TW':
-            langInstruction = "You MUST answer in Traditional Chinese (繁體中文). Do NOT use Simplified Chinese.";
-            break;
-        case 'zh-CN':
-            langInstruction = "You MUST answer in Simplified Chinese (简体中文).";
+            langInstruction = "You MUST answer in Traditional Chinese (繁體中文).";
             break;
         case 'jp':
         case 'ja':
@@ -184,39 +215,48 @@ function buildValidationPrompt(missionName: string, description: string, languag
         case 'es':
             langInstruction = "You MUST answer in Spanish.";
             break;
+        case 'fr':
+            langInstruction = "You MUST answer in French.";
+            break;
+        case 'it':
+            langInstruction = "You MUST answer in Italian.";
+            break;
         default:
             langInstruction = "Answer in English.";
     }
 
-    const availableMissionsList = ALL_MISSIONS.map(m => `- ID: "${m.id}", Name: "${m.name}" (${m.desc})`).join('\n');
-
     return `
-Role: You are a helpful AI assistant validating user tasks for a service called "WiseCat".
-Your Goal: Determine if the User's Description matches the chosen Mission Category. If not, suggest the correct one.
+Role: You are a helpful AI assistant for "WiseCat", a human-in-the-loop task service.
+Goal: Validate if the User Description matches the selected Mission.
 
-Current Mission: "${missionName}"
-User Description: "${description}"
+Current Context:
+- Target Mission: "${missionName}" (ID: ${missionId})
+- User Input: "${description}"
+- Language: ${language}
 
-Available Missions:
+Available Mission Categories:
 ${availableMissionsList}
 
-Verification Rules:
-1. If the Description is RELEVANT to the Current Mission, set "valid": true.
-2. If the Description is completely unrelated, set "valid": false.
-3. **AUTO-DETECTION**: If "valid" is false, check if the description matches ANY other mission in "Available Missions".
-   - If a better match exists, set "suggestedMissionId" to that mission's ID.
+Validation Steps:
+1. MATCH CHECK: Does the intent in "User Input" generally align with "Target Mission"?
+   - If YES: Set "valid": true.
+   - If NO: Set "valid": false and PROCEED TO STEP 2.
+
+2. SEARCH & SUGGEST: If invalid, find the SINGLE BEST MATCH in "Available Mission Categories".
+   - Look at Name and Keywords (e.g., "美髮" matches "salon_reservation").
+   - If a strong match is found:
+     - Set "suggestedMissionId" to that Mission ID.
+     - Set "refinedText" to a professional, polite version of the user request optimized for THAT suggested mission.
+   - If NO match found: Set "suggestedMissionId": null.
 
 Output Requirements:
-1. Return JSON with keys: "valid" (boolean), "explanation" (string), "refinedText" (string), "suggestedMissionId" (string or null).
-2. "explanation": 
-   - If invalid, explain WHY in 1 short sentence. 
-   - If valid, give a short confirming compliment.
-3. "refinedText": 
-   - Rewrite the User Description to be more polite, professional, and clear.
-   - Keep the original intent.
-4. "suggestedMissionId":
-   - The ID of the better matching mission (e.g. "event_rsvp") if applicable. Otherwise null.
-5. **LANGUAGE CONSTRAINT**: ${langInstruction}
-   - "explanation" and "refinedText" MUST be in the requested language.
+- Format: JSON
+- Keys: 
+  - "valid": boolean
+  - "explanation": Short reason (1 sentence) for your decision in ${language}.
+  - "refinedText": Professional version of user request in ${language}. If "suggestedMissionId" is set, optimize for that mission.
+  - "suggestedMissionId": The ID of the suggested mission, or null.
+
+${langInstruction}
 `;
 }

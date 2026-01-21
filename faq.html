@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ | WiseCat AI</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <meta name="theme-color" content="#0f172a">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent: #3b82f6;
+            --border: #334155;
+        }
+
+        .faq-page-container {
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question {
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .faq-question h3 {
+            margin: 0;
+            font-size: 1.05rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .faq-icon {
+            width: 20px;
+            height: 20px;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-icon::before,
+        .faq-icon::after {
+            content: '';
+            position: absolute;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .faq-icon::before {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            margin-top: -1px;
+        }
+
+        .faq-icon::after {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            margin-left: -1px;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0, 1, 0, 1);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 1000px;
+            transition: all 0.3s cubic-bezier(1, 0, 1, 0);
+        }
+
+        .faq-answer-content {
+            padding: 1.25rem 1.5rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .faq-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .faq-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .faq-page-container {
+                padding: 1rem;
+            }
+
+            .faq-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-layout">
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="header-content">
+            <button class="hamburger-menu" id="hamburgerMenu" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <h1 class="header-title" style="cursor: pointer;" onclick="window.location.href='/dashboard.html'">WiseCat
+                AI - FAQ</h1>
+            <div class="header-right-actions">
+                <select id="languageSelectorHeader" class="language-selector-header">
+                    <option value="en">🇺🇸 EN</option>
+                    <option value="zh">🇹🇼 中</option>
+                    <option value="jp">🇯🇵 日</option>
+                    <option value="kr">🇰🇷 한</option>
+                    <option value="es">🇪🇸 ES</option>
+                    <option value="fr">🇫🇷 FR</option>
+                    <option value="it">🇮🇹 IT</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="faq-page-container">
+            <div class="faq-header">
+                <h1 data-i18n="faq_title">Frequently Asked Questions</h1>
+                <p style="color: var(--text-secondary);" data-i18n="faq_subtitle">Everything you need to know about
+                    WiseCat AI services</p>
+            </div>
+
+            <div class="faq-container" id="faqAccordion">
+                <!-- FAQ Items will be correctly handled by i18n logic -->
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3 data-i18n="faq_q1">How can WiseCat AI transform my business operations?</h3>
+                        <div class="faq-icon"></div>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content" data-i18n="faq_a1">
+                            WiseCat AI automates customer interactions...
+                        </div>
+                    </div>
+                </div>
+                <!-- ... other items ... -->
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3 data-i18n="faq_q2">What makes the 'Mouthpiece' AI voice agent different from traditional
+                            IVRs?</h3>
+                        <div class="faq-icon"></div>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content" data-i18n="faq_a2">
+                            Unlike traditional IVRs...
+                        </div>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3 data-i18n="faq_q3">How does the Restaurant Flow handle complex booking requests during peak
+                            hours?</h3>
+                        <div class="faq-icon"></div>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content" data-i18n="faq_a3">
+                            The Restaurant Flow is designed...
+                        </div>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3 data-i18n="faq_q4">Can I connect WiseCat to my existing CRM or messaging apps?</h3>
+                        <div class="faq-icon"></div>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content" data-i18n="faq_a4">
+                            Yes! WiseCat natively supports LINE...
+                        </div>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3 data-i18n="faq_q5">How does WiseCat ensure the privacy and security of my data?</h3>
+                        <div class="faq-icon"></div>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content" data-i18n="faq_a5">
+                            Security is our top priority...
+                        </div>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3 data-i18n="faq_q6">How does the Tasker Agent help reduce my team's workload?</h3>
+                        <div class="faq-icon"></div>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content" data-i18n="faq_a6">
+                            The Tasker Agent acts as an autonomous coordinator...
+                        </div>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3 data-i18n="faq_q7">Is there a way to test WiseCat's AI-driven missions before committing?
+                        </h3>
+                        <div class="faq-icon"></div>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content" data-i18n="faq_a7">
+                            Absolutely! Our 'Trial Flow' allows you to simulate AI interactions...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar-navigation">
+        <div class="sidebar-header">
+            <img src="/logo.png" alt="WiseCat AI" style="width: 100%; height: auto; display: block;">
+        </div>
+        <div class="nav-list">
+            <button class="nav-item" onclick="window.location.href='/dashboard.html'">
+                <span class="nav-icon">👤</span>
+                <span class="nav-label" data-i18n="nav_profile">Profile</span>
+            </button>
+            <button class="nav-item active">
+                <span class="nav-icon">❓</span>
+                <span class="nav-label" data-i18n="nav_faq">FAQ</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='/dashboard.html?tab=add'">
+                <span class="nav-icon">📱</span>
+                <span class="nav-label" data-i18n="nav_phone">Buy Number</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='/dashboard.html?tab=inbox'">
+                <span class="nav-icon">💬</span>
+                <span class="nav-label" data-i18n="nav_inbox">Inbox</span>
+            </button>
+            <button class="nav-item" onclick="window.open('https://line.me/R/ti/p/@785ausca', '_blank')">
+                <span class="nav-icon">🎧</span>
+                <span class="nav-label" data-i18n="nav_contact">Contacts</span>
+            </button>
+        </div>
+    </nav>
+
+    <script src="i18n.js"></script>
+    <script type="module" src="./src/faq.ts"></script>
+</body>
+
+</html>

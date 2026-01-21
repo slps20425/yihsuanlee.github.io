@@ -1,9 +1,77 @@
 import "./version";
 import WiseCatI18n from './i18n';
 import { auth, db } from './firebase-config';
-import { getDoc, doc, setDoc } from "firebase/firestore";
+import { getDoc, doc, setDoc, getDocs, collection } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import './chat-assistant'; // Enable Chat Widget
+
+// Mission interface
+interface MissionScenario {
+    id: string;
+    name: Record<string, string>;
+    description: Record<string, string>;
+    services?: string[];
+    google_type?: string;
+    default_keyword?: string;
+}
+
+let dynamicMissions: MissionScenario[] = [];
+
+// --- Dynamic Mission Logic ---
+async function fetchMissionsFromFirestore(): Promise<MissionScenario[]> {
+    try {
+        const missionsRef = collection(db, 'missions');
+        const snapshot = await getDocs(missionsRef);
+
+        const missions: MissionScenario[] = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                name: (typeof data.name === 'object' && data.name !== null) ? data.name : { en: data.mission_name || doc.id },
+                description: (typeof data.description === 'object' && data.description !== null) ? data.description : { en: data.description || '' },
+                services: data.services || []
+            } as any;
+        });
+
+        return missions;
+    } catch (error) {
+        console.error('Error fetching missions from Firestore:', error);
+        return [];
+    }
+}
+
+function populateRestaurantMissions(initCustomDropdowns: () => void) {
+    const wrapper = document.getElementById('missionSelectWrapper');
+    if (!wrapper) return;
+
+    const optionsContainer = wrapper.querySelector('.custom-select-options');
+    const triggerText = document.getElementById('missionTriggerText');
+    const missionInput = document.getElementById('mission') as HTMLInputElement;
+    if (!optionsContainer || !triggerText || !missionInput) return;
+
+    const currentLang = WiseCatI18n.currentLang;
+    const restaurantMissions = dynamicMissions.filter(m => (m as any).services && (m as any).services.includes('restaurant'));
+
+    if (restaurantMissions.length === 0) return;
+
+    optionsContainer.innerHTML = '';
+
+    restaurantMissions.forEach((mission, index) => {
+        const span = document.createElement('span');
+        span.className = 'custom-option';
+        if (mission.id === missionInput.value || (index === 0 && !missionInput.value)) {
+            span.classList.add('selected');
+            missionInput.value = mission.id;
+            triggerText.textContent = mission.name[currentLang as keyof typeof mission.name] || mission.name['en'];
+            triggerText.setAttribute('data-i18n', ''); // Disable i18n auto-text
+        }
+        span.setAttribute('data-value', mission.id);
+        span.textContent = mission.name[currentLang as keyof typeof mission.name] || mission.name['en'];
+        optionsContainer.appendChild(span);
+    });
+
+    initCustomDropdowns();
+}
 // import { ScamCheck } from './scam-check'; // Now handled by validateMissionDescription
 
 // Declare globals from CDNs
@@ -83,9 +151,35 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Initialize i18n explicitly
     WiseCatI18n.init();
 
-    // Global Config Variables
-    // Variable shadowing removed to ensure onSnapshot updates the global state.
-    // let minPreorderDays = 3; // Default 3 days
+    // Fetch and populate dynamic missions
+    fetchMissionsFromFirestore().then(missions => {
+        dynamicMissions = missions;
+        populateRestaurantMissions(initCustomDropdowns);
+    });
+
+    // Re-populate on language change
+    document.addEventListener('languageChanged', () => {
+        fetchMissionsFromFirestore().then(missions => {
+            dynamicMissions = missions;
+            // When language changes, we need to refresh the dropdown trigger text
+            const triggerText = document.getElementById('missionTriggerText');
+            const missionInput = document.getElementById('mission') as HTMLInputElement;
+            if (triggerText && missionInput) {
+                const currentLang = WiseCatI18n.currentLang;
+                const currentMission = dynamicMissions.find(m => m.id === missionInput.value);
+                if (currentMission) {
+                    triggerText.textContent = currentMission.name[currentLang] || currentMission.name['en'];
+                }
+            }
+            populateRestaurantMissions(initCustomDropdowns);
+        });
+    });
+
+    // --- Note Validation and Refinement ---
+    const validateBtnRef = document.getElementById('validateBtn');
+    if (validateBtnRef) {
+        validateBtnRef.addEventListener('click', validateNote);
+    }
 
     // --- Initialize Cost Icon Container immediately ---
     const initCostIcon = () => {
@@ -114,10 +208,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     initCostIcon();
 
     // --- Remote Config Listener ---
-    const { doc, onSnapshot } = await import("firebase/firestore");
-    const { db } = await import("./firebase-config"); // Revert
-    // Removed storage imports
-
     const configRef = doc(db, 'configuration', 'settings');
     const resBtn = document.getElementById('submitBtn') as HTMLButtonElement | null;
     const configAlert = document.createElement('div');
@@ -387,6 +477,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     });
 
+
+
+    // Moved mission functions to top level
 
     // --- Custom Dropdown Logic (Replaces Native Selects) ---
     const initCustomDropdowns = () => {
@@ -984,12 +1077,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     };
 
-    const phoneInputForTimezone = document.querySelector("#targetPhone");
     if (phoneInputForTimezone) {
         phoneInputForTimezone.addEventListener('countrychange', updateTimezone);
         setTimeout(updateTimezone, 1000);
     }
-});
+}); // This closes the DOMContentLoaded block started at line 150
 
 // --- Validation Logic ---
 
@@ -2362,8 +2454,62 @@ async function validateNote() {
         } else {
             isContentSafe = false;
             (document.getElementById('submitBtn') as HTMLButtonElement).disabled = true;
-            noteTextarea.style.border = '2px solid #ef4444';
-            noteTextarea.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+            // Check for Mission Suggestion
+            if ((data as any).suggestedMissionId) {
+                const suggestedId = (data as any).suggestedMissionId;
+                const missions = dynamicMissions.length > 0 ? dynamicMissions : [];
+                const scenario = missions.find(m => m.id === suggestedId);
+
+                if (scenario) {
+                    const currentLang = WiseCatI18n.currentLang;
+                    let suggestedName = scenario.name[currentLang as keyof typeof scenario.name] || scenario.name['en'];
+                    const refinedText = data.refinedText || '';
+
+                    // Localized Labels
+                    const labels: Record<string, any> = {
+                        zh: { title: '❌ 任務不匹配', suggest: '💡 AI 建議', text: `看來您正在詢問關於 <strong>${suggestedName}</strong>。`, btn: '切換並更新' },
+                        en: { title: '❌ Mission Mismatch', suggest: '💡 AI Suggestion', text: `It looks like you are asking about <strong>${suggestedName}</strong>.`, btn: 'Switch & Update' },
+                        jp: { title: '❌ ミッションの不一致', suggest: '💡 AIの提案', text: `<strong>${suggestedName}</strong> についてのご質問のようです。`, btn: '切り替えて更新' },
+                        kr: { title: '❌ 미션 불일치', suggest: '💡 AI 제안', text: `<strong>${suggestedName}</strong>에 대해 문의하시는 것 같습니다.`, btn: '전환 및 업데이트' },
+                    };
+                    const lbl = labels[currentLang.split('-')[0]] || labels['en'];
+
+                    feedbackDiv.innerHTML = `
+                        <div style="margin-bottom: 10px;">${lbl.title}</div>
+                        <div style="margin-bottom: 10px;">${data.explanation || "This description doesn't match the current mission."}</div>
+                        <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 12px;">
+                            <div style="color: #93c5fd; font-size: 13px; margin-bottom: 6px;">${lbl.suggest}</div>
+                            <div style="color: #fff; margin-bottom: 10px;">${lbl.text}</div>
+                            ${refinedText ? `<div style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; margin-bottom: 10px; font-size: 0.9em; color: #e5e7eb;">${refinedText}</div>` : ''}
+                            <button type="button" class="btn-switch-mission" data-mission-id="${suggestedId}" style="width: 100%; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">${lbl.btn}</button>
+                        </div>
+                   `;
+
+                    const switchBtn = feedbackDiv.querySelector('.btn-switch-mission');
+                    if (switchBtn) {
+                        switchBtn.addEventListener('click', () => {
+                            const missionInput = document.getElementById('mission') as HTMLInputElement;
+                            const triggerText = document.getElementById('missionTriggerText');
+                            if (missionInput && triggerText) {
+                                missionInput.value = suggestedId;
+                                triggerText.textContent = suggestedName;
+
+                                if (data.refinedText) {
+                                    noteTextarea.value = data.refinedText;
+                                }
+
+                                noteTextarea.style.border = '';
+                                noteTextarea.style.boxShadow = '';
+                                feedbackDiv.style.display = 'none';
+
+                                (window as any).showToast(`Switched to ${suggestedName} and updated text!`, 'success');
+                            }
+                        });
+                    }
+                    return;
+                }
+            }
+
             feedbackDiv.textContent = `❌ ${data.explanation || "Request doesn't match or is unsafe. Please revise."}`;
             feedbackDiv.style.background = 'rgba(239, 68, 68, 0.1)';
             feedbackDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
@@ -2378,11 +2524,5 @@ async function validateNote() {
     }
 }
 
-// Security and refinement is now verified by the unified 'Check Description' call.
-document.addEventListener('DOMContentLoaded', () => {
-    // attachSafetyCheck('note');
-    const validateBtn = document.getElementById('validateBtn');
-    if (validateBtn) validateBtn.addEventListener('click', validateNote);
-});
 
 

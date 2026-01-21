@@ -24,6 +24,23 @@ const WiseCatI18n = {
             service_trial_title: "Free Trial Call",
             service_trial_desc: "Experience AI voice calling with a limited trial",
 
+            // FAQ Section
+            faq_title: "Frequently Asked Questions",
+            faq_q1: "How can WiseCat AI transform my business operations?",
+            faq_a1: "WiseCat AI automates customer interactions, specifically handling restaurant reservations and answering frequent inquiries via voice and text agents. This reduces manual workload, eliminates human error, and ensures 24/7 availability for your customers.",
+            faq_q2: "What makes the 'Mouthpiece' AI voice agent different from traditional IVRs?",
+            faq_a2: "Unlike traditional IVRs that rely on static menus, Mouthpiece uses advanced Natural Language Processing to understand and respond to customers in a natural, conversational way. It can handle complex requests, follow-up questions, and provide a much more human-like experience.",
+            faq_q3: "How does the Restaurant Flow handle complex booking requests during peak hours?",
+            faq_a3: "The Restaurant Flow is designed to handle multiple simultaneous booking requests. It integrates directly with your reservation database, checks availability in real-time, and can even handle special requests or waitlists, ensuring no customer is left unheard.",
+            faq_q4: "Can I connect WiseCat to my existing CRM or messaging apps?",
+            faq_a4: "Yes! WiseCat natively supports LINE for customer interaction and can be configured to sync data with Slack, CRM systems, and other business tools through our n8n-powered dispatcher.",
+            faq_q5: "How does WiseCat ensure the privacy and security of my data?",
+            faq_a5: "Security is our top priority. All data is encrypted and managed through secure Firebase infrastructure. We implement strict access controls and adhere to industrial best practices for data privacy.",
+            faq_q6: "How does the Tasker Agent help reduce my team's workload?",
+            faq_a6: "The Tasker Agent acts as an autonomous coordinator, assigning follow-ups, validating post-call data, and managing recurring tasks. This allows your team to focus on high-value guest experiences.",
+            faq_q7: "Is there a way to test WiseCat's AI-driven missions before committing?",
+            faq_a7: "Absolutely! Our 'Trial Flow' allows you to simulate AI interactions and see exactly how the agents handle different scenarios, ensuring the perfect fit for your needs before going live.",
+
             // Shared Service Keys
             btn_submit: "Start AI Call",
             btn_refill: "Refill",
@@ -107,7 +124,15 @@ const WiseCatI18n = {
                 ]
             },
             label_agree_fraud: "I agree I will not use this service for fraud. I agree to the <a href='terms.html'>Terms of Service</a> & AI hub services.",
-            label_agree_call: "I agree to let the AI call on my behalf. If I do not agree, I will not be granted access."
+            label_agree_call: "I agree to let the AI call on my behalf. If I do not agree, I will not be granted access.",
+            nav_faq: "FAQ",
+            nav_profile: "Profile",
+            nav_phone: "Buy Number",
+            nav_inbox: "Inbox",
+            nav_contact: "Contacts",
+            nav_logout: "Log out",
+            nav_ai: "AI Services",
+            faq_subtitle: "Everything you need to know about WiseCat AI services"
         },
         zh: {
             portal_title: "WiseCat 門戶",
@@ -125,7 +150,24 @@ const WiseCatI18n = {
             service_mouthpiece_title: "AI 傳聲筒",
             service_mouthpiece_desc: "AI 語音代表服務 (Beta)",
             service_trial_title: "免費試用撥號",
-            service_trial_desc: "體驗 AI 語音通話 (試用版額度限制)",
+            service_trial_desc: "體驗受限的 AI 語音通話試用",
+
+            // FAQ Section
+            faq_title: "常見問題",
+            faq_q1: "WiseCat AI 如何轉型我的業務運營？",
+            faq_a1: "WiseCat AI 將客戶互動自動化，特別是處理餐廳預訂並透過語音和文字代理回答常見詢問。這減少了手動工作量，消除了人為錯誤，並確保為您的客戶提供 24/7 的服務。",
+            faq_q2: "是什麼讓 'Mouthpiece' AI 語音代理與傳統 IVR 不同？",
+            faq_a2: "與依賴靜態菜單的傳統 IVR 不同，Mouthpiece 使用先進的自然語言處理來以自然、對話的方式理解並回應客戶。它可以處理複雜的要求、後續問題，並提供更像人類的體驗。",
+            faq_q3: "餐廳流程如何處理高峰時段的複雜訂位需求？",
+            faq_a3: "餐廳流程旨在處理多個同時進行的訂位要求。它直接與您的預訂數據庫集成，實時檢查可用性，甚至可以處理特殊要求或候補名單，確保在最忙碌的時段也不會遺漏任何客戶。",
+            faq_q4: "我可以將 WiseCat 連接到我現有的 CRM 或通訊軟體嗎？",
+            faq_a4: "可以！WiseCat 原生支持 LINE 客戶互動，並可配置為透過我們的 n8n 驅動調度程序與 Slack、CRM 系統和其他商業工具同步數據。",
+            faq_q5: "WiseCat 如何確保我的客戶數據隱私和安全？",
+            faq_a5: "安全是我們的首要任務。所有數據都經過加密，並透過安全的 Firebase 基礎設施進行管理。我們實施嚴格的訪問控制並遵循工業數據隱私最佳實踐。",
+            faq_q6: "Tasker Agent 如何幫助減輕我團隊的工作量？",
+            faq_a6: "Tasker Agent 充當自主協調員，分配後續行動、驗證通話後數據並管理定期任務。這讓您的團隊能夠專注於高價值的賓客體驗。",
+            faq_q7: "在正式使用前，有辦法測試 WiseCat 的 AI 驅動任務嗎？",
+            faq_a7: "絕對可以！我們的「試用流程」讓您可以模擬 AI 互動，並準確了解代理如何處理不同場景，確保在正式上線前完美符合您的需求。",
 
             btn_submit: "啟動 AI 撥號",
             btn_refill: "儲值",
@@ -207,7 +249,15 @@ const WiseCatI18n = {
                 ]
             },
             label_agree_fraud: "我同意不會將此服務用於詐騙。我同意<a href='terms.html'>服務條款</a>及 AI hub 服務。",
-            label_agree_call: "我同意由 AI 代替我撥打電話。如果我不同意，我將無法獲得存取權限。"
+            label_agree_call: "我同意由 AI 代替我撥打電話。如果我不同意，我將無法獲得存取權限。",
+            nav_faq: "常見問題",
+            nav_profile: "個人主頁",
+            nav_phone: "購買號碼",
+            nav_inbox: "收件箱",
+            nav_contact: "聯繫我們",
+            nav_logout: "登出",
+            nav_ai: "AI 服務",
+            faq_subtitle: "關於 WiseCat AI 服務的一切須知"
         },
         jp: {
             portal_title: "WiseCat ポータル",
