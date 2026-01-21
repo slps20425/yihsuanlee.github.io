@@ -780,42 +780,7 @@
         }
     </style>
 
-    <!-- Chat Widget -->
 
-    <div class="chat-header">
-        <div class="flex items-center gap-2">
-            <span class="text-xl">✨</span>
-            <span class="font-semibold text-white">Ask AI</span>
-        </div>
-        <button id="chatClose" class="chat-dismiss-btn" aria-label="Close Chat"
-            onclick="document.getElementById('chatPanel').style.display='none'; document.getElementById('chatBackdrop').classList.remove('active'); setTimeout(() => { if(document.getElementById('chatBackdrop')) document.getElementById('chatBackdrop').style.display='none'; }, 300);">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 6 6 18" />
-                <path d="m6 6 12 12" />
-            </svg>
-        </button>
-    </div>
-    <div id="chatMessages" class="chat-messages">
-        <!-- Messages will appear here -->
-        <div class="chat-message bot">
-            <div class="message-content">
-                Hi! I can answer questions about the restaurant or help you with your reservation. How can I help?
-            </div>
-        </div>
-    </div>
-    <div class="chat-input-container">
-        <input type="text" id="chatInput" class="chat-input" placeholder="Ask a question..." autocomplete="off">
-        <button id="chatSend" class="chat-send-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                class="lucide lucide-send">
-                <path d="m22 2-7 20-4-9-9-4Z" />
-                <path d="M22 2 11 13" />
-            </svg>
-        </button>
-    </div>
-    </div>
 
     <script type="module" src="/src/chat-assistant.ts"></script>
 </body>
