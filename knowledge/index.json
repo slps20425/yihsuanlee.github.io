@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "generated": "2026-01-21T02:45:31.284Z",
+  "generated": "2026-01-21T02:48:44.988Z",
   "metadata": {
-    "lastUpdated": "2026-01-21T02:45:31.200Z",
+    "lastUpdated": "2026-01-21T02:48:44.894Z",
     "deployment": {
-      "timestamp": "2026-01-21T02:45:31.201Z",
-      "gitCommit": "43ea7325db040094c916b9b4233eb92a78095df5",
+      "timestamp": "2026-01-21T02:48:44.895Z",
+      "gitCommit": "d08bfceb8ddf5864d703e15783508ba05cd7e375",
       "gitBranch": "main"
     },
     "modules": {},
@@ -159,94 +159,94 @@
       },
       {
         "path": "components/chat-widget.html",
-        "size": 8299,
+        "size": 8271,
         "lines": 319,
         "type": ".html",
-        "lastModified": "2026-01-21T02:44:12.174Z"
+        "lastModified": "2026-01-21T02:47:41.863Z"
       },
       {
         "path": "dashboard.html",
-        "size": 38710,
+        "size": 38663,
         "lines": 790,
         "type": ".html",
-        "lastModified": "2026-01-21T02:44:36.881Z"
+        "lastModified": "2026-01-21T02:47:29.872Z"
       },
       {
         "path": "dist/admin/tasks.html",
         "size": 16030,
         "lines": 570,
         "type": ".html",
-        "lastModified": "2026-01-21T02:44:43.263Z"
+        "lastModified": "2026-01-21T02:47:56.425Z"
       },
       {
         "path": "dist/dashboard.html",
-        "size": 36461,
+        "size": 36411,
         "lines": 730,
         "type": ".html",
-        "lastModified": "2026-01-21T02:44:43.261Z"
+        "lastModified": "2026-01-21T02:47:56.436Z"
       },
       {
         "path": "dist/entry.html",
         "size": 11390,
         "lines": 211,
         "type": ".html",
-        "lastModified": "2026-01-21T02:44:43.262Z"
+        "lastModified": "2026-01-21T02:47:56.437Z"
       },
       {
         "path": "dist/login-success.html",
         "size": 1465,
         "lines": 57,
         "type": ".html",
-        "lastModified": "2026-01-21T02:44:43.262Z"
+        "lastModified": "2026-01-21T02:47:56.437Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_guide.html",
         "size": 14461,
         "lines": 442,
         "type": ".html",
-        "lastModified": "2026-01-21T02:44:42.862Z"
+        "lastModified": "2026-01-21T02:47:55.982Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_mobile.html",
         "size": 15624,
         "lines": 425,
         "type": ".html",
-        "lastModified": "2026-01-21T02:44:42.862Z"
+        "lastModified": "2026-01-21T02:47:55.983Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/dp_indexing_mobile_full.html",
         "size": 7293,
         "lines": 198,
         "type": ".html",
-        "lastModified": "2026-01-21T02:44:42.863Z"
+        "lastModified": "2026-01-21T02:47:55.983Z"
       },
       {
         "path": "dist/reservation/mouthpiece.html",
         "size": 21057,
         "lines": 401,
         "type": ".html",
-        "lastModified": "2026-01-21T02:44:43.262Z"
+        "lastModified": "2026-01-21T02:47:56.435Z"
       },
       {
         "path": "dist/reservation/restaurant_reservation.html",
         "size": 32169,
         "lines": 670,
         "type": ".html",
-        "lastModified": "2026-01-21T02:44:43.257Z"
+        "lastModified": "2026-01-21T02:47:56.430Z"
       },
       {
         "path": "dist/reservation/trial.html",
         "size": 16406,
         "lines": 347,
         "type": ".html",
-        "lastModified": "2026-01-21T02:44:43.262Z"
+        "lastModified": "2026-01-21T02:47:56.439Z"
       },
       {
         "path": "dist/resume/index.html",
         "size": 41474,
         "lines": 688,
         "type": ".html",
-        "lastModified": "2026-01-21T02:44:43.257Z"
+        "lastModified": "2026-01-21T02:47:56.437Z"
       },
       {
         "path": "entry.html",

@@ -4254,3 +4254,25 @@ body.dashboard-layout {
     padding-right: 24px;
     /* Ensure space from edge */
 }
+
+/* 5. Chat Logo Pulse Effect */
+@keyframes softPulse {
+    0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+    }
+
+    50% {
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+    }
+
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+    }
+}
+
+.chat-welcome-logo {
+    animation: softPulse 3s infinite ease-in-out;
+}
