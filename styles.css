@@ -4086,19 +4086,20 @@ body.dashboard-layout {
 }
 
 .chat-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, #fffcf5 0%, #f7e7ce 100%);
+    color: #5a4b42;
     padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-weight: 600;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(200, 180, 160, 0.2);
 }
 
 .chat-close-btn {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.05);
     border: none;
-    color: white;
+    color: #5a4b42;
     width: 28px;
     height: 28px;
     border-radius: 50%;
@@ -4111,7 +4112,7 @@ body.dashboard-layout {
 }
 
 .chat-close-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .chat-messages {
@@ -4146,8 +4147,9 @@ body.dashboard-layout {
 }
 
 .chat-message.user .message-content {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, #f7e7ce 0%, #e6d0b3 100%);
+    color: #3d2e26;
+    font-weight: 500;
 }
 
 .chat-message.bot .message-content {
@@ -4180,14 +4182,20 @@ body.dashboard-layout {
     font-size: 14px;
 }
 
+#chatInput:focus {
+    outline: none !important;
+    border-color: #f7e7ce !important;
+    background: rgba(247, 231, 206, 0.08) !important;
+}
+
 .chat-send-btn {
     width: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, #f7e7ce 0%, #e6d0b3 100%);
+    color: #3d2e26;
     border: none;
     padding: 12px;
     border-radius: 8px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
 }
 
