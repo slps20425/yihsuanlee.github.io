@@ -320,6 +320,27 @@
             }
         });
     </script>
+    <!-- Chat Panel (Shared) -->
+    <div class="chat-panel" id="chatPanel" style="display: none;">
+        <div class="chat-header">
+            <span>🐱 WiseCat Assistant</span>
+            <button class="chat-close-btn" id="chatClose">✕</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-message bot">
+                <div class="message-content">
+                    Hi! I'm your WiseCat assistant 🐱<br><br>
+                    Just ask me anything about WiseCat!
+                </div>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <input type="text" id="chatInput" placeholder="Ask about WiseCat..." autocomplete="off" />
+            </div>
+            <button id="chatSend" class="chat-send-btn">Send</button>
+        </div>
+    </div>
 </body>
 
 </html>
