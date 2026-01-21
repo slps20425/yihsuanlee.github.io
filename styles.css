@@ -1972,11 +1972,7 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
-.capability-mms {
-    background: rgba(245, 158, 11, 0.2);
-    color: #fbbf24;
-    border: 1px solid rgba(245, 158, 11, 0.2);
-}
+
 
 .buy-button-container {
     margin-top: auto;

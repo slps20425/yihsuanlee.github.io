@@ -763,7 +763,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             userEmail: (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email :
                 (localStorage.getItem('wisecat_user') ? (JSON.parse(localStorage.getItem('wisecat_user') || '{}').email || 'N/A') : 'N/A'),
             userCredits: (localStorage.getItem('wisecat_user') ? Number(JSON.parse(localStorage.getItem('wisecat_user') || '{}').credits || 0) : 0),
-            retry_count: 1,
+            retry_count: (document.getElementById('retryOption') as HTMLInputElement)?.checked ? defaultRetryCount : 0,
             createdAt: new Date().toISOString()
         };
 

@@ -360,8 +360,6 @@ function loadUserSettings() {
                         <div style="display: flex; gap: 8px;">
                             ${capabilities.voice || capabilities.Voice ? '<span>📞 Voice</span>' : ''}
                             ${capabilities.sms || capabilities.SMS ? '<span>💬 SMS</span>' : ''}
-                            ${capabilities.mms || capabilities.MMS ? '<span>📸 MMS</span>' : ''}
-                            ${capabilities.fax || capabilities.Fax ? '<span>📠 Fax</span>' : ''}
                         </div>
                     `;
 
@@ -547,17 +545,17 @@ if (searchBtn) {
         const numberTypeSelect = document.getElementById('numberTypeSelect') as HTMLSelectElement | null;
         const voiceCapability = document.getElementById('voiceCapability') as HTMLInputElement | null;
         const smsCapability = document.getElementById('smsCapability') as HTMLInputElement | null;
-        const mmsCapability = document.getElementById('mmsCapability') as HTMLInputElement | null;
+
 
         const country = countrySelect?.value || 'US';
         const areaCode = areaCodeInput?.value.trim() || '';
         const voice = voiceCapability?.checked || false;
         const sms = smsCapability?.checked || false;
-        const mms = mmsCapability?.checked || false;
+
 
         // Validate at least one capability is selected
-        if (!voice && !sms && !mms) {
-            alert('Please select at least one capability (Voice, SMS, or MMS)');
+        if (!voice && !sms) {
+            alert('Please select at least one capability (Voice or SMS)');
             return;
         }
 
@@ -577,7 +575,7 @@ if (searchBtn) {
                 areaCode,
                 voice,
                 sms,
-                mms,
+
                 type: numberTypeSelect?.value || 'local'
             });
             const fetchDuration = Date.now() - fetchStart;
@@ -599,7 +597,7 @@ if (searchBtn) {
                 const badges: string[] = [];
                 if (capabilities.voice) badges.push('<span class="capability-tag capability-voice">Voice</span>');
                 if (capabilities.SMS) badges.push('<span class="capability-tag capability-sms">SMS</span>');
-                if (capabilities.MMS) badges.push('<span class="capability-tag capability-mms">MMS</span>');
+
 
                 // Backend now filters out 'business' numbers, so we just display what we get.
                 // Address requirements are hidden from UI as requested ("dont show this to client").
