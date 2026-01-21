@@ -392,6 +392,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         const wrappers = document.querySelectorAll('.custom-select-wrapper');
 
         wrappers.forEach(wrapper => {
+            if (wrapper.hasAttribute('data-initialized')) return; // Prevent double init
+
             const trigger = wrapper.querySelector('.custom-select-trigger');
             const options = wrapper.querySelector('.custom-select-options');
             const input = wrapper.querySelector('input[type="hidden"]') as HTMLInputElement;
@@ -436,14 +438,20 @@ document.addEventListener("DOMContentLoaded", async function () {
                     wrapper.classList.remove('open');
                 });
             });
+
+            wrapper.setAttribute('data-initialized', 'true');
         });
 
-        // Close all when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!(e.target as Element).closest('.custom-select-wrapper')) {
-                document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
-            }
-        });
+        // Close all when clicking outside (Only add once globally or ensure harmless redundancy)
+        // Ideally should be outside this function or checked, but for now simple check:
+        if (!document.body.hasAttribute('data-click-listener-attached')) {
+            document.addEventListener('click', (e) => {
+                if (!(e.target as Element).closest('.custom-select-wrapper')) {
+                    document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+                }
+            });
+            document.body.setAttribute('data-click-listener-attached', 'true');
+        }
     };
 
     // Initialize generic dropdowns first
