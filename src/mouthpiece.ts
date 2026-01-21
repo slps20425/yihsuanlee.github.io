@@ -1192,37 +1192,87 @@ async function validateMissionDescription() {
             const isDifferent = data.refinedText && data.refinedText.trim().replace(/\s/g, '') !== description.trim().replace(/\s/g, '');
 
             if (isDifferent) {
-                feedbackDiv.innerHTML = `
-                    <div style="margin-bottom: 10px;">✅ <strong>Mission Matched!</strong></div>
-                    <div style="margin-bottom: 12px; font-style: italic; color: #9ca3af; border-left: 2px solid #10b981; padding-left: 10px;">
-                        "${data.explanation || 'I have a more professional suggestion for your message.'}"
-                    </div>
-                    <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 12px; white-space: pre-wrap;">${data.refinedText}</div>
-                    <div style="display: flex; gap: 10px;">
-                        <button type="button" class="btn-refine-apply" style="flex: 1; padding: 8px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Apply Suggestion</button>
-                        <button type="button" class="btn-refine-keep" style="flex: 1; padding: 8px; background: transparent; color: #9ca3af; border: 1px solid #444; border-radius: 6px; cursor: pointer;">Keep Original</button>
-                    </div>
-                `;
+                // Clear previous content
+                feedbackDiv.innerHTML = '';
 
-                // Add event listeners for the buttons
-                const applyBtn = feedbackDiv.querySelector('.btn-refine-apply');
-                const keepBtn = feedbackDiv.querySelector('.btn-refine-keep');
+                // 1. Matched Header
+                const header = document.createElement('div');
+                header.style.marginBottom = '10px';
+                header.innerHTML = '✅ <strong>Mission Matched!</strong>';
+                feedbackDiv.appendChild(header);
 
-                if (applyBtn) {
-                    applyBtn.addEventListener('click', () => {
-                        scriptTextarea.value = data.refinedText || '';
-                        feedbackDiv.innerHTML = '✅ Applied professional refinement!';
-                        setTimeout(() => { feedbackDiv.style.display = 'none'; }, 2000);
-                        validateForm();
-                    });
-                }
+                // 2. Explanation
+                const explanation = document.createElement('div');
+                explanation.style.marginBottom = '12px';
+                explanation.style.fontStyle = 'italic';
+                explanation.style.color = '#9ca3af';
+                explanation.style.borderLeft = '2px solid #10b981';
+                explanation.style.paddingLeft = '10px';
+                explanation.textContent = `"${data.explanation || 'I have a more professional suggestion for your message.'}"`;
+                feedbackDiv.appendChild(explanation);
 
-                if (keepBtn) {
-                    keepBtn.addEventListener('click', () => {
-                        feedbackDiv.innerHTML = '✅ Using your original version.';
-                        setTimeout(() => { feedbackDiv.style.display = 'none'; }, 2000);
-                    });
-                }
+                // 3. Refined Text Box
+                const refinedBox = document.createElement('div');
+                refinedBox.style.background = 'rgba(0,0,0,0.2)';
+                refinedBox.style.padding = '10px';
+                refinedBox.style.borderRadius = '8px';
+                refinedBox.style.marginBottom = '12px';
+                refinedBox.style.whiteSpace = 'pre-wrap';
+                refinedBox.textContent = data.refinedText || '';
+                feedbackDiv.appendChild(refinedBox);
+
+                // 4. Buttons Container
+                const btnContainer = document.createElement('div');
+                btnContainer.style.display = 'flex';
+                btnContainer.style.gap = '10px';
+                btnContainer.style.flexWrap = 'wrap'; // Key fix for mobile
+                feedbackDiv.appendChild(btnContainer);
+
+                // Apply Button
+                const applyBtn = document.createElement('button');
+                applyBtn.type = 'button';
+                applyBtn.className = 'btn-refine-apply';
+                applyBtn.style.flex = '1';
+                applyBtn.style.minWidth = '120px'; // Prevent squishing
+                applyBtn.style.padding = '8px';
+                applyBtn.style.background = '#10b981';
+                applyBtn.style.color = 'white';
+                applyBtn.style.border = 'none';
+                applyBtn.style.borderRadius = '6px';
+                applyBtn.style.cursor = 'pointer';
+                applyBtn.style.fontWeight = '600';
+                applyBtn.textContent = 'Apply Suggestion';
+
+                // Keep Button
+                const keepBtn = document.createElement('button');
+                keepBtn.type = 'button';
+                keepBtn.className = 'btn-refine-keep';
+                keepBtn.style.flex = '1';
+                keepBtn.style.minWidth = '120px'; // Prevent squishing
+                keepBtn.style.padding = '8px';
+                keepBtn.style.background = 'transparent';
+                keepBtn.style.color = '#9ca3af';
+                keepBtn.style.border = '1px solid #444';
+                keepBtn.style.borderRadius = '6px';
+                keepBtn.style.cursor = 'pointer';
+                keepBtn.textContent = 'Keep Original';
+
+                btnContainer.appendChild(applyBtn);
+                btnContainer.appendChild(keepBtn);
+
+                // Add Event Listeners directly
+                applyBtn.addEventListener('click', () => {
+                    scriptTextarea.value = data.refinedText || '';
+                    feedbackDiv.textContent = '✅ Applied professional refinement!';
+                    setTimeout(() => { feedbackDiv.style.display = 'none'; }, 2000);
+                    validateForm();
+                });
+
+                keepBtn.addEventListener('click', () => {
+                    feedbackDiv.textContent = '✅ Using your original version.';
+                    setTimeout(() => { feedbackDiv.style.display = 'none'; }, 2000);
+                });
+
             } else {
                 feedbackDiv.textContent = '✅ Description matches the mission and is safe!';
             }
@@ -1268,61 +1318,115 @@ async function validateMissionDescription() {
                 };
                 const lbl = labels[currentLang.split('-')[0]] || labels['en'];
 
-                feedbackDiv.innerHTML = `
-                    <div style="margin-bottom: 10px;">${lbl.title}</div>
-                    <div style="margin-bottom: 10px;">${data.explanation || "This description doesn't match the current mission."}</div>
-                    <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 12px;">
-                        <div style="color: #93c5fd; font-size: 13px; margin-bottom: 6px;">${lbl.suggest}</div>
-                        <div style="color: #fff; margin-bottom: 10px;">${lbl.text}</div>
-                        ${refinedText ? `<div style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; margin-bottom: 10px; font-size: 0.9em; color: #e5e7eb;">${refinedText}</div>` : ''}
-                        <button type="button" class="btn-switch-mission" data-mission-id="${suggestedId}" style="width: 100%; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">${lbl.btn}</button>
-                    </div>
-               `;
+                feedbackDiv.innerHTML = '';
 
-                const switchBtn = feedbackDiv.querySelector('.btn-switch-mission');
-                if (switchBtn) {
-                    switchBtn.addEventListener('click', (e) => {
-                        const targetId = (e.target as HTMLElement).getAttribute('data-mission-id');
-                        if (targetId && missionSelect) {
-                            // Check if the option exists in the select
-                            let optionExists = false;
-                            for (let i = 0; i < missionSelect.options.length; i++) {
-                                if (missionSelect.options[i].value === targetId) {
-                                    optionExists = true;
-                                    break;
-                                }
-                            }
+                // 1. Header
+                const header = document.createElement('div');
+                header.style.marginBottom = '10px';
+                header.textContent = lbl.title; // Safe text
+                feedbackDiv.appendChild(header);
 
-                            if (optionExists) {
-                                missionSelect.value = targetId;
-                            } else {
-                                console.warn(`Mission ID ${targetId} not found in dropdown.`);
-                                (window as any).showToast(`Mission ${suggestedName} is not available for this service.`, 'error');
-                                return;
-                            }
+                // 2. Explanation (use textContent to be safe)
+                const explanation = document.createElement('div');
+                explanation.style.marginBottom = '10px';
+                explanation.textContent = data.explanation || "This description doesn't match the current mission.";
+                feedbackDiv.appendChild(explanation);
 
-                            // Also update the description with refined text if available
-                            if (data.refinedText) {
-                                scriptTextarea.value = data.refinedText;
-                            }
+                // 3. Suggestion Container
+                const suggestionBox = document.createElement('div');
+                suggestionBox.style.background = 'rgba(59, 130, 246, 0.15)';
+                suggestionBox.style.border = '1px solid rgba(59, 130, 246, 0.4)';
+                suggestionBox.style.borderRadius = '8px';
+                suggestionBox.style.padding = '12px';
+                feedbackDiv.appendChild(suggestionBox);
 
-                            // Since AI suggests this, we assume the content is now safe for the new mission
-                            isContentSafe = true;
+                // Suggest label
+                const suggestLabel = document.createElement('div');
+                suggestLabel.style.color = '#93c5fd';
+                suggestLabel.style.fontSize = '13px';
+                suggestLabel.style.marginBottom = '6px';
+                suggestLabel.textContent = lbl.suggest;
+                suggestionBox.appendChild(suggestLabel);
 
-                            // Trigger change event manually
-                            updateMissionDescription();
-                            // Clear error state
-                            scriptTextarea.style.borderColor = '';
-                            scriptTextarea.style.boxShadow = '';
-                            feedbackDiv.style.display = 'none';
+                // Suggest Text (Allow innerHTML only for the bold part constructed safely locally)
+                const suggestText = document.createElement('div');
+                suggestText.style.color = '#fff';
+                suggestText.style.marginBottom = '10px';
+                // Safe interpolation since suggestedName is handled above, but better to build nodes
+                suggestText.innerHTML = lbl.text;
+                suggestionBox.appendChild(suggestText);
 
-                            (window as any).showToast(`Switched to ${suggestedName} and updated text!`, 'success');
-
-                            // Re-validate form UI state
-                            validateForm();
-                        }
-                    });
+                // Refined Text Preview (if any)
+                if (refinedText) {
+                    const preview = document.createElement('div');
+                    preview.style.background = 'rgba(0,0,0,0.2)';
+                    preview.style.padding = '8px';
+                    preview.style.borderRadius = '6px';
+                    preview.style.marginBottom = '10px';
+                    preview.style.fontSize = '0.9em';
+                    preview.style.color = '#e5e7eb';
+                    preview.textContent = refinedText;
+                    suggestionBox.appendChild(preview);
                 }
+
+                // Switch Button
+                const switchBtn = document.createElement('button');
+                switchBtn.type = 'button';
+                switchBtn.className = 'btn-switch-mission';
+                switchBtn.setAttribute('data-mission-id', suggestedId);
+                switchBtn.style.width = '100%';
+                switchBtn.style.padding = '8px';
+                switchBtn.style.background = '#3b82f6';
+                switchBtn.style.color = 'white';
+                switchBtn.style.border = 'none';
+                switchBtn.style.borderRadius = '6px';
+                switchBtn.style.cursor = 'pointer';
+                switchBtn.style.fontWeight = '600';
+                switchBtn.textContent = lbl.btn;
+                suggestionBox.appendChild(switchBtn);
+
+                // Event Listener
+                switchBtn.addEventListener('click', (e) => {
+                    const targetId = (e.target as HTMLElement).getAttribute('data-mission-id');
+                    if (targetId && missionSelect) {
+                        // Check if the option exists in the select
+                        let optionExists = false;
+                        for (let i = 0; i < missionSelect.options.length; i++) {
+                            if (missionSelect.options[i].value === targetId) {
+                                optionExists = true;
+                                break;
+                            }
+                        }
+
+                        if (optionExists) {
+                            missionSelect.value = targetId;
+                        } else {
+                            console.warn(`Mission ID ${targetId} not found in dropdown.`);
+                            (window as any).showToast(`Mission ${suggestedName} is not available for this service.`, 'error');
+                            return;
+                        }
+
+                        // Also update the description with refined text if available
+                        if (data.refinedText) {
+                            scriptTextarea.value = data.refinedText;
+                        }
+
+                        // Since AI suggests this, we assume the content is now safe for the new mission
+                        isContentSafe = true;
+
+                        // Trigger change event manually
+                        updateMissionDescription();
+                        // Clear error state
+                        scriptTextarea.style.borderColor = '';
+                        scriptTextarea.style.boxShadow = '';
+                        feedbackDiv.style.display = 'none';
+
+                        (window as any).showToast(`Switched to ${suggestedName} and updated text!`, 'success');
+
+                        // Re-validate form UI state
+                        validateForm();
+                    }
+                });
                 return;
             }
 
