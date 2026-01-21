@@ -221,12 +221,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 retryLabel.textContent = `Re-try ${defaultRetryCount} time(s)`;
             }
             if (retryWarning) {
-                const totalMaxCost = currentCost + (defaultRetryCount * retryCostPerAttempt);
-                // Format to max 1 decimal place if integer, else 2
-                const costStr = Number.isInteger(totalMaxCost) ? totalMaxCost : totalMaxCost.toFixed(1);
+                const extraCost = defaultRetryCount * retryCostPerAttempt;
+                const extraCostStr = Number.isInteger(extraCost) ? extraCost : extraCost.toFixed(1);
 
-                // Construct message: "(Max cost: 4.5 credits (tries every 10m))"
-                retryWarning.textContent = `(Max cost: ${costStr} credits | Tries every ${retryInterval}m)`;
+                // Construct message: "(+1.5 credits | Tries every 10m)"
+                retryWarning.textContent = `(+${extraCostStr} credits | Tries every ${retryInterval}m)`;
                 (retryWarning as HTMLElement).style.color = "#ff4444";
             }
 
@@ -873,8 +872,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-
         // 4. Force Final Safety Check (Now handled by validateMissionDescription)
+
+
         if (!isContentSafe) {
             (window as any).showToast("Content blocked by security policy or mission mismatch.", "error");
             btn.disabled = false;
@@ -891,7 +891,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const userDocRef = doc(db, 'users', `uid_${auth.currentUser.uid}`);
             const settingsRef = doc(db, 'users', `uid_${auth.currentUser.uid}`, 'settings', 'settings');
-            const cost = currentCost;
+
+            // Calculate Total Cost (Base + Retries)
+            const retryCost = (payload.retry_count > 0) ? (payload.retry_count * retryCostPerAttempt) : 0;
+            const totalCost = currentCost + retryCost;
 
             // Final Confirmation Modal
             const details = [
@@ -900,8 +903,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 { label: "Target Phone", value: payload.targetPhoneNumber },
                 { label: "Script", value: payload.script },
                 { label: "Schedule", value: payload.schedulePreference === 'scheduled' ? (payload as any).scheduleCallTime : "ASAP" },
-                { label: "Service Charge", value: `$${cost.toFixed(2)}` }
+                { label: "Total Cost", value: `${totalCost.toFixed(2)} credits` }
             ];
+
+            if (retryCost > 0) {
+                details.push({ label: "Cost Breakdown", value: `Base: ${currentCost} + Retry: ${retryCost.toFixed(1)}` });
+            }
 
             const confirmed = await showConfirmationModal(details);
             if (!confirmed) {
@@ -921,21 +928,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const currentCredits = Number(userData.credits || 0);
                 const settings = settingsDoc.exists() ? settingsDoc.data() : {};
 
-                if (currentCredits < cost) {
+                if (currentCredits < totalCost) {
                     // Throwing simple string to be caught below
-                    throw `Insufficient credits! This task requires ${cost} credits.`;
+                    throw `Insufficient credits! This task requires ${totalCost.toFixed(1)} credits.`;
                 }
 
-                // Deduct Credit
-                transaction.update(userDocRef, { credits: currentCredits - cost });
+                // Deduct Credit (Total Max Cost)
+                transaction.update(userDocRef, { credits: currentCredits - totalCost });
 
                 // Create Task
                 transaction.set(taskRef, {
                     ...payload,
                     senderPhoneNumber: settings.phoneNumber || '',
                     vapiPhoneNumberId: settings.vapiPhoneNumberId || '',
-                    userCredits: currentCredits - cost, // Store NEW balance
-                    cost: cost,
+                    userCredits: currentCredits - totalCost, // Store NEW balance
+                    cost: totalCost,
                     createdAt: serverTimestamp(),
                     userId: auth.currentUser!.uid
                 });
