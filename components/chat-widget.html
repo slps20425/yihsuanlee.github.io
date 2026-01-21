@@ -1,21 +1,30 @@
 <!-- RAG Chatbot Widget -->
-<button class="chat-toggle-btn" id="chatToggle" title="Ask WiseCat AI">
-    <img src="/assets/temp_logos/2_1.png" alt="WiseCat" class="chat-toggle-icon"> WiseCat
+<!-- Chat Toggle Button -->
+<button id="chatToggle" class="chat-toggle-btn">
+    <img src="/assets/askAI/1_1.png" alt="WiseCat" class="chat-icon-img"
+        style="width: 28px; height: 28px; object-fit: contain;">
+    <span>WiseCat</span>
 </button>
 
-<div class="chat-panel" id="chatPanel" style="display: none;">
+<!-- Chat Panel -->
+<div id="chatPanel" class="chat-panel" style="display: none;">
     <div class="chat-header">
-        <span class="chat-header-title">
-            <img src="/assets/temp_logos/2_1.png" alt="WiseCat" class="chat-header-icon">
-            WiseCat Assistant
-        </span>
-        <button class="chat-close-btn" id="chatClose">✕</button>
+        <div class="flex items-center gap-2">
+            <img src="/assets/askAI/2_1.png" alt="WiseCat AI" style="height: 24px; object-fit: contain;">
+            <!-- <span class="font-semibold text-white">WiseCat Assistant</span> -->
+        </div>
+        <button id="chatClose" class="chat-close-btn" aria-label="Close Chat">
+            ✕
+        </button>
     </div>
-
-    <div class="chat-messages" id="chatMessages">
+    <div id="chatMessages" class="chat-messages">
+        <!-- Default Welcome Message -->
         <div class="chat-message bot">
             <div class="message-content">
-                Hi! I'm your WiseCat assistant 🐱
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <img src="/assets/askAI/1_1.png" alt="WiseCat" style="width:20px; height:20px;">
+                    <strong>Hi! I'm your WiseCat assistant</strong>
+                </div>
 
                 I can help you with:
                 • 💰 Credits and billing
