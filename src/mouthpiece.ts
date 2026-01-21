@@ -1,6 +1,7 @@
 import "./version";
 import WiseCatI18n from './i18n';
-import { auth } from './firebase-config';
+import { auth, db } from './firebase-config';
+import { getDoc, doc } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { countryTimezones } from './timezones';
 import './chat-assistant'; // Enable Chat Widget
@@ -1118,7 +1119,6 @@ async function validateMissionDescription() {
             const isDifferent = data.refinedText && data.refinedText.trim().replace(/\s/g, '') !== description.trim().replace(/\s/g, '');
 
             if (isDifferent) {
-
                 feedbackDiv.innerHTML = `
                     <div style="margin-bottom: 10px;">✅ <strong>Mission Matched!</strong></div>
                     <div style="margin-bottom: 12px; font-style: italic; color: #9ca3af; border-left: 2px solid #10b981; padding-left: 10px;">
@@ -1160,10 +1160,60 @@ async function validateMissionDescription() {
 
             scriptTextarea.style.border = '2px solid #ef4444';
             scriptTextarea.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
-            feedbackDiv.textContent = `❌ ${data.explanation || "Description doesn't match the mission. Please revise."}`;
             feedbackDiv.style.background = 'rgba(239, 68, 68, 0.1)';
             feedbackDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
             feedbackDiv.style.color = '#f87171';
+
+            // Check for Mission Suggestion
+            if ((data as any).suggestedMissionId) {
+                const suggestedId = (data as any).suggestedMissionId;
+                const supportedMissions = ['lost_item', 'business_hours', 'restaurant_booking', 'package_tracking', 'event_rsvp', 'repair_appointment', 'order_modification', 'emergency_notification', 'schedule_verification', 'stock_inquiry'];
+
+                // Only show if it's a valid mission we handle
+                if (supportedMissions.includes(suggestedId)) {
+                    // Find mission name for display
+                    let suggestedName = suggestedId.replace('_', ' ').toUpperCase();
+                    // Try to find localized name
+                    const scenario = MISSION_SCENARIOS.find(m => m.id === suggestedId);
+                    if (scenario) {
+                        const currentLang = WiseCatI18n.currentLang;
+                        suggestedName = scenario.name[currentLang as keyof typeof scenario.name] || scenario.name['en'];
+                    }
+
+                    feedbackDiv.innerHTML = `
+                        <div style="margin-bottom: 10px;">❌ <strong>Mission Mismatch</strong></div>
+                        <div style="margin-bottom: 10px;">${data.explanation || "This description doesn't match the current mission."}</div>
+                        <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 12px;">
+                            <div style="color: #93c5fd; font-size: 13px; margin-bottom: 6px;">💡 AI Suggestion</div>
+                            <div style="color: #fff; margin-bottom: 10px;">It looks like you are asking about <strong>${suggestedName}</strong>. Switch to that mission?</div>
+                            <button type="button" class="btn-switch-mission" data-mission-id="${suggestedId}" style="width: 100%; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Switch to ${suggestedName}</button>
+                        </div>
+                   `;
+
+                    const switchBtn = feedbackDiv.querySelector('.btn-switch-mission');
+                    if (switchBtn) {
+                        switchBtn.addEventListener('click', (e) => {
+                            const targetId = (e.target as HTMLElement).getAttribute('data-mission-id');
+                            if (targetId && missionSelect) {
+                                missionSelect.value = targetId;
+                                // Trigger change event manually
+                                updateMissionDescription();
+                                // Clear error state
+                                scriptTextarea.style.borderColor = '';
+                                scriptTextarea.style.boxShadow = '';
+                                feedbackDiv.style.display = 'none';
+                                // Optional: Re-validate immediately or let user do it?
+                                // Let's just switch for now.
+                                (window as any).showToast(`Switched mission to ${suggestedName}`, 'success');
+                            }
+                        });
+                    }
+                    return;
+                }
+            }
+
+            // Default error message if no suggestion
+            feedbackDiv.textContent = `❌ ${data.explanation || "Description doesn't match the mission. Please revise."}`;
         }
 
     } catch (error) {
@@ -1247,3 +1297,347 @@ document.addEventListener('DOMContentLoaded', () => {
     translateMissionOptions();
 });
 
+
+// --- Maps & Search Logic (Mouthpiece) ---
+// Places API (New) Configuration
+const GOOGLE_MAPS_API_KEY = 'AIzaSyBSWqDNkLh1v29kFEbUod0iaX3v3v8UtT4'; // Shared Key
+
+// Configuration for Manual Input Switch (Defaults to true, fetched from Firestore)
+let allowManualInput = true;
+
+declare var google: any;
+let currentSearchMission: any = null;
+
+// Fetch settings for Manual Input
+async function fetchSettings() {
+    try {
+        const settingsRef = doc(db, 'configuration', 'mouthpiece'); // Assuming checks in configuration/mouthpiece
+        const snap = await getDoc(settingsRef);
+        if (snap.exists() && snap.data().allow_manual_input !== undefined) {
+            allowManualInput = snap.data().allow_manual_input;
+            updateManualInputState();
+        }
+    } catch (e) {
+        console.warn("Could not fetch settings:", e);
+    }
+}
+
+function updateManualInputState() {
+    const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
+
+    if (!phoneInput) return;
+
+    if (!allowManualInput) {
+        phoneInput.disabled = true;
+        phoneInput.placeholder = "Please use 'Search Location' button";
+        phoneInput.style.backgroundColor = "#2a2a2a";
+        phoneInput.style.cursor = "not-allowed";
+        // Optionally show a message
+    } else {
+        phoneInput.disabled = false;
+        phoneInput.placeholder = ""; // Default
+        phoneInput.style.backgroundColor = "";
+        phoneInput.style.cursor = "";
+    }
+}
+
+async function initSearchLogic() {
+    // Load Settings
+    await fetchSettings();
+
+    const searchInputEl = document.getElementById('searchPlaceInput') as HTMLInputElement;
+    const modal = document.getElementById('searchModal');
+    const closeBtn = document.getElementById('closeSearchModal');
+    const searchInput = document.getElementById('modalSearchInput') as HTMLInputElement;
+    const resultsContainer = document.getElementById('modalSearchResults');
+    const missionSelect = document.getElementById('mission') as HTMLSelectElement;
+
+    // Place Details Modal Elements
+    const detailsModal = document.getElementById('placeDetailsModal');
+    const detailsContent = document.getElementById('placeDetailsContent');
+    const detailsCancel = document.getElementById('placeDetailsCancel');
+    const detailsConfirm = document.getElementById('placeDetailsConfirm');
+
+    if (!searchInputEl || !modal || !closeBtn || !searchInput || !resultsContainer || !missionSelect) return;
+
+    searchInputEl.addEventListener('click', async () => {
+        const missionId = missionSelect.value;
+        modal.style.display = 'flex';
+        searchInput.value = '';
+        resultsContainer.innerHTML = '';
+
+        // Fetch mission config
+        try {
+            const docRef = doc(db, 'missions', missionId);
+            const snap = await getDoc(docRef);
+            if (snap.exists()) {
+                currentSearchMission = snap.data();
+                if (currentSearchMission.default_keyword) {
+                    searchInput.placeholder = `Search for ${currentSearchMission.default_keyword} near you...`;
+                }
+            } else {
+                currentSearchMission = null;
+                searchInput.placeholder = "Enter location name...";
+            }
+        } catch (e) {
+            console.error("Error fetching mission config:", e);
+            currentSearchMission = null;
+        }
+
+        searchInput.focus();
+    });
+
+    closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            performSearchNewAPI(searchInput.value);
+        }
+    });
+
+    async function performSearchNewAPI(query: string) {
+        if (!query) return;
+
+        resultsContainer!.innerHTML = '<div style="color:#aaa; text-align:center;">Searching...</div>';
+
+        let textQuery = query;
+        let includedType = "";
+
+        if (currentSearchMission) {
+            // If mission has a specific google_type, we use it for filtering
+            if (currentSearchMission.google_type && currentSearchMission.google_type !== 'any') {
+                includedType = currentSearchMission.google_type;
+            }
+            // Append keywords if generic search
+            if (currentSearchMission.default_keyword && !includedType && !query.includes(currentSearchMission.default_keyword)) {
+                // If we don't use strict type filtering, we append keyword for better relevance
+                textQuery = `${query} ${currentSearchMission.default_keyword} `;
+            }
+        }
+
+        // Prepare Request for Places API (New)
+        const requestBody: any = {
+            textQuery: textQuery,
+            maxResultCount: 10,
+        };
+
+        // Only add includedType if strictly defined and valid (Google Types validation needed? 'dentist', 'beauty_salon' are valid)
+        if (includedType) {
+            requestBody.includedType = includedType;
+        }
+
+        try {
+            const response = await fetch('https://places.googleapis.com/v1/places:searchText', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
+                    'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.id,places.rating,places.userRatingCount',
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            const data = await response.json();
+
+            if (data.places && data.places.length > 0) {
+                renderResults(data.places);
+            } else {
+                resultsContainer!.innerHTML = '<div style="color:#f87171; text-align:center;">No results found.</div>';
+            }
+        } catch (error) {
+            console.error("Search Error:", error);
+            resultsContainer!.innerHTML = '<div style="color:#f87171; text-align:center;">Search failed. Please try again.</div>';
+        }
+    }
+
+    function renderResults(places: any[]) {
+        resultsContainer!.innerHTML = '';
+        places.forEach(place => {
+            const div = document.createElement('div');
+            div.style.padding = '12px';
+            div.style.background = '#222';
+            div.style.marginBottom = '8px';
+            div.style.borderRadius = '8px';
+            div.style.cursor = 'pointer';
+            div.style.border = '1px solid #333';
+            div.style.display = 'flex';
+            div.style.flexDirection = 'column';
+            div.style.gap = '4px';
+
+            const name = place.displayName?.text || place.name || "Unknown Place"; // displayName is object in V1
+            const address = place.formattedAddress || "";
+            const rating = place.rating ? `★ ${place.rating} (${place.userRatingCount || 0})` : "";
+
+            div.innerHTML = `
+                <div style="font-weight: bold; color: #fff;">${name}</div>
+                <div style="font-size: 12px; color: #aaa;">${address}</div>
+                ${rating ? `<div style="font-size: 11px; color: #fbbf24;">${rating}</div>` : ''}
+            `;
+
+            div.addEventListener('click', () => {
+                showPlaceDetailsConfirm(place);
+            });
+            div.addEventListener('mouseover', () => { div.style.background = '#333'; });
+            div.addEventListener('mouseout', () => { div.style.background = '#222'; });
+
+            resultsContainer!.appendChild(div);
+        });
+    }
+
+    // New: Show Details Modal instead of direct select
+    async function showPlaceDetailsConfirm(place: any) {
+        if (!detailsModal || !detailsContent || !detailsCancel || !detailsConfirm) return;
+
+        // Reset
+        detailsContent.innerHTML = '<div style="color:#aaa; text-align:center;">Loading details...</div>';
+        detailsModal.style.display = 'flex';
+
+        let phoneNumber = place.formattedPhoneNumber || place.internationalPhoneNumber || place.nationalPhoneNumber;
+        let website = place.websiteUri || "";
+        let hours = ""; // Opening hours if available
+
+        // Fetch Details if needed
+        const resourceName = place.name || `places/${place.id}`;
+
+        try {
+            console.log("Fetching Full Details for Modal (V1)...");
+            // Request everything needed for the modal
+            const res = await fetch(`https://places.googleapis.com/v1/${resourceName}?fields=id,displayName,formattedAddress,nationalPhoneNumber,internationalPhoneNumber,websiteUri,regularOpeningHours,rating,userRatingCount&key=${GOOGLE_MAPS_API_KEY}`, {
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const details = await res.json();
+
+            phoneNumber = details.nationalPhoneNumber || details.internationalPhoneNumber || "";
+            website = details.websiteUri || "";
+
+            // Format Hours if available
+            if (details.regularOpeningHours && details.regularOpeningHours.weekdayDescriptions) {
+                // Show all lines in a scrollable box
+                hours = `<div style="margin-top:5px; font-size:12px; color:#ccc; max-height: 120px; overflow-y: auto; padding-right: 4px;">${details.regularOpeningHours.weekdayDescriptions.join('<br>')}</div>`;
+            }
+        } catch (e) {
+            console.error("Details fetch error:", e);
+        }
+
+        // Render Content
+        const placeName = place.displayName?.text || "Unknown Place";
+        const placeAddress = place.formattedAddress || "";
+        const placeRating = place.rating ? `★ ${place.rating} (${place.userRatingCount || 0})` : "";
+
+        detailsContent.innerHTML = `
+            <div style="font-weight: bold; color: #fff; font-size: 16px;">${placeName}</div>
+            <div style="font-size: 13px; color: #aaa; margin-bottom: 8px;">${placeAddress}</div>
+            ${placeRating ? `<div style="font-size: 13px; color: #fbbf24; margin-bottom: 8px;">${placeRating}</div>` : ''}
+            
+            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+                <div style="font-size: 11px; color: #888; text-transform: uppercase;">Phone Number</div>
+                <div style="font-size: 14px; color: #fff; font-family: monospace;">${phoneNumber || '<span style="color:#f87171">Not Available</span>'}</div>
+            </div>
+
+            ${website ? `
+            <div style="margin-top: 8px;">
+                <a href="${website}" target="_blank" style="color: #3b82f6; text-decoration: none; font-size: 13px;">🌐 Visit Website</a>
+            </div>` : ''}
+
+            ${hours ? `
+            <div style="margin-top: 10px; border-top: 1px solid #333; padding-top: 8px;">
+                <div style="font-size: 11px; color: #888; text-transform: uppercase;">Opening Hours</div>
+                ${hours}
+            </div>` : ''}
+        `;
+
+        // Handle Confirm
+        const onConfirm = () => {
+            selectPlace(place, phoneNumber); // Pass the fetched phone number
+            closeDetails();
+        };
+
+        const closeDetails = () => {
+            detailsModal.style.display = 'none';
+            detailsConfirm.removeEventListener('click', onConfirm);
+            detailsCancel.removeEventListener('click', closeDetails);
+        };
+
+        detailsConfirm.addEventListener('click', onConfirm);
+        detailsCancel.addEventListener('click', closeDetails);
+    }
+
+    async function selectPlace(place: any, fetchedPhone?: string) {
+        const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
+        const searchInputEl = document.getElementById('searchPlaceInput') as HTMLInputElement;
+
+        // Use fetched phone if available, otherwise try place object (unlikely to have it due to partial search)
+        let phoneNumber = fetchedPhone;
+
+        // If for some reason we didn't fetch details in modal (error?), try fetching again?
+        // But logic above ensures we try.
+
+        if (phoneNumber) {
+            if (typeof phoneInputPlugin !== 'undefined' && phoneInputPlugin) {
+                phoneInputPlugin.setNumber(phoneNumber);
+            } else {
+                phoneInput.value = phoneNumber;
+            }
+            const event = new Event('input', { bubbles: true });
+            phoneInput.dispatchEvent(event);
+
+            // Update Search Input to show selected place name
+            if (searchInputEl) {
+                searchInputEl.value = place.displayName?.text || place.name || "";
+            }
+
+            modal!.style.display = 'none';
+        } else {
+            if ((window as any).showToast) {
+                (window as any).showToast("This place does not have a phone number listed.", "warning");
+            } else {
+                // Fallback alert removed as per rule, but just in case
+            }
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initSearchLogic);
+
+// Helper: Toast Notification
+(window as any).showToast = function (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') {
+    const container = document.getElementById('toast-container') || createToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    let icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    if (type === 'error') icon = '❌';
+    if (type === 'warning') icon = '⚠️';
+
+    toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+    container.appendChild(toast);
+
+    // Trigger reflow
+    void toast.offsetWidth;
+
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            if (container.contains(toast)) {
+                container.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+};
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+    return container;
+}

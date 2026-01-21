@@ -7,6 +7,7 @@
    - **Frontend**: Import `db` from `./src/firebase-config.ts`. DO NOT initialize `getFirestore()` yourself.
    - **Backend**: Use `getFirestore(app, "reservation")`.
 2. **Auth**: Import `auth` from `./src/firebase-config.ts`.
+3. **UI/UX**: Never use native browser alerts (`alert`, `confirm`). Use `showToast()` for notifications.
 
 
 ## ✅ Installed Tools

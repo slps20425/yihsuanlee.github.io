@@ -52,12 +52,12 @@
   ],
   "metadata": {
     "version": "1.0.0",
-    "generated": "2026-01-21T08:08:23.883Z",
+    "generated": "2026-01-21T08:12:28.641Z",
     "metadata": {
-      "lastUpdated": "2026-01-21T08:08:23.841Z",
+      "lastUpdated": "2026-01-21T08:12:28.597Z",
       "deployment": {
-        "timestamp": "2026-01-21T08:08:23.841Z",
-        "gitCommit": "85847b7479c07e880a0f5d26c7ec3171ebb5b0a1",
+        "timestamp": "2026-01-21T08:12:28.598Z",
+        "gitCommit": "5538b58a1d6b603cd22b4efe383a0339c47fc921",
         "gitBranch": "main"
       },
       "modules": {},
@@ -148,10 +148,10 @@
         },
         {
           "path": "src/reservation.ts",
-          "size": 92309,
-          "lines": 2270,
+          "size": 92670,
+          "lines": 2277,
           "type": ".ts",
-          "lastModified": "2026-01-21T08:07:19.856Z"
+          "lastModified": "2026-01-21T08:11:34.888Z"
         },
         {
           "path": "src/scam-check.ts",
@@ -228,77 +228,77 @@
           "size": 16030,
           "lines": 570,
           "type": ".html",
-          "lastModified": "2026-01-21T08:07:36.454Z"
+          "lastModified": "2026-01-21T08:11:45.227Z"
         },
         {
           "path": "dist/dashboard.html",
           "size": 36208,
           "lines": 720,
           "type": ".html",
-          "lastModified": "2026-01-21T08:07:36.455Z"
+          "lastModified": "2026-01-21T08:11:45.226Z"
         },
         {
           "path": "dist/entry.html",
           "size": 11390,
           "lines": 211,
           "type": ".html",
-          "lastModified": "2026-01-21T08:07:36.455Z"
+          "lastModified": "2026-01-21T08:11:45.226Z"
         },
         {
           "path": "dist/login-success.html",
           "size": 1465,
           "lines": 57,
           "type": ".html",
-          "lastModified": "2026-01-21T08:07:36.455Z"
+          "lastModified": "2026-01-21T08:11:45.226Z"
         },
         {
           "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_guide.html",
           "size": 14461,
           "lines": 442,
           "type": ".html",
-          "lastModified": "2026-01-21T08:07:36.165Z"
+          "lastModified": "2026-01-21T08:11:45.063Z"
         },
         {
           "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_mobile.html",
           "size": 15624,
           "lines": 425,
           "type": ".html",
-          "lastModified": "2026-01-21T08:07:36.165Z"
+          "lastModified": "2026-01-21T08:11:45.063Z"
         },
         {
           "path": "dist/projects/backtrack-dfs-guide/dp_indexing_mobile_full.html",
           "size": 7293,
           "lines": 198,
           "type": ".html",
-          "lastModified": "2026-01-21T08:07:36.166Z"
+          "lastModified": "2026-01-21T08:11:45.064Z"
         },
         {
           "path": "dist/reservation/mouthpiece.html",
           "size": 22148,
           "lines": 416,
           "type": ".html",
-          "lastModified": "2026-01-21T08:07:36.455Z"
+          "lastModified": "2026-01-21T08:11:45.226Z"
         },
         {
           "path": "dist/reservation/restaurant_reservation.html",
           "size": 32498,
           "lines": 668,
           "type": ".html",
-          "lastModified": "2026-01-21T08:07:36.455Z"
+          "lastModified": "2026-01-21T08:11:45.227Z"
         },
         {
           "path": "dist/reservation/trial.html",
           "size": 16989,
           "lines": 353,
           "type": ".html",
-          "lastModified": "2026-01-21T08:07:36.454Z"
+          "lastModified": "2026-01-21T08:11:45.226Z"
         },
         {
           "path": "dist/resume/index.html",
           "size": 41474,
           "lines": 688,
           "type": ".html",
-          "lastModified": "2026-01-21T08:07:36.453Z"
+          "lastModified": "2026-01-21T08:11:45.224Z"
         },
         {
           "path": "entry.html",

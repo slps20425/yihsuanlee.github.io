@@ -1,6 +1,7 @@
 import "./version";
 import WiseCatI18n from './i18n';
-import { auth } from './firebase-config';
+import { auth, db } from './firebase-config';
+import { getDoc, doc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import './chat-assistant'; // Enable Chat Widget
 // import { ScamCheck } from './scam-check'; // Now handled by validateMissionDescription
@@ -1334,31 +1335,128 @@ async function initMap() {
 
     } catch (error) {
         console.error('Error loading Google Maps:', error);
-        alert('無法載入 Google Maps。請確認網路連線。');
+        if ((window as any).showToast) (window as any).showToast('無法載入 Google Maps。請確認網路連線。', 'error');
     }
 }
 
-function getPlaceDetails(placeId: string): Promise<any> {
+// Helper to adapt V1 API response to Legacy Google Maps JS Object for compatibility
+function adaptV1ToLegacy(v1Place: any): any {
+    const legacy: any = {
+        place_id: v1Place.id,
+        name: v1Place.displayName?.text || v1Place.name,
+        formatted_address: v1Place.formattedAddress,
+        formatted_phone_number: v1Place.nationalPhoneNumber || v1Place.internationalPhoneNumber,
+        international_phone_number: v1Place.internationalPhoneNumber,
+        website: v1Place.websiteUri,
+        reviews: v1Place.reviews, // Keep V1 structure for reviews, usually compatible enough or unused
+        opening_hours: {}
+    };
+
+    // Adapt Geometry
+    if (v1Place.location) {
+        legacy.geometry = {
+            location: {
+                lat: v1Place.location.latitude,
+                lng: v1Place.location.longitude
+            }
+        };
+        // viewport mapping if needed? V1 uses viewport { low: {..}, high: {..} }
+        if (v1Place.viewport) {
+            legacy.geometry.viewport = v1Place.viewport;
+        }
+    }
+
+    // Adapt Opening Hours
+    if (v1Place.regularOpeningHours) {
+        legacy.opening_hours.weekday_text = v1Place.regularOpeningHours.weekdayDescriptions;
+        legacy.opening_hours.periods = (v1Place.regularOpeningHours.periods || []).map((p: any) => {
+            const newP: any = {};
+            if (p.open) {
+                newP.open = {
+                    day: p.open.day,
+                    time: `${String(p.open.hour).padStart(2, '0')}${String(p.open.minute).padStart(2, '0')}`
+                };
+            }
+            if (p.close) {
+                newP.close = {
+                    day: p.close.day,
+                    time: `${String(p.close.hour).padStart(2, '0')}${String(p.close.minute).padStart(2, '0')}`
+                };
+                // V1 API returns close day relative to open day, so if close day is less than open day, it means it's the next day
+                // Google Maps JS API `period.close.day` is the actual day of the week (0-6)
+                // We need to adjust if the close day is earlier than the open day, implying it's on the next calendar day.
+                // However, the `checkOpeningHours` function already handles `closeDay !== openDay` by adding 1440 minutes.
+                // So, we just need to ensure `day` is the actual day of the week.
+                // V1 `day` is 0-6 (Sunday-Saturday), same as legacy.
+                // If V1 `close.day` is less than `open.day`, it means it's the next day.
+                // The `checkOpeningHours` function expects `close.day` to be the actual day of the week, not relative.
+                // For example, if open is Monday (1) and close is Tuesday (2), `close.day` should be 2.
+                // If open is Monday (1) and close is Monday (1) but next day, V1 might represent this differently.
+                // Let's assume V1 `day` is the actual day of the week, and the `checkOpeningHours` logic handles the cross-midnight.
+            }
+            return newP;
+        });
+    }
+
+    return legacy;
+}
+
+async function getPlaceDetails(placeId: string): Promise<any> {
     if (placeDetailsCache[placeId]) {
-        console.log('Using cached place details');
+        console.log('Using memory cache');
         return Promise.resolve(placeDetailsCache[placeId]);
     }
 
-    return new Promise((resolve, reject) => {
-        const request = {
-            placeId: placeId,
-            fields: ['name', 'formatted_address', 'formatted_phone_number', 'international_phone_number', 'geometry', 'opening_hours', 'utc_offset_minutes']
-        };
+    try {
+        const cacheRef = doc(db, 'places_cache', placeId);
+        const cacheSnap = await getDoc(cacheRef);
 
-        placesService.getDetails(request, (place: any, status: any) => {
-            if (status === google.maps.places.PlacesServiceStatus.OK) {
-                placeDetailsCache[placeId] = place;
-                resolve(place);
-            } else {
-                reject(status);
+        if (cacheSnap.exists()) {
+            const data = cacheSnap.data();
+            const now = Date.now();
+            const cacheTime = data.timestamp || 0;
+            const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+
+            if (now - cacheTime < thirtyDaysMs) {
+                console.log('Using Firestore cache');
+                placeDetailsCache[placeId] = data;
+                return data;
+            }
+        }
+    } catch (e) {
+        console.error("Cache read error:", e);
+    }
+
+    // Call Places API (New) V1
+    try {
+        const response = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
+                'X-Goog-FieldMask': 'id,displayName,formattedAddress,nationalPhoneNumber,internationalPhoneNumber,location,regularOpeningHours,reviews,websiteUri,viewport'
             }
         });
-    });
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+
+        const v1Data = await response.json();
+        const legacyData = adaptV1ToLegacy(v1Data);
+
+        // Save to Cache (Legacy Format)
+        placeDetailsCache[placeId] = legacyData;
+        try {
+            await setDoc(doc(db, 'places_cache', placeId), { ...legacyData, timestamp: Date.now() });
+        } catch (e) {
+            console.error("Cache write error:", e);
+        }
+
+        return legacyData;
+    } catch (error) {
+        console.error("GetPlaceDetails Error:", error);
+        throw error;
+    }
 }
 
 function searchPlaces(query: string) {
@@ -1436,7 +1534,7 @@ function displaySearchResults(places: any[]) {
                 selectPlace(detailedPlace);
             } catch (error) {
                 console.error('Error getting place details:', error);
-                alert('無法取得餐廳電話，請手動輸入');
+                if ((window as any).showToast) (window as any).showToast('無法取得餐廳電話，請手動輸入', 'warning');
                 selectPlace(place);
             }
         });
@@ -1479,32 +1577,46 @@ function toggleDrawer() {
 (window as any).toggleDrawer = toggleDrawer;
 
 function showConfirmModal(place: any) {
-    const modal = document.getElementById('confirmModal');
-    const details = document.getElementById('confirmDetails');
+    const modal = document.getElementById('placeDetailsModal');
+    const content = document.getElementById('placeDetailsContent');
+    const confirmBtn = document.getElementById('placeDetailsConfirm');
+    const cancelBtn = document.getElementById('placeDetailsCancel');
     const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
 
-    if (!modal || !details) return;
+    if (!modal || !content || !confirmBtn || !cancelBtn) return;
 
-    let hoursHtml = 'N/A';
+    let hoursHtml = '';
     if (place.opening_hours && place.opening_hours.weekday_text) {
-        hoursHtml = `<ul style="padding-left: 20px; list-style-type: disc;">
-            ${place.opening_hours.weekday_text.map((day: string) => `<li>${day}</li>`).join('')}
-        </ul>`;
+        // Show all lines in a scrollable box
+        hoursHtml = `<div style="margin-top:5px; font-size:12px; color:#ccc; max-height: 120px; overflow-y: auto; padding-right: 4px;">${place.opening_hours.weekday_text.join('<br>')}</div>`;
     }
 
-    details.innerHTML = `
-        <div class="detail-item">
-            <span class="detail-label">${(dict as any).label_detail_address || '📍 Address'}</span>
-            <span class="detail-value">${place.formatted_address || 'N/A'}</span>
+    const placeName = place.name || "Unknown Place";
+    const placeAddress = place.formatted_address || "N/A";
+    const phoneNumber = place.international_phone_number || place.formatted_phone_number;
+    const rating = place.rating ? `★ ${place.rating} (${place.user_ratings_total || 0})` : "";
+    const website = place.website;
+
+    content.innerHTML = `
+        <div style="font-weight: bold; color: #fff; font-size: 16px;">${placeName}</div>
+        <div style="font-size: 13px; color: #aaa; margin-bottom: 8px;">${placeAddress}</div>
+        ${rating ? `<div style="font-size: 13px; color: #fbbf24; margin-bottom: 8px;">${rating}</div>` : ''}
+        
+        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+            <div style="font-size: 11px; color: #888; text-transform: uppercase;">${(dict as any).label_detail_phone || 'Phone Number'}</div>
+            <div style="font-size: 14px; color: #fff; font-family: monospace;">${phoneNumber || '<span style="color:#f87171">Not Available</span>'}</div>
         </div>
-        <div class="detail-item">
-            <span class="detail-label">${(dict as any).label_detail_phone || '📞 Phone'}</span>
-            <span class="detail-value">${place.international_phone_number || place.formatted_phone_number || 'N/A'}</span>
-        </div>
-        <div class="detail-item" style="max-height: 150px; overflow-y: auto;">
-            <span class="detail-label">${(dict as any).label_detail_hours || '⏰ Opening Hours'}</span>
-            <span class="detail-value">${hoursHtml}</span>
-        </div>
+
+        ${website ? `
+        <div style="margin-top: 8px;">
+            <a href="${website}" target="_blank" style="color: #3b82f6; text-decoration: none; font-size: 13px;">🌐 Visit Website</a>
+        </div>` : ''}
+
+        ${hoursHtml ? `
+        <div style="margin-top: 10px; border-top: 1px solid #333; padding-top: 8px;">
+            <div style="font-size: 11px; color: #888; text-transform: uppercase;">${(dict as any).label_detail_hours || 'Opening Hours'}</div>
+            ${hoursHtml}
+        </div>` : ''}
     `;
 
     modal.style.display = 'flex';
@@ -1519,12 +1631,12 @@ function showConfirmModal(place: any) {
         cleanup();
     };
     const cleanup = () => {
-        document.getElementById('modalConfirm')?.removeEventListener('click', onConfirm);
-        document.getElementById('modalCancel')?.removeEventListener('click', onCancel);
+        confirmBtn.removeEventListener('click', onConfirm);
+        cancelBtn.removeEventListener('click', onCancel);
     };
 
-    document.getElementById('modalConfirm')?.addEventListener('click', onConfirm);
-    document.getElementById('modalCancel')?.addEventListener('click', onCancel);
+    confirmBtn.addEventListener('click', onConfirm);
+    cancelBtn.addEventListener('click', onCancel);
 }
 
 function selectPlace(place: any) {
@@ -1735,7 +1847,7 @@ async function handleFormSubmit(e: Event) {
         if ((window as any).showToast) {
             (window as any).showToast(`⚠️ ${msg}`, "error");
         } else {
-            alert(`⚠️ ${msg}`);
+            if ((window as any).showToast) (window as any).showToast(`⚠️ ${msg}`, 'error');
         }
 
         if (firstErrorEl) {
@@ -1747,7 +1859,7 @@ async function handleFormSubmit(e: Event) {
 
     // Security and refinement is now handled unified by the 'Check Description' AI call before final submission.
     if (!isContentSafe) {
-        alert("⚠️ Suspicious content detected or mission mismatch, please check your input.");
+        if ((window as any).showToast) (window as any).showToast("⚠️ Suspicious content detected or mission mismatch, please check your input.", 'error');
         return;
     }
 

@@ -11,6 +11,8 @@ interface ValidationRequest {
 interface ValidationResponse {
     valid: boolean;
     confidence?: number;
+    explanation?: string;
+    refinedText?: string;
 }
 
 /**
@@ -23,16 +25,16 @@ interface ValidationResponse {
  * @returns {valid: boolean} - Whether the description matches the mission
  */
 export const validateMissionDescription = functions.https.onCall(
-    async (data: ValidationRequest, context): Promise<ValidationResponse> => {
+    async (request): Promise<ValidationResponse> => {
         // Verify authentication
-        if (!context.auth) {
+        if (!request.auth) {
             throw new functions.https.HttpsError(
                 'unauthenticated',
                 'User must be authenticated to validate missions.'
             );
         }
 
-        const { missionId, missionName, description, language } = data;
+        const { missionId, missionName, description, language } = request.data as ValidationRequest;
 
         // Validate inputs
         if (!missionId || !missionName || !description) {
@@ -74,31 +76,58 @@ export const validateMissionDescription = functions.https.onCall(
                 model: "gemini-2.5-flash-lite",
                 generationConfig: {
                     temperature: 0.1, // Low temperature for consistent validation
-                    maxOutputTokens: 10, // We only need "MATCH" or "NOT_MATCH"
+                    maxOutputTokens: 256, // Increased for JSON response
                 }
             });
 
-            // Construct validation prompt
+            // Call Gemini AI
+            // Request JSON response
+            const responseSchema = {
+                type: "object",
+                properties: {
+                    valid: { type: "boolean" },
+                    explanation: { type: "string" },
+                    refinedText: { type: "string" },
+                    suggestedMissionId: { type: "string", nullable: true }
+                }
+            };
+
             const prompt = buildValidationPrompt(missionName, description, language);
 
-            // Call Gemini AI
-            const result = await model.generateContent(prompt);
-            const response = result.response.text().trim().toUpperCase();
+            const result = await model.generateContent({
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                }
+            });
 
-            // Parse response
-            const isMatch = response.includes('MATCH') && !response.includes('NOT_MATCH');
+            const responseText = result.response.text();
+            let parsedResponse: any;
+
+            try {
+                parsedResponse = JSON.parse(responseText);
+            } catch (e) {
+                console.error("Failed to parse JSON response:", responseText);
+                // Fallback
+                return { valid: true };
+            }
 
             // Log for monitoring
             console.log({
                 missionId,
                 missionName,
                 descriptionLength: description.length,
-                result: isMatch ? 'MATCH' : 'NOT_MATCH',
-                userId: context.auth.uid
+                result: parsedResponse.valid ? 'MATCH' : 'NOT_MATCH',
+                language,
+                userId: request.auth.uid,
+                suggested: parsedResponse.suggestedMissionId
             });
 
             return {
-                valid: isMatch
+                valid: parsedResponse.valid,
+                explanation: parsedResponse.explanation,
+                refinedText: parsedResponse.refinedText,
+                suggestedMissionId: parsedResponse.suggestedMissionId
             };
 
         } catch (error) {
@@ -113,32 +142,80 @@ export const validateMissionDescription = functions.https.onCall(
     }
 );
 
+// Simplified list of missions for AI context (English only is enough for context matching)
+const ALL_MISSIONS = [
+    { id: 'lost_item', name: 'Lost Item Inquiry', desc: 'Call location about lost item' },
+    { id: 'business_hours', name: 'Business Hours Confirmation', desc: 'Check operating status' },
+    { id: 'restaurant_booking', name: 'Restaurant Reservation', desc: 'Book a table' },
+    { id: 'package_tracking', name: 'Package Tracking', desc: 'Check delivery status' },
+    { id: 'event_rsvp', name: 'Event RSVP', desc: 'Confirm attendance' },
+    { id: 'repair_appointment', name: 'Repair Appointment', desc: 'Schedule repair service' },
+    { id: 'order_modification', name: 'Order Modification', desc: 'Change product/quantity' },
+    { id: 'emergency_notification', name: 'Emergency Notification', desc: 'Relay urgent message' },
+    { id: 'schedule_verification', name: 'Schedule Verification', desc: 'Confirm meeting time/loc' },
+    { id: 'stock_inquiry', name: 'Stock Inquiry', desc: 'Check product availability' }
+];
+
 /**
  * Build the validation prompt for Gemini
  */
 function buildValidationPrompt(missionName: string, description: string, language: string): string {
-    // Language-specific system instructions
-    const systemInstructions = {
-        en: 'You are a task validator. Determine if the description matches the mission category.',
-        zh: '你是任務審核員。判斷描述內容是否屬於該任務類別。',
-        jp: 'あなたはタスク検証者です。説明が任務カテゴリーと一致するかどうかを判断してください。',
-        kr: '당신은 작업 검증자입니다. 설명이 임무 카테고리와 일치하는지 판단하세요.',
-        es: 'Eres un validador de tareas. Determina si la descripción coincide con la categoría de misión.',
-        fr: 'Vous êtes un validateur de tâches. Déterminez si la description correspond à la catégorie de mission.',
-        it: 'Sei un validatore di compiti. Determina se la descrizione corrisponde alla categoria della missione.'
-    };
+    // Language-specific instructions
+    // CRITICAL: Explicitly handle Traditional Chinese (zh-TW) vs Simplified Chinese (zh-CN)
+    let langInstruction = "";
 
-    const instruction = systemInstructions[language as keyof typeof systemInstructions] || systemInstructions.en;
+    switch (language) {
+        case 'zh':
+        case 'zh-TW':
+            langInstruction = "You MUST answer in Traditional Chinese (繁體中文). Do NOT use Simplified Chinese.";
+            break;
+        case 'zh-CN':
+            langInstruction = "You MUST answer in Simplified Chinese (简体中文).";
+            break;
+        case 'jp':
+        case 'ja':
+            langInstruction = "You MUST answer in Japanese (日本語).";
+            break;
+        case 'kr':
+        case 'ko':
+            langInstruction = "You MUST answer in Korean (한국어).";
+            break;
+        case 'es':
+            langInstruction = "You MUST answer in Spanish.";
+            break;
+        default:
+            langInstruction = "Answer in English.";
+    }
 
-    return `${instruction}
+    const availableMissionsList = ALL_MISSIONS.map(m => `- ID: "${m.id}", Name: "${m.name}" (${m.desc})`).join('\n');
 
-Mission: ${missionName}
-Description: ${description}
+    return `
+Role: You are a helpful AI assistant validating user tasks for a service called "WiseCat".
+Your Goal: Determine if the User's Description matches the chosen Mission Category. If not, suggest the correct one.
 
-Instructions:
-- If the description clearly relates to the mission, respond: MATCH
-- If the description does NOT relate to the mission, respond: NOT_MATCH
-- Be somewhat lenient - if there's reasonable connection, say MATCH
+Current Mission: "${missionName}"
+User Description: "${description}"
 
-Respond with ONLY the word "MATCH" or "NOT_MATCH". Nothing else.`;
+Available Missions:
+${availableMissionsList}
+
+Verification Rules:
+1. If the Description is RELEVANT to the Current Mission, set "valid": true.
+2. If the Description is completely unrelated, set "valid": false.
+3. **AUTO-DETECTION**: If "valid" is false, check if the description matches ANY other mission in "Available Missions".
+   - If a better match exists, set "suggestedMissionId" to that mission's ID.
+
+Output Requirements:
+1. Return JSON with keys: "valid" (boolean), "explanation" (string), "refinedText" (string), "suggestedMissionId" (string or null).
+2. "explanation": 
+   - If invalid, explain WHY in 1 short sentence. 
+   - If valid, give a short confirming compliment.
+3. "refinedText": 
+   - Rewrite the User Description to be more polite, professional, and clear.
+   - Keep the original intent.
+4. "suggestedMissionId":
+   - The ID of the better matching mission (e.g. "event_rsvp") if applicable. Otherwise null.
+5. **LANGUAGE CONSTRAINT**: ${langInstruction}
+   - "explanation" and "refinedText" MUST be in the requested language.
+`;
 }
