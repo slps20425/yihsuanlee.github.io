@@ -2,12 +2,17 @@
 
 ## Current Status
 - **Status**: `READY_FOR_QA`
-- **Current Task**: Verify Missions Search and API Cache layers.
-- **Last Deployment**: `https://yihsuanlee.github.io/reservation/mouthpiece.html` (Mouthpiece Search), `https://yihsuanlee.github.io/reservation/restaurant_reservation.html` (API Cache)
-- **Assignee**: **QA Agent (Gemini)**dation TypeError
-- **Completed**: 2026-01-21T16:25:00+08:00
-- **Deploy URL**: https://wisecat-8df8d.web.app/
-- **Notes**: Fixed "Cannot read properties of undefined" by properly handling 'mission' as hidden input. Validation now works.
+- **Current Task**: Debug duplicate mission options; sync validation pattern.
+- **Last Deployment**: `https://yihsuanlee.github.io/reservation/restaurant_reservation.html`
+- **Assignee**: **QA Agent (Gemini)**
+- **Completed**: 2026-01-22T10:35:00+08:00
+- **Deploy URL**: https://yihsuanlee.github.io/reservation/restaurant_reservation.html
+- **Notes**: Fixed duplicate "Restaurant Reservation" missions, synced premium validation (red borders + dynamic hints) across all service pages, and updated mission documentation.
+
+## Task History
+| ID | Task | Assignee | Date | Status | Notes |
+|----|------|----------|------|--------|-------|
+| 19 | Debug duplicate mission options; sync validation pattern | Claude | 2026-01-22 | READY_FOR_QA | [Live URL](https://yihsuanlee.github.io/reservation/restaurant_reservation.html) |
 
 ## Deployment Standards
 > [!IMPORTANT]
@@ -16,12 +21,13 @@
 > **DO NOT** rely on the global `firebase` command as it may be missing in the agent environment.
 
 ## Summary of Changes
-1. ✅ **Chat Widget Whitespace Fixed** - Removed `white-space: pre-wrap` and used Flexbox layout to fix cleaner "Welcome" message.
-2. ✅ **Logo Alignment Fixed** - Logo is now correctly aligned to the left of the text.
-3. ✅ **Ask AI Button Standardized** - Updated to "Ask WiseCat AI" with purple gradient across all pages.
-4. ✅ **Chat Panel Frame Fixed** - Added missing background/border variables to global styles for consistent look on all pages.
+1. ✅ **Duplicate Missions Fixed**: Deduplicated missions by localized name in `reservation.ts`.
+2. ✅ **Validation Sync**: Implemented consistent red border and dynamic hint pattern across Mouthpiece, Restaurant, and Trial pages.
+3. ✅ **Mission System Docs**: Separated Mission retrieval flow into its own module (`mission-system.md`) with Mermaid diagrams.
+4. ✅ **Emails Pre-populated**: Fixed auto-population of email addresses from profile/localStorage.
 
 ## QA Testing Checklist
-- [ ] **Ask AI (All Pages)**: Verify the sidebar button is purple and says "Ask WiseCat AI".
-- [ ] **Chat Welcome Message**: Open chat, verify "Welcome" message is clean (no extra whitespace) and logo is on the left.
-- [ ] **Chat Panel Frame**: Verify chat messages on subpages (Restaurant, Mouthpiece, Trial) have the correct background color and border, matching the Dashboard.
+- [ ] **Missions Selection**: Verify "Restaurant Reservation" appears only once in the dropdown.
+- [ ] **Validation Feedback**: Verify red borders appear for empty required fields and disappear upon valid input.
+- [ ] **Submit Hints**: Verify explicit "⚠️ Hint required" messages appear below the "Start AI Call" button.
+- [ ] **Email Sync**: Verify email field automatically populates with the logged-in user's email.

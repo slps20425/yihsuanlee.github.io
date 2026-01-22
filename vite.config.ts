@@ -12,7 +12,8 @@ export default defineConfig({
                 resume: resolve(__dirname, 'resume/index.html'),
                 login_success: resolve(__dirname, 'login-success.html'),
                 admin_tasks: resolve(__dirname, 'admin/tasks.html'),
-                mouthpiece: resolve(__dirname, 'reservation/mouthpiece.html')
+                mouthpiece: resolve(__dirname, 'reservation/mouthpiece.html'),
+                faq: resolve(__dirname, 'faq.html')
             },
         },
         outDir: 'dist',

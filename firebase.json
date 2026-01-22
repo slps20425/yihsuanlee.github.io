@@ -19,7 +19,15 @@
         "function": "lineCallback"
       },
       {
-        "source": "**",
+        "source": "/faq.html",
+        "destination": "/faq.html"
+      },
+      {
+        "source": "/faq",
+        "destination": "/faq.html"
+      },
+      {
+        "source": "!(/*.html|/assets/**|/favicon.png|/logo.png|/manifest.json|/sw.js|/icon-*.png|/giphy.gif|/logo.gif|/reservation/**|/admin/**|/resume/**|/google-icon.svg|/microsoft-icon.svg)",
         "destination": "/entry.html"
       }
     ],

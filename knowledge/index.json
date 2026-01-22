@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "generated": "2026-01-21T17:15:40.885Z",
+  "generated": "2026-01-22T02:35:12.610Z",
   "metadata": {
-    "lastUpdated": "2026-01-21T17:15:40.704Z",
+    "lastUpdated": "2026-01-22T02:35:12.516Z",
     "deployment": {
-      "timestamp": "2026-01-21T17:15:40.705Z",
-      "gitCommit": "e277534b128b3cb5f52dcaae9ef3ac322af70df8",
+      "timestamp": "2026-01-22T02:35:12.517Z",
+      "gitCommit": "69ac5e234d0e3d0207d00cb6be7c788408588144",
       "gitBranch": "main"
     },
     "modules": {},
@@ -75,10 +75,10 @@
       },
       {
         "path": "src/mouthpiece.ts",
-        "size": 79962,
-        "lines": 1888,
+        "size": 82976,
+        "lines": 1969,
         "type": ".ts",
-        "lastModified": "2026-01-21T17:08:39.680Z"
+        "lastModified": "2026-01-22T02:02:37.150Z"
       },
       {
         "path": "src/nav-active.ts",
@@ -103,10 +103,10 @@
       },
       {
         "path": "src/reservation.ts",
-        "size": 105732,
-        "lines": 2543,
+        "size": 111235,
+        "lines": 2693,
         "type": ".ts",
-        "lastModified": "2026-01-21T17:14:03.679Z"
+        "lastModified": "2026-01-22T02:09:12.097Z"
       },
       {
         "path": "src/scam-check.ts",
@@ -138,10 +138,10 @@
       },
       {
         "path": "src/trial.ts",
-        "size": 33582,
-        "lines": 839,
+        "size": 37117,
+        "lines": 921,
         "type": ".ts",
-        "lastModified": "2026-01-21T02:19:11.862Z"
+        "lastModified": "2026-01-22T02:02:52.067Z"
       },
       {
         "path": "src/version.ts",
@@ -152,10 +152,10 @@
       },
       {
         "path": "functions/index.js",
-        "size": 72616,
-        "lines": 1646,
+        "size": 74066,
+        "lines": 1671,
         "type": ".js",
-        "lastModified": "2026-01-21T16:19:25.129Z"
+        "lastModified": "2026-01-22T01:08:38.650Z"
       },
       {
         "path": "admin/tasks.html",
@@ -183,77 +183,77 @@
         "size": 16030,
         "lines": 570,
         "type": ".html",
-        "lastModified": "2026-01-21T17:14:53.876Z"
+        "lastModified": "2026-01-22T02:33:00.963Z"
       },
       {
         "path": "dist/dashboard.html",
         "size": 36475,
         "lines": 725,
         "type": ".html",
-        "lastModified": "2026-01-21T17:14:53.876Z"
+        "lastModified": "2026-01-22T02:33:00.966Z"
       },
       {
         "path": "dist/entry.html",
         "size": 11764,
         "lines": 216,
         "type": ".html",
-        "lastModified": "2026-01-21T17:14:53.876Z"
+        "lastModified": "2026-01-22T02:33:00.966Z"
       },
       {
         "path": "dist/login-success.html",
         "size": 1465,
         "lines": 57,
         "type": ".html",
-        "lastModified": "2026-01-21T17:14:53.876Z"
+        "lastModified": "2026-01-22T02:33:00.966Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_guide.html",
         "size": 14461,
         "lines": 442,
         "type": ".html",
-        "lastModified": "2026-01-21T17:14:53.584Z"
+        "lastModified": "2026-01-22T02:33:00.642Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_mobile.html",
         "size": 15624,
         "lines": 425,
         "type": ".html",
-        "lastModified": "2026-01-21T17:14:53.585Z"
+        "lastModified": "2026-01-22T02:33:00.642Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/dp_indexing_mobile_full.html",
         "size": 7293,
         "lines": 198,
         "type": ".html",
-        "lastModified": "2026-01-21T17:14:53.585Z"
+        "lastModified": "2026-01-22T02:33:00.643Z"
       },
       {
         "path": "dist/reservation/mouthpiece.html",
-        "size": 25337,
-        "lines": 466,
+        "size": 25899,
+        "lines": 475,
         "type": ".html",
-        "lastModified": "2026-01-21T17:14:53.875Z"
+        "lastModified": "2026-01-22T02:33:00.966Z"
       },
       {
         "path": "dist/reservation/restaurant_reservation.html",
-        "size": 33948,
-        "lines": 692,
+        "size": 34565,
+        "lines": 701,
         "type": ".html",
-        "lastModified": "2026-01-21T17:14:53.876Z"
+        "lastModified": "2026-01-22T02:33:00.964Z"
       },
       {
         "path": "dist/reservation/trial.html",
-        "size": 16989,
-        "lines": 353,
+        "size": 17736,
+        "lines": 363,
         "type": ".html",
-        "lastModified": "2026-01-21T17:14:53.876Z"
+        "lastModified": "2026-01-22T02:33:00.966Z"
       },
       {
         "path": "dist/resume/index.html",
         "size": 41474,
         "lines": 688,
         "type": ".html",
-        "lastModified": "2026-01-21T17:14:53.875Z"
+        "lastModified": "2026-01-22T02:33:00.968Z"
       },
       {
         "path": "entry.html",
@@ -306,24 +306,24 @@
       },
       {
         "path": "reservation/mouthpiece.html",
-        "size": 24730,
-        "lines": 459,
+        "size": 25206,
+        "lines": 467,
         "type": ".html",
-        "lastModified": "2026-01-21T12:49:09.920Z"
+        "lastModified": "2026-01-22T01:40:27.394Z"
       },
       {
         "path": "reservation/restaurant_reservation.html",
-        "size": 33419,
-        "lines": 686,
+        "size": 33950,
+        "lines": 694,
         "type": ".html",
-        "lastModified": "2026-01-21T12:49:37.267Z"
+        "lastModified": "2026-01-22T01:40:51.858Z"
       },
       {
         "path": "reservation/trial.html",
-        "size": 16460,
-        "lines": 347,
+        "size": 17207,
+        "lines": 357,
         "type": ".html",
-        "lastModified": "2026-01-21T03:38:54.867Z"
+        "lastModified": "2026-01-22T01:41:09.488Z"
       },
       {
         "path": "resume/index.html",
@@ -369,6 +369,12 @@
       "size": 14108,
       "lastModified": "2026-01-19T08:55:05.610Z"
     },
+    "mission-system": {
+      "title": "Mission System Module",
+      "file": "modules/mission-system.md",
+      "size": 2578,
+      "lastModified": "2026-01-22T02:24:25.484Z"
+    },
     "n8n-workflows": {
       "title": "N8N Workflow System Module",
       "file": "modules/n8n-workflows.md",
@@ -390,8 +396,8 @@
     "task-system": {
       "title": "Task System Module",
       "file": "modules/task-system.md",
-      "size": 14315,
-      "lastModified": "2026-01-19T15:43:52.301Z"
+      "size": 14385,
+      "lastModified": "2026-01-22T02:24:34.268Z"
     },
     "user-management": {
       "title": "User Management Module",
