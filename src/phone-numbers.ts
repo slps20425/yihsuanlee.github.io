@@ -876,10 +876,21 @@ function showSharedNumberConfirmationDialog(phoneNumber?: string): Promise<boole
 }
 
 // Initialize the shared numbers list when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 [SharedNumbers] DOMContentLoaded triggered - initializing shared numbers list');
+// Check if DOM is already loaded (in case script loads after DOMContentLoaded fires)
+console.log('🚀 [SharedNumbers] Script loaded. Document readyState:', document.readyState);
+
+if (document.readyState === 'loading') {
+    // DOM still loading, wait for DOMContentLoaded
+    console.log('🚀 [SharedNumbers] Waiting for DOMContentLoaded...');
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('🚀 [SharedNumbers] DOMContentLoaded triggered');
+        initializeSharedNumbersList();
+    });
+} else {
+    // DOM already loaded, call immediately
+    console.log('🚀 [SharedNumbers] DOM already loaded, calling initializeSharedNumbersList immediately');
     initializeSharedNumbersList();
-});
+}
 
 // Upgrade to permanent number button
 if (upgradeToPermanentBtn) {
