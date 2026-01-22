@@ -1856,16 +1856,44 @@ async function displayCurrentPhoneNumber() {
                 }
             }
         } else {
-            // No number - default to shared
-            phoneDisplayEl.textContent = '+1 (415) 212-5191';
+            // No number - show prompt to get one
+            phoneDisplayEl.textContent = '🔒 No phone number';
+            phoneDisplayEl.style.cursor = 'pointer';
+            phoneDisplayEl.style.color = '#ef4444';
+
             if (phoneTypeEl) {
-                phoneTypeEl.innerHTML = `<span style="color: #eab308;">⚠ Temporary shared number (one-time use)</span>`;
+                phoneTypeEl.innerHTML = `<span style="color: #ef4444;">❌ You need a phone number to use this service</span>`;
             }
-            if (upgradePhoneBtn) {
-                upgradePhoneBtn.style.display = 'block';
-                upgradePhoneBtn.addEventListener('click', () => {
-                    window.location.href = '/dashboard.html?tab=add';
-                });
+
+            // Show the no number dialog
+            const noNumberDialog = document.getElementById('noNumberDialog') as HTMLDialogElement;
+            const closeNoNumberBtn = document.getElementById('closeNoNumberBtn') as HTMLButtonElement;
+            const goToAddTabBtn = document.getElementById('goToAddTabBtn') as HTMLButtonElement;
+
+            if (noNumberDialog) {
+                // Show dialog
+                noNumberDialog.showModal();
+
+                // Handle close button
+                if (closeNoNumberBtn) {
+                    closeNoNumberBtn.onclick = () => noNumberDialog.close();
+                }
+
+                // Handle get number button
+                if (goToAddTabBtn) {
+                    goToAddTabBtn.onclick = () => {
+                        window.location.href = '/dashboard.html?tab=add';
+                    };
+                }
+            } else {
+                // Fallback if dialog not available - show upgrade button
+                if (upgradePhoneBtn) {
+                    upgradePhoneBtn.style.display = 'block';
+                    upgradePhoneBtn.textContent = '🛒 Get a Phone Number';
+                    upgradePhoneBtn.addEventListener('click', () => {
+                        window.location.href = '/dashboard.html?tab=add';
+                    });
+                }
             }
         }
     } catch (e) {

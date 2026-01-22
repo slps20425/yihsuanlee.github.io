@@ -762,6 +762,32 @@
         </div>
     </div>
 
+    <!-- Phone Number Required Dialog -->
+    <dialog id="noNumberDialog">
+        <div class="dialog-header">
+            <h2>🔒 Number Required</h2>
+        </div>
+        <div class="dialog-content">
+            <div style="text-align: center; padding: 1rem 0;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📱</div>
+                <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">
+                    You don't have a phone number yet
+                </p>
+                <p style="font-size: 0.9rem;">
+                    To use this service, you need a professional phone number to represent you.
+                </p>
+            </div>
+            <div
+                style="background: rgba(59, 130, 246, 0.1); border: 1px solid var(--accent); border-radius: 8px; padding: 1rem; font-size: 0.85rem; margin-top: 1rem;">
+                💡 <strong>Tip:</strong> You can find available numbers in your <b>Dashboard</b>. Pricing starts from ~$3.00/month.
+            </div>
+        </div>
+        <div class="dialog-footer">
+            <button id="closeNoNumberBtn" class="btn btn-secondary">Dismiss</button>
+            <button id="goToAddTabBtn" class="btn btn-primary">Get a Number</button>
+        </div>
+    </dialog>
+
 </body>
 
 </html>
