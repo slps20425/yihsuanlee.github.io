@@ -60,12 +60,15 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSessionTimeout();
 
     // 5. Auth State for Sidebar
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         const headerUserName = document.getElementById('headerUserName');
         const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement;
         const creditsDisplay = document.getElementById('creditsDisplay');
 
         if (user) {
+            // Initialize real-time credits listener to sync Firestore changes
+            await WiseCatI18n.initCreditsListener();
+
             // Update User Info
             if (headerUserName) headerUserName.textContent = user.displayName || 'User';
             if (headerUserAvatar) {

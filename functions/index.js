@@ -1664,35 +1664,42 @@ exports.validateMissionDescription = onCall(
             const targetLangLabel = langMap[primaryLang] || "English";
 
             const prompt = `
-Role: You are the Lead Dispatcher & Security Officer for "WiseCat AI".
-Goal: Analyze a user's request against a selected mission. Verify validity, safety, and suggest the correct mission if the current one is wrong.
+Role: You are a Professional AI Assistant for "WiseCat AI".
+Goal: Analyze a user's request, verify its safety, and refine it into a professional, clear, and direct script that an AI voice will speak when calling a business on the user's behalf.
 
 Current Context:
-- **Selected Mission**: "${missionName}" (ID: ${missionId})
-- **User Task Description**: "${description}"
-- **Language**: ${language}
+- **Service Type**: AI Voice Proxy (calling businesses for the user)
+- **Selected Mission**: "${missionName}"
+- **User's Input (Script)**: "${description}"
+- **Target Language**: ${targetLangLabel}
+
+Instructions:
+1. **Security & Scam Check**: 
+   - If the content is a scam, fraud, or policy violation, set "valid": false and "explanation": "SCAM_ALERT: Policy violation."
+2. **Refinement Role**:
+   - YOUR JOB IS NOT TO ASK THE USER QUESTIONS.
+   - YOUR JOB IS TO REWRITE THE USER'S INPUT INTO A PROFESSIONAL SCRIPT.
+   - The script should be in the **FIRST PERSON perspective** (e.g., "I am calling to inquire about...", "I might have left my bag...", "I would like to modify my booking...").
+   - It should sound like a professional assistant or the user themselves speaking to a business.
+   - DO NOT include placeholders like "[Your Name]". Use generic professional language if names aren't provided.
+   - Ensure the tone is polite but firm and efficient.
+3. **Mission Validation**:
+   - Check if the User's Input matches the **Selected Mission**.
+   - If it doesn't match, suggest the correct "suggestedMissionId" from the list below and explain why.
 
 Mission Database:
 ${availableMissions}
 
-Your Decision Logic:
-1. **Security Check**: Does this content seem like a scam or fraud? If so, set valid=false and explanation="SCAM_ALERT: Policy violation."
-2. **Semantic Match**: Does the description match the selected mission? If yes, set valid=true.
-3. **Smart Dispatch**: If valid=false and NOT a scam, find the BEST matching mission from the Database.
-   - If a strong match exists (e.g., "haircut" matches "salon_reservation"):
-     - Set "suggestedMissionId" to that ID.
-     - Set "refinedText" to a professional version of the request in ${targetLangLabel}, optimized for the SUGGESTED mission.
-   - If no match found: Set "suggestedMissionId" to null.
-
 Output Format (JSON):
 {
   "valid": boolean,
-  "explanation": "Brief explanation in ${targetLangLabel}.",
-  "refinedText": "Professional version in ${targetLangLabel}",
+  "explanation": "Brief reasoning for the decision (in ${targetLangLabel}).",
+  "refinedText": "The finalized professional script to be spoken by AI (in ${targetLangLabel}). This MUST be a script, not a conversation with the user.",
   "suggestedMissionId": "ID string or null"
 }
 
-Answer strictly in ${targetLangLabel}.
+IMPORTANT: The "refinedText" MUST be the actual script that will be read out during the phone call. It should NOT say "You should say..." or "Do you want to...?". It must be the direct request.
+Example of good refinedText: "你好，我是代表客戶來電詢問。客戶今天在貴司遺失了一部手機，想請您協助確認是否有拾獲？"
 `;
 
             const result = await model.generateContent(prompt);

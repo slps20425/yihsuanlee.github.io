@@ -11,6 +11,7 @@ interface WiseCatI18nType {
     apply: () => void;
     renderHelper: () => void;
     refreshCredits: () => void;
+    initCreditsListener: () => Promise<void>;
     phoneRules: { [key: string]: RegExp };
     validatePhone: (code: string, number: string) => boolean;
     detectLanguage: (text: string) => string;
@@ -1150,6 +1151,53 @@ const WiseCatI18n: WiseCatI18nType = {
             } catch (e) {
                 console.error("i18n credits error", e);
             }
+        }
+    },
+
+    async initCreditsListener() {
+        try {
+            const { auth } = await import('./firebase-config');
+            const { getFirestore, doc, onSnapshot } = await import('firebase/firestore');
+            const db = getFirestore();
+
+            // Only initialize if user is authenticated
+            if (!auth.currentUser) {
+                console.log('[creditsListener] No user logged in, skipping listener');
+                return;
+            }
+
+            const uid = auth.currentUser.uid;
+            const userRef = doc(db, 'users', `uid_${uid}`);
+
+            // Set up real-time listener for user credits
+            onSnapshot(userRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const userData = snapshot.data();
+                    const firestoreCredits = userData.credits || 0;
+
+                    // Update localStorage with fresh credits from Firestore
+                    const userSession = localStorage.getItem('wisecat_user');
+                    if (userSession) {
+                        try {
+                            const user = JSON.parse(userSession);
+                            user.credits = firestoreCredits;
+                            localStorage.setItem('wisecat_user', JSON.stringify(user));
+                            console.log('[creditsListener] Updated credits from Firestore:', firestoreCredits);
+                        } catch (e) {
+                            console.error('[creditsListener] Error updating localStorage:', e);
+                        }
+                    }
+
+                    // Refresh UI with new credits
+                    this.refreshCredits();
+                }
+            }, (error) => {
+                console.error('[creditsListener] Error listening to credits:', error);
+            });
+
+            console.log('[creditsListener] Real-time credits listener initialized');
+        } catch (error) {
+            console.error('[creditsListener] Failed to initialize credits listener:', error);
         }
     },
 

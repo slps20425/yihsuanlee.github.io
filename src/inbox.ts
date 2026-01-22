@@ -95,6 +95,9 @@ export function initInbox() {
             console.log("Inbox: User logged in, subscribing...");
             dismissedAlerts.clear(); // Reset dismissed alerts on new login session
 
+            // Initialize real-time credits listener to sync Firestore changes
+            await WiseCatI18n.initCreditsListener();
+
             // Fetch user's number type from settings
             try {
                 const { getDoc, doc: docFn } = await import('firebase/firestore');

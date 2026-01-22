@@ -292,12 +292,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     // attachSafetyCheck('scriptContent');
 
     // --- Header Sync & Logout ---
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         const headerUserName = document.getElementById('headerUserName');
         const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement | null;
         const creditsDisplay = document.getElementById('creditsDisplay');
 
         if (user) {
+            // Initialize real-time credits listener to sync Firestore changes
+            await WiseCatI18n.initCreditsListener();
+
             if (headerUserName) headerUserName.textContent = user.displayName || 'User';
             if (headerUserAvatar && user.photoURL) headerUserAvatar.src = user.photoURL;
 

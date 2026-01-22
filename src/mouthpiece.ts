@@ -676,6 +676,9 @@ onAuthStateChanged(auth, async (user) => { // Changed to async
         // Display phone number (must be AFTER auth.currentUser is set)
         await displayCurrentPhoneNumber();
 
+        // Initialize real-time credits listener to sync Firestore changes
+        await WiseCatI18n.initCreditsListener();
+
         // Fetch missions from Firestore
         dynamicMissions = await fetchMissionsFromFirestore();
         console.log(`Loaded ${dynamicMissions.length} missions from Firestore`);
@@ -2069,13 +2072,16 @@ async function initSearchLogic() {
 
         try {
             console.log("Fetching Full Details for Modal (V1)...");
-            // Request everything needed for the modal
-            const res = await fetch(`https://places.googleapis.com/v1/${resourceName}?fields=id,displayName,formattedAddress,nationalPhoneNumber,internationalPhoneNumber,websiteUri,regularOpeningHours,rating,userRatingCount&key=${GOOGLE_MAPS_API_KEY}`, {
+            // Request everything needed for the modal including addressComponents for country detection
+            const res = await fetch(`https://places.googleapis.com/v1/${resourceName}?fields=id,displayName,formattedAddress,addressComponents,nationalPhoneNumber,internationalPhoneNumber,websiteUri,regularOpeningHours,rating,userRatingCount&key=${GOOGLE_MAPS_API_KEY}`, {
                 headers: { 'Content-Type': 'application/json' }
             });
             const details = await res.json();
 
-            phoneNumber = details.nationalPhoneNumber || details.internationalPhoneNumber || "";
+            // Merge details into place object for better context in selectPlace
+            Object.assign(place, details);
+
+            phoneNumber = details.internationalPhoneNumber || details.nationalPhoneNumber || "";
             website = details.websiteUri || "";
 
             // Format Hours if available

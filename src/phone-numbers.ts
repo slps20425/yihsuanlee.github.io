@@ -194,7 +194,7 @@ onAuthStateChanged(auth, async (user) => {
                 if (u.isGuest) {
                     console.log("🕵️ Guest access detected. Skipping auth enforcement.");
                     currentUser = u;
-                    initDashboardUI(u);
+                    initDashboardUI(u).catch(e => console.error('Error initializing dashboard:', e));
                     return; // Allow access
                 }
             } catch (e) { }
@@ -233,13 +233,16 @@ onAuthStateChanged(auth, async (user) => {
 
     if (user) {
         initSessionEnforcement(user); // [NEW] Start session enforcement
-        initDashboardUI(user);
+        await initDashboardUI(user);
     }
 });
 
-function initDashboardUI(user: any) {
+async function initDashboardUI(user: any) {
     const headerUserName = document.getElementById('headerUserName');
     const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement;
+
+    // Initialize real-time credits listener to sync Firestore changes
+    await WiseCatI18n.initCreditsListener();
 
     // Update user info in Profile tab
     if (userName) userName.textContent = user.displayName || user.name || 'User';

@@ -1119,6 +1119,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             // Display phone number (must be AFTER auth.currentUser is set)
             await displayCurrentPhoneNumber();
 
+            // Initialize real-time credits listener to sync Firestore changes
+            await WiseCatI18n.initCreditsListener();
+
             if (headerUserName) headerUserName.textContent = user.displayName || 'User';
             if (headerUserAvatar && user.photoURL) headerUserAvatar.src = user.photoURL;
 
