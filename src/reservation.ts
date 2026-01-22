@@ -1999,16 +1999,31 @@ function applyPlaceSelection(place: any) {
     selectedRestaurantData = place;
     currentPlaceOpeningHours = place.opening_hours || null;
 
+    // Detect country and set it in intl-tel-input to ensure correct flag
+    if (place.address_components && phoneInputPlugin) {
+        const countryComp = place.address_components.find((c: any) => c.types.includes('country'));
+        if (countryComp && countryComp.short_name) {
+            const isoCode = countryComp.short_name.toLowerCase();
+            console.log(`🌍 [Reservation] Detected Country from Address: ${isoCode}`);
+            phoneInputPlugin.setCountry(isoCode);
+        }
+    }
+
     // Fill in phone number
     const phoneNumber = place.international_phone_number || place.formatted_phone_number;
 
     if (phoneNumber) {
         console.log('Phone found:', phoneNumber);
+        const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
         if (phoneInputPlugin) {
             phoneInputPlugin.setNumber(phoneNumber);
-        } else {
-            const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
-            if (phoneInput) phoneInput.value = phoneNumber;
+            // Explicitly trigger events to ensure UI reacts correctly (e.g., cost estimation)
+            phoneInput?.dispatchEvent(new Event('input', { bubbles: true }));
+            phoneInput?.dispatchEvent(new Event('change', { bubbles: true }));
+            phoneInput?.dispatchEvent(new Event('countrychange', { bubbles: true }));
+        } else if (phoneInput) {
+            phoneInput.value = phoneNumber;
+            phoneInput.dispatchEvent(new Event('input', { bubbles: true }));
         }
     } else {
         (window as any).showToast("⚠️ Phone number not found for this location. Please enter it manually.", "warning");
