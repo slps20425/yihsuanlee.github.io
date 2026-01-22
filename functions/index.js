@@ -496,14 +496,11 @@ exports.onTaskCompleted = onDocumentUpdated(
                     isShared: isUsingShared
                 });
 
-                // 5. Credit Adjustment
-                await db.runTransaction(async (t) => {
-                    const uDoc = await t.get(userRef);
-                    const bal = uDoc.data().credits || 0;
-                    t.update(userRef, { credits: bal - finalCost });
-                });
-
-                console.log(`[onTaskCompleted] Successfully deducted $${finalCost.toFixed(2)} from UID: ${uid}`);
+                // NOTE: Do NOT deduct credits here!
+                // Credits were already deducted in mouthpiece.ts when user submitted the call.
+                // The processTaskRefund function will handle refunding any overage.
+                // This avoids double-charging the user.
+                console.log(`[onTaskCompleted] Logged finalCost $${finalCost.toFixed(2)} for later refund processing`);
             }
 
         } catch (error) {
