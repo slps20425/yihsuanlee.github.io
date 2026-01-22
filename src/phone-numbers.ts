@@ -688,8 +688,19 @@ async function initializeSharedNumbersList() {
     if (!availableNumbersList) return;
 
     try {
-        const { getAllSharedNumbers } = await import('./shared-number-config');
-        const sharedNumbers = getAllSharedNumbers();
+        // Dynamically fetch all shared numbers from Firestore
+        const { collection, query, orderBy, getDocs } = await import('firebase/firestore');
+        const { db } = await import('./firebase-config');
+
+        const sharedNumbersRef = collection(db, 'shared_numbers');
+        const q = query(sharedNumbersRef, orderBy('createdAt', 'desc'));
+        const snap = await getDocs(q);
+
+        const sharedNumbers = snap.docs.map(doc => ({
+            id: doc.id,
+            phoneNumber: doc.data().phoneNumber,
+            vapiPhoneNumberId: doc.data().vapiPhoneNumberId
+        }));
 
         if (!sharedNumbers || sharedNumbers.length === 0) {
             availableNumbersList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 1rem;">No shared numbers available at this time.</div>';
