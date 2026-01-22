@@ -986,14 +986,16 @@ async function handleFormSubmit(e: Event) {
     let minRequired = ratePerMin * defaultOnHold;
 
     // Add shared number cost if user is using shared number
-    const sharedNumberFee = 3.50; // $1.00 setup + $2.50 buffer
+    // Use a reasonable estimate ($2) for balance check
+    // Actual cost will be verified during task submission based on the selected number
+    const sharedNumberFeeEstimate = 2.00; // Typical shared number cost (actual varies)
     if (useSharedNumber) {
-        minRequired += sharedNumberFee;
+        minRequired += sharedNumberFeeEstimate;
     }
 
     if (userCredits < minRequired) {
         const costBreakdown = useSharedNumber
-            ? `Insufficient balance. Need $${minRequired.toFixed(2)} ($${(ratePerMin * defaultOnHold).toFixed(2)} call + $${sharedNumberFee.toFixed(2)} shared number fee), you have $${userCredits.toFixed(2)}`
+            ? `Insufficient balance. Need $${minRequired.toFixed(2)} ($${(ratePerMin * defaultOnHold).toFixed(2)} call + ~$${sharedNumberFeeEstimate.toFixed(2)} shared number fee estimate), you have $${userCredits.toFixed(2)}`
             : `Insufficient balance for pre-auth. At least $${minRequired.toFixed(2)} is required (est. ${defaultOnHold} min duration).`;
         showToast(costBreakdown, 'error');
         btn.disabled = false;

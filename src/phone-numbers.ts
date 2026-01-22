@@ -720,8 +720,9 @@ async function initializeSharedNumbersList() {
                         sharedNumberActivatedAt: new Date().toISOString()
                     }, { merge: true });
 
-                    // Show success message
-                    showToast("✅ Shared number ready! Cost ($3.50) will be deducted when you make a call.", "success");
+                    // Show success message with actual price
+                    const displayPrice = Math.ceil(originalPrice);
+                    showToast(`✅ Shared number ready! Cost ($${displayPrice}) will be deducted when you make a call.`, "success");
 
                     // The UI visibility is now handled automatically by the onSnapshot listener above.
                     // Removed manual hiding of sharedPoolCard to ensure it stays visible as requested.
