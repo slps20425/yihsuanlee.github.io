@@ -576,14 +576,13 @@ exports.processTaskRefund = onDocumentUpdated(
 
             // ===== READ FROM N8N WEBHOOK =====
             const actualDuration = newData.call_duration;       // e.g., 6.31 seconds
-            // Primary: use "success" (boolean). Fallback: "call_result" (string)
-            const taskSuccess = newData.success === true ? true : (newData.call_result === "true");
+            // Note: success, call_result, endedReason are for logging/reference only
+            // Charging is based ONLY on call_duration
 
             console.log(`[processTaskRefund] Processing task ${taskId}:
                 call_duration=${actualDuration},
                 success=${newData.success},
-                call_result=${newData.call_result},
-                taskSuccess=${taskSuccess}
+                endedReason=${newData.endedReason}
             `);
 
             let refundAmount = 0;
@@ -599,21 +598,13 @@ exports.processTaskRefund = onDocumentUpdated(
                 errorReason = null;
                 console.log(`[processTaskRefund] Case 1 (Normal): ${actualDuration}s → ${actualMinutes}m → $${actualCost.toFixed(2)}`);
             }
-            // ===== CASE 2: No duration + call_result=true → Refund 50% =====
-            else if (taskSuccess === true) {
-                console.log(`[processTaskRefund] Case 2 (Success but no duration): Refunding 50%`);
-                actualCost = estimatedCost * 0.5;
-                refundAmount = estimatedCost * 0.5;
-                actualMinutes = 0;
-                errorReason = "Call completed but duration missing - 50% refund issued";
-            }
-            // ===== CASE 3: No duration + call_result=false → Full refund =====
+            // ===== CASE 2: No duration → Full refund (something went wrong) =====
             else {
-                console.log(`[processTaskRefund] Case 3 (Failed/No data): Full refund`);
+                console.log(`[processTaskRefund] Case 2 (No duration): Full refund`);
                 actualCost = 0;
                 refundAmount = estimatedCost;
                 actualMinutes = 0;
-                errorReason = `Call failed - full refund issued. Result: ${newData.call_result}`;
+                errorReason = `No call duration recorded - full refund issued. Reason: ${newData.endedReason || 'unknown'}`;
             }
 
             const refundSeconds = estimatedDuration - (actualDuration || 0);
@@ -649,7 +640,6 @@ exports.processTaskRefund = onDocumentUpdated(
                     formula: formula,
                     refundStatus: 'completed',
                     errorReason: errorReason,
-                    callSuccess: taskSuccess,
                     refundProcessedAt: admin.firestore.FieldValue.serverTimestamp()
                 });
             });
@@ -661,7 +651,7 @@ exports.processTaskRefund = onDocumentUpdated(
 
             // Log the actual call usage
             await usageRef.add({
-                category: taskSuccess ? 'calls' : 'failed_call',
+                category: 'calls',
                 description: errorReason
                     ? errorReason
                     : `Call to ${newData.targetPhoneNumber} (${actualMinutes}m, ${actualDuration}s actual)`,
@@ -676,7 +666,8 @@ exports.processTaskRefund = onDocumentUpdated(
                 target: newData.targetPhoneNumber,
                 source: 'task_completion',
                 formula: formula,
-                success: taskSuccess
+                callSuccess: newData.success,
+                endedReason: newData.endedReason
             });
 
             // Log refund record if refund occurred
