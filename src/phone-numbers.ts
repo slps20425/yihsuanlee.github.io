@@ -84,6 +84,14 @@ const userEmail = document.getElementById('userEmail') as HTMLElement | null;
 const userAvatar = document.getElementById('userAvatar') as HTMLImageElement | null;
 const creditsDisplay = document.getElementById('creditsDisplay') as HTMLElement | null;
 
+// Phone Number Sections
+const myNumberSection = document.getElementById('myNumberSection');
+const searchNumberSection = document.getElementById('searchNumberSection');
+const tableBody = document.getElementById('myNumberTableBody');
+const tempSharedNumberSection = document.getElementById('tempSharedNumberSection');
+const sharedPoolCard = document.getElementById('sharedPoolCard');
+const upgradeToPermanentBtn = document.getElementById('upgradeToPermanentBtn') as HTMLButtonElement | null;
+
 // Phone Requirement Tracking
 let hasActivePhoneNumber = false;
 const noNumberReminder = document.getElementById('noNumberReminder');
@@ -347,189 +355,25 @@ function loadUserSettings() {
     onSnapshot(settingsDoc, (snapshot) => {
         if (snapshot.exists()) {
             const settings = snapshot.data();
-            const myNumberSection = document.getElementById('myNumberSection');
-            const searchNumberSection = document.getElementById('searchNumberSection');
-            const tableBody = document.getElementById('myNumberTableBody');
+            const isShared = settings.phoneNumberType === 'shared';
+            const isActive = settings.phoneNumberStatus === 'active' && !!settings.phoneNumber;
 
-            if (settings.phoneNumberStatus === 'active' && settings.phoneNumber) {
-                // HIDE Search, SHOW Table
-                if (searchNumberSection) searchNumberSection.hidden = true;
-                if (myNumberSection) myNumberSection.hidden = false;
+            console.log('📱 [PhoneNumbers] Settings Update:', { isActive, isShared, number: settings.phoneNumber });
 
-                // Populate Table Row
-                if (tableBody) {
-                    const capabilities = settings.capabilities || {};
-                    const capsHtml = `
-                        <div style="display: flex; gap: 8px;">
-                            ${capabilities.voice || capabilities.Voice ? '<span>📞 Voice</span>' : ''}
-                            ${capabilities.sms || capabilities.SMS ? '<span>💬 SMS</span>' : ''}
-                        </div>
-                    `;
-
-                    // Mask Phone ID
-                    const rawId = settings.vapiPhoneNumberId || '';
-                    let maskedId = '-';
-                    if (rawId && rawId.length > 10) {
-                        maskedId = rawId.substring(0, 4) + '••••' + rawId.substring(rawId.length - 4);
-                    } else {
-                        maskedId = rawId;
-                    }
-
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td style="padding: 10px; font-weight: bold; color: var(--success); vertical-align: middle;">
-                                ${settings.phoneNumber}
-                                <div id="myNumberSmsRate" style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; margin-top: 2px;">
-                                    Fetching SMS rate...
-                                </div>
-                            </td>
-                            <td style="padding: 10px; font-family: monospace; color: var(--text-secondary); vertical-align: middle;">
-                                ${maskedId}
-                            </td>
-                            <td style="padding: 10px; vertical-align: middle;">
-                                <input type="text" id="friendlyNameInput" 
-                                    value="${settings.friendlyName || ''}" 
-                                    placeholder="Enter label..."
-                                    style="background: transparent; border: 1px solid var(--border); color: var(--text-primary); padding: 4px 8px; border-radius: 4px; width: 100%; max-width: 150px;">
-                            </td>
-                            <!-- Added Purchased Date Column -->
-                            <td style="padding: 10px; color: var(--text-muted); font-size: 0.9rem; vertical-align: middle;">
-                                ${(() => {
-                            if (!settings.phoneNumberPurchasedAt) return 'N/A';
-                            const d = typeof settings.phoneNumberPurchasedAt.toDate === 'function'
-                                ? settings.phoneNumberPurchasedAt.toDate()
-                                : new Date(settings.phoneNumberPurchasedAt);
-                            return isNaN(d.getTime()) ? 'N/A' : WiseCatI18n.formatDate(d);
-                        })()}
-                            </td>
-                            <td style="padding: 10px; vertical-align: middle;">
-                                ${capsHtml}
-                            </td>
-                            <td style="padding: 10px; vertical-align: middle;">
-                                <button id="releaseBtnInTable" class="btn btn-outline-danger" style="padding: 4px 8px; font-size: 0.85rem;">Release</button>
-                            </td>
-                        </tr>
-                    `;
-
-                    // Update SMS rate asynchronously
-                    (async () => {
-                        const countryCode = settings.phoneNumber.startsWith('+1') ? 'US' : 'GB'; // Simple heuristic or improve later
-                        const rateInfo = await getCachedSMSRate(countryCode);
-                        const rateEl = document.getElementById('myNumberSmsRate');
-                        if (rateEl) {
-                            rateEl.innerHTML = `<i class="bi bi-chat-dots"></i> Inbound SMS: ${rateInfo.currency}${rateInfo.rate.toFixed(3)}/msg`;
-                        }
-                    })();
-
-                    // Safe Date Parsing Logic
-                    const getJsDate = (val: any) => {
-                        if (!val) return null;
-                        const d = typeof val.toDate === 'function' ? val.toDate() : new Date(val);
-                        return isNaN(d.getTime()) ? null : d;
-                    };
-
-                    const purchaseDate = getJsDate(settings.phoneNumberPurchasedAt);
-                    const renewDateStr = purchaseDate
-                        ? WiseCatI18n.formatDate(new Date(purchaseDate.getTime() + 30 * 24 * 60 * 60 * 1000))
-                        : 'Monthly';
-
-                    // Add Renewal Warning Footer
-                    const warningConfig = {
-                        monthlyCost: settings.monthlyCost || '$3.45',
-                        renewDate: renewDateStr,
-                        purchaseDateStr: purchaseDate ? WiseCatI18n.formatDate(purchaseDate) : 'N/A'
-                    };
-
-                    const footer = document.createElement('div');
-                    footer.style.marginTop = '10px';
-                    footer.style.padding = '10px';
-                    footer.style.background = 'rgba(255, 193, 7, 0.1)';
-                    footer.style.border = '1px solid rgba(255, 193, 7, 0.3)';
-                    footer.style.borderRadius = '6px';
-                    footer.style.color = 'var(--text-secondary)';
-                    footer.style.fontSize = '0.85rem';
-                    footer.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="bi bi-info-circle text-warning"></i>
-                            <span>
-                                <strong>Monthly Cost:</strong> ${warningConfig.monthlyCost} (Auto-renews). 
-                                Please ensure you have sufficient credits. 
-                                <br>
-                                <span style="font-size: 0.8rem; opacity: 0.8;">
-                                    Purchased: ${warningConfig.purchaseDateStr} | Next billing estimate: ${warningConfig.renewDate}
-                                </span>
-                            </span>
-                        </div>
-                    `;
-                    // Append footer to the section container (parent of table-responsive)
-                    // We need to find where tableBody is. It's inside a table.
-                    // The 'tableBody' is passed or found? 
-                    // 'tableBody' variable is defined in the scope (lines 280-ish).
-                    // We should append to 'myNumberSection' or after the table.
-                    // 'myNumberSection' contains the table.
-                    const container = document.getElementById('myNumberSection');
-                    // Remove old footer if exists
-                    const oldFooter = document.getElementById('renewalWarningFooter');
-                    if (oldFooter) oldFooter.remove();
-                    footer.id = 'renewalWarningFooter';
-                    if (container) container.appendChild(footer);
-
-
-                    // Re-attach release button listener
-                    const releaseBtnInTable = document.getElementById('releaseBtnInTable');
-                    if (releaseBtnInTable) {
-                        releaseBtnInTable.addEventListener('click', () => {
-                            if (releaseDialog) releaseDialog.showModal();
-                        });
-                    }
-
-                    // Attach Friendly Name Edit Listener
-                    const friendlyNameInput = document.getElementById('friendlyNameInput') as HTMLInputElement;
-                    if (friendlyNameInput) {
-                        friendlyNameInput.addEventListener('change', async (e) => {
-                            const params = (e.target as HTMLInputElement).value;
-                            try {
-                                // We have 'doc' and 'db' imported at top.
-                                // We can use: import { updateDoc } from "firebase/firestore";
-                                // But let's check imports at top of file needed.
-                                // Actually, I'll use the 'doc' ref we already have: settingsDoc
-                                // We need 'updateDoc' or 'setDoc'. importing dynamically or assuming availability.
-                                // Let's use dynamic import to be safe if not at top, or just use existing imports.
-                                // Checking imports: 'import { doc, onSnapshot } from "firebase/firestore";'
-                                // Need to add 'setDoc' to imports? No, I can't edit top of file easily with this tool if I don't target it.
-                                // I'll use dynamic import for updateDoc to be safe and clean.
-                                const { updateDoc } = await import("firebase/firestore");
-                                await updateDoc(settingsDoc, { friendlyName: params });
-                                console.log("Friendly Name updated to:", params);
-
-                                // Optional: Visual feedback
-                                friendlyNameInput.style.borderColor = 'var(--success)';
-                                setTimeout(() => friendlyNameInput.style.borderColor = 'var(--border)', 1000);
-                            } catch (err) {
-                                console.error("Failed to update friendly name:", err);
-                                alert("Failed to save name.");
-                            }
-                        });
-                    }
-                }
-            } else {
-                // SHOW Search, HIDE Table
-                if (searchNumberSection) searchNumberSection.hidden = false;
-                if (myNumberSection) myNumberSection.hidden = true;
+            // 1. Core Section Visibility
+            if (sharedPoolCard) {
+                // Show shared pool if no number, or if currently using a shared number
+                sharedPoolCard.hidden = (isActive && !isShared);
             }
 
-            // Handle Shared Number Display (Persisted)
-            if (settings.phoneNumberType === 'shared' && settings.phoneNumber) {
-                // User is using a shared number - show the temp shared number section
-                if (tempSharedNumberSection) {
-                    tempSharedNumberSection.hidden = false;
+            if (tempSharedNumberSection) {
+                // Show temporary shared number status only if using a shared number
+                tempSharedNumberSection.hidden = !isShared;
 
-                    // Update the phone number display with actual number from Firestore
+                if (isShared && settings.phoneNumber) {
                     const phoneDisplay = tempSharedNumberSection.querySelector('span[style*="color: var(--success)"]') as HTMLElement;
                     if (phoneDisplay) {
-                        // Format the phone number
                         const phone = settings.phoneNumber;
-                        // Simple formatting: +1234567890 -> +1 (234) 567-8900
                         let formatted = phone;
                         if (phone.startsWith('+1') && phone.length === 12) {
                             formatted = `${phone.slice(0, 2)} (${phone.slice(2, 5)}) ${phone.slice(5, 8)}-${phone.slice(8)}`;
@@ -537,26 +381,104 @@ function loadUserSettings() {
                         phoneDisplay.textContent = formatted;
                     }
                 }
-
-                // Hide the dedicated number section
-                if (searchNumberSection) searchNumberSection.hidden = true;
-                if (myNumberSection) myNumberSection.hidden = true;
-            } else if (tempSharedNumberSection && settings.phoneNumberType !== 'shared') {
-                // Hide temp shared section if user doesn't have a shared number
-                tempSharedNumberSection.hidden = true;
             }
 
-            // Sync Requirement UI (legacy support for reminders)
-            hasActivePhoneNumber = (settings.phoneNumberStatus === 'active' && !!settings.phoneNumber);
+            if (myNumberSection) {
+                // Show dedicated number table only if using a permanent number
+                myNumberSection.hidden = !(isActive && !isShared);
+            }
+
+            if (searchNumberSection) {
+                // Show search if no number OR if using shared (to allow upgrade)
+                searchNumberSection.hidden = (isActive && !isShared);
+            }
+
+            // 2. Populate Dedicated Number Table (if active and not shared)
+            if (isActive && !isShared && tableBody) {
+                const capabilities = settings.capabilities || {};
+                const capsHtml = `
+                    <div style="display: flex; gap: 8px;">
+                        ${capabilities.voice || capabilities.Voice ? '<span>📞 Voice</span>' : ''}
+                        ${capabilities.sms || capabilities.SMS ? '<span>💬 SMS</span>' : ''}
+                    </div>
+                `;
+
+                const rawId = settings.vapiPhoneNumberId || '';
+                let maskedId = rawId && rawId.length > 10
+                    ? rawId.substring(0, 4) + '••••' + rawId.substring(rawId.length - 4)
+                    : (rawId || '-');
+
+                tableBody.innerHTML = `
+                    <tr>
+                        <td style="padding: 10px; font-weight: bold; color: var(--success); vertical-align: middle;">
+                            ${settings.phoneNumber}
+                            <div id="myNumberSmsRate" style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; margin-top: 2px;">
+                                Fetching SMS rate...
+                            </div>
+                        </td>
+                        <td style="padding: 10px; font-family: monospace; color: var(--text-secondary); vertical-align: middle;">
+                            ${maskedId}
+                        </td>
+                        <td style="padding: 10px; vertical-align: middle;">
+                            <input type="text" id="friendlyNameInput" 
+                                value="${settings.friendlyName || ''}" 
+                                placeholder="Enter label..."
+                                style="background: transparent; border: 1px solid var(--border); color: var(--text-primary); padding: 4px 8px; border-radius: 4px; width: 100%; max-width: 150px;">
+                        </td>
+                        <td style="padding: 10px; color: var(--text-muted); font-size: 0.9rem; vertical-align: middle;">
+                            ${(() => {
+                        if (!settings.phoneNumberPurchasedAt) return 'N/A';
+                        const d = typeof settings.phoneNumberPurchasedAt.toDate === 'function'
+                            ? settings.phoneNumberPurchasedAt.toDate()
+                            : new Date(settings.phoneNumberPurchasedAt);
+                        return isNaN(d.getTime()) ? 'N/A' : WiseCatI18n.formatDate(d);
+                    })()}
+                        </td>
+                        <td style="padding: 10px; vertical-align: middle;">
+                            ${capsHtml}
+                        </td>
+                        <td style="padding: 10px; vertical-align: middle;">
+                            <button id="releaseBtnInTable" class="btn btn-outline-danger" style="padding: 4px 8px; font-size: 0.85rem;">Release</button>
+                        </td>
+                    </tr>
+                `;
+
+                // Update SMS rate & attach listeners (same as before)
+                (async () => {
+                    const countryCode = settings.phoneNumber.startsWith('+1') ? 'US' : 'GB';
+                    const rateInfo = await getCachedSMSRate(countryCode);
+                    const rateEl = document.getElementById('myNumberSmsRate');
+                    if (rateEl) rateEl.innerHTML = `<i class="bi bi-chat-dots"></i> Inbound SMS: ${rateInfo.currency}${rateInfo.rate.toFixed(3)}/msg`;
+                })();
+
+                const releaseBtnInTable = document.getElementById('releaseBtnInTable');
+                if (releaseBtnInTable && releaseDialog) {
+                    releaseBtnInTable.addEventListener('click', () => releaseDialog.showModal());
+                }
+
+                const friendlyNameInput = document.getElementById('friendlyNameInput') as HTMLInputElement;
+                if (friendlyNameInput) {
+                    friendlyNameInput.addEventListener('change', async (e) => {
+                        const params = (e.target as HTMLInputElement).value;
+                        const { updateDoc } = await import("firebase/firestore");
+                        await updateDoc(settingsDoc, { friendlyName: params });
+                        friendlyNameInput.style.borderColor = 'var(--success)';
+                        setTimeout(() => friendlyNameInput.style.borderColor = 'var(--border)', 1000);
+                    });
+                }
+            }
+
+            // Sync Requirement UI
+            hasActivePhoneNumber = isActive;
             if (noNumberReminder) {
                 noNumberReminder.style.display = hasActivePhoneNumber ? 'none' : 'flex';
             }
         } else {
             // No settings doc yet
-            const myNumberSection = document.getElementById('myNumberSection');
-            const searchNumberSection = document.getElementById('searchNumberSection');
             if (myNumberSection) myNumberSection.hidden = true;
             if (searchNumberSection) searchNumberSection.hidden = false;
+            if (sharedPoolCard) sharedPoolCard.hidden = false;
+            if (tempSharedNumberSection) tempSharedNumberSection.hidden = true;
         }
     });
 }
@@ -681,8 +603,7 @@ if (searchBtn) {
 }
 
 // [TASK 2 Integration] Shared Number Elements
-const tempSharedNumberSection = document.getElementById('tempSharedNumberSection');
-const upgradeToPermanentBtn = document.getElementById('upgradeToPermanentBtn') as HTMLButtonElement;
+// (Element declarations moved to top)
 
 // Initialize available shared numbers list
 async function initializeSharedNumbersList() {
@@ -796,16 +717,11 @@ async function initializeSharedNumbersList() {
                         sharedNumberActivatedAt: new Date().toISOString()
                     }, { merge: true });
 
+                    // Show success message
                     showToast("✅ Shared number ready! Cost ($3.50) will be deducted when you make a call.", "success");
 
-                    // Hide the activation section and show temp number section
-                    const sharedPoolCard = document.getElementById('sharedPoolCard');
-                    if (sharedPoolCard) {
-                        sharedPoolCard.hidden = true;
-                    }
-                    if (tempSharedNumberSection) {
-                        tempSharedNumberSection.hidden = false;
-                    }
+                    // The UI visibility is now handled automatically by the onSnapshot listener above.
+                    // Removed manual hiding of sharedPoolCard to ensure it stays visible as requested.
 
                 } catch (error) {
                     console.error("Error activating shared number:", error);
@@ -914,7 +830,13 @@ if (document.readyState === 'loading') {
 // Upgrade to permanent number button
 if (upgradeToPermanentBtn) {
     upgradeToPermanentBtn.addEventListener('click', () => {
-        // Switch to the phone numbers tab (switchTab expects tab name without "Tab" suffix)
+        // Ensure search section is visible
+        if (searchNumberSection) {
+            searchNumberSection.hidden = false;
+            searchNumberSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Switch to the phone numbers tab just in case
         if ((window as any).switchTab) {
             (window as any).switchTab('add');
         }
