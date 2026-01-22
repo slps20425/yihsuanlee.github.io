@@ -659,7 +659,7 @@ exports.processTaskRefund = onDocumentUpdated(
             const usageRef = db.collection(`users/uid_${uid}/usage_history`);
 
             // Log the actual call usage
-            await usageRef.add({
+            const usageData = {
                 category: 'calls',
                 description: errorReason
                     ? errorReason
@@ -667,17 +667,21 @@ exports.processTaskRefund = onDocumentUpdated(
                 usage: actualMinutes,
                 unit: 'minutes',
                 user_price: actualCost,
-                baseRate: rateApplied.baseRate,
-                multiplier: rateApplied.multiplier,
                 currency: 'USD',
                 start_date: admin.firestore.FieldValue.serverTimestamp(),
                 taskId: taskId,
                 target: newData.targetPhoneNumber,
-                source: 'task_completion',
-                formula: formula,
-                call_result: callResult,
-                call_duration: actualDuration
-            });
+                source: 'task_completion'
+            };
+
+            // Only include defined fields to avoid Firestore errors
+            if (rateApplied?.baseRate !== undefined) usageData.baseRate = rateApplied.baseRate;
+            if (rateApplied?.multiplier !== undefined) usageData.multiplier = rateApplied.multiplier;
+            if (formula !== undefined) usageData.formula = formula;
+            if (callResult !== undefined) usageData.call_result = callResult;
+            if (actualDuration !== undefined) usageData.call_duration = actualDuration;
+
+            await usageRef.add(usageData);
 
             // Log refund record if refund occurred
             if (refundAmount > 0) {
@@ -721,9 +725,16 @@ exports.processTaskRefund = onDocumentUpdated(
             const sharedPoolId = sharedNumberConfig?.vapiPhoneNumberId || "76705f8f-8ece-4a0e-a757-9581097c9ace";
             const wasUsingShared = (newData.vapiPhoneNumberId === sharedPoolId || newData.useSharedNumber === true);
 
+            console.log(`[processTaskRefund] Disconnect check: vapiId=${newData.vapiPhoneNumberId}, sharedPoolId=${sharedPoolId}, useSharedNumber=${newData.useSharedNumber}, wasUsingShared=${wasUsingShared}`);
+
             if (wasUsingShared) {
                 try {
                     const settingsRef = db.doc(`users/uid_${uid}/settings/settings`);
+                    const settingsSnap = await settingsRef.get();
+                    const currentSettings = settingsSnap.data() || {};
+
+                    console.log(`[processTaskRefund] Current settings before disconnect: phoneNumber=${currentSettings.phoneNumber}, phoneNumberType=${currentSettings.phoneNumberType}`);
+
                     await settingsRef.update({
                         phoneNumber: admin.firestore.FieldValue.delete(),
                         vapiPhoneNumberId: admin.firestore.FieldValue.delete(),
@@ -735,6 +746,8 @@ exports.processTaskRefund = onDocumentUpdated(
                 } catch (disconnectError) {
                     console.warn(`[processTaskRefund] Failed to disconnect shared number:`, disconnectError.message);
                 }
+            } else {
+                console.log(`[processTaskRefund] Task did not use shared number, skipping disconnect`);
             }
 
             console.log(`[processTaskRefund] ✓ All usage records logged`);
