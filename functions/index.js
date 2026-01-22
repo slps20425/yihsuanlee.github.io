@@ -575,14 +575,15 @@ exports.processTaskRefund = onDocumentUpdated(
             };
 
             // ===== READ FROM N8N WEBHOOK =====
-            const actualDuration = newData.call_duration;       // e.g., 6.31 seconds
-            // Note: call_result ("true" or "false") determines refund logic for no-duration cases
-            // success and endedReason are for logging/reference only
+            const actualDuration = newData.call_duration;       // e.g., 30.9 seconds (from N8N)
+            const callResult = newData.call_result;             // e.g., "true" or "false" (from N8N)
+            // Note: call_result determines refund logic for no-duration cases
+            // DO NOT use "success" field - it's unreliable. Only use call_duration and call_result
 
             console.log(`[processTaskRefund] Processing task ${taskId}:
-                call_duration=${actualDuration},
-                success=${newData.success},
-                endedReason=${newData.endedReason}
+                call_duration=${actualDuration}s,
+                call_result=${newData.call_result},
+                estimatedCost=$${estimatedCost.toFixed(2)}
             `);
 
             let refundAmount = 0;
@@ -599,7 +600,7 @@ exports.processTaskRefund = onDocumentUpdated(
                 console.log(`[processTaskRefund] Case 1 (Normal): ${actualDuration}s → ${actualMinutes}m → $${actualCost.toFixed(2)}`);
             }
             // ===== CASE 2: No duration + call_result=true → Refund 50% =====
-            else if (newData.call_result === "true" || newData.call_result === true) {
+            else if (callResult === "true" || callResult === true) {
                 actualCost = estimatedCost * 0.5;
                 refundAmount = estimatedCost * 0.5;
                 actualMinutes = 0;
@@ -611,7 +612,7 @@ exports.processTaskRefund = onDocumentUpdated(
                 actualCost = 0;
                 refundAmount = estimatedCost;
                 actualMinutes = 0;
-                errorReason = `No call data recorded - full refund issued. Reason: ${newData.endedReason || 'unknown'}`;
+                errorReason = `No call data recorded - full refund issued. call_result=${callResult}`;
                 console.log(`[processTaskRefund] Case 3 (No call data): Full refund = $${refundAmount.toFixed(2)}`);
             }
 
