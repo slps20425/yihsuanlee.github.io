@@ -9,6 +9,8 @@ import { initSessionEnforcement, clearSessionEnforcement } from "./session-enfor
 import { initInbox, updateInboxCredits } from "./inbox"; // Import inbox initialization
 import { showToast } from "./utility-toast"; // Import toast utility
 
+console.log('📱 [PhoneNumbers] Script loaded and executing');
+
 const functions = getFunctions(app);
 
 // Initialize session timeout for dashboard
