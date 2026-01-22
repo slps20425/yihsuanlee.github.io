@@ -221,7 +221,7 @@ exports.triggerN8nWebhook = onDocumentCreated(
             const billing = await getBillingConfig(db);
             const region = winnerData.region || 'US';
             const ratePerMin = (billing.services && billing.services[winnerData.type]) || 4.0;
-            const regionMultiplier = (billing.country_multipliers && billing.country_multipliers[region]) || (region === 'US' ? 5 : 3);
+            const regionMultiplier = (billing.country_multipliers && billing.country_multipliers[region]) || (region.toUpperCase() === 'US' ? 1 : 3);
             const minRequired = ratePerMin * regionMultiplier * defaultOnHold;
 
             const userDoc = await userRef.get();
