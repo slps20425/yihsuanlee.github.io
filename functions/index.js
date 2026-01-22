@@ -849,30 +849,33 @@ exports.getTransformedUsageHistory = onCall(
             const settingsDoc = await settingsRef.get();
             const settings = settingsDoc.data() || {};
 
-            if (!settings.twilioSubaccountSid || !settings.twilioSubaccountAuthToken) {
-                return { usage: [] };
-            }
+            let records = [];
 
-            const subClient = twilio(settings.twilioSubaccountSid, settings.twilioSubaccountAuthToken);
+            // Only fetch Twilio records if user has a subaccount (dedicated number)
+            if (settings.twilioSubaccountSid && settings.twilioSubaccountAuthToken) {
+                const subClient = twilio(settings.twilioSubaccountSid, settings.twilioSubaccountAuthToken);
 
-            // Calculate 30 days ago for explicit range
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            const startDateStr = thirtyDaysAgo.toISOString().split('T')[0]; // YYYY-MM-DD
+                // Calculate 30 days ago for explicit range
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                const startDateStr = thirtyDaysAgo.toISOString().split('T')[0]; // YYYY-MM-DD
 
-            // Fetch DAILY usage records provided explicit start date.
-            // Limit 1000 (Twilio max) to ensure we get past "Today's" empty records for all categories.
-            let records = await subClient.usage.records.daily.list({
-                startDate: startDateStr,
-                limit: 1000
-            });
-            console.log("DEBUG: Daily Records Fetched:", records.length);
+                // Fetch DAILY usage records provided explicit start date.
+                // Limit 1000 (Twilio max) to ensure we get past "Today's" empty records for all categories.
+                records = await subClient.usage.records.daily.list({
+                    startDate: startDateStr,
+                    limit: 1000
+                });
+                console.log("DEBUG: Daily Records Fetched:", records.length);
 
-            // Fallback: If no daily records found (sometimes takes time to populate or API quirk),
-            // fetch the "All Time" summary so the user at least sees their balance/charges.
-            if (!records || records.length === 0) {
-                console.log("[Usage] Daily records empty, fetching summary fallback.");
-                records = await subClient.usage.records.list({ limit: 50 });
+                // Fallback: If no daily records found (sometimes takes time to populate or API quirk),
+                // fetch the "All Time" summary so the user at least sees their balance/charges.
+                if (!records || records.length === 0) {
+                    console.log("[Usage] Daily records empty, fetching summary fallback.");
+                    records = await subClient.usage.records.list({ limit: 50 });
+                }
+            } else {
+                console.log("[Usage] No subaccount found. Will show Firestore usage history only.");
             }
 
             const billing = await getBillingConfig(db);

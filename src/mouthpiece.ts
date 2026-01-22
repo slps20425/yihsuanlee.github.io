@@ -2143,44 +2143,42 @@ async function initSearchLogic() {
         // PRIORITIZE internationalPhoneNumber for better country detection
         let phoneNumber = place.internationalPhoneNumber || place.formattedPhoneNumber || fetchedPhone;
 
-        // If we have a national number but no international one, try to use fetchedPhone if it looks international
-        if (!phoneNumber && fetchedPhone) {
-            phoneNumber = fetchedPhone;
-        }
-
-        // If for some reason we didn't fetch details in modal (error?), try fetching again?
-        // But logic above ensures we try.
-
         if (phoneNumber) {
             if (typeof phoneInputPlugin !== 'undefined' && phoneInputPlugin) {
-                // FORCE E.164 format (remove spaces/dashes) to help intl-tel-input auto-detect country
-                // intl-tel-input best detects country from "+886..." style
-                // If it's already international (starts with +), great.
+                // 1. Detect Country from addressComponents if possible
+                if (place.addressComponents) {
+                    const countryComp = place.addressComponents.find((c: any) => c.types.includes('country'));
+                    if (countryComp && countryComp.shortText) {
+                        const isoCode = countryComp.shortText.toLowerCase();
+                        console.log(`🌍 [Mouthpiece] Detected Country from Address: ${isoCode}`);
+                        phoneInputPlugin.setCountry(isoCode);
+                    }
+                }
 
-                // 1. Set the number
+                // 2. Set the number (force E.164-ish if it starts with +)
                 phoneInputPlugin.setNumber(phoneNumber);
 
-                // 2. Explicit Check: Did the correct flag load?
-                // logic: if strictly international, it usually works.
+                // 3. Trigger events to update cost and state
+                phoneInput.dispatchEvent(new Event('input', { bubbles: true }));
+                phoneInput.dispatchEvent(new Event('change', { bubbles: true }));
+                phoneInput.dispatchEvent(new Event('countrychange', { bubbles: true }));
 
             } else {
                 phoneInput.value = phoneNumber;
+                phoneInput.dispatchEvent(new Event('input', { bubbles: true }));
             }
-            const event = new Event('input', { bubbles: true });
-            phoneInput.dispatchEvent(event);
 
             // Update Search Input to show selected place name
             if (searchInputEl) {
                 searchInputEl.value = place.displayName?.text || place.name || "";
             }
 
-            modal!.style.display = 'none';
+            // Close search modal
+            const modal = document.getElementById('searchModal');
+            if (modal) modal.style.display = 'none';
+
         } else {
-            if ((window as any).showToast) {
-                (window as any).showToast("This place does not have a phone number listed.", "warning");
-            } else {
-                // Fallback alert removed as per rule, but just in case
-            }
+            showToast("This place does not have a phone number listed.", "warning");
         }
     }
 }
