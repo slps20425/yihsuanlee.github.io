@@ -219,15 +219,28 @@ exports.triggerN8nWebhook = onDocumentCreated(
             const defaultOnHold = configData.default_callOnHold_minutes || 5;
 
             const billing = await getBillingConfig(db);
-            const region = winnerData.region || 'US';
-            const ratePerMin = (billing.services && billing.services[winnerData.type]) || 4.0;
-            const regionMultiplier = (billing.country_multipliers && billing.country_multipliers[region]) || (region.toUpperCase() === 'US' ? 1 : 3);
-            const minRequired = ratePerMin * regionMultiplier * defaultOnHold;
+            const region = (winnerData.region || 'US').toUpperCase();
+
+            // Priority 1: Flat Rate per Country (User's new "Simple" request)
+            let ratePerMin = (billing.per_minute_rates && billing.per_minute_rates[region]);
+
+            if (!ratePerMin) {
+                // Priority 2: Multiplier Logic (Legacy/Fallback)
+                const serviceMultiplier = (billing.services && billing.services[winnerData.type]) || 4.0;
+                const regionMultiplier = (billing.country_multipliers && billing.country_multipliers[region]) || (region === 'US' ? 1 : 3);
+
+                // Baseline fallback if NO flat rate exists: 
+                // US: $0.30 per min, TW: $0.50 per min
+                const baseline = (region === 'US' ? 0.30 : (region === 'TW' ? 0.50 : 0.40));
+                ratePerMin = baseline;
+            }
+
+            const minRequired = ratePerMin * defaultOnHold;
 
             const userDoc = await userRef.get();
             const currentBalance = (userDoc.data() && userDoc.data().credits) || 0;
 
-            console.log(`[Pre-auth] User ${uid} Balance: $${currentBalance}, Required: $${minRequired}`);
+            console.log(`[Pre-auth] User ${uid} Balance: $${currentBalance}, Required (Flat Rate: $${ratePerMin.toFixed(2)}/min): $${minRequired.toFixed(2)}`);
 
             if (currentBalance < minRequired) {
                 console.warn(`[Pre-auth] Aborting Task ${winnerId} due to low balance.`);

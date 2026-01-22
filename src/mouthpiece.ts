@@ -851,9 +851,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (e) { }
         }
 
-        const ratePerMin = 4.0; // Default for mouthpiece
-        const regionMultiplier = 5.0; // Assume US for mouthpiece unless we have location
-        const minRequired = ratePerMin * regionMultiplier * defaultOnHold;
+        // Simplified Flat Rate Calculation (matches new server-side simple mode)
+        const country = 'US'; // Default for mouthpiece
+        const ratePerMin = country === 'US' ? 0.30 : (country === 'TW' ? 0.50 : 0.40);
+        const minRequired = ratePerMin * defaultOnHold;
 
         if (userCredits < minRequired) {
             (window as any).showToast(`Insufficient balance for pre-auth. At least $${minRequired.toFixed(2)} is required (est. ${defaultOnHold} min duration).`, 'error');

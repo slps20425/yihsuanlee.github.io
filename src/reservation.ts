@@ -2175,10 +2175,10 @@ async function handleFormSubmit(e: Event) {
         } catch (e) { }
     }
 
-    // Simplified Rate Calculation (should match server-side)
-    const ratePerMin = 4.0; // Default for restaurant
-    const regionMultiplier = selectedRestaurantData?.country === 'TW' ? 3.0 : 5.0; // Heuristic
-    const minRequired = ratePerMin * regionMultiplier * defaultOnHold;
+    // Simplified Flat Rate Calculation (matches new server-side simple mode)
+    const country = (selectedRestaurantData?.country || 'US').toUpperCase();
+    const ratePerMin = country === 'US' ? 0.30 : (country === 'TW' ? 0.50 : 0.40);
+    const minRequired = ratePerMin * defaultOnHold;
 
     if (userCredits < minRequired) {
         (window as any).showToast(`Insufficient balance for pre-auth. At least $${minRequired.toFixed(2)} is required (est. ${defaultOnHold} min duration).`, 'error');

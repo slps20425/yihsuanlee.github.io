@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "generated": "2026-01-22T05:55:19.763Z",
+  "generated": "2026-01-22T06:05:39.313Z",
   "metadata": {
-    "lastUpdated": "2026-01-22T05:55:19.714Z",
+    "lastUpdated": "2026-01-22T06:05:39.243Z",
     "deployment": {
-      "timestamp": "2026-01-22T05:55:19.715Z",
-      "gitCommit": "57ec2f98d2b9ee0854809e0d7850d4a92ce6dc72",
+      "timestamp": "2026-01-22T06:05:39.244Z",
+      "gitCommit": "d98020342a994091c77499cba7a05ed1c4efe907",
       "gitBranch": "main"
     },
     "modules": {},
@@ -152,10 +152,10 @@
       },
       {
         "path": "functions/index.js",
-        "size": 79720,
+        "size": 79734,
         "lines": 1778,
         "type": ".js",
-        "lastModified": "2026-01-22T05:45:37.851Z"
+        "lastModified": "2026-01-22T06:03:20.798Z"
       },
       {
         "path": "admin/tasks.html",
@@ -173,94 +173,94 @@
       },
       {
         "path": "dashboard.html",
-        "size": 40224,
-        "lines": 809,
+        "size": 40324,
+        "lines": 810,
         "type": ".html",
-        "lastModified": "2026-01-22T05:53:51.818Z"
+        "lastModified": "2026-01-22T06:03:28.063Z"
       },
       {
         "path": "dist/admin/tasks.html",
         "size": 16030,
         "lines": 570,
         "type": ".html",
-        "lastModified": "2026-01-22T05:54:37.139Z"
+        "lastModified": "2026-01-22T06:03:37.082Z"
       },
       {
         "path": "dist/dashboard.html",
-        "size": 38041,
-        "lines": 750,
+        "size": 38141,
+        "lines": 751,
         "type": ".html",
-        "lastModified": "2026-01-22T05:54:37.142Z"
+        "lastModified": "2026-01-22T06:03:37.080Z"
       },
       {
         "path": "dist/entry.html",
         "size": 11836,
         "lines": 217,
         "type": ".html",
-        "lastModified": "2026-01-22T05:54:37.141Z"
+        "lastModified": "2026-01-22T06:03:37.080Z"
       },
       {
         "path": "dist/faq.html",
         "size": 15369,
         "lines": 377,
         "type": ".html",
-        "lastModified": "2026-01-22T05:54:37.141Z"
+        "lastModified": "2026-01-22T06:03:37.092Z"
       },
       {
         "path": "dist/login-success.html",
         "size": 1465,
         "lines": 57,
         "type": ".html",
-        "lastModified": "2026-01-22T05:54:37.141Z"
+        "lastModified": "2026-01-22T06:03:37.080Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_guide.html",
         "size": 14461,
         "lines": 442,
         "type": ".html",
-        "lastModified": "2026-01-22T05:54:36.933Z"
+        "lastModified": "2026-01-22T06:03:36.537Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_mobile.html",
         "size": 15624,
         "lines": 425,
         "type": ".html",
-        "lastModified": "2026-01-22T05:54:36.934Z"
+        "lastModified": "2026-01-22T06:03:36.537Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/dp_indexing_mobile_full.html",
         "size": 7293,
         "lines": 198,
         "type": ".html",
-        "lastModified": "2026-01-22T05:54:36.934Z"
+        "lastModified": "2026-01-22T06:03:36.538Z"
       },
       {
         "path": "dist/reservation/mouthpiece.html",
         "size": 25899,
         "lines": 475,
         "type": ".html",
-        "lastModified": "2026-01-22T05:54:37.142Z"
+        "lastModified": "2026-01-22T06:03:36.979Z"
       },
       {
         "path": "dist/reservation/restaurant_reservation.html",
         "size": 34565,
         "lines": 701,
         "type": ".html",
-        "lastModified": "2026-01-22T05:54:37.141Z"
+        "lastModified": "2026-01-22T06:03:37.080Z"
       },
       {
         "path": "dist/reservation/trial.html",
         "size": 17736,
         "lines": 363,
         "type": ".html",
-        "lastModified": "2026-01-22T05:54:37.143Z"
+        "lastModified": "2026-01-22T06:03:37.081Z"
       },
       {
         "path": "dist/resume/index.html",
         "size": 41474,
         "lines": 688,
         "type": ".html",
-        "lastModified": "2026-01-22T05:54:37.139Z"
+        "lastModified": "2026-01-22T06:03:36.975Z"
       },
       {
         "path": "entry.html",
