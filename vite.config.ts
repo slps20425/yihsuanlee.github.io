@@ -13,7 +13,8 @@ export default defineConfig({
                 login_success: resolve(__dirname, 'login-success.html'),
                 admin_tasks: resolve(__dirname, 'admin/tasks.html'),
                 mouthpiece: resolve(__dirname, 'reservation/mouthpiece.html'),
-                faq: resolve(__dirname, 'faq.html')
+                faq: resolve(__dirname, 'faq.html'),
+                terms: resolve(__dirname, 'terms.html')
             },
         },
         outDir: 'dist',

@@ -27,6 +27,14 @@
         "destination": "/faq.html"
       },
       {
+        "source": "/terms.html",
+        "destination": "/terms.html"
+      },
+      {
+        "source": "/terms",
+        "destination": "/terms.html"
+      },
+      {
         "source": "!(/*.html|/assets/**|/favicon.png|/logo.png|/manifest.json|/sw.js|/icon-*.png|/giphy.gif|/logo.gif|/reservation/**|/admin/**|/resume/**|/google-icon.svg|/microsoft-icon.svg)",
         "destination": "/index.html"
       }
