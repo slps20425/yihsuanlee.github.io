@@ -1177,9 +1177,36 @@ async function handleFormSubmit(e: Event) {
         const userDocRef = doc(db, 'users', `uid_${auth.currentUser.uid}`);
         const settingsRef = doc(db, 'users', `uid_${auth.currentUser.uid}`, 'settings', 'settings');
 
+        // ===== DETECT COUNTRY FROM PHONE INPUT =====
+        let detectedCountry = 'US'; // Default fallback
+        if (phoneInputPlugin) {
+            const countryData = phoneInputPlugin.getSelectedCountryData();
+            if (countryData && countryData.iso2) {
+                detectedCountry = countryData.iso2.toUpperCase();
+            }
+        }
+
+        // ===== FETCH BILLING CONFIG FOR MULTIPLIER =====
+        const { getDoc: getDocFn } = await import('firebase/firestore');
+        const billingConfigRef = doc(db, 'configuration', 'settings');
+        const billingConfigSnap = await getDocFn(billingConfigRef);
+        const billingConfig = billingConfigSnap.data() || {};
+
+        // ===== SELECT CORRECT MULTIPLIER (country-specific or common) =====
+        const countryMultipliers = billingConfig.country_multipliers || {};
+        const selectedMultiplier = countryMultipliers[detectedCountry] || billingConfig.common_multiplier || 3;
+
+        // ===== CALCULATE BASE RATE =====
+        const basePrice = (detectedCountry === 'US') ? 0.02 : (detectedCountry === 'TW' ? 0.06 : 0.05);
+        const finalRate = basePrice * selectedMultiplier;
+
         // Calculate Total Cost (Base + Retries)
         const retryCost = (payload.retry_count > 0) ? (payload.retry_count * retryCostPerAttempt) : 0;
         const totalCost = currentCost + retryCost;
+
+        // ===== PREPARE RATE DETAILS FOR AUDIT TRAIL =====
+        const estimatedDuration = defaultOnHold * 60; // Convert minutes to seconds
+        const rateFormula = `${detectedCountry}: ${basePrice} * ${selectedMultiplier} = $${finalRate.toFixed(4)}/min`;
 
         // Final Confirmation Modal
         const details = [
@@ -1228,6 +1255,26 @@ async function handleFormSubmit(e: Event) {
                 vapiPhoneNumberId: settings.vapiPhoneNumberId || '',
                 userCredits: currentCredits - totalCost, // Store NEW balance
                 cost: totalCost,
+
+                // ===== COST BREAKDOWN =====
+                estimatedCost: totalCost,
+                baseCost: currentCost,
+                retryCost: retryCost,
+
+                // ===== RATE DETAILS (for audit trail & refund calculation) =====
+                estimatedDuration: estimatedDuration, // in seconds
+                detectedCountry: detectedCountry,
+                rateApplied: {
+                    baseRate: basePrice,
+                    multiplier: selectedMultiplier,
+                    final: finalRate
+                },
+                formula: rateFormula,
+
+                // ===== RETRY DETAILS =====
+                retry_count: payload.retry_count || 0,
+                retryCostPerAttempt: retryCostPerAttempt,
+
                 createdAt: serverTimestamp(),
                 userId: auth.currentUser!.uid
             });

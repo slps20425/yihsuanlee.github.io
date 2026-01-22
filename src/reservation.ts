@@ -2623,7 +2623,38 @@ async function handleFormSubmit(e: Event) {
 
         const userDocRef = doc(db, 'users', `uid_${auth.currentUser.uid}`);
         const settingsRef = doc(db, 'users', `uid_${auth.currentUser.uid}`, 'settings', 'settings');
+
+        // ===== DETECT COUNTRY FROM PHONE INPUT =====
+        let detectedCountry = 'US'; // Default fallback
+        if (phoneInputPlugin) {
+            const countryData = phoneInputPlugin.getSelectedCountryData();
+            if (countryData && countryData.iso2) {
+                detectedCountry = countryData.iso2.toUpperCase();
+            }
+        }
+
+        // ===== FETCH BILLING CONFIG FOR MULTIPLIER =====
+        const { getDoc: getDocFn } = await import('firebase/firestore');
+        const billingConfigRef = doc(db, 'configuration', 'settings');
+        const billingConfigSnap = await getDocFn(billingConfigRef);
+        const billingConfig = billingConfigSnap.data() || {};
+
+        // ===== SELECT CORRECT MULTIPLIER (country-specific or common) =====
+        const countryMultipliers = billingConfig.country_multipliers || {};
+        const selectedMultiplier = countryMultipliers[detectedCountry] || billingConfig.common_multiplier || 3;
+
+        // ===== CALCULATE BASE RATE =====
+        const basePrice = (detectedCountry === 'US') ? 0.02 : (detectedCountry === 'TW' ? 0.06 : 0.05);
+        const finalRate = basePrice * selectedMultiplier;
+
         const cost = currentCost;
+        const retryCheck = document.getElementById('retryCheck') as HTMLInputElement;
+        const retryCost = (retryCheck && retryCheck.checked) ? defaultRetryCount : 0;
+        const totalCost = cost + retryCost;
+
+        // ===== PREPARE RATE DETAILS FOR AUDIT TRAIL =====
+        const estimatedDuration = 300; // 5 minutes default for reservation
+        const rateFormula = `${detectedCountry}: ${basePrice} * ${selectedMultiplier} = $${finalRate.toFixed(4)}/min`;
 
         // Final Confirmation Modal
         const details = [
@@ -2634,6 +2665,11 @@ async function handleFormSubmit(e: Event) {
             { label: "Special Requests", value: noteInput.value || 'None' },
             { label: "Service Charge", value: `$${cost.toFixed(2)}` }
         ];
+
+        if (retryCost > 0) {
+            details.push({ label: "Cost Breakdown", value: `Base: $${cost.toFixed(2)} + Retry: $${retryCost.toFixed(2)}` });
+            details[details.length - 2].value = `$${totalCost.toFixed(2)}`; // Update Service Charge to total
+        }
 
         const confirmed = await showConfirmationModal(details);
         if (!confirmed) {
@@ -2653,21 +2689,40 @@ async function handleFormSubmit(e: Event) {
             const currentCredits = Number(userData.credits || 0);
             const settings = settingsDoc.exists() ? settingsDoc.data() : {};
 
-            if (currentCredits < cost) {
+            if (currentCredits < totalCost) {
                 // Throwing simple string to be caught below
-                throw `Insufficient credits! This task requires ${cost} credits.`;
+                throw `Insufficient credits! This task requires ${totalCost.toFixed(2)} credits.`;
             }
 
-            // Deduct Credit
-            transaction.update(userDocRef, { credits: currentCredits - cost });
+            // Deduct Credit (Total including retries)
+            transaction.update(userDocRef, { credits: currentCredits - totalCost });
 
             // Create Task
             transaction.set(taskRef, {
                 ...payload,
                 senderPhoneNumber: settings.phoneNumber || '',
                 vapiPhoneNumberId: settings.vapiPhoneNumberId || '',
-                userCredits: currentCredits - cost, // Store NEW balance
-                cost: cost,
+                userCredits: currentCredits - totalCost, // Store NEW balance
+                cost: totalCost,
+
+                // ===== COST BREAKDOWN =====
+                estimatedCost: totalCost,
+                baseCost: cost,
+                retryCost: retryCost,
+
+                // ===== RATE DETAILS (for audit trail & refund calculation) =====
+                estimatedDuration: estimatedDuration, // in seconds
+                detectedCountry: detectedCountry,
+                rateApplied: {
+                    baseRate: basePrice,
+                    multiplier: selectedMultiplier,
+                    final: finalRate
+                },
+                formula: rateFormula,
+
+                // ===== RETRY DETAILS =====
+                retryCostPerAttempt: defaultRetryCount,
+
                 createdAt: serverTimestamp(),
                 userId: auth.currentUser!.uid
             });
