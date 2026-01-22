@@ -678,17 +678,147 @@ if (searchBtn) {
     });
 }
 
-// [TASK 2 Integration] Activate Shared Pool Button & Temporary Number Section
-const activateSharedPoolBtn = document.getElementById('activateSharedPoolBtn') as HTMLButtonElement;
+// [TASK 2 Integration] Shared Number Elements
 const tempSharedNumberSection = document.getElementById('tempSharedNumberSection');
 const upgradeToPermanentBtn = document.getElementById('upgradeToPermanentBtn') as HTMLButtonElement;
-const sharedNumberDialog = document.getElementById('sharedNumberDialog') as HTMLDialogElement;
-const confirmSharedBtn = document.getElementById('confirmSharedBtn') as HTMLButtonElement;
-const cancelSharedBtn = document.getElementById('cancelSharedBtn') as HTMLButtonElement;
 
-// Helper function to show shared number dialog and wait for user response
-function showSharedNumberConfirmationDialog(): Promise<boolean> {
+// Initialize available shared numbers list
+async function initializeSharedNumbersList() {
+    const availableNumbersList = document.getElementById('availableNumbersList') as HTMLElement;
+    if (!availableNumbersList) return;
+
+    try {
+        const { getAllSharedNumbers } = await import('./shared-number-config');
+        const sharedNumbers = getAllSharedNumbers();
+
+        if (!sharedNumbers || sharedNumbers.length === 0) {
+            availableNumbersList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 1rem;">No shared numbers available at this time.</div>';
+            return;
+        }
+
+        // Display top 10 numbers
+        const topNumbers = sharedNumbers.slice(0, 10);
+
+        availableNumbersList.innerHTML = topNumbers.map((num) => {
+            const formatted = num.phoneNumber.startsWith('+1') && num.phoneNumber.length === 12
+                ? `${num.phoneNumber.slice(0, 2)} (${num.phoneNumber.slice(2, 5)}) ${num.phoneNumber.slice(5, 8)}-${num.phoneNumber.slice(8)}`
+                : num.phoneNumber;
+
+            return `
+                <button
+                    class="shared-number-item"
+                    data-number-id="${num.id}"
+                    data-phone="${num.phoneNumber}"
+                    data-vapi-id="${num.vapiPhoneNumberId}"
+                    style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background: rgba(59, 130, 246, 0.03); cursor: pointer; transition: all 0.2s; text-align: left;">
+                    <div>
+                        <div style="font-family: monospace; font-size: 1.1rem; color: var(--accent); font-weight: 600;">
+                            ${formatted}
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Available • $3.50 per call
+                        </div>
+                    </div>
+                    <div style="font-size: 1.5rem;">📞</div>
+                </button>
+            `;
+        }).join('');
+
+        // Add click handlers for each number
+        document.querySelectorAll('.shared-number-item').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const button = btn as HTMLElement;
+                const phoneNumber = button.dataset.phone || '';
+                const vapiId = button.dataset.vapiId || '';
+
+                const user = auth.currentUser;
+                if (!user) {
+                    showToast("Please log in first.", "error");
+                    return;
+                }
+
+                // Show confirmation dialog for this specific number
+                const confirmed = await showSharedNumberConfirmationDialog(phoneNumber);
+                if (!confirmed) return;
+
+                // Disable all buttons during transaction
+                document.querySelectorAll('.shared-number-item').forEach(b => {
+                    (b as HTMLButtonElement).disabled = true;
+                });
+
+                try {
+                    const { doc, setDoc } = await import("firebase/firestore");
+                    const { db } = await import("./firebase-config");
+
+                    // Save shared number to settings (NO cost deduction yet - will deduct on call submission)
+                    const settingsRef = doc(db, 'users', `uid_${user.uid}`, 'settings', 'settings');
+
+                    await setDoc(settingsRef, {
+                        phoneNumber: phoneNumber,
+                        phoneNumberStatus: 'active',
+                        vapiPhoneNumberId: vapiId,
+                        phoneNumberType: 'shared',
+                        sharedNumberActivatedAt: new Date().toISOString()
+                    }, { merge: true });
+
+                    showToast("✅ Shared number ready! Cost ($3.50) will be deducted when you make a call.", "success");
+
+                    // Hide the activation section and show temp number section
+                    const sharedPoolCard = document.getElementById('sharedPoolCard');
+                    if (sharedPoolCard) {
+                        sharedPoolCard.hidden = true;
+                    }
+                    if (tempSharedNumberSection) {
+                        tempSharedNumberSection.hidden = false;
+                    }
+
+                } catch (error) {
+                    console.error("Error activating shared number:", error);
+                    showToast("Failed to activate shared number. Please try again.", "error");
+                } finally {
+                    // Re-enable all buttons
+                    document.querySelectorAll('.shared-number-item').forEach(b => {
+                        (b as HTMLButtonElement).disabled = false;
+                    });
+                }
+            });
+
+            // Add hover effect
+            btn.addEventListener('mouseenter', () => {
+                (btn as HTMLElement).style.borderColor = 'var(--accent)';
+                (btn as HTMLElement).style.background = 'rgba(59, 130, 246, 0.1)';
+            });
+            btn.addEventListener('mouseleave', () => {
+                (btn as HTMLElement).style.borderColor = 'var(--border)';
+                (btn as HTMLElement).style.background = 'rgba(59, 130, 246, 0.03)';
+            });
+        });
+
+    } catch (error) {
+        console.error("Error initializing shared numbers list:", error);
+        availableNumbersList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 1rem;">Failed to load available numbers.</div>';
+    }
+}
+
+// Updated helper function to show shared number dialog with specific phone number
+function showSharedNumberConfirmationDialog(phoneNumber?: string): Promise<boolean> {
     return new Promise((resolve) => {
+        const dialog = document.getElementById('sharedNumberDialog') as HTMLDialogElement;
+        const confirmBtn = document.getElementById('confirmSharedBtn') as HTMLButtonElement;
+        const cancelBtn = document.getElementById('cancelSharedBtn') as HTMLButtonElement;
+
+        // Update dialog content with the specific phone number if provided
+        if (phoneNumber) {
+            const numberDisplay = dialog.querySelector('[style*="monospace"]') as HTMLElement;
+            if (numberDisplay) {
+                const formatted = phoneNumber.startsWith('+1') && phoneNumber.length === 12
+                    ? `${phoneNumber.slice(0, 2)} (${phoneNumber.slice(2, 5)}) ${phoneNumber.slice(5, 8)}-${phoneNumber.slice(8)}`
+                    : phoneNumber;
+                numberDisplay.textContent = formatted;
+            }
+        }
+
         const handleConfirm = () => {
             cleanup();
             resolve(true);
@@ -700,80 +830,24 @@ function showSharedNumberConfirmationDialog(): Promise<boolean> {
         };
 
         const cleanup = () => {
-            confirmSharedBtn.removeEventListener('click', handleConfirm);
-            cancelSharedBtn.removeEventListener('click', handleCancel);
-            sharedNumberDialog.removeEventListener('cancel', handleCancel);
-            sharedNumberDialog.close();
+            confirmBtn.removeEventListener('click', handleConfirm);
+            cancelBtn.removeEventListener('click', handleCancel);
+            dialog.removeEventListener('cancel', handleCancel);
+            dialog.close();
         };
 
-        confirmSharedBtn.addEventListener('click', handleConfirm);
-        cancelSharedBtn.addEventListener('click', handleCancel);
-        sharedNumberDialog.addEventListener('cancel', handleCancel);
+        confirmBtn.addEventListener('click', handleConfirm);
+        cancelBtn.addEventListener('click', handleCancel);
+        dialog.addEventListener('cancel', handleCancel);
 
-        sharedNumberDialog.showModal();
+        dialog.showModal();
     });
 }
 
-if (activateSharedPoolBtn) {
-    activateSharedPoolBtn.addEventListener('click', async () => {
-        const user = auth.currentUser;
-        if (!user) {
-            showToast("Please log in first.", "error");
-            return;
-        }
-
-        // Show confirmation dialog and wait for user response
-        const confirmed = await showSharedNumberConfirmationDialog();
-
-        if (!confirmed) return;
-
-        // Disable button during transaction
-        activateSharedPoolBtn.disabled = true;
-        confirmSharedBtn.disabled = true;
-
-        try {
-            const { fetchSharedNumberConfigOnce } = await import('./shared-number-config');
-            const { doc, setDoc } = await import("firebase/firestore");
-            const { db } = await import("./firebase-config");
-
-            // Fetch shared number config
-            const sharedNumberConfig = await fetchSharedNumberConfigOnce();
-            if (!sharedNumberConfig) {
-                showToast("Shared number not available. Please try again.", "error");
-                activateSharedPoolBtn.disabled = false;
-                return;
-            }
-
-            // Save shared number to settings (NO cost deduction yet - will deduct on call submission)
-            const settingsRef = doc(db, 'users', `uid_${user.uid}`, 'settings', 'settings');
-
-            await setDoc(settingsRef, {
-                phoneNumber: sharedNumberConfig.phoneNumber,
-                phoneNumberStatus: 'active',
-                vapiPhoneNumberId: sharedNumberConfig.vapiPhoneNumberId,
-                phoneNumberType: 'shared',
-                sharedNumberActivatedAt: new Date().toISOString()
-            }, { merge: true });
-
-            showToast("✅ Shared number ready! Cost ($3.50) will be deducted when you make a call.", "success");
-
-            // Hide the activation section and show temp number section
-            if (activateSharedPoolBtn.parentElement) {
-                activateSharedPoolBtn.parentElement.hidden = true;
-            }
-            if (tempSharedNumberSection) {
-                tempSharedNumberSection.hidden = false;
-            }
-
-        } catch (error) {
-            console.error("Error activating shared number:", error);
-            showToast("Failed to activate shared number. Please try again.", "error");
-        } finally {
-            activateSharedPoolBtn.disabled = false;
-            confirmSharedBtn.disabled = false;
-        }
-    });
-}
+// Initialize the shared numbers list when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    initializeSharedNumbersList();
+});
 
 // Upgrade to permanent number button
 if (upgradeToPermanentBtn) {

@@ -282,12 +282,13 @@
                         </p>
                     </div>
                 </div>
-                <div style="margin-top: 1rem; display: flex; align-items: center; gap: 15px;">
-                    <button id="activateSharedPoolBtn" class="btn btn-primary" style="padding: 8px 16px;">
-                        🚀 Use Shared Number
-                    </button>
-                    <div style="font-family: monospace; font-size: 1rem; color: var(--accent); font-weight: bold;">
-                        +1 (415) 212-5191
+                <div style="margin-top: 1rem;">
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.75rem;">Select an available number:</p>
+                    <div id="availableNumbersList" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <!-- Numbers will be populated here by JavaScript -->
+                        <div style="text-align: center; color: var(--text-secondary); padding: 1rem;">
+                            Loading available numbers...
+                        </div>
                     </div>
                 </div>
                 <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--text-secondary);">
