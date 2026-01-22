@@ -675,8 +675,8 @@ exports.processTaskRefund = onDocumentUpdated(
                 target: newData.targetPhoneNumber,
                 source: 'task_completion',
                 formula: formula,
-                callSuccess: newData.success,
-                endedReason: newData.endedReason
+                call_result: callResult,
+                call_duration: actualDuration
             });
 
             // Log refund record if refund occurred
