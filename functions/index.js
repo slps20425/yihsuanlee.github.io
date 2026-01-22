@@ -519,7 +519,7 @@ exports.onTaskCompleted = onDocumentUpdated(
  * N8N updates task with:
  * {
  *   call_duration: 6.31,    // Actual call duration in seconds
- *   call_result: true,      // Boolean success flag
+ *   call_result: "true",    // String "true" or "false" from N8N
  *   state: "completed"
  * }
  *
@@ -576,8 +576,8 @@ exports.processTaskRefund = onDocumentUpdated(
 
             // ===== READ FROM N8N WEBHOOK =====
             const actualDuration = newData.call_duration;       // e.g., 6.31 seconds
-            // Note: success, call_result, endedReason are for logging/reference only
-            // Charging is based ONLY on call_duration
+            // Note: call_result ("true" or "false") determines refund logic for no-duration cases
+            // success and endedReason are for logging/reference only
 
             console.log(`[processTaskRefund] Processing task ${taskId}:
                 call_duration=${actualDuration},
@@ -598,13 +598,21 @@ exports.processTaskRefund = onDocumentUpdated(
                 errorReason = null;
                 console.log(`[processTaskRefund] Case 1 (Normal): ${actualDuration}s → ${actualMinutes}m → $${actualCost.toFixed(2)}`);
             }
-            // ===== CASE 2: No duration → Full refund (something went wrong) =====
+            // ===== CASE 2: No duration + call_result=true → Refund 50% =====
+            else if (newData.call_result === "true" || newData.call_result === true) {
+                actualCost = estimatedCost * 0.5;
+                refundAmount = estimatedCost * 0.5;
+                actualMinutes = 0;
+                errorReason = "Call attempted but duration missing - 50% refund issued";
+                console.log(`[processTaskRefund] Case 2 (Call attempted, no duration): 50% refund = $${refundAmount.toFixed(2)}`);
+            }
+            // ===== CASE 3: No duration + call_result=false → Full refund =====
             else {
-                console.log(`[processTaskRefund] Case 2 (No duration): Full refund`);
                 actualCost = 0;
                 refundAmount = estimatedCost;
                 actualMinutes = 0;
-                errorReason = `No call duration recorded - full refund issued. Reason: ${newData.endedReason || 'unknown'}`;
+                errorReason = `No call data recorded - full refund issued. Reason: ${newData.endedReason || 'unknown'}`;
+                console.log(`[processTaskRefund] Case 3 (No call data): Full refund = $${refundAmount.toFixed(2)}`);
             }
 
             const refundSeconds = estimatedDuration - (actualDuration || 0);
