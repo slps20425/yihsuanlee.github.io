@@ -673,6 +673,9 @@ onAuthStateChanged(auth, async (user) => { // Changed to async
     if (user) {
         console.log("User authenticated:", user.displayName || user.email);
 
+        // Display phone number (must be AFTER auth.currentUser is set)
+        await displayCurrentPhoneNumber();
+
         // Fetch missions from Firestore
         dynamicMissions = await fetchMissionsFromFirestore();
         console.log(`Loaded ${dynamicMissions.length} missions from Firestore`);
@@ -2177,8 +2180,6 @@ async function initSearchLogic() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Display phone number first
-    await displayCurrentPhoneNumber();
-    // Then initialize search logic
+    // Initialize search logic (phone number display now happens in onAuthStateChanged)
     await initSearchLogic();
 });

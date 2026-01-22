@@ -264,9 +264,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Initialize shared number config listener
     initSharedNumberConfig();
 
-    // Display phone number first
-    await displayCurrentPhoneNumber();
-
     // Initialize i18n explicitly
     WiseCatI18n.init();
 
@@ -1113,12 +1110,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     // --- Header Sync & Logout ---
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         const headerUserName = document.getElementById('headerUserName');
         const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement | null;
         const creditsDisplay = document.getElementById('creditsDisplay');
 
         if (user) {
+            // Display phone number (must be AFTER auth.currentUser is set)
+            await displayCurrentPhoneNumber();
+
             if (headerUserName) headerUserName.textContent = user.displayName || 'User';
             if (headerUserAvatar && user.photoURL) headerUserAvatar.src = user.photoURL;
 
