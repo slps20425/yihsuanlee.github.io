@@ -5,10 +5,12 @@
   "main": "i18n.js",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/sync-version.js",
     "build": "vite build",
     "preview": "vite preview",
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "npm run build && npx --yes firebase-tools@13.30.0 deploy --only hosting,functions,firestore",
+    "version": "npm version --allow-same-version",
     "update-knowledge": "node scripts/post-deploy-knowledge.mjs",
     "re-embed": "bash scripts/run-embed.sh",
     "ship": "npm run build && git add . && git commit -m 'Auto-commit before deploy' && git push && npx --yes firebase-tools@13.30.0 deploy --only hosting,functions,firestore && npm run update-knowledge && npm run re-embed"
