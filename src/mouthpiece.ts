@@ -87,23 +87,19 @@ function validateForm() {
     const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
     const phoneHint = document.getElementById('phoneHint');
     const consentCheckbox = document.getElementById('consentCheckbox') as HTMLInputElement;
+    const userEmailInput = document.getElementById('userEmail') as HTMLInputElement;
+    const submitHint = document.getElementById('submitHint');
+    const userName = document.getElementById('userName') as HTMLInputElement;
+    const recipientName = document.getElementById('recipientName') as HTMLInputElement;
+    const scriptTextarea = document.getElementById('script') as HTMLTextAreaElement;
+
+    if (!btn) return;
+
+    let reasons: string[] = [];
+    let allValid = true;
 
     // 1. Credit Check
     const userSession = localStorage.getItem('wisecat_user');
-
-    // Safety Check
-    if (!isContentSafe) {
-        btn.disabled = true;
-        btn.style.opacity = "0.5";
-        btn.innerText = "⚠️ Content Unsafe";
-        return;
-    } else {
-        // Reset text if safe (optional)
-        if (btn.innerText === "⚠️ Content Unsafe") {
-            const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
-            btn.innerText = (dict as any).btn_submit_task || "Start Call";
-        }
-    }
     let credits = 0;
     if (userSession) {
         try {
@@ -113,18 +109,54 @@ function validateForm() {
             console.error("Error parsing user session:", e);
         }
     }
+    if (credits <= 0) { allValid = false; reasons.push('Insufficient credits'); }
 
-    // 2. Phone Validation - Permissive but reject invalid characters
+    // 2. Safety Check
+    if (!isContentSafe) {
+        allValid = false;
+        reasons.push('Content unsafe - check script');
+        btn.style.opacity = "0.5";
+        btn.innerText = "⚠️ Content Unsafe";
+    } else {
+        if (btn.innerText === "⚠️ Content Unsafe") {
+            const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
+            btn.innerText = (dict as any).btn_submit_task || "Start Call";
+        }
+    }
+
+    // 3. Email Validation
+    if (userEmailInput && userEmailInput.value) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isEmailValid = emailRegex.test(userEmailInput.value);
+        if (!isEmailValid) {
+            allValid = false;
+            reasons.push('Invalid email format');
+            userEmailInput.style.borderColor = '#ff4d4d';
+        } else {
+            userEmailInput.style.borderColor = '';
+        }
+    } else if (userEmailInput) {
+        allValid = false;
+        reasons.push('Email required');
+        userEmailInput.style.borderColor = '#ff4d4d';
+    }
+
+    // 4. Phone Validation
     let isPhoneValid = false;
     if (phoneInputPlugin && phoneInput.value) {
         const validCharsOnly = /^[\d\s\-\(\)\+]+$/.test(phoneInput.value);
         const digitsOnly = phoneInput.value.replace(/\D/g, '');
         isPhoneValid = validCharsOnly && digitsOnly.length >= 5;
-    } else if (phoneInput.value) {
-        isPhoneValid = false;
     }
 
-    if (phoneInput.value && !isPhoneValid) {
+    if (!phoneInput.value) {
+        allValid = false;
+        reasons.push('Target phone required');
+        phoneInput.style.borderColor = "#ff4d4d";
+        if (phoneHint) phoneHint.style.display = "none";
+    } else if (!isPhoneValid) {
+        allValid = false;
+        reasons.push('Invalid phone number');
         phoneInput.style.borderColor = "#ff4d4d";
         if (phoneHint) phoneHint.style.display = "block";
     } else {
@@ -132,15 +164,47 @@ function validateForm() {
         if (phoneHint) phoneHint.style.display = "none";
     }
 
-    // 3. Combined Logic
-    const isConsentGiven = consentCheckbox ? consentCheckbox.checked : false;
+    // 5. Required Fields
+    if (!userName?.value) {
+        allValid = false;
+        reasons.push('Name required');
+        if (userName) userName.style.borderColor = '#ff4d4d';
+    } else if (userName) {
+        userName.style.borderColor = '';
+    }
 
-    if (credits > 0 && turnstileValidated && isPhoneValid && isConsentGiven) {
-        btn.disabled = false;
-        btn.style.opacity = "1";
-    } else {
-        btn.disabled = true;
-        btn.style.opacity = "0.5";
+    if (!recipientName?.value) {
+        allValid = false;
+        reasons.push('Recipient name required');
+        if (recipientName) recipientName.style.borderColor = '#ff4d4d';
+    } else if (recipientName) {
+        recipientName.style.borderColor = '';
+    }
+
+    if (!scriptTextarea?.value || scriptTextarea.value.trim().length === 0) {
+        allValid = false;
+        reasons.push('Script required');
+        if (scriptTextarea) scriptTextarea.style.borderColor = '#ff4d4d';
+    } else if (scriptTextarea) {
+        scriptTextarea.style.borderColor = '';
+    }
+
+    //6. Consent & Turnstile
+    const isConsentGiven = consentCheckbox ? consentCheckbox.checked : false;
+    if (!isConsentGiven) { allValid = false; reasons.push('Agreement required'); }
+    if (!turnstileValidated) { allValid = false; reasons.push('Complete security check'); }
+
+    btn.disabled = !allValid;
+    btn.style.opacity = allValid ? "1" : "0.5";
+
+    // Update hint
+    if (submitHint) {
+        if (btn.disabled && reasons.length > 0) {
+            submitHint.textContent = `⚠️ ${reasons[0]}`;
+            submitHint.style.display = 'block';
+        } else {
+            submitHint.style.display = 'none';
+        }
     }
 }
 
@@ -528,6 +592,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(updateAutoDetectLabel, 1000); // Wait for plugin init
     }
 
+    const userEmailInput = document.getElementById('userEmail') as HTMLInputElement;
+    if (userEmailInput) {
+        userEmailInput.addEventListener('input', validateForm);
+        userEmailInput.addEventListener('blur', validateForm);
+    }
+
     const consentCheckbox = document.getElementById('consentCheckbox');
     if (consentCheckbox) {
         consentCheckbox.addEventListener('change', validateForm);
@@ -545,11 +615,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Load User
     const userSession = localStorage.getItem('wisecat_user');
+    const userNameInput = document.getElementById('userName') as HTMLInputElement;
+
     if (userSession) {
         try {
             const user = JSON.parse(userSession);
-            const userNameInput = document.getElementById('userName') as HTMLInputElement;
             if (user.name && userNameInput) userNameInput.value = user.name;
+            if (user.email && userEmailInput) {
+                userEmailInput.value = user.email;
+                validateForm();
+            }
         } catch (e) { }
     }
 
@@ -571,6 +646,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Show mission description for default selection
             updateMissionDescription();
+
+            // Pre-populate email field with user's profile email
+            const userEmailInput = document.getElementById('userEmail') as HTMLInputElement;
+            if (userEmailInput && user.email) {
+                userEmailInput.value = user.email;
+                validateForm();
+            }
 
             if (headerUserName) headerUserName.textContent = user.displayName || 'User';
             if (headerUserAvatar && user.photoURL) headerUserAvatar.src = user.photoURL;
@@ -787,8 +869,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             script: scriptEl.value,
             schedulePreference: schedulePreferenceEl.value,
             language: finalLang,
-            userEmail: (auth.currentUser && auth.currentUser.email) ? auth.currentUser.email :
-                (localStorage.getItem('wisecat_user') ? (JSON.parse(localStorage.getItem('wisecat_user') || '{}').email || 'N/A') : 'N/A'),
+            userEmail: (document.getElementById('userEmail') as HTMLInputElement)?.value || 'N/A',
             userCredits: (localStorage.getItem('wisecat_user') ? Number(JSON.parse(localStorage.getItem('wisecat_user') || '{}').credits || 0) : 0),
             retry_count: (document.getElementById('retryOption') as HTMLInputElement)?.checked ? defaultRetryCount : 0,
             retry_interval: retryInterval,

@@ -40,7 +40,32 @@ exports.lineCallback = onRequest(
         // --- 1: Anti-Duplicate (Race Condition) ---
         if (processedCodes.has(rawCode)) {
             console.log("Skipping duplicate request for code:", rawCode.substring(0, 5));
-            return res.end();
+            console.log("Skipping duplicate request for code:", rawCode.substring(0, 5));
+            // FIXED: Don't just end() which causes white screen. Show a helpful page.
+            res.send(`
+                <html>
+                <head>
+                    <title>Login Processing...</title>
+                    <meta http-equiv="refresh" content="3;url=https://wise-catty.cc/dashboard.html">
+                    <style>
+                        body { font-family: sans-serif; text-align: center; padding: 50px; background: #f9fafb; color: #333; }
+                        .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                        h2 { color: #2563eb; }
+                        p { color: #666; }
+                        a { color: #2563eb; text-decoration: none; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h2>Login Processing...</h2>
+                        <p>We detected a duplicate request (common with some browsers).</p>
+                        <p>You should be logged in automatically.</p>
+                        <p>If not redirected, <a href="https://wise-catty.cc/dashboard.html">click here to go to Dashboard</a>.</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            return;
         }
         processedCodes.add(rawCode);
         setTimeout(() => processedCodes.delete(rawCode), 10000);

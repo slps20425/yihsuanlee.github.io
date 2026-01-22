@@ -29,7 +29,7 @@
             display: block;
         }
     </style>
-  <script type="module" crossorigin src="/assets/mouthpiece-D3T25rLZ.js"></script>
+  <script type="module" crossorigin src="/assets/mouthpiece-CQSQAeZy.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-xwgkLwoT.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-CX2YTLtk.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-BR8Iu9gG.js">
@@ -37,6 +37,7 @@
   <link rel="modulepreload" crossorigin href="/assets/i18n-CnU3a9SV.js">
   <link rel="modulepreload" crossorigin href="/assets/timezones-DRXziDFl.js">
   <link rel="modulepreload" crossorigin href="/assets/chat-assistant-bFJKnRD5.js">
+  <link rel="modulepreload" crossorigin href="/assets/mission-scenarios-sgPdn6cR.js">
   <link rel="stylesheet" crossorigin href="/assets/index-Cp1RaJJU.css">
 </head>
 
@@ -176,6 +177,10 @@
                 <input type="text" id="userName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
                     data-i18n-placeholder="placeholder_name" placeholder="English name only" required>
 
+                <label data-i18n="label_your_email">📧 Your Email</label>
+                <input type="email" id="userEmail" data-i18n-placeholder="placeholder_email"
+                    placeholder="your@email.com" required>
+
                 <label data-i18n="label_recipient_name">👤 Recipient Name</label>
                 <input type="text" id="recipientName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
                     data-i18n-placeholder="placeholder_recipient" placeholder="English name only" required>
@@ -305,6 +310,10 @@
                 </label>
 
                 <button type="submit" id="submitBtn" data-i18n="btn_submit" disabled>Start AI Call</button>
+                <div id="submitHint"
+                    style="font-size: 12px; color: #999; text-align: center; margin-top: 8px; display: none;">
+                    ⚠️ Button will enable when all required fields are filled
+                </div>
                 <a href="/dashboard.html" class="back-link" data-i18n="btn_back">← Back to Dashboard</a>
                 <div class="footer" data-i18n="footer">Automated call service provided by WiseCat AI</div>
             </form>

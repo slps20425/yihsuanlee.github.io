@@ -273,11 +273,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Load User info if logged in
     const userSession = localStorage.getItem('wisecat_user');
+    const nameInput = document.getElementById('userName') as HTMLInputElement;
+    const userEmailInput = document.getElementById('userEmail') as HTMLInputElement;
+
     if (userSession) {
         try {
             const user = JSON.parse(userSession);
-            const nameInput = document.getElementById('userName') as HTMLInputElement;
             if (user.name && nameInput) nameInput.value = user.name;
+            if (user.email && userEmailInput) {
+                userEmailInput.value = user.email;
+            }
         } catch (e) { }
     }
 
@@ -296,6 +301,13 @@ document.addEventListener("DOMContentLoaded", async function () {
             if (headerUserName) headerUserName.textContent = user.displayName || 'User';
             if (headerUserAvatar && user.photoURL) headerUserAvatar.src = user.photoURL;
 
+            // Pre-populate email field with user's profile email
+            const userEmailInput = document.getElementById('userEmail') as HTMLInputElement;
+            if (userEmailInput && user.email) {
+                userEmailInput.value = user.email;
+                validateForm();
+            }
+
             const userSession = localStorage.getItem('wisecat_user');
             if (userSession && creditsDisplay) {
                 const u = JSON.parse(userSession);
@@ -313,6 +325,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
         });
     }
+
+    // Initial validation check
+    validateForm();
 });
 
 
@@ -328,59 +343,122 @@ function countWords(str: string): number {
 
 function validateForm() {
     const btn = document.getElementById('submitBtn') as HTMLButtonElement;
-    const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
-    const scriptInput = document.getElementById('scriptContent') as HTMLTextAreaElement;
+    const phoneInputElem = document.getElementById('targetPhone') as HTMLInputElement;
     const phoneHint = document.getElementById('phoneHint');
     const consentCheckbox = document.getElementById('consentCheckbox') as HTMLInputElement;
+    const scriptTextarea = document.getElementById('scriptContent') as HTMLTextAreaElement;
+    const userEmailInput = document.getElementById('userEmail') as HTMLInputElement;
+    const userName = document.getElementById('userName') as HTMLInputElement;
+    const submitHint = document.getElementById('submitHint');
 
-    if (!btn || !phoneInput || !scriptInput) return;
+    if (!btn) return;
 
-    // Safety Block
+    let reasons: string[] = [];
+    let allValid = true;
+
+    // 0. Safety Check
     if (!isContentSafe) {
-        btn.disabled = true;
-        btn.style.opacity = "0.5";
-        btn.innerText = "Content Unsafe";
-        return;
+        allValid = false;
+        reasons.push('Content unsafe - check script');
+        btn.innerText = "⚠️ Content Unsafe";
     } else {
-        if (btn.innerText === "Content Unsafe") {
+        if (btn.innerText === "⚠️ Content Unsafe") {
             const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
-            btn.innerText = (dict as any).btn_submit_trial || "Start Trial Call";
+            const btnTrialText = (document.getElementById('i18n-btn_trial') as HTMLElement)?.innerText || (dict as any).btn_trial || "Try for Free";
+            btn.innerText = btnTrialText;
         }
     }
 
+    // 1. Email Validation
+    if (userEmailInput && userEmailInput.value) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isEmailValid = emailRegex.test(userEmailInput.value);
+        if (!isEmailValid) {
+            allValid = false;
+            reasons.push('Invalid email format');
+            userEmailInput.style.borderColor = '#ff4d4d';
+        } else {
+            userEmailInput.style.borderColor = '';
+        }
+    } else if (userEmailInput) {
+        allValid = false;
+        reasons.push('Email required');
+        userEmailInput.style.borderColor = '#ff4d4d';
+    }
+
+    // 2. Phone Validation
     let isPhoneValid = false;
-    // Validate Target Phone
-    if (phoneInputPlugin && phoneInput.value) {
-        const validCharsOnly = /^[\d\s\-\(\)\+]+$/.test(phoneInput.value);
-        const digitsOnly = phoneInput.value.replace(/\D/g, '');
+    if (phoneInputPlugin && phoneInputElem.value) {
+        const validCharsOnly = /^[\d\s\-\(\)\+]+$/.test(phoneInputElem.value);
+        const digitsOnly = phoneInputElem.value.replace(/\D/g, '');
         isPhoneValid = validCharsOnly && digitsOnly.length >= 5;
     }
 
-
-
-    const wordCount = countWords(scriptInput.value);
-    const isScriptValid = wordCount > 0 && wordCount <= MAX_WORDS;
-    const isConsentGiven = consentCheckbox ? consentCheckbox.checked : false;
-
-    if (turnstileValidated && isPhoneValid && isScriptValid && isConsentGiven) {
-        btn.disabled = false;
-        btn.style.opacity = "1";
-    } else {
-        btn.disabled = true;
-        btn.style.opacity = "0.5";
-    }
-
-    // UI feedback for target phone
-    if (phoneInput.value && !isPhoneValid) {
-        phoneInput.style.borderColor = "#ff4d4d";
+    if (!phoneInputElem.value) {
+        allValid = false;
+        reasons.push('Recipient phone required');
+        phoneInputElem.style.borderColor = "#ff4d4d";
+        if (phoneHint) phoneHint.style.display = "none";
+    } else if (!isPhoneValid) {
+        allValid = false;
+        reasons.push('Invalid phone number');
+        phoneInputElem.style.borderColor = "#ff4d4d";
         if (phoneHint) phoneHint.style.display = "block";
     } else {
-        phoneInput.style.borderColor = "";
+        phoneInputElem.style.borderColor = "";
         if (phoneHint) phoneHint.style.display = "none";
     }
 
-    // UI for user phone
+    // 3. Required Fields
+    const recipientName = document.getElementById('recipientName') as HTMLInputElement;
+    if (!userName?.value) {
+        allValid = false;
+        reasons.push('Name required');
+        if (userName) userName.style.borderColor = '#ff4d4d';
+    } else if (userName) {
+        userName.style.borderColor = '';
+    }
 
+    if (recipientName && !recipientName.value) {
+        allValid = false;
+        reasons.push('Recipient name required');
+        recipientName.style.borderColor = '#ff4d4d';
+    } else if (recipientName) {
+        recipientName.style.borderColor = '';
+    }
+
+    if (!scriptTextarea?.value || scriptTextarea.value.trim().length === 0) {
+        allValid = false;
+        reasons.push('Script required');
+        if (scriptTextarea) scriptTextarea.style.borderColor = '#ff4d4d';
+    } else if (scriptTextarea) {
+        scriptTextarea.style.borderColor = '';
+    }
+
+    // 4. Word Count (Trial specific - max 30 words)
+    const wordCount = scriptTextarea?.value ? countWords(scriptTextarea.value) : 0;
+    if (wordCount > MAX_WORDS) {
+        allValid = false;
+        reasons.push('Script exceeds 30 words');
+    }
+
+    // 5. Consent & Turnstile
+    const isConsentGiven = consentCheckbox ? consentCheckbox.checked : false;
+    if (!isConsentGiven) { allValid = false; reasons.push('Agreement required'); }
+    if (!turnstileValidated) { allValid = false; reasons.push('Complete security check'); }
+
+    btn.disabled = !allValid;
+    btn.style.opacity = allValid ? "1" : "0.5";
+
+    // Update hint
+    if (submitHint) {
+        if (!allValid && reasons.length > 0) {
+            submitHint.textContent = `⚠️ ${reasons[0]}`;
+            submitHint.style.display = 'block';
+        } else {
+            submitHint.style.display = 'none';
+        }
+    }
 
     // Word counter UI
     const counter = document.getElementById('wordCounter');
@@ -401,11 +479,27 @@ function bindValidationListeners() {
         phoneInputEl.addEventListener('blur', validateForm);
     }
 
-
+    const userEmailInput = document.getElementById('userEmail');
+    if (userEmailInput) {
+        userEmailInput.addEventListener('input', validateForm);
+        userEmailInput.addEventListener('blur', validateForm);
+    }
 
     const scriptInput = document.getElementById('scriptContent');
     if (scriptInput) {
         scriptInput.addEventListener('input', validateForm);
+    }
+
+    const recipientNameInput = document.getElementById('recipientName');
+    if (recipientNameInput) {
+        recipientNameInput.addEventListener('input', validateForm);
+        recipientNameInput.addEventListener('blur', validateForm);
+    }
+
+    const userNameInput = document.getElementById('userName');
+    if (userNameInput) {
+        userNameInput.addEventListener('input', validateForm);
+        userNameInput.addEventListener('blur', validateForm);
     }
 
     const consentCheckbox = document.getElementById('consentCheckbox');
@@ -529,20 +623,8 @@ async function handleFormSubmit(e: Event) {
 
     btn.disabled = true;
 
-
-
-    let userEmail = "N/A";
-    if (auth.currentUser && auth.currentUser.email) {
-        userEmail = auth.currentUser.email;
-    } else {
-        const userSession = localStorage.getItem('wisecat_user');
-        if (userSession) {
-            try {
-                const parsed = JSON.parse(userSession);
-                if (parsed.email) userEmail = parsed.email;
-            } catch (e) { }
-        }
-    }
+    // Get User Email
+    let userEmail = (document.getElementById('userEmail') as HTMLInputElement)?.value || 'N/A';
 
     let userCredits = 0;
     const sessionStr = localStorage.getItem('wisecat_user');

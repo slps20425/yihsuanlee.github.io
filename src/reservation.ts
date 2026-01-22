@@ -3,6 +3,7 @@ import WiseCatI18n from './i18n';
 import { auth, db } from './firebase-config';
 import { getDoc, doc, setDoc, getDocs, collection, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
+import { MISSION_SCENARIOS } from './mission-scenarios';
 import './chat-assistant'; // Enable Chat Widget
 
 // Mission interface
@@ -50,23 +51,40 @@ function populateRestaurantMissions(initCustomDropdowns: () => void) {
     if (!optionsContainer || !triggerText || !missionInput) return;
 
     const currentLang = WiseCatI18n.currentLang;
-    const restaurantMissions = dynamicMissions.filter(m => (m as any).services && (m as any).services.includes('restaurant'));
+
+    // Use dynamicMissions if available, otherwise fallback to hardcoded scenarios
+    const missionsSource = dynamicMissions.length > 0 ? dynamicMissions : MISSION_SCENARIOS;
+    const restaurantMissions = missionsSource.filter(m => (m as any).services && (m as any).services.includes('restaurant'));
 
     if (restaurantMissions.length === 0) return;
 
+    // Clear existing options
     optionsContainer.innerHTML = '';
 
-    restaurantMissions.forEach((mission, index) => {
+    // Deduplicate by localized name to prevent duplicates (e.g. "Restaurant Reservation" appearing twice)
+    const seenNames = new Set<string>();
+    let firstValidMissionSet = false;
+
+    restaurantMissions.forEach((mission) => {
+        const localizedName = mission.name[currentLang as keyof typeof mission.name] || mission.name['en'];
+
+        if (seenNames.has(localizedName)) return;
+        seenNames.add(localizedName);
+
         const span = document.createElement('span');
         span.className = 'custom-option';
-        if (mission.id === missionInput.value || (index === 0 && !missionInput.value)) {
+
+        // If this is the current selection OR the first one and nothing is selected yet
+        if (mission.id === missionInput.value || (!firstValidMissionSet && !missionInput.value)) {
             span.classList.add('selected');
             missionInput.value = mission.id;
-            triggerText.textContent = mission.name[currentLang as keyof typeof mission.name] || mission.name['en'];
+            triggerText.textContent = localizedName;
             triggerText.setAttribute('data-i18n', ''); // Disable i18n auto-text
+            firstValidMissionSet = true;
         }
+
         span.setAttribute('data-value', mission.id);
-        span.textContent = mission.name[currentLang as keyof typeof mission.name] || mission.name['en'];
+        span.textContent = localizedName;
         optionsContainer.appendChild(span);
     });
 
@@ -159,13 +177,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Re-populate on language change
     document.addEventListener('languageChanged', () => {
+        const currentLang = WiseCatI18n.currentLang;
         fetchMissionsFromFirestore().then(missions => {
             dynamicMissions = missions;
             // When language changes, we need to refresh the dropdown trigger text
             const triggerText = document.getElementById('missionTriggerText');
             const missionInput = document.getElementById('mission') as HTMLInputElement;
             if (triggerText && missionInput) {
-                const currentLang = WiseCatI18n.currentLang;
                 const currentMission = dynamicMissions.find(m => m.id === missionInput.value);
                 if (currentMission) {
                     triggerText.textContent = currentMission.name[currentLang] || currentMission.name['en'];
@@ -174,6 +192,38 @@ document.addEventListener("DOMContentLoaded", async function () {
             populateRestaurantMissions(initCustomDropdowns);
         });
     });
+
+    // --- Show Mission Description for default selection ---
+    const missionInput = document.getElementById('mission') as HTMLInputElement;
+    if (missionInput && missionInput.value) {
+        // Trigger change to update UI if a mission is pre-selected
+        const changeEvent = new Event('change', { bubbles: true });
+        missionInput.dispatchEvent(changeEvent);
+    }
+
+    // Pre-populate email field with user's profile email
+    const userEmailInput = document.getElementById('userEmail') as HTMLInputElement;
+    if (userEmailInput) {
+        let defaultEmail = '';
+        if (auth.currentUser && auth.currentUser.email) {
+            defaultEmail = auth.currentUser.email;
+        } else {
+            const stored = localStorage.getItem('wisecat_user');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (parsed.email) defaultEmail = parsed.email;
+                } catch (e) { }
+            }
+        }
+        if (defaultEmail) userEmailInput.value = defaultEmail;
+    }
+
+    // Bind validation listeners
+    bindValidationListeners();
+
+    // Initial validation check
+    validateForm();
 
     // --- Note Validation and Refinement ---
     const validateBtnRef = document.getElementById('validateBtn');
@@ -1077,37 +1127,14 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     };
 
-    if (phoneInputForTimezone) {
-        phoneInputForTimezone.addEventListener('countrychange', updateTimezone);
+    const targetPhoneInput = document.getElementById('targetPhone');
+    if (targetPhoneInput) {
+        targetPhoneInput.addEventListener('countrychange', updateTimezone);
         setTimeout(updateTimezone, 1000);
     }
 }); // This closes the DOMContentLoaded block started at line 150
 
 // --- Validation Logic ---
-
-function bindValidationListeners() {
-    const validationInputs = ['targetPhone', 'userPhone', 'resDate', 'resTime'];
-    validationInputs.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            if (id === 'targetPhone' || id === 'userPhone') {
-                el.addEventListener('countrychange', validateForm);
-                el.addEventListener('blur', validateForm);
-            }
-            el.addEventListener('input', validateForm);
-            el.addEventListener('change', validateForm);
-        }
-    });
-
-    const consentCheckbox = document.getElementById('consentCheckbox');
-    if (consentCheckbox) {
-        consentCheckbox.addEventListener('change', validateForm);
-    }
-
-    // Form Submit
-    const form = document.getElementById('resForm');
-    if (form) form.addEventListener('submit', handleFormSubmit);
-}
 
 function updatePreorderHint() {
     const missionSelect = document.getElementById('mission') as HTMLSelectElement;
@@ -1132,13 +1159,42 @@ function updatePreorderHint() {
     validateForm();
 };
 
+function bindValidationListeners() {
+    const inputs = ['userName', 'userEmail', 'userPhone', 'targetPhone', 'note', 'consentCheckbox'];
+    inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', validateForm);
+            el.addEventListener('blur', validateForm);
+            el.addEventListener('change', validateForm);
+            if (id === 'targetPhone' || id === 'userPhone') {
+                el.addEventListener('countrychange', validateForm);
+            }
+        }
+    });
+
+    // Also watch retry option
+    const retryOption = document.getElementById('retryOption');
+    if (retryOption) {
+        retryOption.addEventListener('change', validateForm);
+    }
+
+    // Form Submit
+    const form = document.getElementById('resForm');
+    if (form) form.addEventListener('submit', handleFormSubmit);
+}
+
 function validateForm() {
     const btn = document.getElementById('submitBtn') as HTMLButtonElement;
     const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
     const phoneHint = document.getElementById('phoneHint');
     const consentCheckbox = document.getElementById('consentCheckbox') as HTMLInputElement;
+    const submitHint = document.getElementById('submitHint');
 
     if (!btn || !phoneInput) return;
+
+    let allValid = true;
+    let reasons: string[] = [];
 
     // 1. Credit Check
     const userSession = localStorage.getItem('wisecat_user');
@@ -1150,16 +1206,62 @@ function validateForm() {
         } catch (e) { }
     }
 
-    // 2. Phone Validation - Permissive but reject invalid characters
+    // 2. Safety Check
+    if (!isContentSafe) {
+        allValid = false;
+        reasons.push('Content unsafe - check description');
+        btn.innerText = "⚠️ Content Unsafe";
+    } else {
+        const dict = WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en'];
+        const submitBtnText = (document.getElementById('i18n-btn_submit_reservation') as HTMLElement)?.innerText || (dict as any).btn_submit || "Start AI Call";
+        if (btn.innerText !== submitBtnText) {
+            btn.innerText = submitBtnText;
+        }
+    }
+
+    // 3. User Email Validation
+    const userEmailInput = document.getElementById('userEmail') as HTMLInputElement;
+    if (userEmailInput && userEmailInput.value) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isEmailValid = emailRegex.test(userEmailInput.value);
+        if (!isEmailValid) {
+            allValid = false;
+            reasons.push('Invalid email format');
+            userEmailInput.style.borderColor = '#ff4d4d';
+        } else {
+            userEmailInput.style.borderColor = '';
+        }
+    } else if (userEmailInput) {
+        allValid = false;
+        reasons.push('Email required');
+        userEmailInput.style.borderColor = '#ff4d4d';
+    }
+
+    // 4. User Name Validation
+    const userNameInput = document.getElementById('userName') as HTMLInputElement;
+    if (userNameInput && !userNameInput.value) {
+        allValid = false;
+        reasons.push('Name required');
+        userNameInput.style.borderColor = '#ff4d4d';
+    } else if (userNameInput) {
+        userNameInput.style.borderColor = '';
+    }
+
+    // 5. Target Phone Validation
     let isPhoneValid = false;
     if (phoneInputPlugin && phoneInput.value) {
-        // Only allow digits, spaces, dashes, parentheses, and +
         const validCharsOnly = /^[\d\s\-\(\)\+]+$/.test(phoneInput.value);
         const digitsOnly = phoneInput.value.replace(/\D/g, '');
         isPhoneValid = validCharsOnly && digitsOnly.length >= 5;
     }
 
-    if (phoneInput.value && !isPhoneValid) {
+    if (!phoneInput.value) {
+        allValid = false;
+        reasons.push('Target phone required');
+        phoneInput.style.borderColor = "#ff4d4d";
+    } else if (!isPhoneValid) {
+        allValid = false;
+        reasons.push('Invalid phone format');
         phoneInput.style.borderColor = "#ff4d4d";
         if (phoneHint) phoneHint.style.display = "block";
     } else {
@@ -1167,49 +1269,93 @@ function validateForm() {
         if (phoneHint) phoneHint.style.display = "none";
     }
 
-    // 2.1 User Phone Validation (New)
-    let isUserPhoneValid = false;
+    // 6. User Phone Validation
     const userPhoneInput = document.getElementById('userPhone') as HTMLInputElement;
-    const userPhoneHint = document.getElementById('userPhoneHint');
-
+    let isUserPhoneValid = false;
     if (userPhonePlugin && userPhoneInput && userPhoneInput.value) {
         const validCharsOnly = /^[\d\s\-\(\)\+]+$/.test(userPhoneInput.value);
         const digitsOnly = userPhoneInput.value.replace(/\D/g, '');
         isUserPhoneValid = validCharsOnly && digitsOnly.length >= 5;
     }
 
-    // UI for User Phone
     if (userPhoneInput && userPhoneInput.value && !isUserPhoneValid) {
+        allValid = false;
+        reasons.push('Invalid personal phone');
         userPhoneInput.style.borderColor = "#ff4d4d";
-        if (userPhoneHint) userPhoneHint.style.display = "block";
     } else if (userPhoneInput) {
-        userPhoneInput.style.borderColor = "";
-        if (userPhoneHint) userPhoneHint.style.display = "none";
-    }
-
-    // 2.5 Time Validation
-    const isTimeValid = validateReservationTime();
-
-
-    // 2.6 Safety Check
-    if (!isContentSafe) {
-        btn.disabled = true;
-        btn.style.opacity = "0.5";
-        btn.innerText = "⚠️ Content Unsafe";
-        return;
-    } else {
-        // Reset text if safe (optional, but good for UX)
-        if (btn.innerText === "⚠️ Content Unsafe") {
-            btn.innerText = (document.getElementById('i18n-btn_submit_reservation') as HTMLElement)?.innerText || "Submit Reservation";
+        if (!userPhoneInput.value) {
+            allValid = false;
+            reasons.push('Personal phone required');
+            userPhoneInput.style.borderColor = "#ff4d4d";
+        } else {
+            userPhoneInput.style.borderColor = "";
         }
     }
 
-    // 3. Combined Logic (Validation status only, do not disable button)
-    // We want the button to remain clickable so we can show errors on click.
-    btn.disabled = false;
-    btn.style.opacity = "1";
+    // 7. Date & Time Validation
+    const resDateInput = document.getElementById('resDate') as HTMLInputElement;
+    const resTimeInput = document.getElementById('resTime') as HTMLInputElement;
+    const resDateDisplay = document.getElementById('resDateDisplay');
+    const resTimeDisplay = document.getElementById('resTimeDisplay');
 
-    // Optional: Visual indicator could go here, but for now we rely on click feedback.
+    if (resDateInput && !resDateInput.value) {
+        allValid = false;
+        reasons.push('Date required');
+        if (resDateDisplay) resDateDisplay.style.borderColor = '#ff4d4d';
+    } else if (resDateDisplay) {
+        resDateDisplay.style.borderColor = '';
+    }
+
+    if (resTimeInput && !resTimeInput.value) {
+        allValid = false;
+        reasons.push('Time required');
+        if (resTimeDisplay) resTimeDisplay.style.borderColor = '#ff4d4d';
+    } else if (resTimeDisplay) {
+        resTimeDisplay.style.borderColor = '';
+    }
+
+    if (allValid) {
+        const isDateTimeValid = validateReservationTime();
+        if (!isDateTimeValid) {
+            allValid = false;
+            reasons.push('Outside operating hours');
+        }
+    }
+
+    // 8. Restaurant Selection
+    const restaurantSearchInput = document.getElementById('restaurantSearch') as HTMLInputElement;
+    if (!selectedRestaurantData) {
+        allValid = false;
+        reasons.push('Select a restaurant');
+        if (restaurantSearchInput) restaurantSearchInput.style.borderColor = '#ff4d4d';
+    } else if (restaurantSearchInput) {
+        restaurantSearchInput.style.borderColor = '';
+    }
+
+    // 9. Consent & Turnstile
+    const isConsentGiven = consentCheckbox ? consentCheckbox.checked : false;
+    if (!isConsentGiven) {
+        allValid = false;
+        reasons.push('Agreement required');
+    }
+    if (!turnstileValidated) {
+        allValid = false;
+        reasons.push('Complete security check');
+    }
+
+    // Final Button State
+    btn.disabled = !allValid;
+    btn.style.opacity = allValid ? "1" : "0.5";
+
+    // Update hint
+    if (submitHint) {
+        if (!allValid && reasons.length > 0) {
+            submitHint.textContent = `⚠️ ${reasons[0]}`;
+            submitHint.style.display = 'block';
+        } else {
+            submitHint.style.display = 'none';
+        }
+    }
 }
 
 function validateReservationTime(): boolean {
@@ -1919,14 +2065,29 @@ async function handleFormSubmit(e: Event) {
         }
     }
 
-    // E. Consent
+    // E. User Email
+    const userEmailInput = document.getElementById('userEmail') as HTMLInputElement;
+    let isUserEmailValid = true;
+    if (userEmailInput && userEmailInput.value) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        isUserEmailValid = emailRegex.test(userEmailInput.value);
+    }
+    if (!isUserEmailValid) {
+        errors.push("Please enter a valid email address.");
+        if (userEmailInput) {
+            userEmailInput.style.borderColor = "red";
+            if (!firstErrorEl) firstErrorEl = userEmailInput;
+        }
+    }
+
+    // F. Consent
     const consentCheckbox = document.getElementById('consentCheckbox') as HTMLInputElement;
     if (consentCheckbox && !consentCheckbox.checked) {
         errors.push("Please agree to the terms.");
         if (!firstErrorEl) firstErrorEl = consentCheckbox.parentElement; // Highlight wrapper
     }
 
-    // F. Turnstile
+    // G. Turnstile
     if (!turnstileValidated) {
         errors.push("Please complete the security check.");
         const el = document.getElementById('turnstile-widget');
@@ -1977,18 +2138,7 @@ async function handleFormSubmit(e: Event) {
     }
 
     // Get User Email
-    let userEmail = "N/A";
-    if (auth.currentUser && auth.currentUser.email) {
-        userEmail = auth.currentUser.email;
-    } else {
-        const userSession = localStorage.getItem('wisecat_user');
-        if (userSession) {
-            try {
-                const parsed = JSON.parse(userSession);
-                if (parsed.email) userEmail = parsed.email;
-            } catch (e) { }
-        }
-    }
+    let userEmail = (document.getElementById('userEmail') as HTMLInputElement)?.value || 'N/A';
 
     let userCredits = 0;
     const sessionStr = localStorage.getItem('wisecat_user');
@@ -2068,7 +2218,7 @@ async function handleFormSubmit(e: Event) {
         language: WiseCatI18n.currentLang,
         schedulePreference: schedulePrefSelect.value,
         retryOneTime: retryCheck.checked,
-        retry_count: retryCheck.checked ? 1 : 0, // 1 if checked, 0 if not
+        retry_count: retryCheck.checked ? defaultRetryCount : 0, // Dynamic retry count from listener
         createdAt: new Date().toISOString(), // Client-side time for webhook
         // Enhanced Map Data
         placeDetails: selectedRestaurantData ? {

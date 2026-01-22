@@ -32,6 +32,7 @@ Each module represents a major functional area:
 - `user-management.md` - Authentication, profiles, sessions
 - `payment-system.md` - Credits, transactions, billing
 - `task-system.md` - Task lifecycle, queue, retry logic
+- `mission-system.md` - Scenario retrieval, filtering, and fallbacks
 - `phone-numbers.md` - Twilio integration, number management
 - `ai-services.md` - Vapi integration, call handling
 - `frontend-components.md` - UI components, forms, validation
@@ -115,7 +116,16 @@ graph TB
 
 ## 📝 Contributing to Knowledge Base
 
-### Adding New Module Documentation
+### Mission System Module
+**File**: [`knowledge/modules/mission-system.md`](file:///Users/yi-hsuanlee/Desktop/yihsuanlee.github.io/knowledge/modules/mission-system.md)
+
+**Diagrams**:
+1. **Mission Retrieval Flow** (Sequence Diagram)
+   - Shows: Frontend → Firestore fetch → Fallback logic
+   - Lines: ~20
+
+### Payment System Module
+ Documentation
 
 1. Create file in `knowledge/modules/[module-name].md`
 2. Follow the template structure

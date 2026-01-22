@@ -40,12 +40,13 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/reservation-Dnqb6AAf.js"></script>
+  <script type="module" crossorigin src="/assets/reservation-wp_vcjPs.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-xwgkLwoT.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-CX2YTLtk.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-BR8Iu9gG.js">
   <link rel="modulepreload" crossorigin href="/assets/version-DCg5g3Z2.js">
   <link rel="modulepreload" crossorigin href="/assets/i18n-CnU3a9SV.js">
+  <link rel="modulepreload" crossorigin href="/assets/mission-scenarios-sgPdn6cR.js">
   <link rel="modulepreload" crossorigin href="/assets/chat-assistant-bFJKnRD5.js">
   <link rel="stylesheet" crossorigin href="/assets/index-Cp1RaJJU.css">
 </head>
@@ -186,6 +187,10 @@
                 <label data-i18n="label_name">👤 Name (English Only)</label>
                 <input type="text" id="userName" pattern="[a-zA-Z\s\-_]*" maxlength="20"
                     data-i18n-placeholder="placeholder_name" placeholder="English name only" required>
+
+                <label data-i18n="label_your_email">📧 Your Email</label>
+                <input type="email" id="userEmail" data-i18n-placeholder="placeholder_email"
+                    placeholder="your@email.com" required>
 
                 <label data-i18n="label_your_phone" style="margin-top: 15px;">📱 Your Phone Number
                     (Confirmation)</label>
@@ -409,7 +414,7 @@
                     </div>
                 </div>
 
-                <div class="retry-container">
+                <div class="retry-container" style="margin-top: 20px; justify-content: flex-start;">
                     <input type="checkbox" id="retryOption">
                     <label for="retryOption">
                         <span data-i18n="label_retry">Re-try 1 time</span>
@@ -455,6 +460,10 @@
                 </label>
 
                 <button type="submit" id="submitBtn" data-i18n="btn_submit" disabled>Start AI Call</button>
+                <div id="submitHint"
+                    style="font-size: 12px; color: #999; text-align: center; margin-top: 8px; display: none;">
+                    ⚠️ Button will enable when all required fields are filled
+                </div>
                 <a href="/dashboard.html" class="back-link" data-i18n="btn_back">← Back to Dashboard</a>
                 <div class="footer" data-i18n="footer">Automated call service provided by WiseCat AI</div>
             </form>

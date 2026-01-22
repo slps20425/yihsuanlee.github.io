@@ -52,12 +52,12 @@
   ],
   "metadata": {
     "version": "1.0.0",
-    "generated": "2026-01-21T17:01:29.921Z",
+    "generated": "2026-01-21T17:15:40.885Z",
     "metadata": {
-      "lastUpdated": "2026-01-21T17:01:29.794Z",
+      "lastUpdated": "2026-01-21T17:15:40.704Z",
       "deployment": {
-        "timestamp": "2026-01-21T17:01:29.795Z",
-        "gitCommit": "df4b642ef69f82f98e7c91d0abebb79b2c8c4468",
+        "timestamp": "2026-01-21T17:15:40.705Z",
+        "gitCommit": "e277534b128b3cb5f52dcaae9ef3ac322af70df8",
         "gitBranch": "main"
       },
       "modules": {},
@@ -127,10 +127,10 @@
         },
         {
           "path": "src/mouthpiece.ts",
-          "size": 79296,
-          "lines": 1874,
+          "size": 79962,
+          "lines": 1888,
           "type": ".ts",
-          "lastModified": "2026-01-21T16:54:19.842Z"
+          "lastModified": "2026-01-21T17:08:39.680Z"
         },
         {
           "path": "src/nav-active.ts",
@@ -155,10 +155,10 @@
         },
         {
           "path": "src/reservation.ts",
-          "size": 105724,
+          "size": 105732,
           "lines": 2543,
           "type": ".ts",
-          "lastModified": "2026-01-21T16:21:19.882Z"
+          "lastModified": "2026-01-21T17:14:03.679Z"
         },
         {
           "path": "src/scam-check.ts",
@@ -235,77 +235,77 @@
           "size": 16030,
           "lines": 570,
           "type": ".html",
-          "lastModified": "2026-01-21T17:00:42.333Z"
+          "lastModified": "2026-01-21T17:14:53.876Z"
         },
         {
           "path": "dist/dashboard.html",
           "size": 36475,
           "lines": 725,
           "type": ".html",
-          "lastModified": "2026-01-21T17:00:42.338Z"
+          "lastModified": "2026-01-21T17:14:53.876Z"
         },
         {
           "path": "dist/entry.html",
           "size": 11764,
           "lines": 216,
           "type": ".html",
-          "lastModified": "2026-01-21T17:00:42.338Z"
+          "lastModified": "2026-01-21T17:14:53.876Z"
         },
         {
           "path": "dist/login-success.html",
           "size": 1465,
           "lines": 57,
           "type": ".html",
-          "lastModified": "2026-01-21T17:00:42.338Z"
+          "lastModified": "2026-01-21T17:14:53.876Z"
         },
         {
           "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_guide.html",
           "size": 14461,
           "lines": 442,
           "type": ".html",
-          "lastModified": "2026-01-21T17:00:41.847Z"
+          "lastModified": "2026-01-21T17:14:53.584Z"
         },
         {
           "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_mobile.html",
           "size": 15624,
           "lines": 425,
           "type": ".html",
-          "lastModified": "2026-01-21T17:00:41.849Z"
+          "lastModified": "2026-01-21T17:14:53.585Z"
         },
         {
           "path": "dist/projects/backtrack-dfs-guide/dp_indexing_mobile_full.html",
           "size": 7293,
           "lines": 198,
           "type": ".html",
-          "lastModified": "2026-01-21T17:00:41.850Z"
+          "lastModified": "2026-01-21T17:14:53.585Z"
         },
         {
           "path": "dist/reservation/mouthpiece.html",
           "size": 25337,
           "lines": 466,
           "type": ".html",
-          "lastModified": "2026-01-21T17:00:42.339Z"
+          "lastModified": "2026-01-21T17:14:53.875Z"
         },
         {
           "path": "dist/reservation/restaurant_reservation.html",
           "size": 33948,
           "lines": 692,
           "type": ".html",
-          "lastModified": "2026-01-21T17:00:42.338Z"
+          "lastModified": "2026-01-21T17:14:53.876Z"
         },
         {
           "path": "dist/reservation/trial.html",
           "size": 16989,
           "lines": 353,
           "type": ".html",
-          "lastModified": "2026-01-21T17:00:42.337Z"
+          "lastModified": "2026-01-21T17:14:53.876Z"
         },
         {
           "path": "dist/resume/index.html",
           "size": 41474,
           "lines": 688,
           "type": ".html",
-          "lastModified": "2026-01-21T17:00:42.338Z"
+          "lastModified": "2026-01-21T17:14:53.875Z"
         },
         {
           "path": "entry.html",

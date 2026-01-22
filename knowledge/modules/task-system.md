@@ -61,7 +61,6 @@ sequenceDiagram
     Frontend->>User: Show task status
 ```
 
-
 ## Components
 
 ### Frontend Files
@@ -488,6 +487,7 @@ function listenToUserTasks(userId: string, callback: Function) {
 - [**User Management**](./user-management.md) - User credits and authentication
 - [**Mouthpiece Service**](./mouthpiece-service.md) - Mouthpiece task creation
 - [**Reservation Service**](./reservation-service.md) - Restaurant task creation
+- [**Mission System**](./mission-system.md) - Scenario retrieval logic
 - [**Payment System**](./payment-system.md) - Credit deduction for tasks
 
 ## Performance Considerations

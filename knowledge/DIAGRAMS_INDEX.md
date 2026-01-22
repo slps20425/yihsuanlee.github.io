@@ -44,6 +44,14 @@ Quick reference to all Mermaid diagrams in the knowledge base.
    - Shows: Inbound message handling
    - Lines: ~15
 
+### Mission System Module
+**File**: [`knowledge/modules/mission-system.md`](file:///Users/yi-hsuanlee/Desktop/yihsuanlee.github.io/knowledge/modules/mission-system.md)
+
+**Diagrams**:
+1. **Mission Retrieval Flow** (Sequence Diagram)
+   - Shows: Frontend → Firestore fetch → Fallback logic
+   - Lines: ~20
+
 ### Payment System Module
 **File**: [`knowledge/modules/payment-system.md`](file:///Users/yi-hsuanlee/Desktop/yihsuanlee.github.io/knowledge/modules/payment-system.md)
 
@@ -90,6 +98,7 @@ Quick reference to all Mermaid diagrams in the knowledge base.
 | How login works | `user-management.md` → Authentication Flow |
 | How tasks are processed | `task-system.md` → Task Creation Flow |
 | How SMS messages arrive | `task-system.md` → SMS Webhook Flow |
+| How missions are fetched | `mission-system.md` → Mission Retrieval Flow |
 | How credits are deducted | `payment-system.md` → Credit Deduction Flow |
 | How phone numbers are purchased | `payment-system.md` → Phone Purchase Flow |
 | Overall system architecture | Artifacts → `component_analysis.md` → Diagram 1 |
