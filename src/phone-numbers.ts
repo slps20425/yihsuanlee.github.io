@@ -688,6 +688,8 @@ async function initializeSharedNumbersList() {
     if (!availableNumbersList) return;
 
     try {
+        console.log('🔍 [SharedNumbers] Starting fetch from Firestore...');
+
         // Dynamically fetch all shared numbers from Firestore
         const { collection, query, orderBy, getDocs } = await import('firebase/firestore');
         const { db } = await import('./firebase-config');
@@ -696,19 +698,30 @@ async function initializeSharedNumbersList() {
         const q = query(sharedNumbersRef, orderBy('createdAt', 'desc'));
         const snap = await getDocs(q);
 
-        const sharedNumbers = snap.docs.map(doc => ({
-            id: doc.id,
-            phoneNumber: doc.data().phoneNumber,
-            vapiPhoneNumberId: doc.data().vapiPhoneNumberId
-        }));
+        console.log('📊 [SharedNumbers] Firestore query returned:', snap.size, 'documents');
+
+        const sharedNumbers = snap.docs.map(doc => {
+            const data = {
+                id: doc.id,
+                phoneNumber: doc.data().phoneNumber,
+                vapiPhoneNumberId: doc.data().vapiPhoneNumberId
+            };
+            console.log('📱 [SharedNumbers] Document:', doc.id, '→', data.phoneNumber);
+            return data;
+        });
+
+        console.log('✅ [SharedNumbers] Total numbers after mapping:', sharedNumbers.length);
+        console.log('📋 [SharedNumbers] Full list:', sharedNumbers);
 
         if (!sharedNumbers || sharedNumbers.length === 0) {
+            console.warn('⚠️ [SharedNumbers] No numbers found in collection!');
             availableNumbersList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 1rem;">No shared numbers available at this time.</div>';
             return;
         }
 
         // Display top 10 numbers
         const topNumbers = sharedNumbers.slice(0, 10);
+        console.log('🎯 [SharedNumbers] Displaying top', topNumbers.length, 'numbers');
 
         availableNumbersList.innerHTML = topNumbers.map((num) => {
             const formatted = num.phoneNumber.startsWith('+1') && num.phoneNumber.length === 12
@@ -806,8 +819,15 @@ async function initializeSharedNumbersList() {
             });
         });
 
+        console.log('✨ [SharedNumbers] HTML rendered for', topNumbers.length, 'items');
+
     } catch (error) {
-        console.error("Error initializing shared numbers list:", error);
+        console.error("❌ [SharedNumbers] Error initializing shared numbers list:", error);
+        console.error("Error details:", {
+            name: (error as Error).name,
+            message: (error as Error).message,
+            stack: (error as Error).stack
+        });
         availableNumbersList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 1rem;">Failed to load available numbers.</div>';
     }
 }
@@ -857,6 +877,7 @@ function showSharedNumberConfirmationDialog(phoneNumber?: string): Promise<boole
 
 // Initialize the shared numbers list when the page loads
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 [SharedNumbers] DOMContentLoaded triggered - initializing shared numbers list');
     initializeSharedNumbersList();
 });
 
