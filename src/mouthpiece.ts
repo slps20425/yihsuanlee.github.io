@@ -1206,6 +1206,16 @@ async function handleFormSubmit(e: Event) {
                 createdAt: serverTimestamp(),
                 userId: auth.currentUser!.uid
             });
+
+            // Update settings with current number type
+            if (useSharedNumber) {
+                transaction.set(settingsRef, {
+                    ...settings,
+                    hasNumber: true,
+                    numberType: 'shared',
+                    number: '+1 (415) 212-5191'
+                }, { merge: true });
+            }
         });
 
         console.log("Task logged to Firestore via Transaction:", taskId);
@@ -1778,6 +1788,57 @@ function updateManualInputState() {
     }
 }
 
+// Display current phone number (outbound number for calls)
+async function displayCurrentPhoneNumber() {
+    const phoneDisplayEl = document.getElementById('currentPhoneDisplay');
+    const phoneTypeEl = document.getElementById('phoneTypeIndicator');
+    const upgradePhoneBtn = document.getElementById('upgradePhoneBtn');
+
+    if (!phoneDisplayEl) return;
+
+    try {
+        const { getDoc, doc } = await import("firebase/firestore");
+        const { auth, db } = await import("./firebase-config");
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) {
+            phoneDisplayEl.textContent = "Not logged in";
+            return;
+        }
+
+        const settingsDoc = await getDoc(doc(db, 'users', `uid_${currentUser.uid}`, 'settings', 'settings'));
+        const settings = settingsDoc.data() || {};
+
+        const hasNumber = settings.phoneNumber && settings.phoneNumberStatus === 'active';
+
+        if (hasNumber) {
+            // User has their own number
+            phoneDisplayEl.textContent = settings.phoneNumber || 'Unknown';
+            if (phoneTypeEl) {
+                phoneTypeEl.innerHTML = `<span style="color: #10b981;">✓ Your own dedicated number</span>`;
+            }
+            if (upgradePhoneBtn) {
+                upgradePhoneBtn.style.display = 'none';
+            }
+        } else {
+            // User will use shared number
+            phoneDisplayEl.textContent = '+1 (415) 212-5191';
+            if (phoneTypeEl) {
+                phoneTypeEl.innerHTML = `<span style="color: #eab308;">⚠ Temporary shared number (one-time use)</span>`;
+            }
+            if (upgradePhoneBtn) {
+                upgradePhoneBtn.style.display = 'block';
+                upgradePhoneBtn.addEventListener('click', () => {
+                    window.location.href = '/dashboard.html?tab=add';
+                });
+            }
+        }
+    } catch (e) {
+        console.error("Error displaying phone number:", e);
+        phoneDisplayEl.textContent = 'Error loading number';
+    }
+}
+
 async function initSearchLogic() {
     // Load Settings
     await fetchSettings();
@@ -2052,4 +2113,9 @@ async function initSearchLogic() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', initSearchLogic);
+document.addEventListener('DOMContentLoaded', async () => {
+    // Display phone number first
+    await displayCurrentPhoneNumber();
+    // Then initialize search logic
+    await initSearchLogic();
+});

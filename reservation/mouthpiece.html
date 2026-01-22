@@ -163,6 +163,20 @@
             </div>
 
             <h2 data-i18n="mouthpiece_title">📢 AI Mouthpiece</h2>
+
+            <!-- Phone Number Display Section -->
+            <div id="phoneNumberDisplaySection"
+                style="padding: 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; margin-bottom: 1.5rem;">
+                <div style="font-size: 0.85rem; color: #888; margin-bottom: 0.5rem;">📞 Calling Number</div>
+                <div id="currentPhoneDisplay" style="font-family: monospace; font-size: 1.1rem; color: #3b82f6; font-weight: bold;">
+                    Loading...
+                </div>
+                <div id="phoneTypeIndicator" style="font-size: 0.8rem; color: #888; margin-top: 0.5rem;"></div>
+                <button type="button" id="upgradePhoneBtn" style="display: none; margin-top: 1rem; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; width: 100%;">
+                    📱 Get Your Own Number
+                </button>
+            </div>
+
             <form id="mouthpieceForm">
                 <label data-i18n="label_your_name">👤 Your Name</label>
                 <input type="text" id="userName" pattern="[a-zA-Z\s\-_]*" maxlength="20"

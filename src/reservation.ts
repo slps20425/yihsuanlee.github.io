@@ -165,9 +165,61 @@ const renderTurnstile = () => {
 // Expose render function for the inline script to call if it loads later
 (window as any).renderAppTurnstile = renderTurnstile;
 
+// --- Display Phone Number (Outbound for Reservation Calls) ---
+async function displayCurrentPhoneNumber() {
+    const phoneDisplayEl = document.getElementById('currentPhoneDisplay');
+    const phoneTypeEl = document.getElementById('phoneTypeIndicator');
+    const upgradePhoneBtn = document.getElementById('upgradePhoneBtn');
+
+    if (!phoneDisplayEl) return;
+
+    try {
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) {
+            phoneDisplayEl.textContent = "Not logged in";
+            return;
+        }
+
+        const settingsDoc = await getDoc(doc(db, 'users', `uid_${currentUser.uid}`, 'settings', 'settings'));
+        const settings = settingsDoc.data() || {};
+
+        const hasNumber = settings.phoneNumber && settings.phoneNumberStatus === 'active';
+
+        if (hasNumber) {
+            // User has their own number
+            phoneDisplayEl.textContent = settings.phoneNumber || 'Unknown';
+            if (phoneTypeEl) {
+                phoneTypeEl.innerHTML = `<span style="color: #10b981;">✓ Your own dedicated number</span>`;
+            }
+            if (upgradePhoneBtn) {
+                upgradePhoneBtn.style.display = 'none';
+            }
+        } else {
+            // User will use shared number
+            phoneDisplayEl.textContent = '+1 (415) 212-5191';
+            if (phoneTypeEl) {
+                phoneTypeEl.innerHTML = `<span style="color: #eab308;">⚠ Temporary shared number (one-time use)</span>`;
+            }
+            if (upgradePhoneBtn) {
+                upgradePhoneBtn.style.display = 'block';
+                upgradePhoneBtn.addEventListener('click', () => {
+                    window.location.href = '/dashboard.html?tab=add';
+                });
+            }
+        }
+    } catch (e) {
+        console.error("Error displaying phone number:", e);
+        phoneDisplayEl.textContent = 'Error loading number';
+    }
+}
+
 // --- Initialization ---
 
 document.addEventListener("DOMContentLoaded", async function () {
+    // Display phone number first
+    await displayCurrentPhoneNumber();
+
     // Initialize i18n explicitly
     WiseCatI18n.init();
 
@@ -2537,6 +2589,16 @@ async function handleFormSubmit(e: Event) {
                 createdAt: serverTimestamp(),
                 userId: auth.currentUser!.uid
             });
+
+            // Update settings with current number type
+            if (useSharedNumber) {
+                transaction.set(settingsRef, {
+                    ...settings,
+                    hasNumber: true,
+                    numberType: 'shared',
+                    number: '+1 (415) 212-5191'
+                }, { merge: true });
+            }
         });
 
         console.log("Task logged to Firestore via Transaction:", taskId);
@@ -2559,46 +2621,6 @@ async function handleFormSubmit(e: Event) {
         btn.disabled = false;
     }
 }
-
-// Helper: Toast Notification
-(window as any).showToast = function (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') {
-    const container = document.getElementById('toast-container') || createToastContainer();
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-
-    let icon = 'ℹ️';
-    if (type === 'success') icon = '✅';
-    if (type === 'error') icon = '⚠️';
-    if (type === 'warning') icon = '⚠️';
-
-    toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
-    container.appendChild(toast);
-
-    // Trigger animation
-    requestAnimationFrame(() => {
-        toast.classList.add('show');
-    });
-
-    // Remove after 3 seconds
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => {
-            if (container.contains(toast)) {
-                container.removeChild(toast);
-            }
-        }, 300);
-    }, 3000);
-};
-
-function createToastContainer() {
-    const container = document.createElement('div');
-    container.id = 'toast-container';
-    container.className = 'toast-container';
-    document.body.appendChild(container);
-    return container;
-}
-
-
 
 function calculateReservationUTC(dateStr: string, timeStr: string, utcOffsetMinutes: number | undefined): Date | null {
     if (!dateStr || !timeStr) return null;

@@ -653,29 +653,15 @@ if (searchBtn) {
 // [TASK 2 Integration] Activate Shared Pool Button & Temporary Number Section
 const activateSharedPoolBtn = document.getElementById('activateSharedPoolBtn');
 const tempSharedNumberSection = document.getElementById('tempSharedNumberSection');
-const copyTempNumberBtn = document.getElementById('copyTempNumberBtn');
 const upgradeToPermanentBtn = document.getElementById('upgradeToPermanentBtn');
-const closeTempNumberBtn = document.getElementById('closeTempNumberBtn');
 
 if (activateSharedPoolBtn) {
     activateSharedPoolBtn.addEventListener('click', () => {
-        // Show the temporary number section
+        // Show the temporary number section (persists, no dismiss button)
         if (tempSharedNumberSection) {
             tempSharedNumberSection.hidden = false;
         }
-        showToast("Shared Pool Selected! You can now use the temporary number for your calls.", "success");
-    });
-}
-
-// Copy temporary number to clipboard
-if (copyTempNumberBtn) {
-    copyTempNumberBtn.addEventListener('click', () => {
-        const phoneNumber = "+1 (415) 212-5191";
-        navigator.clipboard.writeText(phoneNumber).then(() => {
-            showToast("Phone number copied to clipboard!", "success");
-        }).catch(() => {
-            showToast("Failed to copy phone number", "error");
-        });
+        showToast("Shared business number activated for your calls.", "success");
     });
 }
 
@@ -687,15 +673,6 @@ if (upgradeToPermanentBtn) {
             (window as any).switchTab('add');
         }
         showToast("Browse available numbers to get your own permanent business number!", "info");
-    });
-}
-
-// Close temporary number section
-if (closeTempNumberBtn) {
-    closeTempNumberBtn.addEventListener('click', () => {
-        if (tempSharedNumberSection) {
-            tempSharedNumberSection.hidden = true;
-        }
     });
 }
 

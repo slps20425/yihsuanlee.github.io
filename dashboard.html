@@ -296,41 +296,30 @@
                 </div>
             </div>
 
-            <!-- 🎯 TEMP: Temporary Shared Number Section (Shown after activation) -->
+            <!-- 🎯 TEMP: Temporary Shared Number Section (Always visible when shared is selected) -->
             <div id="tempSharedNumberSection" class="card" hidden
                 style="border: 2px solid var(--success); background: rgba(34, 197, 94, 0.08); margin-bottom: 1.5rem;">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                     <div>
-                        <h2 style="margin: 0; font-size: 1.25rem;">✨ Temporary Shared Number (One-Time Use)</h2>
-                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">
-                            This number is temporary and will expire after your call ends. Perfect for single reservations or calls.
-                        </p>
+                        <h2 style="margin: 0; font-size: 1.25rem;">✨ Shared Business Number</h2>
                     </div>
                     <span style="background: var(--success); color: white; padding: 4px 12px; border-radius: 16px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">
                         ONE-TIME USE
                     </span>
                 </div>
-                <div style="margin-top: 1rem;">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <span style="font-family: monospace; font-size: 1.1rem; color: var(--success); font-weight: bold;">
-                            +1 (415) 212-5191
-                        </span>
-                        <button id="copyTempNumberBtn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">
-                            📋 Copy Number
-                        </button>
-                    </div>
+                <div style="padding: 1rem; background: rgba(34, 197, 94, 0.15); border-radius: 8px; border: 1px solid var(--success);">
+                    <span style="font-family: monospace; font-size: 1.2rem; color: var(--success); font-weight: bold;">
+                        +1 (415) 212-5191
+                    </span>
                 </div>
                 <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border-left: 3px solid var(--warning);">
                     <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">
                         💡 <strong>Want a permanent number?</strong> Upgrade to a monthly dedicated number to get your own personal business phone number.
                     </p>
                 </div>
-                <div style="margin-top: 1rem; display: flex; gap: 10px;">
-                    <button id="upgradeToPermanentBtn" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem;">
+                <div style="margin-top: 1rem;">
+                    <button id="upgradeToPermanentBtn" class="btn btn-primary" style="padding: 10px 16px; font-size: 0.9rem; width: 100%;">
                         📱 Get Permanent Number
-                    </button>
-                    <button id="closeTempNumberBtn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.9rem;">
-                        Dismiss
                     </button>
                 </div>
             </div>
