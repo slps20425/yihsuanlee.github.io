@@ -714,6 +714,28 @@ exports.processTaskRefund = onDocumentUpdated(
                 console.log(`[processTaskRefund] ✓ Logged retry fee: $${totalRetryCost.toFixed(2)}`);
             }
 
+            // ===== DISCONNECT SHARED NUMBER AFTER CALL =====
+            // If task used a shared number, disconnect it from user's settings
+            const sharedNumberConfig = await getFirstSharedNumber();
+            const sharedPoolId = sharedNumberConfig?.vapiPhoneNumberId || "76705f8f-8ece-4a0e-a757-9581097c9ace";
+            const wasUsingShared = (newData.vapiPhoneNumberId === sharedPoolId || newData.useSharedNumber === true);
+
+            if (wasUsingShared) {
+                try {
+                    const settingsRef = db.doc(`users/uid_${uid}/settings/settings`);
+                    await settingsRef.update({
+                        phoneNumber: admin.firestore.FieldValue.delete(),
+                        vapiPhoneNumberId: admin.firestore.FieldValue.delete(),
+                        phoneNumberType: admin.firestore.FieldValue.delete(),
+                        phoneNumberStatus: admin.firestore.FieldValue.delete(),
+                        sharedNumberActivatedAt: admin.firestore.FieldValue.delete()
+                    });
+                    console.log(`[processTaskRefund] ✓ Disconnected shared number from user uid_${uid}`);
+                } catch (disconnectError) {
+                    console.warn(`[processTaskRefund] Failed to disconnect shared number:`, disconnectError.message);
+                }
+            }
+
             console.log(`[processTaskRefund] ✓ All usage records logged`);
 
         } catch (error) {
