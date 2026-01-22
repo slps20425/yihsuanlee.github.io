@@ -670,7 +670,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         headerLogoutBtn.addEventListener('click', () => {
             signOut(auth).then(() => {
                 localStorage.removeItem('wisecat_user');
-                window.location.href = '/Entry.html';
+                window.location.href = '/entry.html';
             });
         });
     }
@@ -812,7 +812,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         const btn = document.getElementById('submitBtn') as HTMLButtonElement;
         btn.disabled = true;
 
-        // Elements
+        const { doc, collection, serverTimestamp, runTransaction, getDoc } = await import("firebase/firestore");
+        const { db, auth } = await import("./firebase-config");
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) {
+            (window as any).showToast("User not authenticated", "error");
+            btn.disabled = false;
+            return;
+        }
+
+        // 4. Pre-Call Eligibility & Balance Check [TASK 3 & 4]
+        const settingsDoc = await getDoc(doc(db, 'users', `uid_${currentUser.uid}`, 'settings', 'settings'));
+        const settings = settingsDoc.data() || {};
+        const hasActiveNumber = settings.phoneNumberStatus === 'active' && !!settings.phoneNumber;
+
+        let useSharedNumber = false;
+        if (!hasActiveNumber) {
+            useSharedNumber = true; // Auto-select shared pool for now
+        }
+
+        // Pre-auth (On-Hold) Calculation
+        let defaultOnHold = 5;
+        try {
+            const configSnap = await getDoc(doc(db, 'configuration', 'settings'));
+            if (configSnap.exists()) {
+                defaultOnHold = configSnap.data().default_callOnHold_minutes || 5;
+            }
+        } catch (e) { }
+
+        // Fetch User Credits
+        let userCredits = 0;
+        const sessionStr = localStorage.getItem('wisecat_user');
+        if (sessionStr) {
+            try {
+                const parsed = JSON.parse(sessionStr);
+                if (parsed.credits) userCredits = Number(parsed.credits);
+            } catch (e) { }
+        }
+
+        const ratePerMin = 4.0; // Default for mouthpiece
+        const regionMultiplier = 5.0; // Assume US for mouthpiece unless we have location
+        const minRequired = ratePerMin * regionMultiplier * defaultOnHold;
+
+        if (userCredits < minRequired) {
+            (window as any).showToast(`Insufficient balance for pre-auth. At least $${minRequired.toFixed(2)} is required (est. ${defaultOnHold} min duration).`, 'error');
+            btn.disabled = false;
+            return;
+        }
+
+        const tasksCol = collection(db, 'tasks');
+        const randomId = doc(tasksCol).id;
+        const taskId = `task_${randomId}`;
+        const taskRef = doc(db, 'tasks', taskId);
+
+        // Elements (Restored)
         const missionEl = document.getElementById('mission') as HTMLSelectElement;
         const customMissionEl = document.getElementById('customMission') as HTMLInputElement;
         const userNameEl = document.getElementById('userName') as HTMLInputElement;
@@ -821,16 +875,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const scriptEl = document.getElementById('script') as HTMLTextAreaElement;
         const schedulePreferenceEl = document.getElementById('schedulePreference') as HTMLSelectElement;
         const scriptLanguageEl = document.getElementById('scriptLanguage') as HTMLSelectElement;
-
-        // ... language logic ...
-
-        const { doc, collection, serverTimestamp, runTransaction } = await import("firebase/firestore");
-        const { db } = await import("./firebase-config");
-
-        const tasksCol = collection(db, 'tasks');
-        const randomId = doc(tasksCol).id;
-        const taskId = `task_${randomId}`;
-        const taskRef = doc(db, 'tasks', taskId);
 
         // Determine Language: Manual > Country > Fallback (EN)
         let finalLang = 'en';
@@ -853,6 +897,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const payload = {
             taskId: taskId,
+            // [TASK 2 & 4] Integration
+            uid: currentUser.uid,
+            useSharedNumber: useSharedNumber,
+            vapiPhoneNumberId: useSharedNumber ? "76705f8f-8ece-4a0e-a757-9581097c9ace" : (settings.vapiPhoneNumberId || ""),
+            phoneNumber: useSharedNumber ? "+14152125191" : (settings.phoneNumber || ""),
             type: 'mouthpiece',
             isTrial: false,
             state: 'pending',

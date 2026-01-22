@@ -203,7 +203,7 @@ onAuthStateChanged(auth, async (user) => {
 
                     console.log(`%c[DASHBOARD AUTH]`, 'color: #ef4444; font-weight: bold;',
                         '❌ Still no user after 5s delay. Redirecting to entry...');
-                    window.location.href = '/Entry.html';
+                    window.location.href = '/entry.html';
                 } else {
                     console.log(`%c[DASHBOARD AUTH]`, 'color: #22c55e; font-weight: bold;',
                         '✅ User authenticated after delay:', auth.currentUser.uid);
@@ -215,7 +215,7 @@ onAuthStateChanged(auth, async (user) => {
         console.log(`%c[DASHBOARD AUTH]`, 'color: #ef4444; font-weight: bold;',
             '🔄 No cached user or auth state. Redirecting immediately...');
         clearSessionEnforcement();
-        window.location.href = '/Entry.html';
+        window.location.href = '/entry.html';
         return;
     }
     currentUser = user;
@@ -717,7 +717,7 @@ async function loadUsageHistory() {
                     <div style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 1rem;">
                         Authentication required to view payment & usage history.
                     </div>
-                    <button class="btn btn-primary" onclick="window.location.href='/Entry.html'">
+                    <button class="btn btn-primary" onclick="window.location.href='/entry.html'">
                         Sign In / Sign Up
                     </button>
                 </td>
@@ -1013,7 +1013,7 @@ function handleLogout() {
     clearSessionEnforcement(); // [NEW] Stop listening
     signOut(auth).then(() => {
         localStorage.removeItem('wisecat_user');
-        window.location.href = '/Entry.html';
+        window.location.href = '/entry.html';
     }).catch((err) => {
         console.error("Logout error:", err);
     });

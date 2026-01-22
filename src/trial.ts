@@ -321,7 +321,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         headerLogoutBtn.addEventListener('click', () => {
             signOut(auth).then(() => {
                 localStorage.removeItem('wisecat_user');
-                window.location.href = '/Entry.html';
+                window.location.href = '/entry.html';
             });
         });
     }

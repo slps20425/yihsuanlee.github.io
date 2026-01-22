@@ -17,27 +17,27 @@ The User Management module handles authentication, user profiles, session manage
 ```mermaid
 sequenceDiagram
     participant Browser
-    participant Entry.html
+    participant entry.html
     participant Firebase Auth
     participant Firestore
     participant Dashboard
     participant Session Monitor
     
-    Browser->>Entry.html: Visit site
-    Entry.html->>Firebase Auth: Check auth state
+    Browser->>entry.html: Visit site
+    entry.html->>Firebase Auth: Check auth state
     
     alt Not Authenticated
-        Firebase Auth-->>Entry.html: No user
-        Entry.html->>Browser: Show login form
-        Browser->>Entry.html: Submit credentials
-        Entry.html->>Firebase Auth: signInWithEmailAndPassword()
-        Firebase Auth-->>Entry.html: User + Token
-        Entry.html->>Firestore: Get/Create user doc
-        Firestore-->>Entry.html: User data
-        Entry.html->>Dashboard: Redirect
+        Firebase Auth-->>entry.html: No user
+        entry.html->>Browser: Show login form
+        Browser->>entry.html: Submit credentials
+        entry.html->>Firebase Auth: signInWithEmailAndPassword()
+        Firebase Auth-->>entry.html: User + Token
+        entry.html->>Firestore: Get/Create user doc
+        Firestore-->>entry.html: User data
+        entry.html->>Dashboard: Redirect
     else Already Authenticated
-        Firebase Auth-->>Entry.html: User exists
-        Entry.html->>Dashboard: Auto-redirect
+        Firebase Auth-->>entry.html: User exists
+        entry.html->>Dashboard: Auto-redirect
     end
     
     Dashboard->>Session Monitor: Start monitoring
@@ -45,7 +45,7 @@ sequenceDiagram
         Session Monitor->>Session Monitor: Check last activity
         alt Inactive > 30 min
             Session Monitor->>Firebase Auth: Sign out
-            Session Monitor->>Entry.html: Redirect to login
+            Session Monitor->>entry.html: Redirect to login
         end
     end
 ```

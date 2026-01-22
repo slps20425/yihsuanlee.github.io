@@ -181,7 +181,97 @@ exports.triggerN8nWebhook = onDocumentCreated(
 
             console.log(`Winner Task Identified: ${winnerId} (Priority: ${winnerData.priority})`);
 
-            // 2. Lock it (Set to WIP)
+            // --- [TASK 3 & 4] Security Lockdown & Pre-auth Middleware ---
+            const uid = winnerData.uid || winnerData.userId; // Support both naming variants
+            if (!uid) {
+                console.error(`[Lockdown] Task ${winnerId} missing UID. ABORTING.`);
+                await tasksRef.doc(winnerId).update({ state: 'error', error: 'Missing User ID' });
+                return;
+            }
+
+            const userRef = db.doc(`users/${uid.startsWith('uid_') ? uid : 'uid_' + uid}`);
+            const settingsRef = userRef.collection('settings').doc('settings');
+
+            // 1. Validate Access (Owned Number OR Valid Shared Number)
+            const settingsDoc = await settingsRef.get();
+            const settings = settingsDoc.data() || {};
+            const hasActiveNumber = settings.phoneNumberStatus === 'active' && !!settings.phoneNumber;
+            const sharedPoolId = "76705f8f-8ece-4a0e-a757-9581097c9ace";
+            const isUsingShared = (winnerData.vapiPhoneNumberId === sharedPoolId || winnerData.useSharedNumber === true);
+
+            if (!hasActiveNumber && !isUsingShared) {
+                console.warn(`[Lockdown] Unauthorized Attempt for UID: ${uid}. No active number and not using pool.`);
+                // Log security alert
+                await db.collection('security_logs').add({
+                    uid,
+                    taskId: winnerId,
+                    type: winnerData.type,
+                    reason: 'Attempted call without number pool access',
+                    timestamp: admin.firestore.FieldValue.serverTimestamp()
+                });
+                await tasksRef.doc(winnerId).update({ state: 'error', error: 'Service Unavailable: No active phone number or shared pool selected.' });
+                return;
+            }
+
+            // 2. Pre-auth (On-Hold) Check
+            const configSettings = await db.doc('configuration/settings').get();
+            const configData = configSettings.data() || {};
+            const defaultOnHold = configData.default_callOnHold_minutes || 5;
+
+            const billing = await getBillingConfig(db);
+            const region = winnerData.region || 'US';
+            const ratePerMin = (billing.services && billing.services[winnerData.type]) || 4.0;
+            const regionMultiplier = (billing.country_multipliers && billing.country_multipliers[region]) || (region === 'US' ? 5 : 3);
+            const minRequired = ratePerMin * regionMultiplier * defaultOnHold;
+
+            const userDoc = await userRef.get();
+            const currentBalance = (userDoc.data() && userDoc.data().credits) || 0;
+
+            console.log(`[Pre-auth] User ${uid} Balance: $${currentBalance}, Required: $${minRequired}`);
+
+            if (currentBalance < minRequired) {
+                console.warn(`[Pre-auth] Aborting Task ${winnerId} due to low balance.`);
+                await tasksRef.doc(winnerId).update({
+                    state: 'error',
+                    error: `Insufficient balance for pre-auth. At least $${minRequired.toFixed(2)} is required (based on ${defaultOnHold} min duration).`
+                });
+                return;
+            }
+
+            // 3. [TASK 2] Shared Number Logic - Setup Fee Deduction
+            if (isUsingShared) {
+                try {
+                    const pricesDoc = await db.doc('configuration/prices').get();
+                    const prices = pricesDoc.data() || {};
+                    const multiplier = prices.shared_number_multiplier || 1.0;
+
+                    // Fetch Original Price from Shared Pool Owner Snapshot or Global Config
+                    const sharedPoolOwnerSettings = await db.doc('users/uid_rBzT6OHSk9h1TUxBJInxVBKAqZC3/settings/settings').get();
+                    const basePrice = (sharedPoolOwnerSettings.exists && sharedPoolOwnerSettings.data().original_price)
+                        || prices.us_local_original || 1.15;
+
+                    const setupFee = basePrice * multiplier;
+                    console.log(`[SharedPool] Deducting Setup Fee: $${setupFee} for Task ${winnerId}`);
+
+                    // Deduct Fee in a transaction to prevent race conditions
+                    await db.runTransaction(async (t) => {
+                        const uDoc = await t.get(userRef);
+                        const bal = uDoc.data().credits || 0;
+                        if (bal < setupFee) throw new Error("Insufficient credits for shared pool setup fee");
+                        t.update(userRef, { credits: bal - setupFee });
+                    });
+
+                    // Add setup fee to task record for transparency
+                    await tasksRef.doc(winnerId).update({ sharedPoolFee: setupFee });
+
+                } catch (sharedError) {
+                    console.error(`[SharedPool] Setup Fee Error:`, sharedError.message);
+                    await tasksRef.doc(winnerId).update({ state: 'error', error: `Shared pool rental failed: ${sharedError.message}` });
+                    return;
+                }
+            }
+
+            // 4. Lock it (Set to WIP)
             await tasksRef.doc(winnerId).update({ state: 'WIP' });
 
             // 3. Send to N8N
@@ -347,6 +437,37 @@ async function getBillingConfig(db) {
             country_multipliers: {}
         };
     }
+}
+
+/**
+ * Helper to retrieve current phone number base price from Twilio with Firestore fallback
+ */
+async function retrievePrice(countryCode, mainClient, db) {
+    let basePrice = 1.15; // Default fallback for US Local
+    try {
+        // Priority 1: Reach Twilio API
+        const pricing = await mainClient.pricing.v1.phoneNumbers.countries(countryCode).fetch();
+        const localPriceObj = pricing.phoneNumberPrices.find(p => p.numberType === 'local');
+        if (localPriceObj) {
+            basePrice = parseFloat(localPriceObj.currentPrice || 1.15);
+        } else if (pricing.phoneNumberPrices.length > 0) {
+            basePrice = parseFloat(pricing.phoneNumberPrices[0].currentPrice || 1.15);
+        }
+        console.log(`[retrievePrice] Live API Success for ${countryCode}: $${basePrice}`);
+    } catch (e) {
+        console.warn(`[retrievePrice] Twilio API failed for ${countryCode}, checking Firestore fallback:`, e.message);
+        // Priority 2: Firestore configuration/prices
+        try {
+            const priceDoc = await db.doc('configuration/prices').get();
+            if (priceDoc.exists && priceDoc.data().us_local_original) {
+                basePrice = priceDoc.data().us_local_original;
+                console.log(`[retrievePrice] Firestore fallback Success: $${basePrice}`);
+            }
+        } catch (fsError) {
+            console.error("[retrievePrice] Firestore fallback also failed:", fsError.message);
+        }
+    }
+    return basePrice;
 }
 
 const PRICING_CACHE_TTL = 86400000; // 24 hours
@@ -656,23 +777,8 @@ exports.purchasePhoneNumber = onCall(
             const baseTwilio = require('twilio');
             const mainClient = baseTwilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
 
-            let basePrice = 1.15; // Default fallback for US Local
-            try {
-                // Try to find generic price for this country/type
-                // Note: We don't know the exact type (Mobile/Local) unless passed. 
-                // We'll optimistically fetch 'Local' pricing for the country.
-                const pricing = await mainClient.pricing.v1.phoneNumbers.countries(countryCode).fetch();
-                // Find 'local' price
-                const localPriceObj = pricing.phoneNumberPrices.find(p => p.numberType === 'local');
-                if (localPriceObj) {
-                    basePrice = parseFloat(localPriceObj.currentPrice || 1.15);
-                } else if (pricing.phoneNumberPrices.length > 0) {
-                    // Fallback to first available type if local not found (e.g. some countries only have mobile)
-                    basePrice = parseFloat(pricing.phoneNumberPrices[0].currentPrice || 1.15);
-                }
-            } catch (e) {
-                console.warn("[purchasePhoneNumber] Could not fetch dynamic price, using default:", e.message);
-            }
+            // [TASK 1] Call existing retrievePrice logic during purchase
+            const basePrice = await retrievePrice(countryCode, mainClient, reservationDb);
 
             const PHONE_NUMBER_COST = basePrice * numberMultiplier;
             console.log(`[purchasePhoneNumber] Calculated Cost: $${PHONE_NUMBER_COST} (Base: $${basePrice} x ${numberMultiplier})`);
@@ -860,6 +966,7 @@ exports.purchasePhoneNumber = onCall(
                 vapiPhoneNumberId: vapiPhoneNumberId,
                 phoneNumberStatus: 'active',
                 phoneNumberPurchasedAt: admin.firestore.FieldValue.serverTimestamp(),
+                original_price: basePrice, // [TASK 1] Store purchase price snapshot
                 capabilities: purchasedNumber.capabilities || {}, // { voice: true, sms: true, mms: false }
                 smsEnabled: purchasedNumber.capabilities?.sms || false // Explicit flag for easier querying
             }, { merge: true });

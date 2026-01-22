@@ -51,7 +51,7 @@ yihsuanlee.github.io/
 │   └── trial.ts           # Trial service
 ├── functions/             # Firebase Cloud Functions
 │   └── index.js          # All backend logic
-├── Entry.html            # Login page
+├── entry.html            # Login page
 ├── dashboard.html        # Phone number management dashboard
 ├── reservation.html      # Restaurant page
 └── vite.config.ts       # Build config

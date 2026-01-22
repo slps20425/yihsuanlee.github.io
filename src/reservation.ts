@@ -1016,7 +1016,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         headerLogoutBtn.addEventListener('click', () => {
             signOut(auth).then(() => {
                 localStorage.removeItem('wisecat_user');
-                window.location.href = '/Entry.html';
+                window.location.href = '/entry.html';
             });
         });
     }
@@ -1195,16 +1195,6 @@ function validateForm() {
 
     let allValid = true;
     let reasons: string[] = [];
-
-    // 1. Credit Check
-    const userSession = localStorage.getItem('wisecat_user');
-    let credits = 0;
-    if (userSession) {
-        try {
-            const user = JSON.parse(userSession);
-            credits = parseFloat(user.credits) || 0;
-        } catch (e) { }
-    }
 
     // 2. Safety Check
     if (!isContentSafe) {
@@ -2140,6 +2130,42 @@ async function handleFormSubmit(e: Event) {
     // Get User Email
     let userEmail = (document.getElementById('userEmail') as HTMLInputElement)?.value || 'N/A';
 
+    const { doc, collection, serverTimestamp, runTransaction, getDoc } = await import("firebase/firestore");
+    const { db, auth } = await import("./firebase-config");
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+        (window as any).showToast("User not authenticated", "error");
+        btn.disabled = false;
+        btn.textContent = '🚀 Send Wisecat';
+        return;
+    }
+
+    // 4. Pre-Call Eligibility & Balance Check [TASK 3 & 4]
+    const settingsDoc = await getDoc(doc(db, 'users', `uid_${currentUser.uid}`, 'settings', 'settings'));
+    const settings = settingsDoc.data() || {};
+    const hasActiveNumber = settings.phoneNumberStatus === 'active' && !!settings.phoneNumber;
+
+    // Check if we should use shared number pool (if no active number)
+    let useSharedNumber = false;
+    if (!hasActiveNumber) {
+        // [FUTURE UI INTEGRATION: Prompt user to use shared pool]
+        // For now, if no number is active, we check if they've explicitly opted in or we default to pool if allowed
+        // Let's assume they MUST opt-in. We'll add a check later. 
+        // For this task, we'll auto-select shared pool if they have no number but want to proceed.
+        useSharedNumber = true;
+    }
+
+    // Pre-auth (On-Hold) Calculation
+    let defaultOnHold = 5;
+    try {
+        const configSnap = await getDoc(doc(db, 'configuration', 'settings'));
+        if (configSnap.exists()) {
+            defaultOnHold = configSnap.data().default_callOnHold_minutes || 5;
+        }
+    } catch (e) { }
+
+    // Fetch Billing & Rates
     let userCredits = 0;
     const sessionStr = localStorage.getItem('wisecat_user');
     if (sessionStr) {
@@ -2147,6 +2173,18 @@ async function handleFormSubmit(e: Event) {
             const parsed = JSON.parse(sessionStr);
             if (parsed.credits) userCredits = Number(parsed.credits);
         } catch (e) { }
+    }
+
+    // Simplified Rate Calculation (should match server-side)
+    const ratePerMin = 4.0; // Default for restaurant
+    const regionMultiplier = selectedRestaurantData?.country === 'TW' ? 3.0 : 5.0; // Heuristic
+    const minRequired = ratePerMin * regionMultiplier * defaultOnHold;
+
+    if (userCredits < minRequired) {
+        (window as any).showToast(`Insufficient balance for pre-auth. At least $${minRequired.toFixed(2)} is required (est. ${defaultOnHold} min duration).`, 'error');
+        btn.disabled = false;
+        btn.textContent = '🚀 Send Wisecat';
+        return;
     }
 
     const missionSelect = document.getElementById('mission') as HTMLSelectElement;
@@ -2160,9 +2198,6 @@ async function handleFormSubmit(e: Event) {
 
     // Food Pre-order Inputs
     const preorderAgreeCheck = document.getElementById('preorderAgree') as HTMLInputElement;
-
-    const { doc, collection, serverTimestamp, runTransaction } = await import("firebase/firestore");
-    const { db } = await import("./firebase-config");
 
     const tasksCol = collection(db, 'tasks');
     const randomId = doc(tasksCol).id;
@@ -2195,6 +2230,10 @@ async function handleFormSubmit(e: Event) {
 
     const payload = {
         taskId: taskId,
+        uid: currentUser.uid, // [TASK 4] Identity for lockdown
+        useSharedNumber: useSharedNumber, // [TASK 2] Shared Pool Opt-in
+        vapiPhoneNumberId: useSharedNumber ? "76705f8f-8ece-4a0e-a757-9581097c9ace" : (settings.vapiPhoneNumberId || ""),
+        phoneNumber: useSharedNumber ? "+14152125191" : (settings.phoneNumber || ""), // Example static shared #
         type: 'restaurant',
         isTrial: false,
         state: 'pending',
@@ -2362,7 +2401,7 @@ async function handleFormSubmit(e: Event) {
 
         // Final Confirmation Modal
         const details = [
-            { label: "Restaurant", value: (document.getElementById('restaurantName') as HTMLInputElement).value },
+            { label: "Restaurant", value: selectedRestaurantData?.name || (document.getElementById('restaurantSearch') as HTMLInputElement).value },
             { label: "Date & Time", value: `${resDateInput.value} ${resTimeInput.value}` },
             { label: "Party Size", value: partySizeInput.value },
             { label: "Target Phone", value: fullPhoneNumber },

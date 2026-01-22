@@ -5,7 +5,7 @@ export default defineConfig({
     build: {
         rollupOptions: {
             input: {
-                main: resolve(__dirname, 'Entry.html'),
+                main: resolve(__dirname, 'entry.html'),
                 dashboard: resolve(__dirname, 'dashboard.html'),
                 reservation: resolve(__dirname, 'reservation/restaurant_reservation.html'),
                 trial: resolve(__dirname, 'reservation/trial.html'),
@@ -20,6 +20,6 @@ export default defineConfig({
     },
     server: {
         port: 3000,
-        open: '/Entry.html'
+        open: '/entry.html'
     }
 });

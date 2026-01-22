@@ -29,10 +29,10 @@
 - Or: Logout first, then test
 
 **To force logout:**
-1. Go to Entry.html
+1. Go to entry.html
 2. If you see user profile, click "Logout"
 3. Then test the flow again
 
 ## Current URLs (case-sensitive!):
-- ✅ Entry: `/Entry.html` (capital E)
+- ✅ Entry: `/entry.html` (lowercase e)
 - ✅ Dashboard: `/dashboard.html` (lowercase d)
