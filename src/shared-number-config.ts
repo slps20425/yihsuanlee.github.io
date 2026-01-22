@@ -42,13 +42,15 @@ export function getSharedNumberConfig(): {
     id: string;
     phoneNumber: string;
     vapiPhoneNumberId: string;
+    originalPrice?: number;
 } | null {
     if (cachedSharedNumbers.length > 0) {
         const first = cachedSharedNumbers[0];
         return {
             id: first.id,
             phoneNumber: first.phoneNumber,
-            vapiPhoneNumberId: first.vapiPhoneNumberId
+            vapiPhoneNumberId: first.vapiPhoneNumberId,
+            originalPrice: first.originalPrice
         };
     }
     return null;
@@ -61,11 +63,13 @@ export function getAllSharedNumbers(): Array<{
     id: string;
     phoneNumber: string;
     vapiPhoneNumberId: string;
+    originalPrice?: number;
 }> {
     return cachedSharedNumbers.map(num => ({
         id: num.id,
         phoneNumber: num.phoneNumber,
-        vapiPhoneNumberId: num.vapiPhoneNumberId
+        vapiPhoneNumberId: num.vapiPhoneNumberId,
+        originalPrice: num.originalPrice
     }));
 }
 
@@ -77,6 +81,7 @@ export async function fetchSharedNumberConfigOnce(): Promise<{
     id: string;
     phoneNumber: string;
     vapiPhoneNumberId: string;
+    originalPrice?: number;
 } | null> {
     try {
         if (cachedSharedNumbers.length > 0) {
@@ -84,7 +89,8 @@ export async function fetchSharedNumberConfigOnce(): Promise<{
             return {
                 id: first.id,
                 phoneNumber: first.phoneNumber,
-                vapiPhoneNumberId: first.vapiPhoneNumberId
+                vapiPhoneNumberId: first.vapiPhoneNumberId,
+                originalPrice: first.originalPrice
             };
         }
 
@@ -97,7 +103,8 @@ export async function fetchSharedNumberConfigOnce(): Promise<{
             return {
                 id: doc.id,
                 phoneNumber: doc.data().phoneNumber,
-                vapiPhoneNumberId: doc.data().vapiPhoneNumberId
+                vapiPhoneNumberId: doc.data().vapiPhoneNumberId,
+                originalPrice: doc.data().originalPrice
             };
         }
 

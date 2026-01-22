@@ -308,16 +308,19 @@ exports.triggerN8nWebhook = onDocumentCreated(
             // 3. [TASK 2] Shared Number Logic - Setup Fee Deduction
             if (isUsingShared) {
                 try {
-                    const pricesDoc = await db.doc('configuration/prices').get();
-                    const prices = pricesDoc.data() || {};
-                    const multiplier = prices.shared_number_multiplier || 1.0;
+                    // Fetch the shared number document to get the originalPrice
+                    const sharedNumbersRef = db.collection('shared_numbers');
+                    const sharedNumberQuery = await sharedNumbersRef.where('vapiPhoneNumberId', '==', winnerData.vapiPhoneNumberId).limit(1).get();
 
-                    // Fetch Original Price from Shared Pool Owner Snapshot or Global Config
-                    const sharedPoolOwnerSettings = await db.doc('users/uid_rBzT6OHSk9h1TUxBJInxVBKAqZC3/settings/settings').get();
-                    const basePrice = (sharedPoolOwnerSettings.exists && sharedPoolOwnerSettings.data().original_price)
-                        || prices.us_local_original || 1.15;
+                    let setupFee = 1.75; // Default fallback
+                    if (!sharedNumberQuery.empty) {
+                        const sharedNumberDoc = sharedNumberQuery.docs[0];
+                        setupFee = sharedNumberDoc.data().originalPrice || 1.75;
+                        console.log(`[SharedPool] Found shared number with originalPrice: $${setupFee}`);
+                    } else {
+                        console.warn(`[SharedPool] Shared number not found for vapiId: ${winnerData.vapiPhoneNumberId}, using fallback price`);
+                    }
 
-                    const setupFee = basePrice * multiplier;
                     console.log(`[SharedPool] Deducting Setup Fee: $${setupFee} for Task ${winnerId}`);
 
                     // Deduct Fee in a transaction to prevent race conditions

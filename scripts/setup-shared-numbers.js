@@ -38,6 +38,7 @@ const sharedNumbers = [
             vapiPhoneNumberId: '76705f8f-8ece-4a0e-a757-9581097c9ace',
             phoneNumberStatus: 'active',
             friendlyName: 'US Business',
+            originalPrice: 1.75, // Cost we paid Twilio for this number
             smsEnabled: true,
             capabilities: {
                 MMS: true,

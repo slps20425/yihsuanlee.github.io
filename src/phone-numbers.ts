@@ -706,7 +706,8 @@ async function initializeSharedNumbersList() {
             const data = {
                 id: doc.id,
                 phoneNumber: doc.data().phoneNumber,
-                vapiPhoneNumberId: doc.data().vapiPhoneNumberId
+                vapiPhoneNumberId: doc.data().vapiPhoneNumberId,
+                originalPrice: doc.data().originalPrice
             };
             console.log('📱 [SharedNumbers] Document:', doc.id, '→', data.phoneNumber);
             return data;
@@ -730,19 +731,23 @@ async function initializeSharedNumbersList() {
                 ? `${num.phoneNumber.slice(0, 2)} (${num.phoneNumber.slice(2, 5)}) ${num.phoneNumber.slice(5, 8)}-${num.phoneNumber.slice(8)}`
                 : num.phoneNumber;
 
+            // Display price: use originalPrice rounded up, or fallback to $2
+            const displayPrice = Math.ceil(num.originalPrice || 1.75);
+
             return `
                 <button
                     class="shared-number-item"
                     data-number-id="${num.id}"
                     data-phone="${num.phoneNumber}"
                     data-vapi-id="${num.vapiPhoneNumberId}"
+                    data-original-price="${num.originalPrice || 1.75}"
                     style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background: rgba(59, 130, 246, 0.03); cursor: pointer; transition: all 0.2s; text-align: left;">
                     <div>
                         <div style="font-family: monospace; font-size: 1.1rem; color: var(--accent); font-weight: 600;">
                             ${formatted}
                         </div>
                         <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            Available • $3.50 per call
+                            Available • $${displayPrice} per call
                         </div>
                     </div>
                     <div style="font-size: 1.5rem;">📞</div>
@@ -764,8 +769,11 @@ async function initializeSharedNumbersList() {
                     return;
                 }
 
+                // Extract originalPrice from button dataset
+                const originalPrice = parseFloat(button.dataset.originalPrice || '1.75');
+
                 // Show confirmation dialog for this specific number
-                const confirmed = await showSharedNumberConfirmationDialog(phoneNumber);
+                const confirmed = await showSharedNumberConfirmationDialog(phoneNumber, originalPrice);
                 if (!confirmed) return;
 
                 // Disable all buttons during transaction
@@ -834,8 +842,8 @@ async function initializeSharedNumbersList() {
     }
 }
 
-// Updated helper function to show shared number dialog with specific phone number
-function showSharedNumberConfirmationDialog(phoneNumber?: string): Promise<boolean> {
+// Updated helper function to show shared number dialog with specific phone number and price
+function showSharedNumberConfirmationDialog(phoneNumber?: string, originalPrice?: number): Promise<boolean> {
     return new Promise((resolve) => {
         const dialog = document.getElementById('sharedNumberDialog') as HTMLDialogElement;
         const confirmBtn = document.getElementById('confirmSharedBtn') as HTMLButtonElement;
@@ -843,12 +851,21 @@ function showSharedNumberConfirmationDialog(phoneNumber?: string): Promise<boole
 
         // Update dialog content with the specific phone number if provided
         if (phoneNumber) {
-            const numberDisplay = dialog.querySelector('[style*="monospace"]') as HTMLElement;
+            const numberDisplay = document.getElementById('sharedNumberDisplay') as HTMLElement;
             if (numberDisplay) {
                 const formatted = phoneNumber.startsWith('+1') && phoneNumber.length === 12
                     ? `${phoneNumber.slice(0, 2)} (${phoneNumber.slice(2, 5)}) ${phoneNumber.slice(5, 8)}-${phoneNumber.slice(8)}`
                     : phoneNumber;
                 numberDisplay.textContent = formatted;
+            }
+        }
+
+        // Update dialog cost with the originalPrice if provided
+        if (originalPrice !== undefined) {
+            const costDisplay = document.getElementById('sharedNumberCost') as HTMLElement;
+            if (costDisplay) {
+                const displayPrice = Math.ceil(originalPrice);
+                costDisplay.textContent = `$${displayPrice}`;
             }
         }
 

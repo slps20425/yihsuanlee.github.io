@@ -93,7 +93,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/dashboard-DRk3ofHs.js"></script>
+  <script type="module" crossorigin src="/assets/dashboard-xGsPuudW.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-qregr7iJ.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-BYZpaWA5.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-BqZUnoqk.js">
@@ -710,7 +710,7 @@
     <!-- Shared Number Activation Dialog -->
     <dialog id="sharedNumberDialog">
         <div class="dialog-header">
-            <h2>🔗 Activate Shared Business Number - $3.50</h2>
+            <h2>🔗 Activate Shared Business Number</h2>
         </div>
         <div class="dialog-content">
             <div style="text-align: center; padding: 1rem 0;">
@@ -720,11 +720,10 @@
                 </p>
                 <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid var(--success); border-radius: 8px; padding: 1.5rem; margin: 1rem 0;">
                     <p style="font-size: 0.9rem; margin: 0.5rem 0;">
-                        <strong>Number:</strong> +1 (415) 212-5191
+                        <strong>Number:</strong> <span id="sharedNumberDisplay" style="font-family: monospace;">+1 (415) 212-5191</span>
                     </p>
                     <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0.5rem 0;">
-                        One-time setup fee: <strong style="color: var(--success);">$1.00</strong><br>
-                        Call buffer (pre-auth): <strong style="color: var(--success);">$2.50</strong>
+                        Activation cost: <strong id="sharedNumberCost" style="color: var(--success);">$2</strong>
                     </p>
                 </div>
                 <div style="background: rgba(234, 179, 8, 0.1); border: 1px solid var(--warning); border-radius: 8px; padding: 1rem; margin: 1rem 0;">
