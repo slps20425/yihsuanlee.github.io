@@ -1,6 +1,46 @@
 # Setup Scripts
 
-This directory contains scripts to help configure Firestore for the WiseCat application.
+This directory contains scripts to help configure and manage the WiseCat application.
+
+## Version Management
+
+### Automatic Version Syncing
+
+The app now automatically syncs the version from `package.json` to `src/version.ts` before each build.
+
+**How to bump the version:**
+
+```bash
+# Patch version (1.0.0 → 1.0.1)
+npm version patch
+
+# Minor version (1.0.0 → 1.1.0)
+npm version minor
+
+# Major version (1.0.0 → 2.0.0)
+npm version major
+```
+
+Then deploy normally:
+```bash
+npm run build
+npm run deploy
+# or
+npm run ship
+```
+
+The `prebuild` script automatically:
+- Reads version from `package.json`
+- Updates `src/version.ts`
+- Captures the exact build timestamp
+- Displays in browser console: `window.WiseCatVersion`
+
+**Checking version in browser:**
+
+Open the browser console and type:
+```javascript
+window.WiseCatVersion.checkUpdate()
+```
 
 ## Shared Numbers Setup
 
