@@ -5,6 +5,7 @@ import { getDoc, doc, setDoc, getDocs, collection, onSnapshot } from "firebase/f
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { MISSION_SCENARIOS } from './mission-scenarios';
 import './chat-assistant'; // Enable Chat Widget
+import { showToast } from './utility-toast'; // Centralized toast notifications
 
 // Mission interface
 interface MissionScenario {
@@ -115,6 +116,7 @@ let turnstileValidated = false;
 
 let currentCost = 5; // Default cost
 let defaultRetryCount = 5; // Default retry count if config missing
+let defaultOnHold = 5; // Default on-hold minutes
 let minPreorderDays = 3; // Default 3 days
 
 
@@ -275,10 +277,11 @@ document.addEventListener("DOMContentLoaded", async function () {
             const data = docSnap.data();
             const isEnabled = data.enable_reservation !== false; // Default true if field missing
 
-            // Dynamic Cost
-            if (data.cost_reservation !== undefined) {
-                currentCost = Number(data.cost_reservation);
+            // Dynamic On-Hold Minutes
+            if (data.default_callOnHold_minutes !== undefined) {
+                defaultOnHold = Number(data.default_callOnHold_minutes);
             }
+            updateDynamicCost();
 
             // Min Preorder Days
             if (data.min_preorder_days !== undefined) {
@@ -327,7 +330,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
             } else {
                 const display = document.getElementById('dynamicCostDisplay');
-                if (display) display.innerText = String(currentCost);
+                if (display) display.innerText = currentCost.toFixed(2);
             }
 
             // Setup tooltip positioning and interaction (runs on every update)
@@ -432,12 +435,30 @@ document.addEventListener("DOMContentLoaded", async function () {
                     configAlert.style.display = "none";
                     resBtn.style.opacity = "1";
                     resBtn.style.cursor = "pointer";
-                    // Validation logic elsewhere handles the specific disabled state for inputs
-                    // We just lift the "maintenance" lock
                 }
             }
         }
     });
+
+    // Helper: Dynamic Cost Calculation
+    function updateDynamicCost() {
+        const country = (selectedRestaurantData?.country || 'US').toUpperCase();
+
+        // Logic sync: Matches backend retrieveOutboundCallRate logic
+        const basePrice = (country === 'US') ? 0.02 : (country === 'TW' ? 0.06 : 0.05);
+        const multiplier = 3.0; // Alignment with common_multiplier
+
+        currentCost = basePrice * multiplier * defaultOnHold;
+
+        const display = document.getElementById('dynamicCostDisplay');
+        if (display) display.innerText = currentCost.toFixed(2);
+
+        const retryWarning = document.querySelector('label[for="retryOption"] span.warning-text');
+        if (retryWarning) {
+            const totalMaxCost = currentCost + defaultRetryCount;
+            (retryWarning as HTMLElement).textContent = `(Max cost: ${totalMaxCost.toFixed(2)} credits if all retries used)`;
+        }
+    }
 
     // Check if script already loaded before us
     if ((window as any).isTurnstileLoaded) {
@@ -2000,6 +2021,67 @@ async function showConfirmationModal(details: { label: string, value: string }[]
     });
 }
 
+// Phone Number Purchase Modal Handler - Returns choice or null if cancelled
+function showPhoneNumberPurchaseModal(): Promise<'onetime' | 'monthly' | null> {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('phoneNumberPurchaseModal') as HTMLElement;
+        const cancelBtn = document.getElementById('phoneNumberCancel') as HTMLButtonElement;
+        const optionOneTime = document.getElementById('phoneOptionOneTime') as HTMLElement;
+        const optionMonthly = document.getElementById('phoneOptionMonthly') as HTMLElement;
+
+        if (!modal) {
+            resolve(null);
+            return;
+        }
+
+        modal.style.display = 'flex';
+
+        const closeModal = () => {
+            modal.style.display = 'none';
+            // Remove event listeners
+            if (cancelBtn) cancelBtn.removeEventListener('click', onCancel);
+            if (optionOneTime) optionOneTime.removeEventListener('click', onSelectOneTime);
+            if (optionMonthly) optionMonthly.removeEventListener('click', onSelectMonthly);
+            modal.removeEventListener('click', onBackdropClick);
+        };
+
+        const onCancel = () => {
+            closeModal();
+            resolve(null);
+        };
+
+        const onSelectOneTime = () => {
+            closeModal();
+            resolve('onetime');
+        };
+
+        const onSelectMonthly = () => {
+            closeModal();
+            resolve('monthly');
+        };
+
+        const onBackdropClick = (e: Event) => {
+            if (e.target === modal) {
+                onCancel();
+            }
+        };
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', onCancel);
+        }
+
+        if (optionOneTime) {
+            optionOneTime.addEventListener('click', onSelectOneTime);
+        }
+
+        if (optionMonthly) {
+            optionMonthly.addEventListener('click', onSelectMonthly);
+        }
+
+        modal.addEventListener('click', onBackdropClick);
+    });
+}
+
 async function handleFormSubmit(e: Event) {
     e.preventDefault();
 
@@ -2087,11 +2169,7 @@ async function handleFormSubmit(e: Event) {
     // Final Check
     if (errors.length > 0) {
         const msg = errors[0]; // Show first error or generic
-        if ((window as any).showToast) {
-            (window as any).showToast(`⚠️ ${msg}`, "error");
-        } else {
-            if ((window as any).showToast) (window as any).showToast(`⚠️ ${msg}`, 'error');
-        }
+        showToast(`⚠️ ${msg}`, "error");
 
         if (firstErrorEl) {
             firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2102,7 +2180,7 @@ async function handleFormSubmit(e: Event) {
 
     // Security and refinement is now handled unified by the 'Check Description' AI call before final submission.
     if (!isContentSafe) {
-        if ((window as any).showToast) (window as any).showToast("⚠️ Suspicious content detected or mission mismatch, please check your input.", 'error');
+        showToast("⚠️ Suspicious content detected or mission mismatch, please check your input.", 'error');
         return;
     }
 
@@ -2135,7 +2213,7 @@ async function handleFormSubmit(e: Event) {
     const currentUser = auth.currentUser;
 
     if (!currentUser) {
-        (window as any).showToast("User not authenticated", "error");
+        showToast("User not authenticated", "error");
         btn.disabled = false;
         btn.textContent = '🚀 Send Wisecat';
         return;
@@ -2149,15 +2227,29 @@ async function handleFormSubmit(e: Event) {
     // Check if we should use shared number pool (if no active number)
     let useSharedNumber = false;
     if (!hasActiveNumber) {
-        // [FUTURE UI INTEGRATION: Prompt user to use shared pool]
-        // For now, if no number is active, we check if they've explicitly opted in or we default to pool if allowed
-        // Let's assume they MUST opt-in. We'll add a check later. 
-        // For this task, we'll auto-select shared pool if they have no number but want to proceed.
-        useSharedNumber = true;
+        // Show phone number purchase modal to let user choose
+        btn.disabled = false;
+        const choice = await showPhoneNumberPurchaseModal();
+
+        if (choice === 'monthly') {
+            // Redirect to dashboard to purchase a monthly number
+            showToast("Redirecting to phone numbers section...", "info");
+            window.location.href = '/dashboard.html?tab=addTab';
+            return;
+        } else if (choice === 'onetime') {
+            // Continue with shared number
+            useSharedNumber = true;
+            showToast("You'll use our shared business number for this reservation call.", "success");
+            btn.disabled = true;
+        } else {
+            // User cancelled
+            showToast("Form submission cancelled.", "info");
+            return;
+        }
     }
 
     // Pre-auth (On-Hold) Calculation
-    let defaultOnHold = 5;
+    // Use global defaultOnHold
     try {
         const configSnap = await getDoc(doc(db, 'configuration', 'settings'));
         if (configSnap.exists()) {
@@ -2181,7 +2273,7 @@ async function handleFormSubmit(e: Event) {
     const minRequired = ratePerMin * defaultOnHold;
 
     if (userCredits < minRequired) {
-        (window as any).showToast(`Insufficient balance for pre-auth. At least $${minRequired.toFixed(2)} is required (est. ${defaultOnHold} min duration).`, 'error');
+        showToast(`Insufficient balance for pre-auth. At least $${minRequired.toFixed(2)} is required (est. ${defaultOnHold} min duration).`, 'error');
         btn.disabled = false;
         btn.textContent = '🚀 Send Wisecat';
         return;
@@ -2337,7 +2429,7 @@ async function handleFormSubmit(e: Event) {
             const finalDate = guessUTC;
 
             if (finalDate.getTime() < Date.now()) {
-                (window as any).showToast("Scheduled time cannot be in the past.", "error");
+                showToast("Scheduled time cannot be in the past.", "error");
                 btn.disabled = false;
                 return;
             }

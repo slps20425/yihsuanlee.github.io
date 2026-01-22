@@ -9,6 +9,7 @@ import './chat-assistant'; // Enable Chat Widget
 
 import './nav-active'; // Set active navigation item
 import { MISSION_SCENARIOS, MissionScenario } from './mission-scenarios';
+import { showToast } from './utility-toast'; // Centralized toast notifications
 
 // Global mission storage (fetched dynamically from Firestore)
 let dynamicMissions: MissionScenario[] = [];
@@ -40,9 +41,12 @@ declare var intlTelInput: any;
 let turnstileValidated = false;
 let phoneInputPlugin: any = null;
 let currentCost = 3; // Default cost for mouthpiece
+let defaultOnHold = 5; // Default on-hold minutes
 let defaultRetryCount = 5; // Default retry count if config missing
 let retryCostPerAttempt = 0.3; // Default 0.3 credits per retry
 let retryInterval = 10; // Default 10 minutes
+let dialCodeBuffer = "";
+let dialCodeTimeout: number | undefined;
 
 // ... (omitted shared code)
 
@@ -265,10 +269,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = docSnap.data();
             const isEnabled = data.enable_mouthpiece !== false; // Default true
 
-            // Dynamic Cost
-            if (data.cost_mouthpiece !== undefined) {
-                currentCost = Number(data.cost_mouthpiece);
+            // Dynamic On-Hold Minutes
+            if (data.default_callOnHold_minutes !== undefined) {
+                defaultOnHold = Number(data.default_callOnHold_minutes);
             }
+            updateDynamicCost();
 
             // Dynamic Retry Config
             if (data.default_retry_count !== undefined) {
@@ -313,14 +318,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="info-icon">i</div>
                         <div class="cost-tooltip">
                             <strong>Cost Information</strong><br>
-                            This task costs <span id="dynamicCostDisplay">${currentCost}</span> credit(s).
+                            This task costs <span id="dynamicCostDisplay">${currentCost.toFixed(2)}</span> credit(s).
                         </div>
                     `;
                     header.parentNode?.insertBefore(iconContainer, header.nextSibling);
                 }
             } else {
-                const display = document.getElementById('dynamicCostDisplay');
-                if (display) display.innerText = String(currentCost);
+                updateDynamicCost();
             }
 
             // Setup tooltip positioning and interaction (runs on every update)
@@ -402,7 +406,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Close tooltip when clicking elsewhere
                 const closeOnClickOutside = (e: MouseEvent) => {
-                    if (isOpen && !iconContainer.contains(e.target as Node)) {
+                    if (isOpen && !iconContainer!.contains(e.target as Node)) { // Use ! for non-null assertion
                         hideTooltip();
                     }
                 };
@@ -431,10 +435,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // Helper: Dynamic Cost Calculation
+    async function updateDynamicCost() {
+        let country = 'US';
+        if (phoneInputPlugin) {
+            const countryData = phoneInputPlugin.getSelectedCountryData();
+            if (countryData && countryData.iso2) {
+                country = countryData.iso2.toUpperCase();
+            }
+        }
+
+        // Logic sync: Matches backend retrieveOutboundCallRate logic
+        // We use slightly higher fallbacks for UI safety
+        const basePrice = (country === 'US') ? 0.02 : (country === 'TW' ? 0.06 : 0.05);
+        const multiplier = 3.0; // Alignment with common_multiplier
+
+        currentCost = basePrice * multiplier * defaultOnHold;
+
+        const display = document.getElementById('dynamicCostDisplay');
+        if (display) display.innerText = currentCost.toFixed(2);
+    }
+
     // Initialize intl-tel-input
     const input = document.querySelector("#targetPhone");
-    if (input) {
-        phoneInputPlugin = intlTelInput(input, {
+    const phoneInputHtmlElement = input as HTMLInputElement; // Renamed for clarity
+    if (phoneInputHtmlElement) {
+        phoneInputPlugin = intlTelInput(phoneInputHtmlElement, {
             initialCountry: "auto",
             geoIpLookup: function (callback: (code: string) => void) {
                 fetch("https://ipapi.co/json")
@@ -447,718 +473,768 @@ document.addEventListener('DOMContentLoaded', async () => {
             separateDialCode: true
         });
 
-        // Add dial code search feature
-        let dialCodeBuffer = "";
-        let dialCodeTimeout: number | null = null;
+        phoneInputHtmlElement.addEventListener('countrychange', updateDynamicCost);
+        // Initial set
+        setTimeout(updateDynamicCost, 1000);
+    }
+}); // End of DOMContentLoaded
 
-        document.addEventListener("keydown", (e: KeyboardEvent) => {
-            const dropdown = document.querySelector(".iti__country-list");
-            if (!dropdown || dropdown.classList.contains("iti__hide")) return;
+// Global helper for event listeners if needed outside
+(window as any).refreshMouthpieceCost = () => {
+    const display = document.getElementById('dynamicCostDisplay');
+    if (display) display.innerText = currentCost.toFixed(2);
+};
 
-            if (e.key >= "0" && e.key <= "9") {
-                e.preventDefault();
-                dialCodeBuffer += e.key;
+// Add dial code search feature
+document.addEventListener("keydown", (e: KeyboardEvent) => {
+    const dropdown = document.querySelector(".iti__country-list");
+    if (!dropdown || dropdown.classList.contains("iti__hide")) return;
 
-                if (dialCodeTimeout) clearTimeout(dialCodeTimeout);
+    if (e.key >= "0" && e.key <= "9") {
+        e.preventDefault();
+        dialCodeBuffer += e.key;
 
-                const countries = dropdown.querySelectorAll(".iti__country");
-                for (const country of countries) {
-                    const dialCode = country.querySelector(".iti__dial-code")?.textContent?.replace("+", "");
-                    if (dialCode && dialCode.startsWith(dialCodeBuffer)) {
-                        country.scrollIntoView({ block: "nearest", behavior: "smooth" });
-                        countries.forEach(c => c.classList.remove("iti__highlight"));
-                        country.classList.add("iti__highlight");
-                        break;
+        if (dialCodeTimeout) window.clearTimeout(dialCodeTimeout);
+
+        const countries = dropdown.querySelectorAll(".iti__country");
+        for (const country of countries) {
+            const dialCode = country.querySelector(".iti__dial-code")?.textContent?.replace("+", "");
+            if (dialCode && dialCode.startsWith(dialCodeBuffer)) {
+                country.scrollIntoView({ block: "nearest", behavior: "smooth" });
+                countries.forEach(c => c.classList.remove("iti__highlight"));
+                country.classList.add("iti__highlight");
+                break;
+            }
+        }
+
+        dialCodeTimeout = window.setTimeout(() => {
+            dialCodeBuffer = "";
+        }, 1000);
+    }
+});
+
+// Listen for input changes
+const phoneInput = document.getElementById('targetPhone');
+const mission = document.getElementById('mission');
+const form = document.getElementById('mouthpieceForm');
+const scriptLang = document.getElementById('scriptLanguage') as HTMLSelectElement;
+
+function updateAutoDetectLabel() {
+    if (!phoneInputPlugin || !scriptLang) return;
+    const countryData = phoneInputPlugin.getSelectedCountryData();
+    const dialCode = countryData.dialCode;
+    let langName = "English";
+
+    // Simple mapping for display
+    switch (dialCode) {
+        case "886": langName = "Traditional Chinese"; break;
+        case "81": langName = "Japanese"; break;
+        case "82": langName = "Korean"; break;
+        case "34": langName = "Spanish"; break;
+        case "33": langName = "French"; break;
+        case "39": langName = "Italian"; break;
+        default: langName = "English"; break;
+    }
+
+    const autoOption = scriptLang.querySelector('option[value="auto"]');
+    if (autoOption) {
+        // Get the current text (which might be localized)
+        // We assume the verified structure "Something (Something)"
+        // If we want to be safe, we just prepend/append.
+        // User asked for "Auto-Detect (English)"
+        // Current i18n is "Auto-Detect (Based on Country)"
+        // We can replace the content within the last parentheses, or just append if none.
+        let text = autoOption.getAttribute('data-i18n-original') || autoOption.textContent || "";
+
+        // Store original if not stored yet (hack to keep localization base)
+        if (!autoOption.getAttribute('data-i18n-original')) {
+            autoOption.setAttribute('data-i18n-original', text);
+        }
+
+        // Extract base part (before parenthesis)
+        const parts = text.split('(');
+        const base = parts[0].trim();
+
+        autoOption.textContent = `${base} (${langName})`;
+    }
+}
+
+const loadContactBtn = document.getElementById('loadContactBtn');
+
+// Check for Contact Picker API support
+const isContactPickerSupported = ('contacts' in navigator && 'ContactsManager' in window);
+
+if (loadContactBtn) {
+    if (isContactPickerSupported) {
+        loadContactBtn.style.display = 'flex';
+
+        loadContactBtn.addEventListener('click', async () => {
+            const props = ['name', 'tel'];
+            const opts = { multiple: false };
+
+            try {
+                const contacts = await (navigator as any).contacts.select(props, opts);
+
+                if (contacts.length) {
+                    const contact = contacts[0];
+
+                    // Populate Name
+                    const recipient = document.getElementById('recipientName') as HTMLInputElement;
+                    if (recipient && contact.name && contact.name.length) {
+                        recipient.value = contact.name[0];
+                        // Trigger validation/updates if needed
+                    }
+
+                    // Populate Phone
+                    const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
+                    if (phoneInput && contact.tel && contact.tel.length) {
+                        // Clean the phone number first? 
+                        // intl-tel-input usually handles pasting, but setting value directly might need setNumber
+                        let tel = contact.tel[0];
+
+                        if (phoneInputPlugin) {
+                            phoneInputPlugin.setNumber(tel);
+                        } else {
+                            phoneInput.value = tel;
+                        }
+
+                        // Trigger events for validation and country update
+                        phoneInput.dispatchEvent(new Event('input'));
+                        phoneInput.dispatchEvent(new Event('countrychange'));
+                        phoneInput.dispatchEvent(new Event('blur'));
                     }
                 }
-
-                dialCodeTimeout = window.setTimeout(() => {
-                    dialCodeBuffer = "";
-                }, 1000);
+            } catch (ex) {
+                console.error('Contact Picker failed:', ex);
+                // Fail silently or show toast? For now silent as prompt cancellation throws error
             }
         });
+    } else {
+        loadContactBtn.style.display = 'none';
     }
+}
 
-    // Listen for input changes
-    const phoneInput = document.getElementById('targetPhone');
-    const mission = document.getElementById('mission');
-    const form = document.getElementById('mouthpieceForm');
-    const scriptLang = document.getElementById('scriptLanguage') as HTMLSelectElement;
+if (phoneInput) {
+    phoneInput.addEventListener('input', validateForm);
+    phoneInput.addEventListener('countrychange', () => {
+        validateForm();
+        updateAutoDetectLabel();
+    });
+    phoneInput.addEventListener('blur', validateForm);
 
-    function updateAutoDetectLabel() {
-        if (!phoneInputPlugin || !scriptLang) return;
-        const countryData = phoneInputPlugin.getSelectedCountryData();
-        const dialCode = countryData.dialCode;
-        let langName = "English";
+    // Initial call
+    setTimeout(updateAutoDetectLabel, 1000); // Wait for plugin init
+}
 
-        // Simple mapping for display
-        switch (dialCode) {
-            case "886": langName = "Traditional Chinese"; break;
-            case "81": langName = "Japanese"; break;
-            case "82": langName = "Korean"; break;
-            case "34": langName = "Spanish"; break;
-            case "33": langName = "French"; break;
-            case "39": langName = "Italian"; break;
-            default: langName = "English"; break;
+const userEmailInput = document.getElementById('userEmail') as HTMLInputElement;
+if (userEmailInput) {
+    userEmailInput.addEventListener('input', validateForm);
+    userEmailInput.addEventListener('blur', validateForm);
+}
+
+const consentCheckbox = document.getElementById('consentCheckbox');
+if (consentCheckbox) {
+    consentCheckbox.addEventListener('change', validateForm);
+}
+
+if (mission) {
+    mission.addEventListener('change', (e: Event) => {
+        const custom = document.getElementById('customMission');
+        if (custom) {
+            custom.style.display = (e.target as HTMLSelectElement).value === 'other' ? 'block' : 'none';
+            if ((e.target as HTMLSelectElement).value === 'other') custom.focus();
         }
+    });
+}
 
-        const autoOption = scriptLang.querySelector('option[value="auto"]');
-        if (autoOption) {
-            // Get the current text (which might be localized)
-            // We assume the verified structure "Something (Something)"
-            // If we want to be safe, we just prepend/append.
-            // User asked for "Auto-Detect (English)"
-            // Current i18n is "Auto-Detect (Based on Country)"
-            // We can replace the content within the last parentheses, or just append if none.
-            let text = autoOption.getAttribute('data-i18n-original') || autoOption.textContent || "";
+// Load User
+const userSession = localStorage.getItem('wisecat_user');
+const userNameInput = document.getElementById('userName') as HTMLInputElement;
 
-            // Store original if not stored yet (hack to keep localization base)
-            if (!autoOption.getAttribute('data-i18n-original')) {
-                autoOption.setAttribute('data-i18n-original', text);
-            }
-
-            // Extract base part (before parenthesis)
-            const parts = text.split('(');
-            const base = parts[0].trim();
-
-            autoOption.textContent = `${base} (${langName})`;
-        }
-    }
-
-    const loadContactBtn = document.getElementById('loadContactBtn');
-
-    // Check for Contact Picker API support
-    const isContactPickerSupported = ('contacts' in navigator && 'ContactsManager' in window);
-
-    if (loadContactBtn) {
-        if (isContactPickerSupported) {
-            loadContactBtn.style.display = 'flex';
-
-            loadContactBtn.addEventListener('click', async () => {
-                const props = ['name', 'tel'];
-                const opts = { multiple: false };
-
-                try {
-                    const contacts = await (navigator as any).contacts.select(props, opts);
-
-                    if (contacts.length) {
-                        const contact = contacts[0];
-
-                        // Populate Name
-                        const recipient = document.getElementById('recipientName') as HTMLInputElement;
-                        if (recipient && contact.name && contact.name.length) {
-                            recipient.value = contact.name[0];
-                            // Trigger validation/updates if needed
-                        }
-
-                        // Populate Phone
-                        const phoneInput = document.getElementById('targetPhone') as HTMLInputElement;
-                        if (phoneInput && contact.tel && contact.tel.length) {
-                            // Clean the phone number first? 
-                            // intl-tel-input usually handles pasting, but setting value directly might need setNumber
-                            let tel = contact.tel[0];
-
-                            if (phoneInputPlugin) {
-                                phoneInputPlugin.setNumber(tel);
-                            } else {
-                                phoneInput.value = tel;
-                            }
-
-                            // Trigger events for validation and country update
-                            phoneInput.dispatchEvent(new Event('input'));
-                            phoneInput.dispatchEvent(new Event('countrychange'));
-                            phoneInput.dispatchEvent(new Event('blur'));
-                        }
-                    }
-                } catch (ex) {
-                    console.error('Contact Picker failed:', ex);
-                    // Fail silently or show toast? For now silent as prompt cancellation throws error
-                }
-            });
-        } else {
-            loadContactBtn.style.display = 'none';
-        }
-    }
-
-    if (phoneInput) {
-        phoneInput.addEventListener('input', validateForm);
-        phoneInput.addEventListener('countrychange', () => {
+if (userSession) {
+    try {
+        const user = JSON.parse(userSession);
+        if (user.name && userNameInput) userNameInput.value = user.name;
+        if (user.email && userEmailInput) {
+            userEmailInput.value = user.email;
             validateForm();
-            updateAutoDetectLabel();
+        }
+    } catch (e) { }
+}
+
+// --- Header Sync & Initialize Missions
+onAuthStateChanged(auth, async (user) => { // Changed to async
+    const headerUserName = document.getElementById('headerUserName');
+    const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement | null;
+    const creditsDisplay = document.getElementById('creditsDisplay');
+
+    if (user) {
+        console.log("User authenticated:", user.displayName || user.email);
+
+        // Fetch missions from Firestore
+        dynamicMissions = await fetchMissionsFromFirestore();
+        console.log(`Loaded ${dynamicMissions.length} missions from Firestore`);
+
+        // Populate dropdown with missions
+        populateMissionDropdown();
+
+        // Show mission description for default selection
+        updateMissionDescription();
+
+        // Pre-populate email field with user's profile email
+        const userEmailInput = document.getElementById('userEmail') as HTMLInputElement;
+        if (userEmailInput && user.email) {
+            userEmailInput.value = user.email;
+            validateForm();
+        }
+
+        if (headerUserName) headerUserName.textContent = user.displayName || 'User';
+        if (headerUserAvatar && user.photoURL) headerUserAvatar.src = user.photoURL;
+
+        const userSession = localStorage.getItem('wisecat_user');
+        if (userSession && creditsDisplay) {
+            const u = JSON.parse(userSession);
+            creditsDisplay.textContent = `$${(u.credits || 0).toFixed(2)}`;
+        }
+    }
+});
+
+const headerLogoutBtn = document.getElementById('headerLogoutBtn');
+if (headerLogoutBtn) {
+    headerLogoutBtn.addEventListener('click', () => {
+        signOut(auth).then(() => {
+            localStorage.removeItem('wisecat_user');
+            window.location.href = '/entry.html';
         });
-        phoneInput.addEventListener('blur', validateForm);
+    });
+}
 
-        // Initial call
-        setTimeout(updateAutoDetectLabel, 1000); // Wait for plugin init
-    }
+if (form) form.addEventListener('submit', handleFormSubmit);
 
-    const userEmailInput = document.getElementById('userEmail') as HTMLInputElement;
-    if (userEmailInput) {
-        userEmailInput.addEventListener('input', validateForm);
-        userEmailInput.addEventListener('blur', validateForm);
-    }
+// Helper Buddy Logic
+const buddy = document.getElementById('helperBuddy');
+const panel = document.getElementById('helperPanel');
+const close = document.getElementById('helperClose');
 
-    const consentCheckbox = document.getElementById('consentCheckbox');
-    if (consentCheckbox) {
-        consentCheckbox.addEventListener('change', validateForm);
-    }
+if (buddy && panel) buddy.addEventListener('click', () => panel.classList.toggle('show'));
+if (close && panel) close.addEventListener('click', () => panel.classList.remove('show'));
 
-    if (mission) {
-        mission.addEventListener('change', (e: Event) => {
-            const custom = document.getElementById('customMission');
-            if (custom) {
-                custom.style.display = (e.target as HTMLSelectElement).value === 'other' ? 'block' : 'none';
-                if ((e.target as HTMLSelectElement).value === 'other') custom.focus();
-            }
-        });
-    }
+// --- Scheduler UI Logic ---
+const scheduleContainer = document.getElementById('scheduleContainer');
+const schedulePreference = document.getElementById('schedulePreference');
 
-    // Load User
-    const userSession = localStorage.getItem('wisecat_user');
-    const userNameInput = document.getElementById('userName') as HTMLInputElement;
+if (scheduleContainer && schedulePreference) {
+    schedulePreference.addEventListener('change', (e) => {
+        const val = (e.target as HTMLSelectElement).value;
+        const isScheduled = val === 'scheduled';
+        scheduleContainer.style.display = isScheduled ? 'block' : 'none';
 
-    if (userSession) {
-        try {
-            const user = JSON.parse(userSession);
-            if (user.name && userNameInput) userNameInput.value = user.name;
-            if (user.email && userEmailInput) {
-                userEmailInput.value = user.email;
-                validateForm();
-            }
-        } catch (e) { }
-    }
-
-    // --- Header Sync & Initialize Missions
-    onAuthStateChanged(auth, async (user) => { // Changed to async
-        const headerUserName = document.getElementById('headerUserName');
-        const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement | null;
-        const creditsDisplay = document.getElementById('creditsDisplay');
-
-        if (user) {
-            console.log("User authenticated:", user.displayName || user.email);
-
-            // Fetch missions from Firestore
-            dynamicMissions = await fetchMissionsFromFirestore();
-            console.log(`Loaded ${dynamicMissions.length} missions from Firestore`);
-
-            // Populate dropdown with missions
-            populateMissionDropdown();
-
-            // Show mission description for default selection
-            updateMissionDescription();
-
-            // Pre-populate email field with user's profile email
-            const userEmailInput = document.getElementById('userEmail') as HTMLInputElement;
-            if (userEmailInput && user.email) {
-                userEmailInput.value = user.email;
-                validateForm();
-            }
-
-            if (headerUserName) headerUserName.textContent = user.displayName || 'User';
-            if (headerUserAvatar && user.photoURL) headerUserAvatar.src = user.photoURL;
-
-            const userSession = localStorage.getItem('wisecat_user');
-            if (userSession && creditsDisplay) {
-                const u = JSON.parse(userSession);
-                creditsDisplay.textContent = `$${(u.credits || 0).toFixed(2)}`;
+        if (isScheduled) {
+            const timeInput = document.getElementById('scheduleTime') as HTMLInputElement;
+            if (timeInput) {
+                const now = new Date();
+                // ISO string is UTC, so we need to offset it to match local time for the input
+                const localIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                timeInput.min = localIso;
             }
         }
     });
+}
 
-    const headerLogoutBtn = document.getElementById('headerLogoutBtn');
-    if (headerLogoutBtn) {
-        headerLogoutBtn.addEventListener('click', () => {
-            signOut(auth).then(() => {
-                localStorage.removeItem('wisecat_user');
-                window.location.href = '/entry.html';
-            });
-        });
+// Timezone Mapping (Simple)
+// Import full timezone map
+// Note: We need a dynamic import or top-level import. Since this is inside DOMContentLoaded, we should move the import to top of file
+// But for now, we can dynamically import it or assume it's available if we change the structure.
+// Actually, `mouthpiece.ts` is likely an ES module. I should add the import at the top.
+
+// Changing strategy: I will add the import at the very top of the file first.
+// This step only DELETES the local map.
+const updateTimezone = async () => {
+    if (!phoneInputPlugin) return;
+    const countryData = phoneInputPlugin.getSelectedCountryData();
+    const countryCode = countryData.iso2;
+    const tzDisplay = document.getElementById('detectedTimezone');
+
+    // Dynamic import to avoid breaking changes at top level if build config is strict
+    // But standard import is better. I will add import at top in next step.
+    let tz = '';
+    let source = '';
+
+    if (countryCode && countryTimezones[countryCode]) {
+        tz = countryTimezones[countryCode];
+        source = `based on ${countryCode.toUpperCase()}`;
+    } else {
+        // Fallback
+        try {
+            tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            source = 'your browser time';
+        } catch (e) {
+            tz = 'UTC';
+            source = 'default';
+        }
     }
 
-    if (form) form.addEventListener('submit', handleFormSubmit);
-
-    // Helper Buddy Logic
-    const buddy = document.getElementById('helperBuddy');
-    const panel = document.getElementById('helperPanel');
-    const close = document.getElementById('helperClose');
-
-    if (buddy && panel) buddy.addEventListener('click', () => panel.classList.toggle('show'));
-    if (close && panel) close.addEventListener('click', () => panel.classList.remove('show'));
-
-    // --- Scheduler UI Logic ---
-    const scheduleContainer = document.getElementById('scheduleContainer');
-    const schedulePreference = document.getElementById('schedulePreference');
-
-    if (scheduleContainer && schedulePreference) {
-        schedulePreference.addEventListener('change', (e) => {
-            const val = (e.target as HTMLSelectElement).value;
-            const isScheduled = val === 'scheduled';
-            scheduleContainer.style.display = isScheduled ? 'block' : 'none';
-
-            if (isScheduled) {
-                const timeInput = document.getElementById('scheduleTime') as HTMLInputElement;
-                if (timeInput) {
-                    const now = new Date();
-                    // ISO string is UTC, so we need to offset it to match local time for the input
-                    const localIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-                    timeInput.min = localIso;
-                }
-            }
-        });
+    if (tzDisplay) {
+        tzDisplay.innerText = `${tz} (${source})`;
+        tzDisplay.setAttribute('data-tz', tz);
     }
+};
 
-    // Timezone Mapping (Simple)
-    // Import full timezone map
-    // Note: We need a dynamic import or top-level import. Since this is inside DOMContentLoaded, we should move the import to top of file
-    // But for now, we can dynamically import it or assume it's available if we change the structure.
-    // Actually, `mouthpiece.ts` is likely an ES module. I should add the import at the top.
 
-    // Changing strategy: I will add the import at the very top of the file first.
-    // This step only DELETES the local map.
-    const updateTimezone = async () => {
-        if (!phoneInputPlugin) return;
-        const countryData = phoneInputPlugin.getSelectedCountryData();
-        const countryCode = countryData.iso2;
-        const tzDisplay = document.getElementById('detectedTimezone');
 
-        // Dynamic import to avoid breaking changes at top level if build config is strict
-        // But standard import is better. I will add import at top in next step.
-        let tz = '';
-        let source = '';
+if (phoneInput) {
+    phoneInput.addEventListener('countrychange', updateTimezone);
+    // Initial update
+    setTimeout(updateTimezone, 1000);
+}
 
-        if (countryCode && countryTimezones[countryCode]) {
-            tz = countryTimezones[countryCode];
-            source = `based on ${countryCode.toUpperCase()}`;
-        } else {
-            // Fallback
-            try {
-                tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                source = 'your browser time';
-            } catch (e) {
-                tz = 'UTC';
-                source = 'default';
-            }
+
+async function showConfirmationModal(details: { label: string, value: string }[]): Promise<boolean> {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirmModal') as HTMLElement;
+        const detailsContainer = document.getElementById('confirmDetails') as HTMLElement;
+        const cancelBtn = document.getElementById('modalCancel') as HTMLButtonElement;
+        const confirmBtn = document.getElementById('modalConfirm') as HTMLButtonElement;
+
+        if (!modal || !detailsContainer || !cancelBtn || !confirmBtn) {
+            console.error("Confirmation modal elements missing");
+            resolve(true);
+            return;
         }
 
-        if (tzDisplay) {
-            tzDisplay.innerText = `${tz} (${source})`;
-            tzDisplay.setAttribute('data-tz', tz);
-        }
-    };
-
-
-
-    if (input) {
-        input.addEventListener('countrychange', updateTimezone);
-        // Initial update
-        setTimeout(updateTimezone, 1000);
-    }
-
-
-    async function showConfirmationModal(details: { label: string, value: string }[]): Promise<boolean> {
-        return new Promise((resolve) => {
-            const modal = document.getElementById('confirmModal') as HTMLElement;
-            const detailsContainer = document.getElementById('confirmDetails') as HTMLElement;
-            const cancelBtn = document.getElementById('modalCancel') as HTMLButtonElement;
-            const confirmBtn = document.getElementById('modalConfirm') as HTMLButtonElement;
-
-            if (!modal || !detailsContainer || !cancelBtn || !confirmBtn) {
-                console.error("Confirmation modal elements missing");
-                resolve(true);
-                return;
-            }
-
-            detailsContainer.innerHTML = details.map(item => `
+        detailsContainer.innerHTML = details.map(item => `
                 <div class="detail-item" style="margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
                     <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px;">${item.label}</div>
                     <div style="font-size: 14px; color: #fff; white-space: pre-wrap; word-break: break-word;">${item.value || 'N/A'}</div>
                 </div>
             `).join('');
 
-            modal.style.display = 'flex';
+        modal.style.display = 'flex';
 
-            const onCancel = () => {
-                modal.style.display = 'none';
-                cleanup();
-                resolve(false);
-            };
-
-            const onConfirm = () => {
-                modal.style.display = 'none';
-                cleanup();
-                resolve(true);
-            };
-
-            const cleanup = () => {
-                cancelBtn.removeEventListener('click', onCancel);
-                confirmBtn.removeEventListener('click', onConfirm);
-            };
-
-            cancelBtn.addEventListener('click', onCancel);
-            confirmBtn.addEventListener('click', onConfirm);
-        });
-    }
-
-    async function handleFormSubmit(e: Event) {
-        e.preventDefault();
-
-        // Call Consent Validation
-        const consentCheckbox = document.getElementById('consentCheckbox') as HTMLInputElement;
-        if (consentCheckbox && !consentCheckbox.checked) {
-            alert("Please agree to let the AI call on my behalf to continue.");
-            return;
-        }
-
-        const btn = document.getElementById('submitBtn') as HTMLButtonElement;
-        btn.disabled = true;
-
-        const { doc, collection, serverTimestamp, runTransaction, getDoc } = await import("firebase/firestore");
-        const { db, auth } = await import("./firebase-config");
-        const currentUser = auth.currentUser;
-
-        if (!currentUser) {
-            (window as any).showToast("User not authenticated", "error");
-            btn.disabled = false;
-            return;
-        }
-
-        // 4. Pre-Call Eligibility & Balance Check [TASK 3 & 4]
-        const settingsDoc = await getDoc(doc(db, 'users', `uid_${currentUser.uid}`, 'settings', 'settings'));
-        const settings = settingsDoc.data() || {};
-        const hasActiveNumber = settings.phoneNumberStatus === 'active' && !!settings.phoneNumber;
-
-        let useSharedNumber = false;
-        if (!hasActiveNumber) {
-            useSharedNumber = true; // Auto-select shared pool for now
-        }
-
-        // Pre-auth (On-Hold) Calculation
-        let defaultOnHold = 5;
-        try {
-            const configSnap = await getDoc(doc(db, 'configuration', 'settings'));
-            if (configSnap.exists()) {
-                defaultOnHold = configSnap.data().default_callOnHold_minutes || 5;
-            }
-        } catch (e) { }
-
-        // Fetch User Credits
-        let userCredits = 0;
-        const sessionStr = localStorage.getItem('wisecat_user');
-        if (sessionStr) {
-            try {
-                const parsed = JSON.parse(sessionStr);
-                if (parsed.credits) userCredits = Number(parsed.credits);
-            } catch (e) { }
-        }
-
-        // Simplified Flat Rate Calculation (matches new server-side simple mode)
-        const country = 'US'; // Default for mouthpiece
-        const ratePerMin = country === 'US' ? 0.30 : (country === 'TW' ? 0.50 : 0.40);
-        const minRequired = ratePerMin * defaultOnHold;
-
-        if (userCredits < minRequired) {
-            (window as any).showToast(`Insufficient balance for pre-auth. At least $${minRequired.toFixed(2)} is required (est. ${defaultOnHold} min duration).`, 'error');
-            btn.disabled = false;
-            return;
-        }
-
-        const tasksCol = collection(db, 'tasks');
-        const randomId = doc(tasksCol).id;
-        const taskId = `task_${randomId}`;
-        const taskRef = doc(db, 'tasks', taskId);
-
-        // Elements (Restored)
-        const missionEl = document.getElementById('mission') as HTMLSelectElement;
-        const customMissionEl = document.getElementById('customMission') as HTMLInputElement;
-        const userNameEl = document.getElementById('userName') as HTMLInputElement;
-        const recipientNameEl = document.getElementById('recipientName') as HTMLInputElement;
-        const targetPhoneEl = document.getElementById('targetPhone') as HTMLInputElement;
-        const scriptEl = document.getElementById('script') as HTMLTextAreaElement;
-        const schedulePreferenceEl = document.getElementById('schedulePreference') as HTMLSelectElement;
-        const scriptLanguageEl = document.getElementById('scriptLanguage') as HTMLSelectElement;
-
-        // Determine Language: Manual > Country > Fallback (EN)
-        let finalLang = 'en';
-        if (scriptLanguageEl && scriptLanguageEl.value !== 'auto') {
-            finalLang = scriptLanguageEl.value;
-        } else if (phoneInputPlugin) {
-            const countryData = phoneInputPlugin.getSelectedCountryData();
-            const dialCode = countryData.dialCode; // e.g. "886"
-
-            switch (dialCode) {
-                case "886": finalLang = "zh"; break;
-                case "81": finalLang = "jp"; break;
-                case "82": finalLang = "kr"; break;
-                case "34": finalLang = "es"; break;
-                case "33": finalLang = "fr"; break;
-                case "39": finalLang = "it"; break;
-                default: finalLang = "en"; break;
-            }
-        }
-
-        const payload = {
-            taskId: taskId,
-            // [TASK 2 & 4] Integration
-            uid: currentUser.uid,
-            useSharedNumber: useSharedNumber,
-            vapiPhoneNumberId: useSharedNumber ? "76705f8f-8ece-4a0e-a757-9581097c9ace" : (settings.vapiPhoneNumberId || ""),
-            phoneNumber: useSharedNumber ? "+14152125191" : (settings.phoneNumber || ""),
-            type: 'mouthpiece',
-            isTrial: false,
-            state: 'pending',
-            priority: 5, // Highest priority (ASAP)
-            reservation_utc: serverTimestamp(), // Run now
-            mission: missionEl.value,
-            // Determine mission name
-            missionDescription: (missionEl.value === 'other')
-                ? (customMissionEl.value || '')
-                : (MISSION_SCENARIOS.find(m => m.id === missionEl.value)?.description.en || ''),
-            userName: userNameEl.value,
-            recipientName: recipientNameEl.value,
-            targetPhoneNumber: phoneInputPlugin ? phoneInputPlugin.getNumber() : targetPhoneEl.value,
-            script: scriptEl.value,
-            schedulePreference: schedulePreferenceEl.value,
-            language: finalLang,
-            userEmail: (document.getElementById('userEmail') as HTMLInputElement)?.value || 'N/A',
-            userCredits: (localStorage.getItem('wisecat_user') ? Number(JSON.parse(localStorage.getItem('wisecat_user') || '{}').credits || 0) : 0),
-            retry_count: (document.getElementById('retryOption') as HTMLInputElement)?.checked ? defaultRetryCount : 0,
-            retry_interval: retryInterval,
-            createdAt: new Date().toISOString()
+        const onCancel = () => {
+            modal.style.display = 'none';
+            cleanup();
+            resolve(false);
         };
 
-        // --- Schedule Logic ---
-        const schedulePreferenceVal = (document.getElementById('schedulePreference') as HTMLSelectElement).value;
-        if (schedulePreferenceVal === 'scheduled') {
-            const scheduleTimeInput = document.getElementById('scheduleTime') as HTMLInputElement;
-            const scheduleVal = scheduleTimeInput.value;
+        const onConfirm = () => {
+            modal.style.display = 'none';
+            cleanup();
+            resolve(true);
+        };
 
-            if (!scheduleVal) {
-                (window as any).showToast("Please select a time for the scheduled call.", "error");
-                btn.disabled = false;
-                return;
-            }
+        const cleanup = () => {
+            cancelBtn.removeEventListener('click', onCancel);
+            confirmBtn.removeEventListener('click', onConfirm);
+        };
 
-            const tzInfo = document.getElementById('detectedTimezone');
-            let tz = tzInfo ? tzInfo.getAttribute('data-tz') : null;
+        cancelBtn.addEventListener('click', onCancel);
+        confirmBtn.addEventListener('click', onConfirm);
+    });
+}
 
-            if (!tz) tz = Intl.DateTimeFormat().resolvedOptions().timeZone; // Fallback to browser
+// Phone Number Purchase Modal Handler - Returns choice or null if cancelled
+function showPhoneNumberPurchaseModal(): Promise<'onetime' | 'monthly' | null> {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('phoneNumberPurchaseModal') as HTMLElement;
+        const cancelBtn = document.getElementById('phoneNumberCancel') as HTMLButtonElement;
+        const optionOneTime = document.getElementById('phoneOptionOneTime') as HTMLElement;
+        const optionMonthly = document.getElementById('phoneOptionMonthly') as HTMLElement;
 
-            try {
-                // Robust Local -> UTC Conversion
-                // We want 'scheduleVal' (e.g., "2023-10-27T10:00") to be treated as time IN 'tz'
-                // and get the corresponding UTC timestamp.
-
-                // 1. Parse the local components requested by user
-                const d = new Date(scheduleVal);
-                const year = d.getFullYear();
-                const month = d.getMonth();
-                const day = d.getDate();
-                const hours = d.getHours();
-                const minutes = d.getMinutes();
-
-                // 2. Initial Guess: Treat inputs as UTC
-                let guessUTC = new Date(Date.UTC(year, month, day, hours, minutes));
-
-                // 3. Helper to format a UTC date as parts in the Target Zone
-                const getPartsInTz = (date: Date, timeZone: string) => {
-                    const formatter = new Intl.DateTimeFormat('en-US', {
-                        timeZone,
-                        year: 'numeric', month: 'numeric', day: 'numeric',
-                        hour: 'numeric', minute: 'numeric', second: 'numeric',
-                        hour12: false
-                    });
-                    const parts = formatter.formatToParts(date);
-                    const get = (type: string) => parseInt(parts.find(p => p.type === type)?.value || '0');
-                    const y = get('year');
-                    const m = get('month') - 1; // 0-indexed
-                    const d = get('day');
-                    const h = get('hour') === 24 ? 0 : get('hour'); // some browsers return 24
-                    const min = get('minute');
-                    return { y, m, d, h, min };
-                };
-
-                // 4. Iteratively Refine
-                // Calculate error between "What time is it in TZ at guessUTC?" vs "Target Time"
-                for (let i = 0; i < 3; i++) {
-                    const p = getPartsInTz(guessUTC, tz);
-                    const currentInTz = new Date(Date.UTC(p.y, p.m, p.d, p.h, p.min));
-                    const targetInUtcScale = new Date(Date.UTC(year, month, day, hours, minutes));
-
-                    const diff = targetInUtcScale.getTime() - currentInTz.getTime();
-                    if (Math.abs(diff) < 1000) break; // Close enough
-
-                    guessUTC = new Date(guessUTC.getTime() + diff);
-                }
-
-                const finalDate = guessUTC;
-
-                if (finalDate.getTime() < Date.now()) {
-                    (window as any).showToast("Scheduled time cannot be in the past.", "error");
-                    btn.disabled = false;
-                    return;
-                }
-
-                (payload as any).scheduleCallTime = finalDate.toISOString();
-                (payload as any).scheduleTimeZone = tz;
-            } catch (e) {
-                console.error("Timezone conversion error:", e);
-                // Fallback: send local string if complex logic fails (e.g. invalid timezone)
-                (payload as any).scheduleCallTimeLocal = scheduleVal;
-                (payload as any).scheduleTimeZone = tz;
-            }
-        }
-        // ----------------------
-        // ----------------------
-
-        const dict = (WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en']) as any;
-
-        const namePattern = /^[a-zA-Z\s\-_]*$/;
-        if (!namePattern.test(payload.userName) || !namePattern.test(payload.recipientName)) {
-            (window as any).showToast(dict.validation_name || "Name must be English letters only", "error");
-            btn.disabled = false;
+        if (!modal) {
+            resolve(null);
             return;
         }
 
-        // 4. Force Final Safety Check (Now handled by validateMissionDescription)
+        modal.style.display = 'flex';
 
+        const closeModal = () => {
+            modal.style.display = 'none';
+            // Remove event listeners
+            if (cancelBtn) cancelBtn.removeEventListener('click', onCancel);
+            if (optionOneTime) optionOneTime.removeEventListener('click', onSelectOneTime);
+            if (optionMonthly) optionMonthly.removeEventListener('click', onSelectMonthly);
+            modal.removeEventListener('click', onBackdropClick);
+        };
 
-        if (!isContentSafe) {
-            (window as any).showToast("Content blocked by security policy or mission mismatch.", "error");
-            btn.disabled = false;
-            return;
+        const onCancel = () => {
+            closeModal();
+            resolve(null);
+        };
+
+        const onSelectOneTime = () => {
+            closeModal();
+            resolve('onetime');
+        };
+
+        const onSelectMonthly = () => {
+            closeModal();
+            resolve('monthly');
+        };
+
+        const onBackdropClick = (e: Event) => {
+            if (e.target === modal) {
+                onCancel();
+            }
+        };
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', onCancel);
         }
 
-        // 1. Transaction...
-        try {
-            if (!auth.currentUser) {
-                (window as any).showToast("Please log in to submit a mouthpiece task.", "error");
-                btn.disabled = false;
-                return;
-            }
+        if (optionOneTime) {
+            optionOneTime.addEventListener('click', onSelectOneTime);
+        }
 
-            const userDocRef = doc(db, 'users', `uid_${auth.currentUser.uid}`);
-            const settingsRef = doc(db, 'users', `uid_${auth.currentUser.uid}`, 'settings', 'settings');
+        if (optionMonthly) {
+            optionMonthly.addEventListener('click', onSelectMonthly);
+        }
 
-            // Calculate Total Cost (Base + Retries)
-            const retryCost = (payload.retry_count > 0) ? (payload.retry_count * retryCostPerAttempt) : 0;
-            const totalCost = currentCost + retryCost;
+        modal.addEventListener('click', onBackdropClick);
+    });
+}
 
-            // Final Confirmation Modal
-            const details = [
-                { label: "Mission", value: payload.missionDescription },
-                { label: "Recipient", value: payload.recipientName },
-                { label: "Target Phone", value: payload.targetPhoneNumber },
-                { label: "Script", value: payload.script },
-                { label: "Schedule", value: payload.schedulePreference === 'scheduled' ? (payload as any).scheduleCallTime : "ASAP" },
-                { label: "Total Cost", value: `${totalCost.toFixed(2)} credits` }
-            ];
+async function handleFormSubmit(e: Event) {
+    e.preventDefault();
 
-            if (retryCost > 0) {
-                details.push({ label: "Cost Breakdown", value: `Base: ${currentCost} + Retry: ${retryCost.toFixed(1)}` });
-            }
+    // Call Consent Validation
+    const consentCheckbox = document.getElementById('consentCheckbox') as HTMLInputElement;
+    if (consentCheckbox && !consentCheckbox.checked) {
+        alert("Please agree to let the AI call on my behalf to continue.");
+        return;
+    }
 
-            const confirmed = await showConfirmationModal(details);
-            if (!confirmed) {
-                btn.disabled = false;
-                return;
-            }
+    const btn = document.getElementById('submitBtn') as HTMLButtonElement;
+    btn.disabled = true;
 
-            await runTransaction(db, async (transaction) => {
-                const userDoc = await transaction.get(userDocRef);
-                const settingsDoc = await transaction.get(settingsRef);
+    const { doc, collection, serverTimestamp, runTransaction, getDoc } = await import("firebase/firestore");
+    const { db, auth } = await import("./firebase-config");
+    const currentUser = auth.currentUser;
 
-                if (!userDoc.exists()) {
-                    throw "User document does not exist!";
-                }
+    if (!currentUser) {
+        showToast("User not authenticated", "error");
+        btn.disabled = false;
+        return;
+    }
 
-                const userData = userDoc.data();
-                const currentCredits = Number(userData.credits || 0);
-                const settings = settingsDoc.exists() ? settingsDoc.data() : {};
+    // 4. Pre-Call Eligibility & Balance Check [TASK 3 & 4]
+    const settingsDoc = await getDoc(doc(db, 'users', `uid_${currentUser.uid}`, 'settings', 'settings'));
+    const settings = settingsDoc.data() || {};
+    const hasActiveNumber = settings.phoneNumberStatus === 'active' && !!settings.phoneNumber;
 
-                if (currentCredits < totalCost) {
-                    // Throwing simple string to be caught below
-                    throw `Insufficient credits! This task requires ${totalCost.toFixed(1)} credits.`;
-                }
+    let useSharedNumber = false;
+    if (!hasActiveNumber) {
+        // Show phone number purchase modal to let user choose
+        btn.disabled = false;
+        const choice = await showPhoneNumberPurchaseModal();
 
-                // Deduct Credit (Total Max Cost)
-                transaction.update(userDocRef, { credits: currentCredits - totalCost });
-
-                // Create Task
-                transaction.set(taskRef, {
-                    ...payload,
-                    senderPhoneNumber: settings.phoneNumber || '',
-                    vapiPhoneNumberId: settings.vapiPhoneNumberId || '',
-                    userCredits: currentCredits - totalCost, // Store NEW balance
-                    cost: totalCost,
-                    createdAt: serverTimestamp(),
-                    userId: auth.currentUser!.uid
-                });
-            });
-
-            console.log("Task logged to Firestore via Transaction:", taskId);
-
-            // 2. Success UI (No Webhook)
-            btn.innerText = dict.msg_success;
-
-            // Need userEmail. In mouthpiece.ts we parse localStorage earlier.
-            let userEmail = "you";
-            const stored = localStorage.getItem('wisecat_user');
-            if (stored) {
-                try { const u = JSON.parse(stored); if (u.email) userEmail = u.email; } catch (e) { }
-            }
-
-            (window as any).showToast(`Dear ${userNameEl.value}, we've received the task. We will schedule your call ASAP. Once finished will send result to ${userEmail}.`, "success");
-
-        } catch (error) {
-            console.error("Error submitting mouthpiece:", error);
-
-            let msg = (dict.msg_fail_alert || "Submission failed. Please try again.");
-            if (typeof error === 'string' && error.includes("Insufficient credits")) {
-                msg = error;
-            }
-
-            btn.innerText = dict.msg_failed;
-            (window as any).showToast(msg, "error");
-            btn.disabled = false;
+        if (choice === 'monthly') {
+            // Redirect to dashboard to purchase a monthly number
+            showToast("Redirecting to phone numbers section...", "info");
+            window.location.href = '/dashboard.html?tab=addTab';
+            return;
+        } else if (choice === 'onetime') {
+            // Continue with shared number
+            useSharedNumber = true;
+            showToast("You'll use our shared business number for this call.", "success");
+            btn.disabled = true;
+        } else {
+            // User cancelled
+            showToast("Form submission cancelled.", "info");
+            return;
         }
     }
 
-    // Helper: Toast Notification
-    (window as any).showToast = function (message: string, type: 'success' | 'error' | 'info' = 'info') {
-        const container = document.getElementById('toast-container') || createToastContainer();
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
+    // Pre-auth (On-Hold) Calculation
+    let defaultOnHold = 5;
+    try {
+        const configSnap = await getDoc(doc(db, 'configuration', 'settings'));
+        if (configSnap.exists()) {
+            defaultOnHold = configSnap.data().default_callOnHold_minutes || 5;
+        }
+    } catch (e) { }
 
-        let icon = 'ℹ️';
-        if (type === 'success') icon = '✅';
-        if (type === 'error') icon = '⚠️';
+    // Fetch User Credits
+    let userCredits = 0;
+    const sessionStr = localStorage.getItem('wisecat_user');
+    if (sessionStr) {
+        try {
+            const parsed = JSON.parse(sessionStr);
+            if (parsed.credits) userCredits = Number(parsed.credits);
+        } catch (e) { }
+    }
 
-        toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
-        container.appendChild(toast);
+    // Simplified Flat Rate Calculation (matches new server-side simple mode)
+    const country = 'US'; // Default for mouthpiece
+    const ratePerMin = country === 'US' ? 0.30 : (country === 'TW' ? 0.50 : 0.40);
+    const minRequired = ratePerMin * defaultOnHold;
 
-        // Trigger animation
-        requestAnimationFrame(() => {
-            toast.classList.add('show');
-        });
+    if (userCredits < minRequired) {
+        (window as any).showToast(`Insufficient balance for pre-auth. At least $${minRequired.toFixed(2)} is required (est. ${defaultOnHold} min duration).`, 'error');
+        btn.disabled = false;
+        return;
+    }
 
-        // Remove after 3 seconds
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => {
-                container.removeChild(toast);
-            }, 300);
-        }, 3000);
+    const tasksCol = collection(db, 'tasks');
+    const randomId = doc(tasksCol).id;
+    const taskId = `task_${randomId}`;
+    const taskRef = doc(db, 'tasks', taskId);
+
+    // Elements (Restored)
+    const missionEl = document.getElementById('mission') as HTMLSelectElement;
+    const customMissionEl = document.getElementById('customMission') as HTMLInputElement;
+    const userNameEl = document.getElementById('userName') as HTMLInputElement;
+    const recipientNameEl = document.getElementById('recipientName') as HTMLInputElement;
+    const targetPhoneEl = document.getElementById('targetPhone') as HTMLInputElement;
+    const scriptEl = document.getElementById('script') as HTMLTextAreaElement;
+    const schedulePreferenceEl = document.getElementById('schedulePreference') as HTMLSelectElement;
+    const scriptLanguageEl = document.getElementById('scriptLanguage') as HTMLSelectElement;
+
+    // Determine Language: Manual > Country > Fallback (EN)
+    let finalLang = 'en';
+    if (scriptLanguageEl && scriptLanguageEl.value !== 'auto') {
+        finalLang = scriptLanguageEl.value;
+    } else if (phoneInputPlugin) {
+        const countryData = phoneInputPlugin.getSelectedCountryData();
+        const dialCode = countryData.dialCode; // e.g. "886"
+
+        switch (dialCode) {
+            case "886": finalLang = "zh"; break;
+            case "81": finalLang = "jp"; break;
+            case "82": finalLang = "kr"; break;
+            case "34": finalLang = "es"; break;
+            case "33": finalLang = "fr"; break;
+            case "39": finalLang = "it"; break;
+            default: finalLang = "en"; break;
+        }
+    }
+
+    const payload = {
+        taskId: taskId,
+        // [TASK 2 & 4] Integration
+        uid: currentUser.uid,
+        useSharedNumber: useSharedNumber,
+        vapiPhoneNumberId: useSharedNumber ? "76705f8f-8ece-4a0e-a757-9581097c9ace" : (settings.vapiPhoneNumberId || ""),
+        phoneNumber: useSharedNumber ? "+14152125191" : (settings.phoneNumber || ""),
+        type: 'mouthpiece',
+        isTrial: false,
+        state: 'pending',
+        priority: 5, // Highest priority (ASAP)
+        reservation_utc: serverTimestamp(), // Run now
+        mission: missionEl.value,
+        // Determine mission name
+        missionDescription: (missionEl.value === 'other')
+            ? (customMissionEl.value || '')
+            : (MISSION_SCENARIOS.find(m => m.id === missionEl.value)?.description.en || ''),
+        userName: userNameEl.value,
+        recipientName: recipientNameEl.value,
+        targetPhoneNumber: phoneInputPlugin ? phoneInputPlugin.getNumber() : targetPhoneEl.value,
+        script: scriptEl.value,
+        schedulePreference: schedulePreferenceEl.value,
+        language: finalLang,
+        userEmail: (document.getElementById('userEmail') as HTMLInputElement)?.value || 'N/A',
+        userCredits: (localStorage.getItem('wisecat_user') ? Number(JSON.parse(localStorage.getItem('wisecat_user') || '{}').credits || 0) : 0),
+        retry_count: (document.getElementById('retryOption') as HTMLInputElement)?.checked ? defaultRetryCount : 0,
+        retry_interval: retryInterval,
+        createdAt: new Date().toISOString()
     };
 
-    function createToastContainer() {
-        const container = document.createElement('div');
-        container.id = 'toast-container';
-        container.className = 'toast-container';
-        document.body.appendChild(container);
-        return container;
+    // --- Schedule Logic ---
+    const schedulePreferenceVal = (document.getElementById('schedulePreference') as HTMLSelectElement).value;
+    if (schedulePreferenceVal === 'scheduled') {
+        const scheduleTimeInput = document.getElementById('scheduleTime') as HTMLInputElement;
+        const scheduleVal = scheduleTimeInput.value;
+
+        if (!scheduleVal) {
+            (window as any).showToast("Please select a time for the scheduled call.", "error");
+            btn.disabled = false;
+            return;
+        }
+
+        const tzInfo = document.getElementById('detectedTimezone');
+        let tz = tzInfo ? tzInfo.getAttribute('data-tz') : null;
+
+        if (!tz) tz = Intl.DateTimeFormat().resolvedOptions().timeZone; // Fallback to browser
+
+        try {
+            // Robust Local -> UTC Conversion
+            // We want 'scheduleVal' (e.g., "2023-10-27T10:00") to be treated as time IN 'tz'
+            // and get the corresponding UTC timestamp.
+
+            // 1. Parse the local components requested by user
+            const d = new Date(scheduleVal);
+            const year = d.getFullYear();
+            const month = d.getMonth();
+            const day = d.getDate();
+            const hours = d.getHours();
+            const minutes = d.getMinutes();
+
+            // 2. Initial Guess: Treat inputs as UTC
+            let guessUTC = new Date(Date.UTC(year, month, day, hours, minutes));
+
+            // 3. Helper to format a UTC date as parts in the Target Zone
+            const getPartsInTz = (date: Date, timeZone: string) => {
+                const formatter = new Intl.DateTimeFormat('en-US', {
+                    timeZone,
+                    year: 'numeric', month: 'numeric', day: 'numeric',
+                    hour: 'numeric', minute: 'numeric', second: 'numeric',
+                    hour12: false
+                });
+                const parts = formatter.formatToParts(date);
+                const get = (type: string) => parseInt(parts.find(p => p.type === type)?.value || '0');
+                const y = get('year');
+                const m = get('month') - 1; // 0-indexed
+                const d = get('day');
+                const h = get('hour') === 24 ? 0 : get('hour'); // some browsers return 24
+                const min = get('minute');
+                return { y, m, d, h, min };
+            };
+
+            // 4. Iteratively Refine
+            // Calculate error between "What time is it in TZ at guessUTC?" vs "Target Time"
+            for (let i = 0; i < 3; i++) {
+                const p = getPartsInTz(guessUTC, tz);
+                const currentInTz = new Date(Date.UTC(p.y, p.m, p.d, p.h, p.min));
+                const targetInUtcScale = new Date(Date.UTC(year, month, day, hours, minutes));
+
+                const diff = targetInUtcScale.getTime() - currentInTz.getTime();
+                if (Math.abs(diff) < 1000) break; // Close enough
+
+                guessUTC = new Date(guessUTC.getTime() + diff);
+            }
+
+            const finalDate = guessUTC;
+
+            if (finalDate.getTime() < Date.now()) {
+                (window as any).showToast("Scheduled time cannot be in the past.", "error");
+                btn.disabled = false;
+                return;
+            }
+
+            (payload as any).scheduleCallTime = finalDate.toISOString();
+            (payload as any).scheduleTimeZone = tz;
+        } catch (e) {
+            console.error("Timezone conversion error:", e);
+            // Fallback: send local string if complex logic fails (e.g. invalid timezone)
+            (payload as any).scheduleCallTimeLocal = scheduleVal;
+            (payload as any).scheduleTimeZone = tz;
+        }
+    }
+    // ----------------------
+    // ----------------------
+
+    const dict = (WiseCatI18n.translations[WiseCatI18n.currentLang] || WiseCatI18n.translations['en']) as any;
+
+    const namePattern = /^[a-zA-Z\s\-_]*$/;
+    if (!namePattern.test(payload.userName) || !namePattern.test(payload.recipientName)) {
+        (window as any).showToast(dict.validation_name || "Name must be English letters only", "error");
+        btn.disabled = false;
+        return;
     }
 
-});
+    // 4. Force Final Safety Check (Now handled by validateMissionDescription)
+
+
+    if (!isContentSafe) {
+        (window as any).showToast("Content blocked by security policy or mission mismatch.", "error");
+        btn.disabled = false;
+        return;
+    }
+
+    // 1. Transaction...
+    try {
+        if (!auth.currentUser) {
+            (window as any).showToast("Please log in to submit a mouthpiece task.", "error");
+            btn.disabled = false;
+            return;
+        }
+
+        const userDocRef = doc(db, 'users', `uid_${auth.currentUser.uid}`);
+        const settingsRef = doc(db, 'users', `uid_${auth.currentUser.uid}`, 'settings', 'settings');
+
+        // Calculate Total Cost (Base + Retries)
+        const retryCost = (payload.retry_count > 0) ? (payload.retry_count * retryCostPerAttempt) : 0;
+        const totalCost = currentCost + retryCost;
+
+        // Final Confirmation Modal
+        const details = [
+            { label: "Mission", value: payload.missionDescription },
+            { label: "Recipient", value: payload.recipientName },
+            { label: "Target Phone", value: payload.targetPhoneNumber },
+            { label: "Script", value: payload.script },
+            { label: "Schedule", value: payload.schedulePreference === 'scheduled' ? (payload as any).scheduleCallTime : "ASAP" },
+            { label: "Total Cost", value: `${totalCost.toFixed(2)} credits` }
+        ];
+
+        if (retryCost > 0) {
+            details.push({ label: "Cost Breakdown", value: `Base: ${currentCost} + Retry: ${retryCost.toFixed(1)}` });
+        }
+
+        const confirmed = await showConfirmationModal(details);
+        if (!confirmed) {
+            btn.disabled = false;
+            return;
+        }
+
+        await runTransaction(db, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+            const settingsDoc = await transaction.get(settingsRef);
+
+            if (!userDoc.exists()) {
+                throw "User document does not exist!";
+            }
+
+            const userData = userDoc.data();
+            const currentCredits = Number(userData.credits || 0);
+            const settings = settingsDoc.exists() ? settingsDoc.data() : {};
+
+            if (currentCredits < totalCost) {
+                // Throwing simple string to be caught below
+                throw `Insufficient credits! This task requires ${totalCost.toFixed(1)} credits.`;
+            }
+
+            // Deduct Credit (Total Max Cost)
+            transaction.update(userDocRef, { credits: currentCredits - totalCost });
+
+            // Create Task
+            transaction.set(taskRef, {
+                ...payload,
+                senderPhoneNumber: settings.phoneNumber || '',
+                vapiPhoneNumberId: settings.vapiPhoneNumberId || '',
+                userCredits: currentCredits - totalCost, // Store NEW balance
+                cost: totalCost,
+                createdAt: serverTimestamp(),
+                userId: auth.currentUser!.uid
+            });
+        });
+
+        console.log("Task logged to Firestore via Transaction:", taskId);
+
+        // 2. Success UI (No Webhook)
+        btn.innerText = dict.msg_success;
+
+        // Need userEmail. In mouthpiece.ts we parse localStorage earlier.
+        let userEmail = "you";
+        const stored = localStorage.getItem('wisecat_user');
+        if (stored) {
+            try { const u = JSON.parse(stored); if (u.email) userEmail = u.email; } catch (e) { }
+        }
+
+        (window as any).showToast(`Dear ${userNameEl.value}, we've received the task. We will schedule your call ASAP. Once finished will send result to ${userEmail}.`, "success");
+
+    } catch (error) {
+        console.error("Error submitting mouthpiece:", error);
+
+        let msg = (dict.msg_fail_alert || "Submission failed. Please try again.");
+        if (typeof error === 'string' && error.includes("Insufficient credits")) {
+            msg = error;
+        }
+
+        btn.innerText = dict.msg_failed;
+        (window as any).showToast(msg, "error");
+        btn.disabled = false;
+    }
+}
 
 // ============ Mission Validation Logic ============
 
@@ -1977,42 +2053,3 @@ async function initSearchLogic() {
 }
 
 document.addEventListener('DOMContentLoaded', initSearchLogic);
-
-// Helper: Toast Notification
-(window as any).showToast = function (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') {
-    const container = document.getElementById('toast-container') || createToastContainer();
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-
-    let icon = 'ℹ️';
-    if (type === 'success') icon = '✅';
-    if (type === 'error') icon = '❌';
-    if (type === 'warning') icon = '⚠️';
-
-    toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
-    container.appendChild(toast);
-
-    // Trigger reflow
-    void toast.offsetWidth;
-
-    requestAnimationFrame(() => {
-        toast.classList.add('show');
-    });
-
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => {
-            if (container.contains(toast)) {
-                container.removeChild(toast);
-            }
-        }, 300);
-    }, 3000);
-};
-
-function createToastContainer() {
-    const container = document.createElement('div');
-    container.id = 'toast-container';
-    container.className = 'toast-container';
-    document.body.appendChild(container);
-    return container;
-}

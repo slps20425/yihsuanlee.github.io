@@ -1,5 +1,5 @@
 const { onRequest, onCall, HttpsError } = require("firebase-functions/v2/https");
-const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const OpenAI = require("openai");
@@ -322,7 +322,138 @@ exports.triggerN8nWebhook = onDocumentCreated(
     }
 );
 
-// --- Phone Number Management Functions ---
+
+/**
+ * Log shared number usage and reconcile credits when a task is completed.
+ */
+exports.onTaskCompleted = onDocumentUpdated(
+    {
+        document: "tasks/{taskId}",
+        database: "reservation"
+    },
+    async (event) => {
+        const snapshot = event.data;
+        if (!snapshot) return;
+
+        const newData = snapshot.after.data();
+        const oldData = snapshot.before.data();
+
+        // 1. Only proceed if state JUST changed to 'completed'
+        if (oldData.state === 'completed' || newData.state !== 'completed') return;
+
+        // 2. Only proceed if this task used a shared number
+        const isUsingShared = (newData.vapiPhoneNumberId === '76705f8f-8ece-4a0e-a757-9581097c9ace' || newData.useSharedNumber === true);
+        if (!isUsingShared) {
+            console.log(`[onTaskCompleted] Task ${event.params.taskId} is private, skipping auto-logging.`);
+            return;
+        }
+
+        console.log(`[onTaskCompleted] Shared task completed: ${event.params.taskId}`);
+        // if (!isUsingShared) {
+        //     console.log(`[onTaskCompleted] Task ${event.params.taskId} is private, skipping auto-logging.`);
+        //     return;
+        // }
+
+        console.log(`[onTaskCompleted] Task completed: ${event.params.taskId} (Shared: ${isUsingShared})`);
+
+        try {
+            const db = snapshot.after.ref.firestore;
+            const uid = newData.userId;
+            const userRef = db.doc(`users/uid_${uid}`);
+
+            // 3. Extract Duration and Initial Cost
+            // Vapi usually returns duration in seconds in results or top level
+            const durationSec = newData.duration || (newData.result && newData.result.duration) || 0;
+            const durationMin = Math.max(1, Math.ceil(durationSec / 60)); // Min 1 min
+
+            const billing = await getBillingConfig(db);
+            let finalCost = 0;
+            let logDescription = "";
+
+            if (isUsingShared) {
+                // Shared Number Path: Dynamic Flat Rate (Twilio Outbound x Multiplier)
+                let countryCode = newData.countryCode;
+                if (!countryCode && newData.targetPhoneNumber) {
+                    // Primitive E.164 parser for fallback
+                    if (newData.targetPhoneNumber.startsWith('+886')) countryCode = 'TW';
+                    else if (newData.targetPhoneNumber.startsWith('+81')) countryCode = 'JP';
+                    else if (newData.targetPhoneNumber.startsWith('+1')) countryCode = 'US';
+                    else if (newData.targetPhoneNumber.startsWith('+852')) countryCode = 'HK';
+                    else countryCode = 'US'; // Default to US if unknown
+                }
+
+                const mainClient = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
+
+                const basePrice = await retrieveOutboundCallRate(countryCode || 'US', mainClient, db);
+                const multiplier = billing.common_multiplier || 3.0;
+
+                finalCost = durationMin * basePrice * multiplier;
+                logDescription = `Shared Call to ${newData.targetPhoneNumber} (${durationMin}m)`;
+                console.log(`[onTaskCompleted] Shared Dynamic: ${durationMin}m x ($${basePrice} x ${multiplier}) = $${finalCost.toFixed(2)}`);
+            } else {
+                // Dedicated Number Path: Retrieve from Twilio API
+                const settingsDoc = await db.doc(`users/uid_${uid}/settings/settings`).get();
+                const settings = settingsDoc.data() || {};
+                const callId = newData.callId || (newData.result && newData.result.callId);
+
+                if (settings.twilioSubaccountSid && callId) {
+                    try {
+                        const subClient = twilio(settings.twilioSubaccountSid, settings.twilioSubaccountAuthToken);
+                        const call = await subClient.calls(callId).fetch();
+
+                        // Twilio price is usually negative (e.g., -0.013)
+                        const baseTwilioPrice = Math.abs(parseFloat(call.price || 0));
+                        const multiplier = billing.common_multiplier || 3.0;
+
+                        finalCost = baseTwilioPrice * multiplier;
+                        logDescription = `Dedicated Call to ${newData.targetPhoneNumber} (Actual Twilio Fee x${multiplier})`;
+                        console.log(`[onTaskCompleted] Dedicated Lookup: Base $${baseTwilioPrice} x ${multiplier} = $${finalCost}`);
+                    } catch (twilioErr) {
+                        console.warn(`[onTaskCompleted] Twilio API lookup failed for ${callId}:`, twilioErr.message);
+                        // Fallback to calculation if API fails
+                        const ratePerMin = 0.40;
+                        finalCost = durationMin * ratePerMin;
+                        logDescription = `Dedicated Call to ${newData.targetPhoneNumber} (Fallback Calc)`;
+                    }
+                } else {
+                    console.log(`[onTaskCompleted] Missing subaccount or callId for dedicated call. Skipping cost adjustment.`);
+                    return;
+                }
+            }
+
+            // 4. Log Usage Record to Firestore
+            if (finalCost > 0) {
+                const usageRef = db.collection(`users/uid_${uid}/usage_history`);
+                await usageRef.add({
+                    category: newData.type || 'calls',
+                    description: logDescription,
+                    usage: durationMin,
+                    unit: 'minutes',
+                    user_price: finalCost,
+                    currency: 'USD',
+                    start_date: admin.firestore.FieldValue.serverTimestamp(),
+                    taskId: event.params.taskId,
+                    target: newData.targetPhoneNumber,
+                    isShared: isUsingShared
+                });
+
+                // 5. Credit Adjustment
+                await db.runTransaction(async (t) => {
+                    const uDoc = await t.get(userRef);
+                    const bal = uDoc.data().credits || 0;
+                    t.update(userRef, { credits: bal - finalCost });
+                });
+
+                console.log(`[onTaskCompleted] Successfully deducted $${finalCost.toFixed(2)} from UID: ${uid}`);
+            }
+
+        } catch (error) {
+            console.error(`[onTaskCompleted] Critical error for task ${event.params.taskId}:`, error);
+        }
+    }
+);
+
+
 
 /**
  * Search available phone numbers by area code
@@ -437,7 +568,6 @@ async function getBillingConfig(db) {
             number_multiplier: 2.0,
             common_multiplier: 3.0,
             sms_common_multiplier: 2.0,
-            services: { mouthpiece: 4.0, restaurant: 4.0 },
             country_multipliers: {}
         };
     } catch (e) {
@@ -481,6 +611,30 @@ async function retrievePrice(countryCode, mainClient, db) {
         }
     }
     return basePrice;
+}
+
+/**
+ * Helper to retrieve outbound call rate for a country (Base Price from Twilio)
+ */
+async function retrieveOutboundCallRate(countryCode, mainClient, db) {
+    const country = (countryCode || 'US').toUpperCase();
+
+    return await withPricingCache(db, country, 'voice_outbound', async () => {
+        try {
+            const pricing = await mainClient.pricing.v1.voice.countries(country).fetch();
+            // Prefix prices vary, but we take the first one (most common) or a default.
+            // For US, it's usually $0.013. For others it varies.
+            if (pricing.outboundPrefixPrices && pricing.outboundPrefixPrices.length > 0) {
+                const base = parseFloat(pricing.outboundPrefixPrices[0].currentPrice || 0.05);
+                console.log(`[retrieveOutboundCallRate] Live API for ${country}: $${base}`);
+                return base;
+            }
+            return 0.05; // Fallback base
+        } catch (e) {
+            console.error(`[retrieveOutboundCallRate] Failed for ${country}:`, e.message);
+            return 0.05;
+        }
+    });
 }
 
 const PRICING_CACHE_TTL = 86400000; // 24 hours
@@ -717,38 +871,51 @@ exports.getTransformedUsageHistory = onCall(
 
             let usage = transformRecords(records);
 
+            // --- Unified Usage Strategy: Merge Firestore Usage History ---
+            try {
+                const firestoreUsageRef = db.collection(`users/uid_${uid}/usage_history`)
+                    .orderBy('start_date', 'desc')
+                    .limit(100);
+                const firestoreSnap = await firestoreUsageRef.get();
+
+                const firestoreUsage = firestoreSnap.docs.map(doc => {
+                    const d = doc.data();
+                    return {
+                        category: d.category,
+                        description: d.description,
+                        usage: d.usage,
+                        unit: d.unit,
+                        user_price: d.user_price,
+                        currency: d.currency || 'USD',
+                        start_date: d.start_date ? d.start_date.toDate().toISOString() : null,
+                        end_date: d.start_date ? d.start_date.toDate().toISOString() : null,
+                        source: 'firestore'
+                    };
+                });
+
+                if (firestoreUsage.length > 0) {
+                    console.log(`[Usage] Merging ${firestoreUsage.length} Firestore records.`);
+                    usage = [...usage, ...firestoreUsage];
+                }
+            } catch (fsErr) {
+                console.warn("[Usage] Failed to fetch Firestore usage history:", fsErr.message);
+                // Continue with Twilio-only results
+            }
+
             // Capture raw categories for debugging
             const allRawCategories = records.map(r => r.category);
 
-            // Fallback: If no VALID daily usage found (after filter), fetch Summary.
-            if (usage.length === 0) {
-                console.log("[Usage] Daily records empty/filtered, fetching summary fallback.");
-                const summaryRecords = await subClient.usage.records.list({ limit: 50 });
-                usage = transformRecords(summaryRecords);
-            }
-
-            // Sort by date desc (if dates exist)
+            // Sort consolidated usage by date desc
             usage.sort((a, b) => {
-                if (!a.start_date) return 1;
-                if (!b.start_date) return -1;
-                return new Date(b.start_date) - new Date(a.start_date);
+                const dateA = a.start_date ? new Date(a.start_date) : new Date(0);
+                const dateB = b.start_date ? new Date(b.start_date) : new Date(0);
+                return dateB - dateA;
             });
-
-            // Capture raw SMS records for deep debugging
-            const smsRawDetails = records
-                .filter(r => r.category.includes('sms'))
-                .map(r => ({
-                    cat: r.category,
-                    usage: r.usage,
-                    price: r.price,
-                    date: r.startDate
-                }));
 
             return {
                 usage,
                 multiplier,
                 _debug_categories: [...new Set(allRawCategories)],
-                _debug_sms_details: smsRawDetails // [DEBUG] Show exact values for SMS
             };
         } catch (e) {
             console.error("[getTransformedUsageHistory] Error:", e);

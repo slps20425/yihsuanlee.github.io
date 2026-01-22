@@ -7,6 +7,7 @@ import { ScamCheck } from "./scam-check";
 import { setupSessionTimeout } from "./session-timeout";
 import { initSessionEnforcement, clearSessionEnforcement } from "./session-enforcement"; // [NEW] Single Session
 import { initInbox, updateInboxCredits } from "./inbox"; // Import inbox initialization
+import { showToast } from "./utility-toast"; // Import toast utility
 
 const functions = getFunctions(app);
 
@@ -162,8 +163,8 @@ onAuthStateChanged(auth, async (user) => {
     console.log(`%c[DASHBOARD AUTH ${timestamp}]`, 'color: #22c55e; font-weight: bold;',
         user ? `✅ User logged in: ${user.uid}` : '❌ No user (logged out)');
 
-    const headerUserName = document.getElementById('headerUserName');
-    const headerUserAvatar = document.getElementById('headerUserAvatar') as HTMLImageElement;
+    // Clear user info on logout button removed as it's handled globally
+    // ... logic moved to event listener below
 
     if (!user) {
         // If we have a cached user, we can wait a bit longer for Firebase to catch up
@@ -649,13 +650,51 @@ if (searchBtn) {
     });
 }
 
-// [TASK 2 Integration] Activate Shared Pool Button
+// [TASK 2 Integration] Activate Shared Pool Button & Temporary Number Section
 const activateSharedPoolBtn = document.getElementById('activateSharedPoolBtn');
+const tempSharedNumberSection = document.getElementById('tempSharedNumberSection');
+const copyTempNumberBtn = document.getElementById('copyTempNumberBtn');
+const upgradeToPermanentBtn = document.getElementById('upgradeToPermanentBtn');
+const closeTempNumberBtn = document.getElementById('closeTempNumberBtn');
+
 if (activateSharedPoolBtn) {
     activateSharedPoolBtn.addEventListener('click', () => {
-        (window as any).showToast("Shared Pool Selected! You can now start calls from the AI Services tab.", "success");
+        // Show the temporary number section
+        if (tempSharedNumberSection) {
+            tempSharedNumberSection.hidden = false;
+        }
+        showToast("Shared Pool Selected! You can now use the temporary number for your calls.", "success");
+    });
+}
+
+// Copy temporary number to clipboard
+if (copyTempNumberBtn) {
+    copyTempNumberBtn.addEventListener('click', () => {
+        const phoneNumber = "+1 (415) 212-5191";
+        navigator.clipboard.writeText(phoneNumber).then(() => {
+            showToast("Phone number copied to clipboard!", "success");
+        }).catch(() => {
+            showToast("Failed to copy phone number", "error");
+        });
+    });
+}
+
+// Upgrade to permanent number button
+if (upgradeToPermanentBtn) {
+    upgradeToPermanentBtn.addEventListener('click', () => {
+        // Switch to the purchase tab (will be implemented in number search flow)
         if ((window as any).switchTab) {
-            (window as any).switchTab('ai');
+            (window as any).switchTab('addTab');
+        }
+        showToast("Browse available numbers to get your own permanent business number!", "info");
+    });
+}
+
+// Close temporary number section
+if (closeTempNumberBtn) {
+    closeTempNumberBtn.addEventListener('click', () => {
+        if (tempSharedNumberSection) {
+            tempSharedNumberSection.hidden = true;
         }
     });
 }
@@ -760,8 +799,15 @@ async function loadUsageHistory() {
                 // Backend now returns ISO strings for daily records
                 if (item.start_date) {
                     const d = new Date(item.start_date);
-                    // Daily records usually start at 00:00 UTC, so just showing Date is cleaner than time
-                    dateStr = WiseCatI18n.formatDate(d, { month: 'short', day: 'numeric', year: 'numeric' });
+                    // If the time is exactly midnight UTC, it's likely a Twilio daily aggregate, so show date only.
+                    // Otherwise, show date and time for specific Firestore call logs.
+                    const isMidnight = d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0;
+
+                    if (isMidnight) {
+                        dateStr = WiseCatI18n.formatDate(d, { month: 'short', day: 'numeric', year: 'numeric' });
+                    } else {
+                        dateStr = WiseCatI18n.formatDate(d, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    }
                 }
             } catch (e) {
                 console.warn("Date parse error", e);

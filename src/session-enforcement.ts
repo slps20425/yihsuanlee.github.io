@@ -1,5 +1,5 @@
 import { auth, db } from "./firebase-config";
-import { doc, setDoc, onSnapshot, getDoc } from "firebase/firestore";
+import { doc, setDoc, onSnapshot } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 
 const SESSION_STORAGE_KEY = "wisecat_session_id";
