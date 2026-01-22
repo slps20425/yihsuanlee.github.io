@@ -512,7 +512,225 @@ exports.onTaskCompleted = onDocumentUpdated(
     }
 );
 
+/**
+ * Process refund when N8N updates task with call results
+ * Triggers when task.state changes to "completed" with call_duration and call_result
+ *
+ * N8N updates task with:
+ * {
+ *   call_duration: 6.31,    // Actual call duration in seconds
+ *   call_result: true,      // Boolean success flag
+ *   state: "completed"
+ * }
+ *
+ * Refund Logic:
+ * - If call_duration exists: charge min 1 minute, refund difference
+ * - If no call_duration + call_result=true: charge 50%
+ * - If no call_duration + call_result=false: charge 0% (full refund)
+ */
+exports.processTaskRefund = onDocumentUpdated(
+    {
+        document: "tasks/{taskId}",
+        database: "reservation"
+    },
+    async (event) => {
+        const snapshot = event.data;
+        if (!snapshot) return;
 
+        const newData = snapshot.after.data();
+        const oldData = snapshot.before.data();
+
+        // Only process if state JUST changed to 'completed'
+        if (oldData?.state === 'completed' || newData.state !== 'completed') {
+            return;
+        }
+
+        // Skip if already processed
+        if (newData.refundStatus === 'completed' || newData.refundStatus === 'failed') {
+            console.log(`[processTaskRefund] Task ${event.params.taskId} already processed`);
+            return;
+        }
+
+        try {
+            const db = snapshot.after.ref.firestore;
+            const taskId = event.params.taskId;
+            const uid = newData.userId;
+
+            if (!uid || newData.estimatedCost === undefined) {
+                console.error(`[processTaskRefund] Missing userId or estimatedCost for task ${taskId}`);
+                await snapshot.after.ref.update({
+                    refundStatus: 'failed',
+                    refundError: 'Missing userId or estimatedCost'
+                });
+                return;
+            }
+
+            // ===== READ FROM TASK (set at submission) =====
+            const estimatedCost = newData.estimatedCost;        // e.g., $2.4
+            const estimatedDuration = newData.estimatedDuration; // e.g., 300 seconds
+            const rateApplied = newData.rateApplied || {
+                baseRate: 0.05,
+                multiplier: 3.0,
+                final: 0.15
+            };
+
+            // ===== READ FROM N8N WEBHOOK =====
+            const actualDuration = newData.call_duration;       // e.g., 6.31 seconds
+            // Primary: use "success" (boolean). Fallback: "call_result" (string)
+            const taskSuccess = newData.success === true ? true : (newData.call_result === "true");
+
+            console.log(`[processTaskRefund] Processing task ${taskId}:
+                call_duration=${actualDuration},
+                success=${newData.success},
+                call_result=${newData.call_result},
+                taskSuccess=${taskSuccess}
+            `);
+
+            let refundAmount = 0;
+            let actualCost = 0;
+            let actualMinutes = 0;
+            let errorReason = null;
+
+            // ===== CASE 1: Has duration → Normal calculation (1-min minimum) =====
+            if (actualDuration !== undefined && actualDuration !== null && actualDuration > 0) {
+                actualMinutes = Math.max(1, Math.ceil(actualDuration / 60));
+                actualCost = actualMinutes * rateApplied.final;
+                refundAmount = estimatedCost - actualCost;
+                errorReason = null;
+                console.log(`[processTaskRefund] Case 1 (Normal): ${actualDuration}s → ${actualMinutes}m → $${actualCost.toFixed(2)}`);
+            }
+            // ===== CASE 2: No duration + call_result=true → Refund 50% =====
+            else if (taskSuccess === true) {
+                console.log(`[processTaskRefund] Case 2 (Success but no duration): Refunding 50%`);
+                actualCost = estimatedCost * 0.5;
+                refundAmount = estimatedCost * 0.5;
+                actualMinutes = 0;
+                errorReason = "Call completed but duration missing - 50% refund issued";
+            }
+            // ===== CASE 3: No duration + call_result=false → Full refund =====
+            else {
+                console.log(`[processTaskRefund] Case 3 (Failed/No data): Full refund`);
+                actualCost = 0;
+                refundAmount = estimatedCost;
+                actualMinutes = 0;
+                errorReason = `Call failed - full refund issued. Result: ${newData.call_result}`;
+            }
+
+            const refundSeconds = estimatedDuration - (actualDuration || 0);
+            const formula = actualDuration
+                ? `max(1, ceil(${actualDuration}/60)) * ${rateApplied.final} = $${actualCost.toFixed(2)}`
+                : errorReason;
+
+            console.log(`[processTaskRefund] Summary for ${taskId}:
+                Estimated: $${estimatedCost}
+                Actual: $${actualCost.toFixed(2)}
+                Refund: $${refundAmount.toFixed(2)}
+            `);
+
+            // ===== UPDATE TASK & REFUND ATOMICALLY =====
+            const userRef = db.doc(`users/uid_${uid}`);
+
+            await db.runTransaction(async (t) => {
+                const userDoc = await t.get(userRef);
+                const currentCredits = userDoc.data()?.credits || 0;
+
+                // Update user with refund
+                t.update(userRef, {
+                    credits: currentCredits + refundAmount,
+                    lastRefundAt: admin.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Update task with all calculated fields
+                t.update(snapshot.after.ref, {
+                    actualMinutes: actualMinutes,
+                    actualCost: parseFloat(actualCost.toFixed(2)),
+                    refundAmount: parseFloat(refundAmount.toFixed(2)),
+                    refundSeconds: Math.max(0, refundSeconds),
+                    formula: formula,
+                    refundStatus: 'completed',
+                    errorReason: errorReason,
+                    callSuccess: taskSuccess,
+                    refundProcessedAt: admin.firestore.FieldValue.serverTimestamp()
+                });
+            });
+
+            console.log(`[processTaskRefund] ✓ Refunded $${refundAmount.toFixed(2)} to uid_${uid}`);
+
+            // ===== LOG TO USAGE_HISTORY =====
+            const usageRef = db.collection(`users/uid_${uid}/usage_history`);
+
+            // Log the actual call usage
+            await usageRef.add({
+                category: taskSuccess ? 'calls' : 'failed_call',
+                description: errorReason
+                    ? errorReason
+                    : `Call to ${newData.targetPhoneNumber} (${actualMinutes}m, ${actualDuration}s actual)`,
+                usage: actualMinutes,
+                unit: 'minutes',
+                user_price: actualCost,
+                baseRate: rateApplied.baseRate,
+                multiplier: rateApplied.multiplier,
+                currency: 'USD',
+                start_date: admin.firestore.FieldValue.serverTimestamp(),
+                taskId: taskId,
+                target: newData.targetPhoneNumber,
+                source: 'task_completion',
+                formula: formula,
+                success: taskSuccess
+            });
+
+            // Log refund record if refund occurred
+            if (refundAmount > 0) {
+                await usageRef.add({
+                    category: 'refund',
+                    description: errorReason
+                        ? errorReason
+                        : `Refund: Est ${estimatedDuration}s vs Actual ${actualDuration}s`,
+                    usage: refundSeconds,
+                    unit: 'seconds',
+                    user_price: refundAmount,
+                    currency: 'USD',
+                    start_date: admin.firestore.FieldValue.serverTimestamp(),
+                    taskId: taskId,
+                    source: 'task_completion',
+                    reason: errorReason || 'duration_variance'
+                });
+            }
+
+            // Log retry fee if retries were configured
+            if (newData.retry_count > 0 && newData.retryCostPerAttempt > 0) {
+                const totalRetryCost = newData.retry_count * newData.retryCostPerAttempt;
+                await usageRef.add({
+                    category: 'retries',
+                    description: `Retry fee: ${newData.retry_count} attempts x $${newData.retryCostPerAttempt.toFixed(2)} = $${totalRetryCost.toFixed(2)}`,
+                    usage: newData.retry_count,
+                    unit: 'attempts',
+                    user_price: totalRetryCost,
+                    retryPerAttempt: newData.retryCostPerAttempt,
+                    currency: 'USD',
+                    start_date: admin.firestore.FieldValue.serverTimestamp(),
+                    taskId: taskId,
+                    source: 'task_completion'
+                });
+                console.log(`[processTaskRefund] ✓ Logged retry fee: $${totalRetryCost.toFixed(2)}`);
+            }
+
+            console.log(`[processTaskRefund] ✓ All usage records logged`);
+
+        } catch (error) {
+            console.error(`[processTaskRefund] Error for task ${event.params.taskId}:`, error);
+            try {
+                await snapshot.after.ref.update({
+                    refundStatus: 'failed',
+                    refundError: error.message,
+                    refundFailedAt: admin.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (updateError) {
+                console.error(`[processTaskRefund] Failed to mark error:`, updateError);
+            }
+        }
+    }
+);
 
 /**
  * Search available phone numbers by area code
