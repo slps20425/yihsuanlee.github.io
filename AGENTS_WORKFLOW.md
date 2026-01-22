@@ -2,17 +2,17 @@
 
 ## Current Status
 - **Status**: `READY_FOR_QA`
-- **Current Task**: Debug duplicate mission options; sync validation pattern.
-- **Last Deployment**: `https://yihsuanlee.github.io/reservation/restaurant_reservation.html`
+- **Current Task**: Implement Shared Number System & Security Lockdown
+- **Last Deployment**: `https://wise-catty.cc/reservation/restaurant_reservation.html`
 - **Assignee**: **QA Agent (Gemini)**
-- **Completed**: 2026-01-22T10:35:00+08:00
-- **Deploy URL**: https://yihsuanlee.github.io/reservation/restaurant_reservation.html
-- **Notes**: Fixed duplicate "Restaurant Reservation" missions, synced premium validation (red borders + dynamic hints) across all service pages, and updated mission documentation.
+- **Completed**: 2026-01-22T13:55:00+08:00
+- **Deploy URL**: https://wise-catty.cc/reservation/restaurant_reservation.html
+- **Notes**: Implemented Shared Number System, Dynamic Price Snapshotting, Pre-auth Credit Checks, and Security Lockdown.
 
 ## Task History
 | ID | Task | Assignee | Date | Status | Notes |
 |----|------|----------|------|--------|-------|
-| 19 | Debug duplicate mission options; sync validation pattern | Claude | 2026-01-22 | READY_FOR_QA | [Live URL](https://yihsuanlee.github.io/reservation/restaurant_reservation.html) |
+| 20 | Implement Shared Number System & Security Lockdown | Claude | 2026-01-22 | READY_FOR_QA | [Live URL](https://wise-catty.cc/reservation/restaurant_reservation.html) |
 
 ## Deployment Standards
 > [!IMPORTANT]
@@ -21,13 +21,14 @@
 > **DO NOT** rely on the global `firebase` command as it may be missing in the agent environment.
 
 ## Summary of Changes
-1. ✅ **Duplicate Missions Fixed**: Deduplicated missions by localized name in `reservation.ts`.
-2. ✅ **Validation Sync**: Implemented consistent red border and dynamic hint pattern across Mouthpiece, Restaurant, and Trial pages.
-3. ✅ **Mission System Docs**: Separated Mission retrieval flow into its own module (`mission-system.md`) with Mermaid diagrams.
-4. ✅ **Emails Pre-populated**: Fixed auto-population of email addresses from profile/localStorage.
+1. ✅ **Shared Number System**: Implemented "One-time Rent" flow for users without owned numbers.
+2. ✅ **Price Snapshotting**: Store `original_price` in Firestore at purchase time for accurate billing.
+3. ✅ **Pre-auth Logic**: Enforced $20+ minimum balance (or 5 min duration) before call initiation.
+4. ✅ **Security Lockdown**: Restricted `triggerN8nWebhook` to authorized users/numbers only.
+5. ✅ **Bug Fix**: Resolved `TypeError` for `restaurantName` in `reservation.ts`.
 
 ## QA Testing Checklist
-- [ ] **Missions Selection**: Verify "Restaurant Reservation" appears only once in the dropdown.
-- [ ] **Validation Feedback**: Verify red borders appear for empty required fields and disappear upon valid input.
-- [ ] **Submit Hints**: Verify explicit "⚠️ Hint required" messages appear below the "Start AI Call" button.
-- [ ] **Email Sync**: Verify email field automatically populates with the logged-in user's email.
+- [ ] **Shared Number Routing**: Verify tasks are created with `useSharedNumber: true` if no number is owned.
+- [ ] **Balance Check**: Verify call is blocked if user has less than the required pre-auth amount.
+- [ ] **Security Validation**: Verify `triggerN8nWebhook` logs a warning if a user without a number/pool access tries to trigger a call.
+- [ ] **Price Snapshot**: Purchase a number and verify `original_price` is present in the user's settings doc.

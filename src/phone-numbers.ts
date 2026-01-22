@@ -649,6 +649,17 @@ if (searchBtn) {
     });
 }
 
+// [TASK 2 Integration] Activate Shared Pool Button
+const activateSharedPoolBtn = document.getElementById('activateSharedPoolBtn');
+if (activateSharedPoolBtn) {
+    activateSharedPoolBtn.addEventListener('click', () => {
+        (window as any).showToast("Shared Pool Selected! You can now start calls from the AI Services tab.", "success");
+        if ((window as any).switchTab) {
+            (window as any).switchTab('ai');
+        }
+    });
+}
+
 if (rateCheckBtn && rateCheckInput && rateResult) {
     rateCheckBtn.addEventListener('click', async () => {
         const country = rateCheckInput.value.trim().toUpperCase();
