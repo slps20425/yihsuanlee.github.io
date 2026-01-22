@@ -880,6 +880,13 @@ if (rateCheckBtn && rateCheckInput && rateResult) {
                 const p = data.inbound.find((x: any) => x.type === 'local') || data.inbound[0];
                 html += `<div style="font-size:0.9rem;">📱 Inbound: <strong>${p.user_price.toFixed(3)}</strong> / min</div>`;
             }
+
+            // Note: These are destination-based rates only (to that country)
+            // Actual cost will vary based on your originating number's country and exact time duration
+            // Final cost will be confirmed in the call setup prompt before charging
+            html += `<div style="font-size:0.75rem; color:var(--text-secondary); margin-top:8px; border-top:1px solid rgba(255,255,255,0.1); padding-top:6px;">
+                       ℹ️ These are base rates to ${data.country}. Actual cost in call setup will include your number origin & duration.
+                    </div>`;
             html += `</div>`;
 
             rateResult.innerHTML = html;
