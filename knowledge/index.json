@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "generated": "2026-01-22T10:56:11.722Z",
+  "generated": "2026-01-22T10:57:24.089Z",
   "metadata": {
-    "lastUpdated": "2026-01-22T10:56:11.641Z",
+    "lastUpdated": "2026-01-22T10:57:23.989Z",
     "deployment": {
-      "timestamp": "2026-01-22T10:56:11.642Z",
-      "gitCommit": "4f1b58b6201abff7289edc2a15df044b7c92a6d2",
+      "timestamp": "2026-01-22T10:57:23.989Z",
+      "gitCommit": "d6ad7b559e9b732faa8d7a0ea449c16318efd3f1",
       "gitBranch": "main"
     },
     "modules": {},
@@ -159,10 +159,10 @@
       },
       {
         "path": "src/version.ts",
-        "size": 1170,
+        "size": 1167,
         "lines": 34,
         "type": ".ts",
-        "lastModified": "2026-01-19T03:05:17.074Z"
+        "lastModified": "2026-01-22T10:57:10.044Z"
       },
       {
         "path": "functions/index.js",
@@ -427,6 +427,12 @@
       "file": "modules/scenario-templates.md",
       "size": 11961,
       "lastModified": "2026-01-19T08:46:04.578Z"
+    },
+    "shared-numbers": {
+      "title": "Shared Numbers System",
+      "file": "modules/shared-numbers.md",
+      "size": 8454,
+      "lastModified": "2026-01-22T10:57:11.109Z"
     },
     "task-system": {
       "title": "Task System Module",
