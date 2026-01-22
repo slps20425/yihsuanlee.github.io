@@ -931,7 +931,7 @@ async function handleFormSubmit(e: Event) {
         if (choice === 'monthly') {
             // Redirect to dashboard to purchase a monthly number
             showToast("Redirecting to phone numbers section...", "info");
-            window.location.href = '/dashboard.html?tab=addTab';
+            window.location.href = '/dashboard.html?tab=add';
             return;
         } else if (choice === 'onetime') {
             // Continue with shared number

@@ -682,9 +682,9 @@ if (copyTempNumberBtn) {
 // Upgrade to permanent number button
 if (upgradeToPermanentBtn) {
     upgradeToPermanentBtn.addEventListener('click', () => {
-        // Switch to the purchase tab (will be implemented in number search flow)
+        // Switch to the phone numbers tab (switchTab expects tab name without "Tab" suffix)
         if ((window as any).switchTab) {
-            (window as any).switchTab('addTab');
+            (window as any).switchTab('add');
         }
         showToast("Browse available numbers to get your own permanent business number!", "info");
     });
