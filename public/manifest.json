@@ -15,7 +15,7 @@
             "purpose": "any maskable"
         }
     ],
-    "start_url": "/entry.html",
+    "start_url": "/",
     "id": "/",
     "scope": "/",
     "lang": "en",

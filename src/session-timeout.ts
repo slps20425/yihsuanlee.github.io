@@ -80,7 +80,7 @@ function logout() {
             console.log('User signed out due to inactivity.');
             localStorage.removeItem('wisecat_user');
             localStorage.removeItem(ACTIVITY_KEY);
-            window.location.href = '/entry.html';
+            window.location.href = '/';
         })
         .catch((error: any) => {
             console.error('Sign out error', error);

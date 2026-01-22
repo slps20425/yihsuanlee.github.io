@@ -8,6 +8,7 @@ let currentMessages: any[] = [];
 let cachedCredits: number | null = null;
 let cachedThreshold = 10;
 let cachedPolicy: string | null = null;
+let userNumberType: string | null = null; // 'shared' or 'dedicated'
 const dismissedAlerts = new Set<string>();
 
 export function updateInboxCredits(credits: number) {
@@ -84,7 +85,7 @@ export function initInbox() {
 
     let unsubscribe: (() => void) | null = null;
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         if (unsubscribe) {
             unsubscribe();
             unsubscribe = null;
@@ -94,17 +95,38 @@ export function initInbox() {
             console.log("Inbox: User logged in, subscribing...");
             dismissedAlerts.clear(); // Reset dismissed alerts on new login session
 
+            // Fetch user's number type from settings
+            try {
+                const { getDoc, doc: docFn } = await import('firebase/firestore');
+                const settingsDoc = await getDoc(docFn(db, 'users', `uid_${user.uid}`, 'settings', 'settings'));
+                const settings = settingsDoc.data() || {};
+                userNumberType = settings.numberType || null; // 'shared', 'dedicated', or null
+                console.log("Inbox: User number type:", userNumberType);
+            } catch (e) {
+                console.error("Error fetching user settings:", e);
+                userNumberType = null;
+            }
+
             const inboxRef = collection(db, `users/uid_${user.uid}/inbound_messages`);
             const q = query(inboxRef, orderBy("receivedAt", "desc"), limit(50));
 
             unsubscribe = onSnapshot(q, (snapshot) => {
-                currentMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                let messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // Filter out SMS messages for shared number users
+                if (userNumberType === 'shared') {
+                    messages = messages.filter(msg => msg.type !== 'SMS' && msg.type !== 'sms');
+                    console.log("Inbox: Filtered SMS for shared number user. Remaining messages:", messages.length);
+                }
+
+                currentMessages = messages;
                 renderInbox();
             });
 
         } else {
             currentMessages = [];
             cachedCredits = null;
+            userNumberType = null;
             renderInbox();
         }
     });
@@ -121,12 +143,20 @@ function renderInbox() {
 
     // --- 1. Render Alerts (Pinned) ---
 
-    // A. Global Policy
+    // A. Shared Number Limitation Alert
+    if (userNumberType === 'shared' && !dismissedAlerts.has('shared_number_limitation')) {
+        renderAlert(alertsContainer, 'shared_number_limitation',
+            'Shared Number Limitation',
+            'SMS messages are not available for shared number users. Upgrade to a dedicated number to receive SMS.',
+            'warning');
+    }
+
+    // B. Global Policy
     if (cachedPolicy && !dismissedAlerts.has('global_policy')) {
         renderAlert(alertsContainer, 'global_policy', 'System Announcement', cachedPolicy, 'info');
     }
 
-    // B. Low Balance
+    // C. Low Balance
     if ((cachedCredits !== null && cachedCredits < cachedThreshold) && !dismissedAlerts.has('low_balance')) {
         renderAlert(alertsContainer, 'low_balance', `Low Balance ($${cachedCredits.toFixed(2)})`,
             `Your balance is below $${cachedThreshold}. Please top up to maintain service.`, 'warning');

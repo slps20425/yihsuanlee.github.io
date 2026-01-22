@@ -204,7 +204,7 @@ onAuthStateChanged(auth, async (user) => {
 
                     console.log(`%c[DASHBOARD AUTH]`, 'color: #ef4444; font-weight: bold;',
                         '❌ Still no user after 5s delay. Redirecting to entry...');
-                    window.location.href = '/entry.html';
+                    window.location.href = '/';
                 } else {
                     console.log(`%c[DASHBOARD AUTH]`, 'color: #22c55e; font-weight: bold;',
                         '✅ User authenticated after delay:', auth.currentUser.uid);
@@ -216,7 +216,7 @@ onAuthStateChanged(auth, async (user) => {
         console.log(`%c[DASHBOARD AUTH]`, 'color: #ef4444; font-weight: bold;',
             '🔄 No cached user or auth state. Redirecting immediately...');
         clearSessionEnforcement();
-        window.location.href = '/entry.html';
+        window.location.href = '/';
         return;
     }
     currentUser = user;
@@ -516,6 +516,34 @@ function loadUserSettings() {
                 if (myNumberSection) myNumberSection.hidden = true;
             }
 
+            // Handle Shared Number Display (Persisted)
+            if (settings.phoneNumberType === 'shared' && settings.phoneNumber) {
+                // User is using a shared number - show the temp shared number section
+                if (tempSharedNumberSection) {
+                    tempSharedNumberSection.hidden = false;
+
+                    // Update the phone number display with actual number from Firestore
+                    const phoneDisplay = tempSharedNumberSection.querySelector('span[style*="color: var(--success)"]') as HTMLElement;
+                    if (phoneDisplay) {
+                        // Format the phone number
+                        const phone = settings.phoneNumber;
+                        // Simple formatting: +1234567890 -> +1 (234) 567-8900
+                        let formatted = phone;
+                        if (phone.startsWith('+1') && phone.length === 12) {
+                            formatted = `${phone.slice(0, 2)} (${phone.slice(2, 5)}) ${phone.slice(5, 8)}-${phone.slice(8)}`;
+                        }
+                        phoneDisplay.textContent = formatted;
+                    }
+                }
+
+                // Hide the dedicated number section
+                if (searchNumberSection) searchNumberSection.hidden = true;
+                if (myNumberSection) myNumberSection.hidden = true;
+            } else if (tempSharedNumberSection && settings.phoneNumberType !== 'shared') {
+                // Hide temp shared section if user doesn't have a shared number
+                tempSharedNumberSection.hidden = true;
+            }
+
             // Sync Requirement UI (legacy support for reminders)
             hasActivePhoneNumber = (settings.phoneNumberStatus === 'active' && !!settings.phoneNumber);
             if (noNumberReminder) {
@@ -651,17 +679,99 @@ if (searchBtn) {
 }
 
 // [TASK 2 Integration] Activate Shared Pool Button & Temporary Number Section
-const activateSharedPoolBtn = document.getElementById('activateSharedPoolBtn');
+const activateSharedPoolBtn = document.getElementById('activateSharedPoolBtn') as HTMLButtonElement;
 const tempSharedNumberSection = document.getElementById('tempSharedNumberSection');
-const upgradeToPermanentBtn = document.getElementById('upgradeToPermanentBtn');
+const upgradeToPermanentBtn = document.getElementById('upgradeToPermanentBtn') as HTMLButtonElement;
+const sharedNumberDialog = document.getElementById('sharedNumberDialog') as HTMLDialogElement;
+const confirmSharedBtn = document.getElementById('confirmSharedBtn') as HTMLButtonElement;
+const cancelSharedBtn = document.getElementById('cancelSharedBtn') as HTMLButtonElement;
+
+// Helper function to show shared number dialog and wait for user response
+function showSharedNumberConfirmationDialog(): Promise<boolean> {
+    return new Promise((resolve) => {
+        const handleConfirm = () => {
+            cleanup();
+            resolve(true);
+        };
+
+        const handleCancel = () => {
+            cleanup();
+            resolve(false);
+        };
+
+        const cleanup = () => {
+            confirmSharedBtn.removeEventListener('click', handleConfirm);
+            cancelSharedBtn.removeEventListener('click', handleCancel);
+            sharedNumberDialog.removeEventListener('cancel', handleCancel);
+            sharedNumberDialog.close();
+        };
+
+        confirmSharedBtn.addEventListener('click', handleConfirm);
+        cancelSharedBtn.addEventListener('click', handleCancel);
+        sharedNumberDialog.addEventListener('cancel', handleCancel);
+
+        sharedNumberDialog.showModal();
+    });
+}
 
 if (activateSharedPoolBtn) {
-    activateSharedPoolBtn.addEventListener('click', () => {
-        // Show the temporary number section (persists, no dismiss button)
-        if (tempSharedNumberSection) {
-            tempSharedNumberSection.hidden = false;
+    activateSharedPoolBtn.addEventListener('click', async () => {
+        const user = auth.currentUser;
+        if (!user) {
+            showToast("Please log in first.", "error");
+            return;
         }
-        showToast("Shared business number activated for your calls.", "success");
+
+        // Show confirmation dialog and wait for user response
+        const confirmed = await showSharedNumberConfirmationDialog();
+
+        if (!confirmed) return;
+
+        // Disable button during transaction
+        activateSharedPoolBtn.disabled = true;
+        confirmSharedBtn.disabled = true;
+
+        try {
+            const { fetchSharedNumberConfigOnce } = await import('./shared-number-config');
+            const { doc, setDoc } = await import("firebase/firestore");
+            const { db } = await import("./firebase-config");
+
+            // Fetch shared number config
+            const sharedNumberConfig = await fetchSharedNumberConfigOnce();
+            if (!sharedNumberConfig) {
+                showToast("Shared number not available. Please try again.", "error");
+                activateSharedPoolBtn.disabled = false;
+                return;
+            }
+
+            // Save shared number to settings (NO cost deduction yet - will deduct on call submission)
+            const settingsRef = doc(db, 'users', `uid_${user.uid}`, 'settings', 'settings');
+
+            await setDoc(settingsRef, {
+                phoneNumber: sharedNumberConfig.phoneNumber,
+                phoneNumberStatus: 'active',
+                vapiPhoneNumberId: sharedNumberConfig.vapiPhoneNumberId,
+                phoneNumberType: 'shared',
+                sharedNumberActivatedAt: new Date().toISOString()
+            }, { merge: true });
+
+            showToast("✅ Shared number ready! Cost ($3.50) will be deducted when you make a call.", "success");
+
+            // Hide the activation section and show temp number section
+            if (activateSharedPoolBtn.parentElement) {
+                activateSharedPoolBtn.parentElement.hidden = true;
+            }
+            if (tempSharedNumberSection) {
+                tempSharedNumberSection.hidden = false;
+            }
+
+        } catch (error) {
+            console.error("Error activating shared number:", error);
+            showToast("Failed to activate shared number. Please try again.", "error");
+        } finally {
+            activateSharedPoolBtn.disabled = false;
+            confirmSharedBtn.disabled = false;
+        }
     });
 }
 
@@ -744,7 +854,7 @@ async function loadUsageHistory() {
                     <div style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 1rem;">
                         Authentication required to view payment & usage history.
                     </div>
-                    <button class="btn btn-primary" onclick="window.location.href='/entry.html'">
+                    <button class="btn btn-primary" onclick="window.location.href='/'">
                         Sign In / Sign Up
                     </button>
                 </td>
@@ -1047,7 +1157,7 @@ function handleLogout() {
     clearSessionEnforcement(); // [NEW] Stop listening
     signOut(auth).then(() => {
         localStorage.removeItem('wisecat_user');
-        window.location.href = '/entry.html';
+        window.location.href = '/';
     }).catch((err) => {
         console.error("Logout error:", err);
     });

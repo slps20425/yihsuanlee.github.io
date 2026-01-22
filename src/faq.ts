@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const { signOut } = await import("firebase/auth");
             try {
                 await signOut(auth);
-                window.location.href = '/entry.html';
+                window.location.href = '/';
             } catch (e) {
                 console.error("Logout failed", e);
             }

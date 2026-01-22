@@ -6,6 +6,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { MISSION_SCENARIOS } from './mission-scenarios';
 import './chat-assistant'; // Enable Chat Widget
 import { showToast } from './utility-toast'; // Centralized toast notifications
+import { initSharedNumberConfig, fetchSharedNumberConfigOnce } from './shared-number-config'; // Shared number configuration
 
 // Mission interface
 interface MissionScenario {
@@ -185,18 +186,33 @@ async function displayCurrentPhoneNumber() {
         const settings = settingsDoc.data() || {};
 
         const hasNumber = settings.phoneNumber && settings.phoneNumberStatus === 'active';
+        const isSharedNumber = settings.phoneNumberType === 'shared';
 
         if (hasNumber) {
-            // User has their own number
             phoneDisplayEl.textContent = settings.phoneNumber || 'Unknown';
-            if (phoneTypeEl) {
-                phoneTypeEl.innerHTML = `<span style="color: #10b981;">✓ Your own dedicated number</span>`;
-            }
-            if (upgradePhoneBtn) {
-                upgradePhoneBtn.style.display = 'none';
+
+            if (isSharedNumber) {
+                // Shared number
+                if (phoneTypeEl) {
+                    phoneTypeEl.innerHTML = `<span style="color: #eab308;">⚠ Temporary shared number (one-time use)</span>`;
+                }
+                if (upgradePhoneBtn) {
+                    upgradePhoneBtn.style.display = 'block';
+                    upgradePhoneBtn.addEventListener('click', () => {
+                        window.location.href = '/dashboard.html?tab=add';
+                    });
+                }
+            } else {
+                // Dedicated number
+                if (phoneTypeEl) {
+                    phoneTypeEl.innerHTML = `<span style="color: #10b981;">✓ Your own dedicated number</span>`;
+                }
+                if (upgradePhoneBtn) {
+                    upgradePhoneBtn.style.display = 'none';
+                }
             }
         } else {
-            // User will use shared number
+            // No number - default to shared
             phoneDisplayEl.textContent = '+1 (415) 212-5191';
             if (phoneTypeEl) {
                 phoneTypeEl.innerHTML = `<span style="color: #eab308;">⚠ Temporary shared number (one-time use)</span>`;
@@ -217,6 +233,9 @@ async function displayCurrentPhoneNumber() {
 // --- Initialization ---
 
 document.addEventListener("DOMContentLoaded", async function () {
+    // Initialize shared number config listener
+    initSharedNumberConfig();
+
     // Display phone number first
     await displayCurrentPhoneNumber();
 
@@ -1089,7 +1108,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         headerLogoutBtn.addEventListener('click', () => {
             signOut(auth).then(() => {
                 localStorage.removeItem('wisecat_user');
-                window.location.href = '/entry.html';
+                window.location.href = '/';
             });
         });
     }
@@ -2276,6 +2295,14 @@ async function handleFormSubmit(e: Event) {
     const settings = settingsDoc.data() || {};
     const hasActiveNumber = settings.phoneNumberStatus === 'active' && !!settings.phoneNumber;
 
+    // Fetch shared number config
+    const sharedNumberConfig = await fetchSharedNumberConfigOnce();
+    if (!sharedNumberConfig) {
+        showToast("Unable to load shared number configuration. Please try again.", "error");
+        btn.disabled = false;
+        return;
+    }
+
     // Check if we should use shared number pool (if no active number)
     let useSharedNumber = false;
     if (!hasActiveNumber) {
@@ -2322,10 +2349,19 @@ async function handleFormSubmit(e: Event) {
     // Simplified Flat Rate Calculation (matches new server-side simple mode)
     const country = (selectedRestaurantData?.country || 'US').toUpperCase();
     const ratePerMin = country === 'US' ? 0.30 : (country === 'TW' ? 0.50 : 0.40);
-    const minRequired = ratePerMin * defaultOnHold;
+    let minRequired = ratePerMin * defaultOnHold;
+
+    // Add shared number cost if user is using shared number
+    const sharedNumberFee = 3.50; // $1.00 setup + $2.50 buffer
+    if (useSharedNumber) {
+        minRequired += sharedNumberFee;
+    }
 
     if (userCredits < minRequired) {
-        showToast(`Insufficient balance for pre-auth. At least $${minRequired.toFixed(2)} is required (est. ${defaultOnHold} min duration).`, 'error');
+        const costBreakdown = useSharedNumber
+            ? `Insufficient balance. Need $${minRequired.toFixed(2)} ($${(ratePerMin * defaultOnHold).toFixed(2)} call + $${sharedNumberFee.toFixed(2)} shared number fee), you have $${userCredits.toFixed(2)}`
+            : `Insufficient balance for pre-auth. At least $${minRequired.toFixed(2)} is required (est. ${defaultOnHold} min duration).`;
+        showToast(costBreakdown, 'error');
         btn.disabled = false;
         btn.textContent = '🚀 Send Wisecat';
         return;
@@ -2376,8 +2412,8 @@ async function handleFormSubmit(e: Event) {
         taskId: taskId,
         uid: currentUser.uid, // [TASK 4] Identity for lockdown
         useSharedNumber: useSharedNumber, // [TASK 2] Shared Pool Opt-in
-        vapiPhoneNumberId: useSharedNumber ? "76705f8f-8ece-4a0e-a757-9581097c9ace" : (settings.vapiPhoneNumberId || ""),
-        phoneNumber: useSharedNumber ? "+14152125191" : (settings.phoneNumber || ""), // Example static shared #
+        vapiPhoneNumberId: useSharedNumber ? sharedNumberConfig.vapiPhoneNumberId : (settings.vapiPhoneNumberId || ""),
+        phoneNumber: useSharedNumber ? sharedNumberConfig.phoneNumber : (settings.phoneNumber || ""),
         type: 'restaurant',
         isTrial: false,
         state: 'pending',
@@ -2590,13 +2626,14 @@ async function handleFormSubmit(e: Event) {
                 userId: auth.currentUser!.uid
             });
 
-            // Update settings with current number type
+            // Update settings with current number type (follow existing pattern)
             if (useSharedNumber) {
                 transaction.set(settingsRef, {
                     ...settings,
-                    hasNumber: true,
-                    numberType: 'shared',
-                    number: '+1 (415) 212-5191'
+                    phoneNumber: sharedNumberConfig.phoneNumber,
+                    phoneNumberStatus: 'active',
+                    vapiPhoneNumberId: sharedNumberConfig.vapiPhoneNumberId,
+                    phoneNumberType: 'shared'
                 }, { merge: true });
             }
         });

@@ -1,7 +1,6 @@
 const CACHE_NAME = 'wisecat-v3';
 const urlsToCache = [
     '/',
-    '/entry.html',
     '/styles.css',
     '/logo.png',
     '/icon-192.png',

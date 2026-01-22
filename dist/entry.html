@@ -5,22 +5,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WiseCat Portal</title>
-    <link rel="icon" href="/assets/favicon-1nI7aueL.png" type="image/x-icon">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <meta name="theme-color" content="#0f172a">
 
+    <!-- Social Media Preview Tags -->
+    <meta property="og:title" content="WiseCat Portal">
+    <meta property="og:description"
+        content="Your Personal AI Assistant Hub. Access reservations, voice calls, and smart features.">
+    <meta property="og:image" content="https://wise-catty.cc/icon-192.png">
+    <meta property="og:url" content="https://wise-catty.cc/entry.html">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card (Summary = Small Image) -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="WiseCat Portal">
+    <meta name="twitter:description" content="Your Personal AI Assistant Hub.">
+    <meta name="twitter:image" content="https://wise-catty.cc/icon-192.png">
+
+    <link rel="icon" href="/assets/favicon-DEQwk45s.png" type="image/x-icon">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
-  <script type="module" crossorigin src="/assets/main-DFmXg83-.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-xwgkLwoT.js">
-  <link rel="modulepreload" crossorigin href="/assets/firebase-config-CX2YTLtk.js">
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-BR8Iu9gG.js">
-  <link rel="modulepreload" crossorigin href="/assets/version-DCg5g3Z2.js">
-  <link rel="modulepreload" crossorigin href="/assets/pwa-Ece1kHLX.js">
-  <link rel="modulepreload" crossorigin href="/assets/i18n-CnU3a9SV.js">
-  <link rel="modulepreload" crossorigin href="/assets/session-timeout-BsMKD-Yp.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-Cp1RaJJU.css">
+    <script type="module" crossorigin src="/assets/main-B00tlXve.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/i18n-DkJrAHgg.js">
+    <link rel="stylesheet" crossorigin href="/assets/i18n-CscEOELR.css">
+
+    <!-- PWA Manifest & SW Registration (Explicit for Detection) -->
+    <link rel="manifest" href="/manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW Registered (Inline):', reg.scope))
+                    .catch(err => console.log('SW Registration Failed:', err));
+            });
+        }
+    </script>
 </head>
 
 <body>
@@ -41,24 +62,20 @@
 
         <!-- Logo & Title -->
         <div class="header fade-in">
-            <img src="/logo.png" alt="WiseCat Logo" class="logo" style="max-height: 120px; width: auto;">
+            <img src="/giphy.gif" alt="WiseCat Logo" class="logo">
             <h1 data-i18n="portal_title">WiseCat Portal</h1>
-            <div class="subtitle" data-i18n="portal_subtitle">Your Trusted AI Assistant for Restaurant Reservations
-            </div>
-            <!-- Trust Badge -->
-            <div
-                style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; opacity: 0.8;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    style="color: #10b981;">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    <path d="M9 12l2 2 4-4"></path>
-                </svg>
-                <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Secure & Verified
-                    Service</span>
-            </div>
+            <div class="subtitle" data-i18n="portal_subtitle">Your Personal AI Assistant Hub</div>
         </div>
 
-        <!-- Credits Section Moved to Profile Page -->
+        <!-- Credits Section (New Position: Above Login/Profile) -->
+        <div class="credits-card fade-in delay-1">
+            <div class="credits-info">
+                <div class="credits-label" data-i18n="balance_label">Available Balance</div>
+                <div class="credits-amount" id="creditsAmount">$0.00 USD</div>
+            </div>
+            <a href="https://core.newebpay.com/EPG/MS123456789/Example" target="_blank" class="refill-btn"
+                data-i18n="btn_refill">Refill +</a>
+        </div>
 
         <!-- Login Prompt (shown when not logged in) -->
         <div id="loginPrompt" class="login-prompt fade-in delay-1"
@@ -67,17 +84,6 @@
                 <h3 style="margin: 0; color: #fff; font-size: 1.1rem;" data-i18n="portal_title">WiseCat AI Login</h3>
             </div>
 
-            <!-- Anti-Fraud & Terms Acceptance -->
-            <label class="agreement-box" for="termsCheckbox">
-                <div class="custom-checkbox">
-                    <input type="checkbox" id="termsCheckbox" required>
-                    <span class="checkmark"></span>
-                </div>
-                <span class="agreement-text" data-i18n="label_agree_fraud">
-                    I agree I will not use this service for fraud. I agree to the <a href="terms.html">Terms of
-                        Service</a> & AI hub services.
-                </span>
-            </label>
             <div class="social-buttons" style="display: flex; flex-direction: column; gap: 10px;">
                 <!-- Primary Action: LINE -->
                 <button type="button" class="social-btn" id="lineLoginBtn"
@@ -93,61 +99,18 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                     <button type="button" class="social-btn" id="googleLoginBtn"
                         style="background: #fff; color: #444; border: 1px solid #ddd; height: 40px; border-radius: 10px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                        <img src="/google-icon.svg" alt="Google" style="width: 16px;">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"
+                            style="width: 16px;">
                         <span data-i18n="btn_google">Sign in with Google</span>
                     </button>
                     <button type="button" class="social-btn" id="microsoftLoginBtn"
-                        style="background: #2f2f2f; color: #fff; border: 1px solid #555; height: 40px; border-radius: 10px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                        <img src="/microsoft-icon.svg" alt="Microsoft" style="width: 14px;">
+                        style="background: #2f2f2f; color: #fff; border: 1px solid #444; height: 40px; border-radius: 10px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg"
+                            alt="Microsoft" style="width: 16px;">
                         <span data-i18n="btn_microsoft">Sign in with Microsoft</span>
                     </button>
                 </div>
             </div>
-
-            <!-- Guest Access (QA/Testing) -->
-            <!-- Guest Access (QA/Testing) -->
-            <button type="button" id="guestLoginBtn" class="guest-btn">
-                <span class="icon">🕵️</span>
-                <span class="text">Continue as Guest</span>
-            </button>
-
-            <style>
-                .guest-btn {
-                    background: rgba(255, 255, 255, 0.03);
-                    color: rgba(255, 255, 255, 0.6);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    width: 100%;
-                    height: 42px;
-                    border-radius: 12px;
-                    font-size: 0.85rem;
-                    margin-top: 16px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 8px;
-                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                    font-weight: 500;
-                    letter-spacing: 0.01em;
-                }
-
-                .guest-btn:hover {
-                    background: rgba(255, 255, 255, 0.08);
-                    border-color: rgba(255, 255, 255, 0.2);
-                    color: rgba(255, 255, 255, 0.9);
-                    transform: translateY(-1px);
-                }
-
-                .guest-btn:active {
-                    transform: translateY(0);
-                    background: rgba(255, 255, 255, 0.05);
-                }
-
-                .guest-btn .icon {
-                    font-size: 1.1em;
-                    opacity: 0.8;
-                }
-            </style>
 
             <div style="font-size: 10px; color: #666; margin-top: 25px; text-align: center; line-height: 1.4; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;"
                 data-i18n="login_privacy_notice">
@@ -164,51 +127,47 @@
                 <div class="user-name" id="userName"></div>
                 <div class="user-email" id="userEmail"></div>
             </div>
-
-            <!-- Action Buttons -->
-            <div style="display: flex; flex-direction: column; gap: 8px; min-width: 120px;">
-                <a href="/dashboard.html" class="logout-btn"
-                    style="background: var(--primary-color); text-decoration: none; display: flex; align-items: center; justify-content: center; height: 36px; padding: 0 12px; font-weight: 600; gap: 6px; border: none; font-size: 0.9rem; border-radius: 8px; color: white; width: 100%;">
-                    📊 Dashboard
-                </a>
-                <button onclick="logout()" class="logout-btn"
-                    style="height: 32px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); width: 100%;">
-                    Logout
-                </button>
-            </div>
+            <button onclick="logout()" class="logout-btn">Logout</button>
         </div>
 
-        <!-- Debug Tool (Temporary) -->
-        <div style="text-align: center; margin-top: 10px;">
-            <button
-                onclick="alert('Storage: ' + (localStorage.getItem('wisecat_user') ? 'FOUND' : 'EMPTY') + '\n\n' + localStorage.getItem('wisecat_user'))"
-                style="background: none; border: none; color: #555; font-size: 10px; cursor: pointer; padding: 5px;">
-                🔍 Debug Storage
-            </button>
-        </div>
 
+
+        <!-- Menu Grid -->
+        <div class="menu-grid">
+            <!-- Restaurant Reservation -->
+            <a href="reservation/restaurant_reservation.html" class="menu-card fade-in delay-2">
+                <div class="card-icon">🍽️</div>
+                <div class="card-content">
+                    <div class="card-title" data-i18n="service_res_title">Restaurant Reservation</div>
+                    <div class="card-desc" data-i18n="service_res_desc">AI-powered booking assistant for any restaurant
+                    </div>
+                </div>
+            </a>
+
+            <!-- Mouthpiece (New Service) -->
+            <a href="reservation/mouthpiece.html" class="menu-card fade-in delay-3">
+                <div class="card-icon">📢</div>
+                <div class="card-content">
+                    <div class="card-title" data-i18n="service_mouthpiece_title">Mouthpiece Service</div>
+                    <div class="card-desc" data-i18n="service_mouthpiece_desc">AI Voice representation service (Beta)
+                    </div>
+                </div>
+            </a>
+
+            <!-- Trial Call (New Service) -->
+            <a href="reservation/trial.html" class="menu-card fade-in delay-3">
+                <div class="card-icon">🎁</div>
+                <div class="card-content">
+                    <div class="card-title" data-i18n="service_trial_title">Free Trial Call</div>
+                    <div class="card-desc" data-i18n="service_trial_desc">Experience AI voice calling with a limited
+                        trial
+                    </div>
+                </div>
+            </a>
+        </div>
 
         <div class="footer fade-in delay-3">
-            <div style="font-weight: 600; margin-bottom: 8px;">&copy; 2026 WiseCat AI. All rights reserved.</div>
-            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
-                <a href="/faq.html"
-                    style="color: var(--text-secondary); text-decoration: none; margin-right: 15px;">FAQ</a>
-                <a href="/terms.html" style="color: var(--text-secondary); text-decoration: none;">Terms of Service</a>
-            </div>
-            <div style="font-size: 12px; color: var(--text-disabled); margin-bottom: 12px;">
-                Professional AI-Powered Communication Services
-            </div>
-            <div style="margin-top: 10px;">
-                <a href="https://line.me/R/ti/p/@785ausca" target="_blank"
-                    onclick="window.location.href='line://ti/p/@785ausca';"
-                    style="color: var(--primary-color); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
-                    <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;">
-                        <path
-                            d="M24 10.304c0-5.232-5.328-9.5-11.895-9.5-6.568 0-11.895 4.268-11.895 9.5 0 4.69 4.238 8.604 9.96 9.351.388.084.916.256 1.047.584.12.3.078.77.038 1.074l-.166 1a.398 0 0 0 .584.422c.45-.264 2.428-1.428 3.315-2.222.062-.056.126-.11.18-.17 4.544-1.04 8.832-4.665 8.832-9.539z" />
-                    </svg>
-                    Contact Support / Feedback
-                </a>
-            </div>
+            &copy; 2026 WiseCat AI. All rights reserved.
         </div>
     </div>
 

@@ -30,6 +30,59 @@ const { getFirestore } = require("firebase-admin/firestore"); // Import getFires
 // Global set for debouncing duplicate requests
 const processedCodes = new Set();
 
+// Cache for shared number configs (fetched from Firestore collection)
+let cachedSharedNumbers = [];
+let sharedNumberConfigFetchTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Fetch shared numbers from Firestore collection with caching
+ * Returns array of shared number configs ordered by createdAt (newest first)
+ */
+async function getSharedNumbers() {
+    const now = Date.now();
+
+    // Return cached if still valid
+    if (cachedSharedNumbers.length > 0 && (now - sharedNumberConfigFetchTime) < CACHE_DURATION) {
+        return cachedSharedNumbers;
+    }
+
+    try {
+        const snapshot = await db.collection('shared_numbers')
+            .orderBy('createdAt', 'desc')
+            .get();
+
+        cachedSharedNumbers = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        sharedNumberConfigFetchTime = now;
+
+        console.log(`Cached ${cachedSharedNumbers.length} shared numbers`);
+        return cachedSharedNumbers;
+    } catch (error) {
+        console.error('Error fetching shared numbers:', error);
+        return [];
+    }
+}
+
+/**
+ * Get the first (most recent) shared number
+ * Falls back to hardcoded if collection is empty
+ */
+async function getFirstSharedNumber() {
+    const numbers = await getSharedNumbers();
+    if (numbers.length > 0) {
+        return numbers[0];
+    }
+
+    // Fallback to hardcoded
+    return {
+        phoneNumber: "+18393334143",
+        vapiPhoneNumberId: "76705f8f-8ece-4a0e-a757-9581097c9ace"
+    };
+}
+
 exports.lineCallback = onRequest(
     { secrets: [lineChannelId, lineChannelSecret] },
     async (req, res) => {
@@ -196,7 +249,8 @@ exports.triggerN8nWebhook = onDocumentCreated(
             const settingsDoc = await settingsRef.get();
             const settings = settingsDoc.data() || {};
             const hasActiveNumber = settings.phoneNumberStatus === 'active' && !!settings.phoneNumber;
-            const sharedPoolId = "76705f8f-8ece-4a0e-a757-9581097c9ace";
+            const sharedNumberConfig = await getFirstSharedNumber();
+            const sharedPoolId = sharedNumberConfig?.vapiPhoneNumberId || "76705f8f-8ece-4a0e-a757-9581097c9ace"; // Fallback to hardcoded if config unavailable
             const isUsingShared = (winnerData.vapiPhoneNumberId === sharedPoolId || winnerData.useSharedNumber === true);
 
             if (!hasActiveNumber && !isUsingShared) {
@@ -342,7 +396,9 @@ exports.onTaskCompleted = onDocumentUpdated(
         if (oldData.state === 'completed' || newData.state !== 'completed') return;
 
         // 2. Only proceed if this task used a shared number
-        const isUsingShared = (newData.vapiPhoneNumberId === '76705f8f-8ece-4a0e-a757-9581097c9ace' || newData.useSharedNumber === true);
+        const sharedNumberConfig = await getFirstSharedNumber();
+        const sharedPoolId = sharedNumberConfig?.vapiPhoneNumberId || "76705f8f-8ece-4a0e-a757-9581097c9ace"; // Fallback to hardcoded if config unavailable
+        const isUsingShared = (newData.vapiPhoneNumberId === sharedPoolId || newData.useSharedNumber === true);
         if (!isUsingShared) {
             console.log(`[onTaskCompleted] Task ${event.params.taskId} is private, skipping auto-logging.`);
             return;

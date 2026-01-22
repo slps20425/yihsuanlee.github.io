@@ -339,7 +339,7 @@ function logout() {
             sessionStorage.removeItem(AUTH_STATE_KEY);
             // Redirect to entry page
             authLog('🔄 Redirecting to entry page');
-            window.location.href = '/entry.html';
+            window.location.href = '/';
         })
         .catch((error: any) => {
             authLog('❌ Sign out error:', error);
