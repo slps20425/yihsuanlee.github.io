@@ -990,22 +990,51 @@ async function loadUsageHistory() {
 
             // Determine Type and Description
             let type = "Usage";
+            let typeColor = "gray";
             let desc = item.description || item.category;
 
-            if (item.category === "phone-number" || item.category === "phonenumbers") type = "Number";
-            else if (item.category && item.category.includes("sms")) type = "SMS";
-            else if (item.category && item.category.includes("calls")) type = "Voice";
-            else if (item.description && item.description.toLowerCase().includes("recording")) type = "Recording";
+            if (item.category === "phone-number" || item.category === "phonenumbers") {
+                type = "Number";
+                typeColor = "orange";
+            } else if (item.category && item.category.includes("sms")) {
+                type = "SMS";
+                typeColor = "green";
+            } else if (item.category && item.category.includes("calls")) {
+                type = "Voice";
+                typeColor = "blue";
+            } else if (item.category === "refund") {
+                type = "Refund";
+                typeColor = "amber";
+            } else if (item.category === "retries") {
+                type = "Retries";
+                typeColor = "red";
+            } else if (item.description && item.description.toLowerCase().includes("recording")) {
+                type = "Recording";
+                typeColor = "pink";
+            }
 
             // Clean up description if it's just the category name
             if (desc === item.category) {
                 desc = desc.charAt(0).toUpperCase() + desc.slice(1);
             }
 
+            // Define color mapping for tags
+            const colorMap: { [key: string]: { bg: string; text: string; border: string } } = {
+                blue: { bg: '#e3f2fd', text: '#1976d2', border: '#90caf9' },
+                green: { bg: '#e8f5e9', text: '#388e3c', border: '#81c784' },
+                orange: { bg: '#fff3e0', text: '#f57c00', border: '#ffb74d' },
+                red: { bg: '#ffebee', text: '#c62828', border: '#ef5350' },
+                amber: { bg: '#fff8e1', text: '#f57f17', border: '#fbc02d' },
+                pink: { bg: '#fce4ec', text: '#c2185b', border: '#f48fb1' },
+                gray: { bg: '#f5f5f5', text: '#616161', border: '#bdbdbd' }
+            };
+
+            const colors = colorMap[typeColor] || colorMap['gray'];
+
             return `
                 <tr>
                     <td>${dateStr}</td>
-                    <td><span class="capability-tag ${type === 'Number' ? 'capability-voice' : type === 'SMS' ? 'capability-sms' : 'capability-mms'}">${type}</span></td>
+                    <td><span style="background-color: ${colors.bg}; color: ${colors.text}; border: 1px solid ${colors.border}; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; display: inline-block;">${type}</span></td>
                     <td>${desc}</td>
                     <td style="color: var(--warning); font-weight:600;">$${cost}</td>
                 </tr>

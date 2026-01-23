@@ -657,13 +657,12 @@ exports.processTaskRefund = onDocumentUpdated(
 
             await usageRef.add(usageData);
 
-            // Log refund record if refund occurred
-            if (refundAmount > 0) {
+            // Log refund record ONLY if refund occurred AND no error reason
+            // (when errorReason is set in Case 2 or 3, the call entry already shows the final cost)
+            if (refundAmount > 0 && !errorReason) {
                 await usageRef.add({
                     category: 'refund',
-                    description: errorReason
-                        ? errorReason
-                        : `Refund: Est ${estimatedDuration}s vs Actual ${actualDuration}s`,
+                    description: `Refund: Est ${estimatedDuration}s vs Actual ${actualDuration}s`,
                     usage: refundSeconds,
                     unit: 'seconds',
                     user_price: refundAmount,
@@ -671,7 +670,7 @@ exports.processTaskRefund = onDocumentUpdated(
                     start_date: admin.firestore.FieldValue.serverTimestamp(),
                     taskId: taskId,
                     source: 'task_completion',
-                    reason: errorReason || 'duration_variance'
+                    reason: 'duration_variance'
                 });
             }
 
@@ -680,7 +679,7 @@ exports.processTaskRefund = onDocumentUpdated(
                 const totalRetryCost = newData.retry_count * newData.retryCostPerAttempt;
                 await usageRef.add({
                     category: 'retries',
-                    description: `Retry fee: ${newData.retry_count} attempts x $${newData.retryCostPerAttempt.toFixed(2)} = $${totalRetryCost.toFixed(2)}`,
+                    description: `Retry fee: ${newData.retry_count} attempts`,
                     usage: newData.retry_count,
                     unit: 'attempts',
                     user_price: totalRetryCost,

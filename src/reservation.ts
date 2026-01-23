@@ -2614,6 +2614,41 @@ async function handleFormSubmit(e: Event) {
         return;
     }
 
+    // Check if shared number user has incomplete task (prevent multiple concurrent tasks)
+    if (useSharedNumber) {
+        try {
+            const { query: queryFn, where, getDocs } = await import('firebase/firestore');
+            const tasksRef = collection(db, 'reservation', 'tasks', 'tasks');
+            const incompleteQuery = queryFn(tasksRef,
+                where('userId', '==', auth.currentUser?.uid),
+                where('state', '!=', 'completed')
+            );
+            const incompleteSnap = await getDocs(incompleteQuery);
+
+            if (incompleteSnap.size > 0) {
+                // Get details of the first incomplete task to show user
+                const blockingTask = incompleteSnap.docs[0].data();
+                const taskId = incompleteSnap.docs[0].id;
+                const recipient = blockingTask.recipientName || blockingTask.Name || 'Unknown';
+                const target = blockingTask.targetPhoneNumber || blockingTask.phone || 'Unknown';
+                const state = blockingTask.state || 'pending';
+
+                const message = `❌ Active Task Blocking New Request:\n\n` +
+                    `Task ID: ${taskId}\n` +
+                    `Recipient: ${recipient}\n` +
+                    `Target: ${target}\n` +
+                    `Status: ${state}\n\n` +
+                    `Please wait for this task to complete before starting a new one.`;
+
+                (window as any).showToast(message, "warning");
+                btn.disabled = false;
+                return;
+            }
+        } catch (e) {
+            console.warn("Could not verify incomplete tasks:", e);
+            // Continue anyway - don't block user if check fails
+        }
+    }
 
     // 1. Transaction: Check Credits -> Deduct -> Create Task
     try {
