@@ -1067,11 +1067,12 @@ exports.getTransformedUsageHistory = onCall(
     async (request) => {
         if (!request.auth) throw new HttpsError("unauthenticated", "Auth required");
         const uid = request.auth.uid;
-        const db = getFirestore(admin.app(), "reservation");
+        const reservationDb = getFirestore(admin.app(), "reservation");
+        const defaultDb = admin.firestore();  // DEFAULT database for usage_history
 
         try {
-            // Get user's subaccount credentials
-            const settingsRef = db.doc(`users/uid_${uid}/settings/settings`);
+            // Get user's subaccount credentials from reservation database
+            const settingsRef = reservationDb.doc(`users/uid_${uid}/settings/settings`);
             const settingsDoc = await settingsRef.get();
             const settings = settingsDoc.data() || {};
 
@@ -1104,7 +1105,7 @@ exports.getTransformedUsageHistory = onCall(
                 console.log("[Usage] No subaccount found. Will show Firestore usage history only.");
             }
 
-            const billing = await getBillingConfig(db);
+            const billing = await getBillingConfig(reservationDb);
             const multiplier = billing.common_multiplier || 3.0;
 
             // Define categories to display.
@@ -1161,7 +1162,7 @@ exports.getTransformedUsageHistory = onCall(
 
             // --- Unified Usage Strategy: Merge Firestore Usage History ---
             try {
-                const firestoreUsageRef = db.collection(`users/uid_${uid}/usage_history`)
+                const firestoreUsageRef = defaultDb.collection(`users/uid_${uid}/usage_history`)
                     .orderBy('start_date', 'desc')
                     .limit(100);
                 const firestoreSnap = await firestoreUsageRef.get();
@@ -1441,9 +1442,9 @@ exports.purchasePhoneNumber = onCall(
 
             console.log(`[purchasePhoneNumber] Success! Number ${phoneNumber} is active`);
 
-            // Log to usage history
+            // Log to usage history (DEFAULT database, not reservation)
             try {
-                const usageRef = reservationDb.collection(`users/uid_${uid}/usage_history`);
+                const usageRef = db.collection(`users/uid_${uid}/usage_history`);
                 await usageRef.add({
                     category: 'phone-number',
                     description: `Purchased dedicated number ${phoneNumber} (Monthly)`,
