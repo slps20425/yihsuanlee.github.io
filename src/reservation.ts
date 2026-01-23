@@ -1871,7 +1871,26 @@ function displaySearchResults(places: any[]) {
     if (!resultsContainer) return;
     resultsContainer.innerHTML = '';
 
+    // Filter out blocked locations
+    const blockedKeywords = [
+        'police', 'hospital', 'government', 'courthouse', 'jail',
+        'prison', 'military', 'fbi', 'cia', 'dea', 'embassy',
+        'consulate', 'parliament', 'congress', 'senate', 'city hall',
+        'fire station', 'detention'
+    ];
+
+    let validCount = 0;
     places.forEach(place => {
+        // Check if location is blocked
+        const searchText = `${place.name} ${place.formatted_address || ''}`.toLowerCase();
+        const isBlocked = blockedKeywords.some(keyword => searchText.includes(keyword.toLowerCase()));
+
+        if (isBlocked) {
+            console.log(`[Blocklist] Filtered out: ${place.name}`);
+            return; // Skip this result
+        }
+
+        validCount++;
         const item = document.createElement('div');
         item.className = 'search-result-item';
 
@@ -1905,6 +1924,11 @@ function displaySearchResults(places: any[]) {
 
         resultsContainer.appendChild(item);
     });
+
+    // If all results were blocked
+    if (validCount === 0 && places.length > 0) {
+        resultsContainer.innerHTML = '<div class="loading">❌ No valid locations found. Government locations are blocked.</div>';
+    }
 }
 
 function bindSearchListeners() {
