@@ -1843,6 +1843,8 @@ exports.validateMissionDescription = onCall(
             throw new HttpsError("invalid-argument", "Missing required parameters.");
         }
 
+        console.log(`[validateMissionDescription] Received: language=${language}, missionId=${missionId}`);
+
         if (description.length < 10) {
             throw new HttpsError("invalid-argument", "Description too short.");
         }
@@ -1892,8 +1894,11 @@ exports.validateMissionDescription = onCall(
             const primaryLang = language ? language.split('-')[0] : 'en';
             const langMap = { zh: "Traditional Chinese (繁體中文)", jp: "Japanese (日本語)", ja: "Japanese (日本語)", kr: "Korean (한국어)", ko: "Korean (한국어)", es: "Spanish", fr: "French", it: "Italian" };
             const targetLangLabel = langMap[primaryLang] || "English";
+            console.log(`[validateMissionDescription] Language mapping: language=${language}, primaryLang=${primaryLang}, targetLangLabel=${targetLangLabel}`);
 
             const prompt = `
+**CRITICAL: ALL OUTPUT MUST BE IN ${targetLangLabel}. DO NOT USE ENGLISH.**
+
 Role: You are a Professional AI Assistant for "WiseCat AI".
 Goal: Analyze a user's request, verify its safety, and refine it into a professional, clear, and direct script that an AI voice will speak when calling a business on the user's behalf.
 
@@ -1902,6 +1907,7 @@ Current Context:
 - **Selected Mission**: "${missionName}"
 - **User's Input (Script)**: "${description}"
 - **Target Language**: ${targetLangLabel}
+- **OUTPUT LANGUAGE**: You MUST respond ONLY in ${targetLangLabel}. If user input is in Chinese, respond in Chinese. If user input is in Japanese, respond in Japanese. Always match the user's language.
 
 Instructions:
 1. **Security & Scam Check**: 
