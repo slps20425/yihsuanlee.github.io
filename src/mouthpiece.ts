@@ -1168,39 +1168,29 @@ async function handleFormSubmit(e: Event) {
         return;
     }
 
-    // Check if shared number user has incomplete task (prevent multiple concurrent tasks)
+    // ===== BACKEND VALIDATION: Check if shared number user can create new task =====
     if (useSharedNumber) {
         try {
-            const { query: queryFn, where, getDocs } = await import('firebase/firestore');
-            const tasksRef = collection(db, 'reservation', 'tasks', 'tasks');
-            const incompleteQuery = queryFn(tasksRef,
-                where('userId', '==', auth.currentUser?.uid),
-                where('state', '!=', 'completed')
-            );
-            const incompleteSnap = await getDocs(incompleteQuery);
+            const { httpsCallable } = await import('firebase/functions');
+            const { functions } = await import('./firebase-config');
 
-            if (incompleteSnap.size > 0) {
-                // Get details of the first incomplete task to show user
-                const blockingTask = incompleteSnap.docs[0].data();
-                const taskId = incompleteSnap.docs[0].id;
-                const recipient = blockingTask.recipientName || blockingTask.Name || 'Unknown';
-                const target = blockingTask.targetPhoneNumber || blockingTask.phone || 'Unknown';
-                const state = blockingTask.state || 'pending';
+            const validateTaskLimit = httpsCallable(functions, 'validateSharedNumberTaskLimit');
+            const result = await validateTaskLimit({ useSharedNumber: true });
+            const validationResult = result.data as any;
 
-                const message = `❌ Active Task Blocking New Request:\n\n` +
-                    `Task ID: ${taskId}\n` +
-                    `Recipient: ${recipient}\n` +
-                    `Target: ${target}\n` +
-                    `Status: ${state}\n\n` +
-                    `Please wait for this task to complete before starting a new one.`;
-
+            if (!validationResult.allowed) {
+                const message = `❌ ${validationResult.errorMessage || 'Cannot create task'}`;
                 (window as any).showToast(message, "warning");
                 btn.disabled = false;
                 return;
             }
+
+            console.log('[validateSharedNumberTaskLimit] ✓ Validation passed, user can create task');
         } catch (e) {
-            console.warn("Could not verify incomplete tasks:", e);
-            // Continue anyway - don't block user if check fails
+            console.error("Backend validation error:", e);
+            (window as any).showToast("Could not validate task limit. Please try again.", "error");
+            btn.disabled = false;
+            return;
         }
     }
 

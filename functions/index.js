@@ -2278,3 +2278,65 @@ If unsure, refuse politely.`;
         }
     }
 );
+
+/**
+ * Validate if a shared number user can create a new task
+ * Prevents concurrent shared number tasks for the same user
+ * BACKEND VALIDATION - Cannot be bypassed by frontend
+ */
+exports.validateSharedNumberTaskLimit = onCall(
+    async (request) => {
+        try {
+            // Verify authentication
+            if (!request.auth) {
+                throw new HttpsError("unauthenticated", "User must be authenticated");
+            }
+
+            const uid = request.auth.uid;
+            const useSharedNumber = request.data?.useSharedNumber || false;
+
+            console.log(`[validateSharedNumberTaskLimit] User ${uid}, useSharedNumber=${useSharedNumber}`);
+
+            // Only validate for shared number users
+            if (!useSharedNumber) {
+                return { allowed: true, reason: "Own number user - no limit" };
+            }
+
+            // Query for incomplete shared number tasks for this user
+            const tasksRef = db.collection('tasks');
+            const incompleteQuery = await tasksRef
+                .where('uid', '==', uid)
+                .where('useSharedNumber', '==', true)
+                .where('state', '!=', 'completed')
+                .get();
+
+            console.log(`[validateSharedNumberTaskLimit] Found ${incompleteQuery.size} incomplete shared number tasks for user ${uid}`);
+
+            if (incompleteQuery.size > 0) {
+                const blockingTask = incompleteQuery.docs[0].data();
+                const taskId = incompleteQuery.docs[0].id;
+
+                const errorMsg = `You already have an active shared number task (${taskId}) in ${blockingTask.state} state. ` +
+                    `Please wait for it to complete before starting a new one.`;
+
+                console.log(`[validateSharedNumberTaskLimit] ❌ User blocked: ${errorMsg}`);
+
+                return {
+                    allowed: false,
+                    reason: "Active shared number task exists",
+                    blockingTaskId: taskId,
+                    blockingTaskState: blockingTask.state,
+                    blockingTaskRecipient: blockingTask.recipientName || blockingTask.Name || 'Unknown',
+                    errorMessage: errorMsg
+                };
+            }
+
+            console.log(`[validateSharedNumberTaskLimit] ✅ User ${uid} allowed to create shared number task`);
+            return { allowed: true, reason: "No active shared number tasks" };
+
+        } catch (error) {
+            console.error("[validateSharedNumberTaskLimit] Error:", error);
+            throw new HttpsError("internal", `Validation failed: ${error.message}`);
+        }
+    }
+);
