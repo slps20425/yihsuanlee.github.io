@@ -2129,11 +2129,42 @@ async function initSearchLogic() {
             }
         }
 
+        // Detect if query contains non-ASCII (non-English) characters
+        const isNonEnglish = /[^\x00-\x7F]/.test(query);
+
+        // Default location bias for non-English queries (helps with regional search)
+        let locationBias: any = null;
+        if (isNonEnglish) {
+            // Detect language and set location bias
+            if (/[\u4E00-\u9FFF]/.test(query)) {
+                // Chinese characters - search in Taiwan/China region
+                locationBias = {
+                    circle: {
+                        center: { latitude: 25.0330, longitude: 121.5654 }, // Taipei
+                        radius: 100000 // 100km radius
+                    }
+                };
+            } else if (/[\u3040-\u309F\u30A0-\u30FF]/.test(query)) {
+                // Japanese characters - search in Japan
+                locationBias = {
+                    circle: {
+                        center: { latitude: 35.6762, longitude: 139.6503 }, // Tokyo
+                        radius: 100000
+                    }
+                };
+            }
+        }
+
         // Prepare Request for Places API (New)
         const requestBody: any = {
             textQuery: textQuery,
             maxResultCount: 10,
         };
+
+        // Add location bias if detected
+        if (locationBias) {
+            requestBody.locationBias = locationBias;
+        }
 
         // Only add includedType if strictly defined and valid (Google Types validation needed? 'dentist', 'beauty_salon' are valid)
         if (includedType) {
