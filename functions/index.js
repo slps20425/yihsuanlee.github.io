@@ -305,41 +305,9 @@ exports.triggerN8nWebhook = onDocumentCreated(
                 return;
             }
 
-            // 3. [TASK 2] Shared Number Logic - Setup Fee Deduction
-            if (isUsingShared) {
-                try {
-                    // Fetch the shared number document to get the originalPrice
-                    const sharedNumbersRef = db.collection('shared_numbers');
-                    const sharedNumberQuery = await sharedNumbersRef.where('vapiPhoneNumberId', '==', winnerData.vapiPhoneNumberId).limit(1).get();
-
-                    let setupFee = 1.75; // Default fallback
-                    if (!sharedNumberQuery.empty) {
-                        const sharedNumberDoc = sharedNumberQuery.docs[0];
-                        setupFee = sharedNumberDoc.data().originalPrice || 1.75;
-                        console.log(`[SharedPool] Found shared number with originalPrice: $${setupFee}`);
-                    } else {
-                        console.warn(`[SharedPool] Shared number not found for vapiId: ${winnerData.vapiPhoneNumberId}, using fallback price`);
-                    }
-
-                    console.log(`[SharedPool] Deducting Setup Fee: $${setupFee} for Task ${winnerId}`);
-
-                    // Deduct Fee in a transaction to prevent race conditions
-                    await db.runTransaction(async (t) => {
-                        const uDoc = await t.get(userRef);
-                        const bal = uDoc.data().credits || 0;
-                        if (bal < setupFee) throw new Error("Insufficient credits for shared pool setup fee");
-                        t.update(userRef, { credits: bal - setupFee });
-                    });
-
-                    // Add setup fee to task record for transparency
-                    await tasksRef.doc(winnerId).update({ sharedPoolFee: setupFee });
-
-                } catch (sharedError) {
-                    console.error(`[SharedPool] Setup Fee Error:`, sharedError.message);
-                    await tasksRef.doc(winnerId).update({ state: 'error', error: `Shared pool rental failed: ${sharedError.message}` });
-                    return;
-                }
-            }
+            // NOTE: Shared number activation fee is charged once in phone-numbers.ts
+            // when user activates the number, NOT per-call.
+            // Call costs are handled separately based on duration and destination rate.
 
             // 4. Lock it (Set to WIP)
             await tasksRef.doc(winnerId).update({ state: 'WIP' });

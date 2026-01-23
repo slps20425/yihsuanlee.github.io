@@ -706,23 +706,40 @@ async function initializeSharedNumbersList() {
                 });
 
                 try {
-                    const { doc, setDoc } = await import("firebase/firestore");
+                    const { doc, runTransaction } = await import("firebase/firestore");
                     const { db } = await import("./firebase-config");
 
-                    // Save shared number to settings (NO cost deduction yet - will deduct on call submission)
-                    const settingsRef = doc(db, 'users', `uid_${user.uid}`, 'settings', 'settings');
+                    // Deduct acquisition fee once when activating
+                    const userRef = doc(db, 'users', `uid_${user.uid}`);
+                    const acquisitionFee = Math.ceil(originalPrice);
 
-                    await setDoc(settingsRef, {
-                        phoneNumber: phoneNumber,
-                        phoneNumberStatus: 'active',
-                        vapiPhoneNumberId: vapiId,
-                        phoneNumberType: 'shared',
-                        sharedNumberActivatedAt: new Date().toISOString()
-                    }, { merge: true });
+                    await runTransaction(db, async (transaction) => {
+                        const userDoc = await transaction.get(userRef);
+                        const currentCredits = Number(userDoc.data()?.credits || 0);
 
-                    // Show success message with actual price
+                        if (currentCredits < acquisitionFee) {
+                            throw new Error(`Insufficient credits. Need $${acquisitionFee}, you have $${currentCredits.toFixed(2)}`);
+                        }
+
+                        // Deduct acquisition fee
+                        transaction.update(userRef, {
+                            credits: currentCredits - acquisitionFee
+                        });
+
+                        // Save shared number to settings
+                        const settingsRef = doc(db, 'users', `uid_${user.uid}`, 'settings', 'settings');
+                        transaction.set(settingsRef, {
+                            phoneNumber: phoneNumber,
+                            phoneNumberStatus: 'active',
+                            vapiPhoneNumberId: vapiId,
+                            phoneNumberType: 'shared',
+                            sharedNumberActivatedAt: new Date().toISOString()
+                        }, { merge: true });
+                    });
+
+                    // Show success message
                     const displayPrice = Math.ceil(originalPrice);
-                    showToast(`✅ Shared number ready! Cost ($${displayPrice}) will be deducted when you make a call.`, "success");
+                    showToast(`✅ Shared number activated! Acquisition fee ($${displayPrice}) deducted.`, "success");
 
                     // The UI visibility is now handled automatically by the onSnapshot listener above.
                     // Removed manual hiding of sharedPoolCard to ensure it stays visible as requested.
