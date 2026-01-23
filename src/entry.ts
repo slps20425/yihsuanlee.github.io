@@ -4,6 +4,7 @@ registerPWA();
 
 import WiseCatI18n from './i18n';
 import { setupSessionTimeout } from './session-timeout';
+import { initTheme, createThemeToggleButton } from './theme-toggle';
 
 import { GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc, onSnapshot, serverTimestamp } from "firebase/firestore";
@@ -26,6 +27,10 @@ let unsubscribeUser: any = null;
 // --- Initialization ---
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize theme
+    initTheme();
+    createThemeToggleButton();
+
     // Initialize i18n explicitly
     WiseCatI18n.init();
 
