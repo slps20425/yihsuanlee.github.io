@@ -415,7 +415,7 @@ exports.onTaskCompleted = onDocumentUpdated(
                 const multiplier = billing.common_multiplier || 3.0;
 
                 finalCost = durationMin * basePrice * multiplier;
-                logDescription = `Shared Call to ${newData.targetPhoneNumber} (${durationMin}m)`;
+                logDescription = `Shared Number Call to ${newData.targetPhoneNumber} (${durationMin}m)`;
                 console.log(`[onTaskCompleted] Shared Dynamic: ${durationMin}m x ($${basePrice} x ${multiplier}) = $${finalCost.toFixed(2)}`);
             } else {
                 // Dedicated Number Path: Retrieve from Twilio API

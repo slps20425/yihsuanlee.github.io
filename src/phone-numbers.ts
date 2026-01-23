@@ -960,13 +960,13 @@ async function loadUsageHistory() {
     try {
         const getTransformedUsageHistory = httpsCallable(functions, 'getTransformedUsageHistory');
         const result = await getTransformedUsageHistory();
-        const { usage, multiplier } = result.data as any;
+        const { usage } = result.data as any;
 
-        // Update Cost Header to show multiplier
+        // Cost header - simple label without multiplier
         const costHeader = document.querySelector('.usage-table th:nth-child(4)');
-        if (costHeader && multiplier) {
-            costHeader.textContent = `Cost (x${multiplier})`;
-            costHeader.setAttribute('title', `Base provider cost x ${multiplier} margin`);
+        if (costHeader) {
+            costHeader.textContent = `Cost`;
+            costHeader.setAttribute('title', `Total cost charged`);
         }
 
         if (!usage || usage.length === 0) {
@@ -1015,7 +1015,7 @@ async function loadUsageHistory() {
                 typeColor = "amber";
             } else if (item.category === "retries") {
                 type = "Retries";
-                typeColor = "red";
+                typeColor = "orange";
             } else if (item.description && item.description.toLowerCase().includes("recording")) {
                 type = "Recording";
                 typeColor = "pink";
