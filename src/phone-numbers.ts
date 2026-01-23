@@ -1018,15 +1018,15 @@ async function loadUsageHistory() {
                 desc = desc.charAt(0).toUpperCase() + desc.slice(1);
             }
 
-            // Define color mapping for tags
-            const colorMap: { [key: string]: { bg: string; text: string; border: string } } = {
-                blue: { bg: '#e3f2fd', text: '#1976d2', border: '#90caf9' },
-                green: { bg: '#e8f5e9', text: '#388e3c', border: '#81c784' },
-                orange: { bg: '#fff3e0', text: '#f57c00', border: '#ffb74d' },
-                red: { bg: '#ffebee', text: '#c62828', border: '#ef5350' },
-                amber: { bg: '#fff8e1', text: '#f57f17', border: '#fbc02d' },
-                pink: { bg: '#fce4ec', text: '#c2185b', border: '#f48fb1' },
-                gray: { bg: '#f5f5f5', text: '#616161', border: '#bdbdbd' }
+            // Define color mapping for tags - SOLID FILLED backgrounds
+            const colorMap: { [key: string]: { bg: string; text: string } } = {
+                blue: { bg: '#0066CC', text: '#ffffff' },
+                green: { bg: '#28A745', text: '#ffffff' },
+                orange: { bg: '#FF9500', text: '#ffffff' },
+                red: { bg: '#DC3545', text: '#ffffff' },
+                amber: { bg: '#FFC107', text: '#000000' },
+                pink: { bg: '#E91E63', text: '#ffffff' },
+                gray: { bg: '#6C757D', text: '#ffffff' }
             };
 
             const colors = colorMap[typeColor] || colorMap['gray'];
@@ -1034,7 +1034,7 @@ async function loadUsageHistory() {
             return `
                 <tr>
                     <td>${dateStr}</td>
-                    <td><span style="background-color: ${colors.bg}; color: ${colors.text}; border: 1px solid ${colors.border}; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; display: inline-block;">${type}</span></td>
+                    <td><span style="background-color: ${colors.bg}; color: ${colors.text}; padding: 6px 12px; border-radius: 5px; font-size: 12px; font-weight: 600; display: inline-block; white-space: nowrap;">${type}</span></td>
                     <td>${desc}</td>
                     <td style="color: var(--warning); font-weight:600;">$${cost}</td>
                 </tr>

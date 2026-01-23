@@ -1441,6 +1441,28 @@ exports.purchasePhoneNumber = onCall(
 
             console.log(`[purchasePhoneNumber] Success! Number ${phoneNumber} is active`);
 
+            // Log to usage history
+            try {
+                const usageRef = reservationDb.collection(`users/uid_${uid}/usage_history`);
+                await usageRef.add({
+                    category: 'phone-number',
+                    description: `Purchased dedicated number ${phoneNumber} (Monthly)`,
+                    usage: 1,
+                    unit: 'number',
+                    user_price: PHONE_NUMBER_COST,
+                    currency: 'USD',
+                    start_date: admin.firestore.FieldValue.serverTimestamp(),
+                    source: 'phone_purchase',
+                    phoneNumber: phoneNumber,
+                    basePrice: basePrice,
+                    multiplier: billing.number_multiplier || 2.0
+                });
+                console.log(`[purchasePhoneNumber] ✓ Logged to usage_history: $${PHONE_NUMBER_COST.toFixed(2)}`);
+            } catch (usageError) {
+                console.warn(`[purchasePhoneNumber] Warning: Failed to log usage history:`, usageError.message);
+                // Don't block purchase if logging fails
+            }
+
             return {
                 success: true,
                 phoneNumber: phoneNumber,
