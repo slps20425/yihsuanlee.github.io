@@ -2167,29 +2167,18 @@ async function initSearchLogic() {
     function renderResults(places: any[]) {
         resultsContainer!.innerHTML = '';
 
-        // Blacklist for government/sensitive locations
-        const BLOCKED_KEYWORDS = [
-            'police', 'hospital', 'government', 'courthouse', 'jail',
-            'prison', 'military', 'fbi', 'cia', 'dea', 'embassy',
-            'consulate', 'parliament', 'congress', 'senate', 'city hall',
-            'fire station', 'detention'
-        ];
+        // Note: Places are already filtered by searchPlaces() which removes blocked locations
+        // This renderResults just displays the pre-filtered results
 
-        let validCount = 0;
+        if (!places || places.length === 0) {
+            resultsContainer!.innerHTML = '<div style="color:#f87171; text-align:center;">❌ No valid locations found.</div>';
+            return;
+        }
+
         places.forEach(place => {
             const name = place.displayName?.text || place.name || "Unknown Place";
             const address = place.formattedAddress || "";
 
-            // Check if location is blocked
-            const searchText = `${name} ${address}`.toLowerCase();
-            const isBlocked = BLOCKED_KEYWORDS.some(keyword => searchText.includes(keyword));
-
-            if (isBlocked) {
-                console.log(`[Blacklist] Filtered out: ${name}`);
-                return; // Skip this result
-            }
-
-            validCount++;
             const div = document.createElement('div');
             div.style.padding = '12px';
             div.style.background = '#222';
@@ -2217,11 +2206,6 @@ async function initSearchLogic() {
 
             resultsContainer!.appendChild(div);
         });
-
-        // If all results were blocked
-        if (validCount === 0) {
-            resultsContainer!.innerHTML = '<div style="color:#f87171; text-align:center;">❌ No valid locations found. Government locations are blocked.</div>';
-        }
     }
 
     // New: Show Details Modal instead of direct select

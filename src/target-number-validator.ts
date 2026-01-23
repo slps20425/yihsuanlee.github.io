@@ -2,7 +2,11 @@
  * Target Number Validator
  * Google Places API integration for blocking government locations
  * Used in call/reservation forms
+ * Blocklist fetched from Firestore settings/location_blocklist
  */
+
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from './firebase-config';
 
 interface PlaceResult {
     name: string;
@@ -12,18 +16,75 @@ interface PlaceResult {
     place_id: string;
 }
 
-const BLOCKED_TYPES = [
+// Default blocklists (fallback if Firestore unavailable)
+const DEFAULT_BLOCKED_TYPES = [
     'police', 'hospital', 'government_office', 'courthouse',
     'fire_station', 'military_base', 'prison', 'detention_center',
     'city_hall', 'parliament', 'senate', 'embassy', 'consulate'
 ];
 
-const BLOCKED_KEYWORDS = [
+const DEFAULT_BLOCKED_KEYWORDS = [
     'police', 'hospital', 'government', 'courthouse', 'jail',
     'prison', 'military', 'fbi', 'cia', 'dea', 'embassy'
 ];
 
+// Cache for blocklist
+let cachedBlocklist: {
+    types: string[];
+    keywords: string[];
+    lastFetched: number;
+} | null = null;
+
 let googleMapsLoaded = false;
+
+/**
+ * Fetch blocklist from Firestore settings/location_blocklist
+ * Falls back to hardcoded defaults if unavailable
+ */
+async function fetchBlocklist(): Promise<{
+    types: string[];
+    keywords: string[];
+}> {
+    // Use cache if fresh (within 5 minutes)
+    if (cachedBlocklist && Date.now() - cachedBlocklist.lastFetched < 5 * 60 * 1000) {
+        return {
+            types: cachedBlocklist.types,
+            keywords: cachedBlocklist.keywords
+        };
+    }
+
+    try {
+        const docRef = doc(db, 'settings', 'location_blocklist');
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            const blocklist = {
+                types: data.types || DEFAULT_BLOCKED_TYPES,
+                keywords: data.keywords || DEFAULT_BLOCKED_KEYWORDS
+            };
+
+            // Cache it
+            cachedBlocklist = {
+                ...blocklist,
+                lastFetched: Date.now()
+            };
+
+            console.log('[TargetValidator] Blocklist loaded from Firestore:', blocklist);
+            return blocklist;
+        } else {
+            console.warn('[TargetValidator] Blocklist document not found, using defaults');
+        }
+    } catch (error) {
+        console.warn('[TargetValidator] Failed to fetch blocklist from Firestore:', error);
+    }
+
+    // Return defaults if Firestore fails
+    return {
+        types: DEFAULT_BLOCKED_TYPES,
+        keywords: DEFAULT_BLOCKED_KEYWORDS
+    };
+}
 
 /**
  * Load Google Maps API
@@ -53,6 +114,8 @@ export async function initGoogleMapsAPI(): Promise<boolean> {
 
         script.onload = () => {
             googleMapsLoaded = true;
+            // Pre-fetch blocklist on initialization
+            fetchBlocklist().catch(err => console.error('[TargetValidator] Failed to pre-fetch blocklist:', err));
             resolve(true);
         };
 
@@ -66,7 +129,7 @@ export async function initGoogleMapsAPI(): Promise<boolean> {
 }
 
 /**
- * Search for places/businesses
+ * Search for places/businesses and filter blocked locations
  */
 export async function searchPlaces(query: string): Promise<Array<{
     place_id: string;
@@ -77,6 +140,8 @@ export async function searchPlaces(query: string): Promise<Array<{
         return [];
     }
 
+    const blocklist = await fetchBlocklist();
+
     return new Promise((resolve) => {
         const service = new window.google!.maps.places.AutocompleteService();
         service.getPlacePredictions(
@@ -86,7 +151,19 @@ export async function searchPlaces(query: string): Promise<Array<{
             },
             (predictions: any[]) => {
                 if (predictions) {
-                    resolve(predictions.map(p => ({
+                    // Filter out blocked locations based on keywords
+                    const filtered = predictions.filter(p => {
+                        const text = `${p.main_text} ${p.description}`.toLowerCase();
+                        const isBlocked = blocklist.keywords.some(keyword =>
+                            text.includes(keyword.toLowerCase())
+                        );
+                        if (isBlocked) {
+                            console.log(`[TargetValidator] Filtered out: ${p.main_text}`);
+                        }
+                        return !isBlocked;
+                    });
+
+                    resolve(filtered.map(p => ({
                         place_id: p.place_id,
                         name: p.main_text,
                         description: p.description
@@ -121,7 +198,7 @@ export async function validatePlace(placeId: string): Promise<{
                 placeId,
                 fields: ['name', 'formatted_phone_number', 'types', 'formatted_address']
             },
-            (result: any, status: any) => {
+            async (result: any, status: any) => {
                 tempDiv.remove();
 
                 if (status !== 'OK' || !result) {
@@ -141,7 +218,8 @@ export async function validatePlace(placeId: string): Promise<{
                 };
 
                 // Check if blocked
-                if (isLocationBlocked(place)) {
+                const isBlocked = await isLocationBlocked(place);
+                if (isBlocked) {
                     resolve({
                         valid: false,
                         error: '❌ Government locations cannot be contacted. Please select a different business.'
@@ -156,14 +234,15 @@ export async function validatePlace(placeId: string): Promise<{
 }
 
 /**
- * Check if location is in blacklist
+ * Check if location is in blocklist (fetched from Firestore)
  */
-function isLocationBlocked(place: PlaceResult): boolean {
+async function isLocationBlocked(place: PlaceResult): Promise<boolean> {
+    const blocklist = await fetchBlocklist();
     const text = `${place.name} ${place.formatted_address}`.toLowerCase();
 
-    // Check type
+    // Check type (most reliable - uses Google's classification)
     for (const type of place.types) {
-        if (BLOCKED_TYPES.some(blocked =>
+        if (blocklist.types.some(blocked =>
             type.toLowerCase().includes(blocked.toLowerCase())
         )) {
             console.log(`[TargetValidator] Blocked by type: ${type}`);
@@ -171,8 +250,8 @@ function isLocationBlocked(place: PlaceResult): boolean {
         }
     }
 
-    // Check keywords
-    for (const keyword of BLOCKED_KEYWORDS) {
+    // Check keywords (backup validation)
+    for (const keyword of blocklist.keywords) {
         if (text.includes(keyword.toLowerCase())) {
             console.log(`[TargetValidator] Blocked by keyword: ${keyword}`);
             return true;
