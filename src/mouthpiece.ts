@@ -11,7 +11,7 @@ import './nav-active'; // Set active navigation item
 import { MISSION_SCENARIOS, MissionScenario } from './mission-scenarios';
 import { showToast } from './utility-toast'; // Centralized toast notifications
 import { initSharedNumberConfig, fetchSharedNumberConfigOnce } from './shared-number-config'; // Shared number configuration
-import { initGoogleMapsAPI, searchPlaces, validatePlace, logBlockedAttempt } from './target-number-validator'; // Target number validation
+import { initGoogleMapsAPI, searchPlaces, validatePlace, logBlockedAttempt, fetchBlocklist } from './target-number-validator'; // Target number validation
 
 // Global mission storage (fetched dynamically from Firestore)
 let dynamicMissions: MissionScenario[] = [];
@@ -2154,7 +2154,7 @@ async function initSearchLogic() {
             const data = await response.json();
 
             if (data.places && data.places.length > 0) {
-                renderResults(data.places);
+                await renderResults(data.places);
             } else {
                 resultsContainer!.innerHTML = '<div style="color:#f87171; text-align:center;">No results found.</div>';
             }
@@ -2164,7 +2164,7 @@ async function initSearchLogic() {
         }
     }
 
-    function renderResults(places: any[]) {
+    async function renderResults(places: any[]) {
         resultsContainer!.innerHTML = '';
 
         if (!places || places.length === 0) {
@@ -2172,22 +2172,17 @@ async function initSearchLogic() {
             return;
         }
 
-        // Filter out blocked locations from search results
-        const blockedKeywords = [
-            'police', 'hospital', 'government', 'courthouse', 'jail',
-            'prison', 'military', 'fbi', 'cia', 'dea', 'embassy',
-            'consulate', 'parliament', 'congress', 'senate', 'city hall',
-            'fire station', 'detention'
-        ];
+        // Fetch blocklist from Firestore
+        const blocklist = await fetchBlocklist();
 
         let validCount = 0;
         places.forEach(place => {
             const name = place.displayName?.text || place.name || "Unknown Place";
             const address = place.formattedAddress || "";
 
-            // Check if location is blocked
+            // Check if location is blocked using Firestore blocklist keywords
             const searchText = `${name} ${address}`.toLowerCase();
-            const isBlocked = blockedKeywords.some(keyword => searchText.includes(keyword.toLowerCase()));
+            const isBlocked = blocklist.keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
 
             if (isBlocked) {
                 console.log(`[Blocklist] Filtered out: ${name}`);

@@ -11,7 +11,8 @@ import {
     initGoogleMapsAPI as initGoogleMapsForValidation,
     searchPlaces as searchPlacesForValidation,
     validatePlace as validatePlaceForValidation,
-    logBlockedAttempt as logBlockedLocationAttempt
+    logBlockedAttempt as logBlockedLocationAttempt,
+    fetchBlocklist
 } from './target-number-validator'; // Target number validation
 
 // Mission interface
@@ -1857,33 +1858,28 @@ function searchPlaces(query: string) {
         locationBias: location
     };
 
-    placesService.textSearch(request, (results: any[], status: any) => {
+    placesService.textSearch(request, async (results: any[], status: any) => {
         if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-            displaySearchResults(results.slice(0, 5));
+            await displaySearchResults(results.slice(0, 5));
         } else {
             resultsContainer.innerHTML = '<div class="loading">找不到餐廳</div>';
         }
     });
 }
 
-function displaySearchResults(places: any[]) {
+async function displaySearchResults(places: any[]) {
     const resultsContainer = document.getElementById('searchResults');
     if (!resultsContainer) return;
     resultsContainer.innerHTML = '';
 
-    // Filter out blocked locations
-    const blockedKeywords = [
-        'police', 'hospital', 'government', 'courthouse', 'jail',
-        'prison', 'military', 'fbi', 'cia', 'dea', 'embassy',
-        'consulate', 'parliament', 'congress', 'senate', 'city hall',
-        'fire station', 'detention'
-    ];
+    // Fetch blocklist from Firestore
+    const blocklist = await fetchBlocklist();
 
     let validCount = 0;
     places.forEach(place => {
-        // Check if location is blocked
+        // Check if location is blocked using Firestore blocklist
         const searchText = `${place.name} ${place.formatted_address || ''}`.toLowerCase();
-        const isBlocked = blockedKeywords.some(keyword => searchText.includes(keyword.toLowerCase()));
+        const isBlocked = blocklist.keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
 
         if (isBlocked) {
             console.log(`[Blocklist] Filtered out: ${place.name}`);

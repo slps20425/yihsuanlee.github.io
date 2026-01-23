@@ -40,8 +40,9 @@ let googleMapsLoaded = false;
 /**
  * Fetch blocklist from Firestore settings/location_blocklist
  * Falls back to hardcoded defaults if unavailable
+ * Exported for use in search result filtering
  */
-async function fetchBlocklist(): Promise<{
+export async function fetchBlocklist(): Promise<{
     types: string[];
     keywords: string[];
 }> {
