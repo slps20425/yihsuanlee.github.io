@@ -11,6 +11,7 @@ interface WiseCatI18nType {
     apply: () => void;
     renderHelper: () => void;
     refreshCredits: () => void;
+    updateCreditsImmediate: (newBalance: number) => void;
     initCreditsListener: () => Promise<void>;
     phoneRules: { [key: string]: RegExp };
     validatePhone: (code: string, number: string) => boolean;
@@ -1150,6 +1151,23 @@ const WiseCatI18n: WiseCatI18nType = {
                 });
             } catch (e) {
                 console.error("i18n credits error", e);
+            }
+        }
+    },
+
+    // Update credits immediately in localStorage (no wait for Firestore listener)
+    // Call this right after deducting credits to show real-time UI update
+    updateCreditsImmediate(newBalance: number) {
+        const userSession = localStorage.getItem('wisecat_user');
+        if (userSession) {
+            try {
+                const user = JSON.parse(userSession);
+                user.credits = newBalance;
+                localStorage.setItem('wisecat_user', JSON.stringify(user));
+                console.log('[updateCreditsImmediate] Updated cache to:', newBalance);
+                this.refreshCredits();
+            } catch (e) {
+                console.error('[updateCreditsImmediate] Error:', e);
             }
         }
     },

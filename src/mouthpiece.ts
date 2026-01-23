@@ -1266,6 +1266,7 @@ async function handleFormSubmit(e: Event) {
             return;
         }
 
+        let newBalance = 0;
         await runTransaction(db, async (transaction) => {
             const userDoc = await transaction.get(userDocRef);
             const settingsDoc = await transaction.get(settingsRef);
@@ -1283,15 +1284,18 @@ async function handleFormSubmit(e: Event) {
                 throw `Insufficient credits! This task requires ${totalCost.toFixed(1)} credits.`;
             }
 
+            // Calculate new balance
+            newBalance = currentCredits - totalCost;
+
             // Deduct Credit (Total Max Cost)
-            transaction.update(userDocRef, { credits: currentCredits - totalCost });
+            transaction.update(userDocRef, { credits: newBalance });
 
             // Create Task
             transaction.set(taskRef, {
                 ...payload,
                 senderPhoneNumber: settings.phoneNumber || '',
                 vapiPhoneNumberId: settings.vapiPhoneNumberId || '',
-                userCredits: currentCredits - totalCost, // Store NEW balance
+                userCredits: newBalance, // Store NEW balance
                 cost: totalCost,
 
                 // ===== COST BREAKDOWN =====
@@ -1330,6 +1334,9 @@ async function handleFormSubmit(e: Event) {
         });
 
         console.log("Task logged to Firestore via Transaction:", taskId);
+
+        // Update UI immediately with new balance (don't wait for Firestore listener)
+        (window as any).WiseCatI18n?.updateCreditsImmediate(newBalance);
 
         // 2. Success UI (No Webhook)
         btn.innerText = dict.msg_success;

@@ -712,6 +712,7 @@ async function initializeSharedNumbersList() {
                     // Deduct acquisition fee once when activating
                     const userRef = doc(db, 'users', `uid_${user.uid}`);
                     const acquisitionFee = Math.ceil(originalPrice);
+                    let newBalance = 0;
 
                     await runTransaction(db, async (transaction) => {
                         const userDoc = await transaction.get(userRef);
@@ -721,9 +722,12 @@ async function initializeSharedNumbersList() {
                             throw new Error(`Insufficient credits. Need $${acquisitionFee}, you have $${currentCredits.toFixed(2)}`);
                         }
 
+                        // Calculate new balance
+                        newBalance = currentCredits - acquisitionFee;
+
                         // Deduct acquisition fee
                         transaction.update(userRef, {
-                            credits: currentCredits - acquisitionFee
+                            credits: newBalance
                         });
 
                         // Save shared number to settings
@@ -736,6 +740,10 @@ async function initializeSharedNumbersList() {
                             sharedNumberActivatedAt: new Date().toISOString()
                         }, { merge: true });
                     });
+
+                    // Update UI immediately with new balance (don't wait for Firestore listener)
+                    const WiseCatI18n = await import("./i18n").then(m => m.default);
+                    WiseCatI18n.updateCreditsImmediate(newBalance);
 
                     // Show success message
                     const displayPrice = Math.ceil(originalPrice);
