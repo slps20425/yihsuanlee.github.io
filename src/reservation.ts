@@ -7,6 +7,12 @@ import { MISSION_SCENARIOS } from './mission-scenarios';
 import './chat-assistant'; // Enable Chat Widget
 import { showToast } from './utility-toast'; // Centralized toast notifications
 import { initSharedNumberConfig, fetchSharedNumberConfigOnce } from './shared-number-config'; // Shared number configuration
+import {
+    initGoogleMapsAPI as initGoogleMapsForValidation,
+    searchPlaces as searchPlacesForValidation,
+    validatePlace as validatePlaceForValidation,
+    logBlockedAttempt as logBlockedLocationAttempt
+} from './target-number-validator'; // Target number validation
 
 // Mission interface
 interface MissionScenario {
@@ -2334,6 +2340,52 @@ async function handleFormSubmit(e: Event) {
         btn.disabled = false;
         btn.textContent = '🚀 Send Wisecat';
         return;
+    }
+
+    // --- Target Number Validation via Google Places ---
+    if (fullPhoneNumber) {
+        // Initialize Google Maps if not already loaded
+        const mapsLoaded = await initGoogleMapsForValidation();
+        if (!mapsLoaded) {
+            showToast('⚠️ Address validation unavailable. Please try again.', 'warning');
+            btn.disabled = false;
+            return;
+        }
+
+        // Search for the target location
+        showToast('🔍 Validating target location...', 'info');
+        try {
+            // Use the phone number to search for the business/location
+            const searchResults = await searchPlacesForValidation(fullPhoneNumber);
+            if (searchResults.length === 0) {
+                showToast('❌ Could not find location for this phone number. Please verify and try again.', 'error');
+                btn.disabled = false;
+                return;
+            }
+
+            // Validate the first (most relevant) result
+            const validation = await validatePlaceForValidation(searchResults[0].place_id);
+            if (!validation.valid) {
+                // Location is blocked
+                showToast(validation.error || 'This location cannot be contacted.', 'error');
+
+                // Log the blocked attempt
+                if (validation.place) {
+                    logBlockedLocationAttempt(validation.place, currentUser.uid);
+                }
+
+                btn.disabled = false;
+                return;
+            }
+
+            // Valid location - continue with submission
+            showToast('✅ Location validated. Processing reservation...', 'success');
+        } catch (err) {
+            console.error('[TargetValidator] Validation error:', err);
+            showToast('Error validating location. Please try again.', 'error');
+            btn.disabled = false;
+            return;
+        }
     }
 
     // 4. Pre-Call Eligibility & Balance Check [TASK 3 & 4]

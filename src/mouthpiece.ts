@@ -11,6 +11,7 @@ import './nav-active'; // Set active navigation item
 import { MISSION_SCENARIOS, MissionScenario } from './mission-scenarios';
 import { showToast } from './utility-toast'; // Centralized toast notifications
 import { initSharedNumberConfig, fetchSharedNumberConfigOnce } from './shared-number-config'; // Shared number configuration
+import { initGoogleMapsAPI, searchPlaces, validatePlace, logBlockedAttempt } from './target-number-validator'; // Target number validation
 
 // Global mission storage (fetched dynamically from Firestore)
 let dynamicMissions: MissionScenario[] = [];
@@ -1000,6 +1001,59 @@ async function handleFormSubmit(e: Event) {
         showToast(costBreakdown, 'error');
         btn.disabled = false;
         return;
+    }
+
+    // --- Target Number Validation via Google Places ---
+    // Note: targetPhoneEl is declared later, so we access it directly
+    const targetPhoneInputEl = document.getElementById('targetPhone') as HTMLInputElement;
+    const targetPhoneValue = phoneInputPlugin ? phoneInputPlugin.getNumber() : targetPhoneInputEl?.value;
+
+    if (targetPhoneValue) {
+        // Initialize Google Maps if not already loaded
+        const mapsLoaded = await initGoogleMapsAPI();
+        if (!mapsLoaded) {
+            showToast('⚠️ Address validation unavailable. Please try again.', 'warning');
+            btn.disabled = false;
+            return;
+        }
+
+        // Search for the target location
+        showToast('🔍 Validating target location...', 'info');
+        try {
+            // Use the phone number to search for the business/location
+            const searchResults = await searchPlaces(targetPhoneValue);
+            if (searchResults.length === 0) {
+                showToast('❌ Could not find location for this phone number. Please verify and try again.', 'error');
+                btn.disabled = false;
+                return;
+            }
+
+            // Validate the first (most relevant) result
+            const validation = await validatePlace(searchResults[0].place_id);
+            if (!validation.valid) {
+                // Location is blocked
+                showToast(validation.error || 'This location cannot be contacted.', 'error');
+
+                // Log the blocked attempt
+                const uid = (localStorage.getItem('wisecat_user')
+                    ? JSON.parse(localStorage.getItem('wisecat_user') || '{}').uid
+                    : 'unknown');
+                if (validation.place) {
+                    logBlockedAttempt(validation.place, uid);
+                }
+
+                btn.disabled = false;
+                return;
+            }
+
+            // Valid location - continue with submission
+            showToast('✅ Location validated. Submitting call...', 'success');
+        } catch (err) {
+            console.error('[TargetValidator] Validation error:', err);
+            showToast('Error validating location. Please try again.', 'error');
+            btn.disabled = false;
+            return;
+        }
     }
 
     const tasksCol = collection(db, 'tasks');
