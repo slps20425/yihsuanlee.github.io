@@ -556,29 +556,37 @@ exports.processTaskRefund = onDocumentUpdated(
             let actualMinutes = 0;
             let errorReason = null;
 
+            // Extract base call cost and retry fee from task
+            const baseCost = newData.baseCost || estimatedCost; // Estimated base call cost
+            const retryCost = newData.retryCost || 0;           // Retry fee (non-refundable)
+
             // ===== CASE 1: Has duration → Normal calculation (1-min minimum) =====
             if (actualDuration !== undefined && actualDuration !== null && actualDuration > 0) {
                 actualMinutes = Math.max(1, Math.ceil(actualDuration / 60));
                 actualCost = actualMinutes * rateApplied.final;
-                refundAmount = estimatedCost - actualCost;
+                // Refund ONLY the call cost difference, NOT the retry fee
+                refundAmount = Math.max(0, baseCost - actualCost);
                 errorReason = null;
-                console.log(`[processTaskRefund] Case 1 (Normal): ${actualDuration}s → ${actualMinutes}m → $${actualCost.toFixed(2)}`);
+                console.log(`[processTaskRefund] Case 1 (Normal): ${actualDuration}s → ${actualMinutes}m → $${actualCost.toFixed(2)}, Refund: $${refundAmount.toFixed(2)} (call only, retry fee non-refundable)`);
             }
-            // ===== CASE 2: No duration + call_result=true → Refund 50% =====
+            // ===== CASE 2: No duration + call_result=true → Refund call cost only =====
             else if (callResult === "true" || callResult === true) {
-                actualCost = estimatedCost * 0.5;
-                refundAmount = estimatedCost * 0.5;
+                // Call was attempted but no duration recorded
+                // Refund 50% of call cost (not retry)
+                actualCost = baseCost * 0.5;
+                refundAmount = baseCost * 0.5;
                 actualMinutes = 0;
-                errorReason = "Call attempted but duration missing - 50% refund issued";
-                console.log(`[processTaskRefund] Case 2 (Call attempted, no duration): 50% refund = $${refundAmount.toFixed(2)}`);
+                errorReason = "Call attempted but duration missing - 50% of call cost refunded (retry fee non-refundable)";
+                console.log(`[processTaskRefund] Case 2 (Call attempted, no duration): 50% refund of call = $${refundAmount.toFixed(2)}`);
             }
-            // ===== CASE 3: No duration + call_result=false → Full refund =====
+            // ===== CASE 3: No duration + call_result=false → Full refund of call cost =====
             else {
+                // No call data recorded, refund call cost only (retry still non-refundable)
                 actualCost = 0;
-                refundAmount = estimatedCost;
+                refundAmount = baseCost; // Refund only call cost, keep retry fee
                 actualMinutes = 0;
-                errorReason = `No call data recorded - full refund issued. call_result=${callResult}`;
-                console.log(`[processTaskRefund] Case 3 (No call data): Full refund = $${refundAmount.toFixed(2)}`);
+                errorReason = `No call data recorded - refunding call cost only (retry fee: $${retryCost.toFixed(2)} retained). call_result=${callResult}`;
+                console.log(`[processTaskRefund] Case 3 (No call data): Full refund of call cost = $${refundAmount.toFixed(2)} (retry fee $${retryCost.toFixed(2)} kept)`);
             }
 
             const refundSeconds = estimatedDuration - (actualDuration || 0);
@@ -587,9 +595,10 @@ exports.processTaskRefund = onDocumentUpdated(
                 : errorReason;
 
             console.log(`[processTaskRefund] Summary for ${taskId}:
-                Estimated: $${estimatedCost}
-                Actual: $${actualCost.toFixed(2)}
-                Refund: $${refundAmount.toFixed(2)}
+                On Hold: $${estimatedCost.toFixed(2)} (Base: $${baseCost.toFixed(2)} + Retry: $${retryCost.toFixed(2)})
+                Actual Call Cost: $${actualCost.toFixed(2)}
+                Refund (call only): $${refundAmount.toFixed(2)}
+                Final Charge: $${(estimatedCost - refundAmount).toFixed(2)} (includes non-refundable retry fee)
             `);
 
             // ===== UPDATE TASK & REFUND ATOMICALLY =====
