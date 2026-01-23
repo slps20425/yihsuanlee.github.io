@@ -463,6 +463,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const input = document.querySelector("#targetPhone");
     const phoneInputHtmlElement = input as HTMLInputElement; // Renamed for clarity
     if (phoneInputHtmlElement) {
+        // Disable manual input - users must use Google Places search
+        phoneInputHtmlElement.readOnly = true;
+        phoneInputHtmlElement.style.cursor = 'not-allowed';
+        phoneInputHtmlElement.style.opacity = '0.6';
+        phoneInputHtmlElement.style.backgroundColor = 'rgba(0,0,0,0.2)';
+        phoneInputHtmlElement.placeholder = 'Use "Search Place" button below';
+
         phoneInputPlugin = intlTelInput(phoneInputHtmlElement, {
             initialCountry: "auto",
             geoIpLookup: function (callback: (code: string) => void) {
@@ -2159,7 +2166,30 @@ async function initSearchLogic() {
 
     function renderResults(places: any[]) {
         resultsContainer!.innerHTML = '';
+
+        // Blacklist for government/sensitive locations
+        const BLOCKED_KEYWORDS = [
+            'police', 'hospital', 'government', 'courthouse', 'jail',
+            'prison', 'military', 'fbi', 'cia', 'dea', 'embassy',
+            'consulate', 'parliament', 'congress', 'senate', 'city hall',
+            'fire station', 'detention'
+        ];
+
+        let validCount = 0;
         places.forEach(place => {
+            const name = place.displayName?.text || place.name || "Unknown Place";
+            const address = place.formattedAddress || "";
+
+            // Check if location is blocked
+            const searchText = `${name} ${address}`.toLowerCase();
+            const isBlocked = BLOCKED_KEYWORDS.some(keyword => searchText.includes(keyword));
+
+            if (isBlocked) {
+                console.log(`[Blacklist] Filtered out: ${name}`);
+                return; // Skip this result
+            }
+
+            validCount++;
             const div = document.createElement('div');
             div.style.padding = '12px';
             div.style.background = '#222';
@@ -2171,8 +2201,6 @@ async function initSearchLogic() {
             div.style.flexDirection = 'column';
             div.style.gap = '4px';
 
-            const name = place.displayName?.text || place.name || "Unknown Place"; // displayName is object in V1
-            const address = place.formattedAddress || "";
             const rating = place.rating ? `★ ${place.rating} (${place.userRatingCount || 0})` : "";
 
             div.innerHTML = `
@@ -2189,6 +2217,11 @@ async function initSearchLogic() {
 
             resultsContainer!.appendChild(div);
         });
+
+        // If all results were blocked
+        if (validCount === 0) {
+            resultsContainer!.innerHTML = '<div style="color:#f87171; text-align:center;">❌ No valid locations found. Government locations are blocked.</div>';
+        }
     }
 
     // New: Show Details Modal instead of direct select

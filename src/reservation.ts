@@ -594,8 +594,15 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
         }
 
-        const input = document.querySelector("#targetPhone");
+        const input = document.querySelector("#targetPhone") as HTMLInputElement;
         if (input && !phoneInputPlugin) {
+            // Disable manual input - users must use Google Places search
+            input.readOnly = true;
+            input.style.cursor = 'not-allowed';
+            input.style.opacity = '0.6';
+            input.style.backgroundColor = 'rgba(0,0,0,0.2)';
+            input.placeholder = 'Use "Search Place" button below';
+
             phoneInputPlugin = intlTelInput(input, {
                 initialCountry: "auto",
                 geoIpLookup: function (callback: (code: string) => void) {
