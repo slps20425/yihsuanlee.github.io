@@ -7,7 +7,7 @@
 - **Assignee**: **QA Agent (Gemini)**
 - **Completed**: 2026-01-24T18:15:00+08:00
 - **Deploy URL**: https://wisecat-8df8d.web.app
-- **Notes**: Upgraded validation backend to Gemini 2.5 Flash. Fixed mission switch bug (text no longer clears). Fixed Light Theme visibility for restaurant details, pre-order sections, and dropdown hovers. Removed redundant 2nd validation calls.
+- **Notes**: Upgraded validation backend to Gemini 2.5 Flash. Fixed mission switch bug (text no longer clears). Fixed Light Theme visibility for restaurant details, pre-order sections, date/time pickers, and all dropdown hovers. Removed redundant 2nd validation calls.
 
 ## Task History
 | ID | Task | Assignee | Date | Status | Notes |

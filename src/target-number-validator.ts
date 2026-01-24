@@ -96,7 +96,7 @@ export async function initGoogleMapsAPI(): Promise<boolean> {
     }
 
     return new Promise((resolve) => {
-        const key = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+        const key = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBSWqDNkLh1v29kFEbUod0iaX3v3v8UtT4';
         if (!key) {
             console.warn('[TargetValidator] Google Maps API key not configured');
             resolve(false);
