@@ -2,17 +2,18 @@
 
 ## Current Status
 - **Status**: `READY_FOR_QA`
-- **Current Task**: Admin Access to AI Services Fix
-- **Last Deployment**: 2026-01-24T16:16:00+08:00
+- **Current Task**: Mission Validation v2 (Gemini 2.5 Flash Upgrade)
+- **Last Deployment**: 2026-01-24T18:15:00+08:00
 - **Assignee**: **QA Agent (Gemini)**
-- **Completed**: 2026-01-24T16:16:00+08:00
+- **Completed**: 2026-01-24T18:15:00+08:00
 - **Deploy URL**: https://wisecat-8df8d.web.app
-- **Notes**: Fixed authentication logic to allow admin and guest accounts to access Restaurant and Mouthpiece pages by checking localStorage for session data before redirecting to login.
+- **Notes**: Upgraded validation backend to Gemini 2.5 Flash and consolidated all frontend calls (Mouthpiece, Restaurant, Trial) to use the unified `validateMissionV2` function.
 
 ## Task History
 | ID | Task | Assignee | Date | Status | Notes |
 |----|------|----------|------|--------|-------|
-| 25 | Fix JSON Parse Error in validateMissionV2 | Claude | 2026-01-24 | READY_FOR_QA | [Live URL](https://wisecat-8df8d.web.app) |
+| 26 | Mission Validation v2 (Gemini 2.5 Flash Upgrade) | Claude | 2026-01-24 | READY_FOR_QA | [Live URL](https://wisecat-8df8d.web.app) |
+| 25 | Fix JSON Parse Error in validateMissionV2 | Claude | 2026-01-24 | COMPLETED | [Live URL](https://wisecat-8df8d.web.app) |
 | 24 | Admin Access to AI Services Fix | Claude | 2026-01-24 | COMPLETED | [Live URL](https://wisecat-8df8d.web.app) |
 | 23 | Sidebar Styling Redesign & Light Mode Fixes | Claude | 2026-01-24 | COMPLETED | [Live URL](https://wisecat-8df8d.web.app) |
 | 22 | Fix Phone Number Section Visibility & Upgrade Path | Claude | 2026-01-22 | COMPLETED | [Live URL](https://wise-catty.cc/dashboard.html) |

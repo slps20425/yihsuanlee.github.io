@@ -1707,7 +1707,6 @@ async function validateMissionV2() {
 
                     feedbackDiv.style.display = 'none';
                     scriptTextarea.style.border = '2px solid #10b981';
-                    setTimeout(() => validateMissionV2(), 500);
                 }
             });
 
@@ -1739,8 +1738,6 @@ async function validateMissionV2() {
 
                         feedbackDiv.style.display = 'none';
                         scriptTextarea.style.border = '2px solid #10b981';
-                        // Re-validate just to be sure context is now green
-                        setTimeout(() => validateMissionV2(), 500);
                     }
                 });
                 btnContainer.appendChild(switchOnlyBtn);
