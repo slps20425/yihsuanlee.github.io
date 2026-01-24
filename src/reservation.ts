@@ -127,6 +127,7 @@ let currentCost = 5; // Default cost
 let defaultRetryCount = 5; // Default retry count if config missing
 let defaultOnHold = 5; // Default on-hold minutes
 let minPreorderDays = 3; // Default 3 days
+let retryCostPerAttempt = 0.3; // Default retry cost
 
 
 
@@ -552,14 +553,21 @@ document.addEventListener("DOMContentLoaded", async function () {
         const basePrice = (country === 'US') ? 0.02 : (country === 'TW' ? 0.06 : 0.05);
         const multiplier = 3.0; // Alignment with common_multiplier
 
-        currentCost = basePrice * multiplier * defaultOnHold;
+        // Calculate Base Cost (for 5 min call)
+        const baseTotal = basePrice * multiplier * defaultOnHold;
+        currentCost = baseTotal;
 
         const display = document.getElementById('dynamicCostDisplay');
         if (display) display.innerText = currentCost.toFixed(2);
 
         const retryWarning = document.querySelector('label[for="retryOption"] span.warning-text');
         if (retryWarning) {
-            const totalMaxCost = currentCost + defaultRetryCount;
+            // Max cost = Base Cost + (Retry Count * Retry Cost Per Attempt)
+            // Typically retry cost per attempt is small (e.g. 0.3)
+            // But if retry is full call duration??? usually it is just connection fee.
+            // Let's assume retryCostPerAttempt is defined (0.3).
+            const retryCost = defaultRetryCount * (retryCostPerAttempt || 0.3);
+            const totalMaxCost = currentCost + retryCost;
             (retryWarning as HTMLElement).textContent = `(Max cost: ${totalMaxCost.toFixed(2)} credits if all retries used)`;
         }
     }

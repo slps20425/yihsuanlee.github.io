@@ -84,7 +84,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/dashboard-BF0q7qb_.js"></script>
+  <script type="module" crossorigin src="/assets/dashboard-IlG1zJ46.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-Cm2w3tZ3.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-BSDclJAc.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-B4hnM8JF.js">
@@ -92,7 +92,7 @@
   <link rel="modulepreload" crossorigin href="/assets/utility-toast-DYoV_6Wf.js">
   <link rel="modulepreload" crossorigin href="/assets/pwa-Ece1kHLX.js">
   <link rel="modulepreload" crossorigin href="/assets/chat-assistant-BIcHyEJs.js">
-  <link rel="stylesheet" crossorigin href="/assets/styles-XU7gBNxz.css">
+  <link rel="stylesheet" crossorigin href="/assets/styles-BBLbwIdh.css">
 </head>
 
 <body class="dashboard-layout">
@@ -112,29 +112,55 @@
                 <span></span>
                 <span></span>
             </button>
-            <h1 class="header-title" onclick="switchTab('profile')" style="cursor: pointer;">WiseCat AI - Dashboard</h1>
+
+            <h1 class="header-title" onclick="switchTab('profile')" style="cursor: pointer;">
+                <span class="header-title-text">WiseCat AI</span>
+            </h1>
+
             <div class="header-right-actions">
-                <!-- Theme Toggle Button -->
+                <!-- Theme Toggle Button with SVG Icons -->
                 <button id="dashboardThemeToggle" class="theme-toggle-header" aria-label="Toggle theme"
                     title="Switch between light and dark theme">
-                    <span id="themeToggleIcon">☀️</span>
+                    <!-- Sun Icon (Light Mode) -->
+                    <svg id="sunIcon" class="theme-icon sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <!-- Moon Icon (Dark Mode) -->
+                    <svg id="moonIcon" class="theme-icon moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
                 </button>
 
                 <!-- Mobile Avatar -->
                 <img id="mobileHeaderAvatar" src="https://ui-avatars.com/api/?name=User" alt="Profile"
-                    style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--accent); cursor: pointer; display: none;"
+                    class="mobile-header-avatar"
                     onclick="document.querySelector('[data-tab=profile]').click();">
 
-                <!-- Mobile Language Selector -->
-                <select id="languageSelectorHeader" class="language-selector-header">
-                    <option value="en">🇺🇸 EN</option>
-                    <option value="zh">🇹🇼 中</option>
-                    <option value="jp">🇯🇵 日</option>
-                    <option value="kr">🇰🇷 한</option>
-                    <option value="es">🇪🇸 ES</option>
-                    <option value="fr">🇫🇷 FR</option>
-                    <option value="it">🇮🇹 IT</option>
-                </select>
+                <!-- Language Selector -->
+                <div class="language-selector-wrapper">
+                    <select id="languageSelectorHeader" class="language-selector-header">
+                        <option value="en">EN</option>
+                        <option value="zh">中</option>
+                        <option value="jp">日</option>
+                        <option value="kr">한</option>
+                        <option value="es">ES</option>
+                        <option value="fr">FR</option>
+                        <option value="it">IT</option>
+                    </select>
+                    <svg class="language-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                </div>
             </div>
         </div>
     </div>
@@ -814,18 +840,28 @@
 
 
 
-    <!-- Theme Toggle Handler for Dashboard -->
+    <!-- Theme Toggle Handler for Dashboard with SVG Icons -->
     <script>
         // Initialize theme toggle button
         document.addEventListener('DOMContentLoaded', () => {
             const themeToggleBtn = document.getElementById('dashboardThemeToggle');
-            const themeToggleIcon = document.getElementById('themeToggleIcon');
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
 
-            if (themeToggleBtn && themeToggleIcon) {
+            if (themeToggleBtn && sunIcon && moonIcon) {
                 // Set initial icon based on current theme
                 const updateIcon = () => {
                     const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-                    themeToggleIcon.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+                    if (currentTheme === 'dark') {
+                        // Dark mode: show sun icon (to switch to light)
+                        sunIcon.style.display = 'block';
+                        moonIcon.style.display = 'none';
+                    } else {
+                        // Light mode: show moon icon (to switch to dark)
+                        sunIcon.style.display = 'none';
+                        moonIcon.style.display = 'block';
+                    }
                 };
 
                 updateIcon();
