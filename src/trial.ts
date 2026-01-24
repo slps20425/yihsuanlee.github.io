@@ -332,8 +332,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     // --- Protect navbar links for authenticated pages ---
     let hasActivePhoneNumber = false;
     const noNumberDialog = document.getElementById('noNumberDialog') as HTMLDialogElement | null;
-    const goToAddTabBtn = document.getElementById('goToAddTabBtn');
-    const closeNoNumberBtn = document.getElementById('closeNoNumberBtn');
+    const noNumberBuyBtn = document.getElementById('noNumberBuy');
+    const noNumberCancelBtn = document.getElementById('noNumberCancel');
 
     function handleAIServiceClick(e: Event) {
         if (!hasActivePhoneNumber) {
@@ -373,15 +373,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     });
 
-    if (goToAddTabBtn) {
-        goToAddTabBtn.addEventListener('click', () => {
+    if (noNumberBuyBtn) {
+        noNumberBuyBtn.addEventListener('click', () => {
             noNumberDialog?.close();
             window.location.href = '/dashboard.html?tab=add';
         });
     }
 
-    if (closeNoNumberBtn) {
-        closeNoNumberBtn.addEventListener('click', () => {
+    if (noNumberCancelBtn) {
+        noNumberCancelBtn.addEventListener('click', () => {
             noNumberDialog?.close();
         });
     }
