@@ -18,7 +18,7 @@ graph TB
     
     subgraph "Cloud Functions"
         Auth[lineCallbackLINE OAuth]
-        Validation[validateMissionDescriptionSecurity + AI Refinement]
+        Validation[validateMissionV2 Security + AI Refinement]
         Dispatcher[triggerN8nWebhookPriority Queue]
         Phone[Phone Number FunctionsSearch/Purchase/Release]
         Rates[getCallRatesPricing Info]
@@ -27,7 +27,7 @@ graph TB
     
     subgraph "External Services"
         LINE[LINE Login API]
-        Gemini[Gemini 2.0 Flash LiteRefinement]
+        Gemini[Gemini 2.5 Flash Refinement]
         OpenAI[OpenAI ModerationSafety Check]
         N8N[N8N Workflows]
         Twilio[Twilio API]
@@ -125,7 +125,7 @@ Location: https://wise-catty.cc/login-success.html?token=CUSTOM_TOKEN
 
 ### Security Functions
 
-#### 2. **validateMissionDescription** ✨ (Consolidated)
+#### 2. **validateMissionV2** ✨ (Consolidated)
 
 **Type**: `onCall` (callable function)  
 **Purpose**: Unified security validation and AI refinement for mission descriptions/scripts.
@@ -138,7 +138,7 @@ graph LR
     C -->|Blocked| D[Return: valid:false]
     C -->|Clean| E[OpenAI Moderation]
     E -->|Flagged| D
-    E -->|Safe| F[Gemini 2.0 Flash Lite]
+    E -->|Safe| F[Gemini 2.5 Flash]
     F --> G[Refined Text + Explanation]
     G --> H[Return: valid:true]
     
@@ -147,7 +147,7 @@ graph LR
 ```
 
 **Merged Logic**:
-Previously, `checkMessageSafety` was a separate call. To reduce latency and cost, it has been merged into this function.
+Previously, `checkMessageSafety` and `validateMissionDescription` were separate calls. To reduce latency and cost, they have been merged into this v2 function.
 
 **Secret Used**:
 - `GEMINI_API_KEY`

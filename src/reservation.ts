@@ -100,7 +100,7 @@ function populateRestaurantMissions(initCustomDropdowns: () => void) {
 
     initCustomDropdowns();
 }
-// import { ScamCheck } from './scam-check'; // Now handled by validateMissionDescription
+// import { ScamCheck } from './scam-check'; // Now handled by validateMissionV2
 
 // Declare globals from CDNs
 declare var google: any;
@@ -2975,7 +2975,7 @@ async function validateNote() {
     try {
         const { getFunctions, httpsCallable } = await import("firebase/functions");
         const functions = getFunctions();
-        const validateFunction = httpsCallable(functions, 'validateMissionDescription');
+        const validateFunction = httpsCallable(functions, 'validateMissionV2');
 
         const missionId = missionInput.value;
         const currentLang = (window as any).WiseCatI18n ? (window as any).WiseCatI18n.currentLang : 'en';

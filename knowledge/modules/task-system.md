@@ -26,7 +26,7 @@ sequenceDiagram
     participant External Service
     
     User->>Frontend: Submit task (Mouthpiece/Trial/Restaurant)
-    Frontend->>Cloud Function: validateMissionDescription (AI Check)
+    Frontend->>Cloud Function: validateMissionV2 (AI Check)
     Cloud Function->>Frontend: Return JSON (valid:true/false + refinement)
     Frontend->>User: Show Refinement Suggestions
     User->>Frontend: Confirm & Submit

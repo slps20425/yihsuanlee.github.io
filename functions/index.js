@@ -25,7 +25,7 @@ const { getFirestore } = require("firebase-admin/firestore"); // Import getFires
 
 // ...
 
-// checkMessageSafety logic merged into validateMissionDescription to reduce cloud invocation costs.
+// checkMessageSafety logic merged into validateMissionV2 to reduce cloud invocation costs.
 
 // Global set for debouncing duplicate requests
 const processedCodes = new Set();
@@ -1849,7 +1849,7 @@ exports.releaseExpiredPhoneNumbers = onSchedule(
 const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
 
 /**
- * Validates if a user's description matches their selected mission using Gemini 2.5 Flash Lite
+ * Validates if a user's description matches their selected mission using Gemini 2.5 Flash
  * 
  * Usage: Call from frontend with { missionId, missionName, description, language }
  * Returns: { valid: boolean }
@@ -1865,7 +1865,7 @@ exports.validateMissionV2 = onCall(
             throw new HttpsError("invalid-argument", "Missing required parameters.");
         }
 
-        console.log(`[validateMissionDescription] Received: language=${language}, missionId=${missionId} [Version: v4.0-inline-fix]`);
+        console.log(`[validateMissionV2] Received: language=${language}, missionId=${missionId} [Version: v4.0-inline-fix]`);
 
         if (description.length < 10) {
             throw new HttpsError("invalid-argument", "Description too short.");
@@ -1916,10 +1916,10 @@ exports.validateMissionV2 = onCall(
                 try {
                     console.log(`[validateMissionV2] AI Attempt ${attempt}/${MAX_RETRIES}`);
 
-                    // User requested specific models. Using "gemini-1.5-pro" for advanced reasoning and stability.
+                    // User requested specific models. Using "gemini-2.5-flash" for advanced reasoning and stability.
                     // Increased maxTokens to 8192 to prevent truncation (Unterminated string JSON error).
                     const model = genAI.getGenerativeModel({
-                        model: "gemini-1.5-pro",
+                        model: "gemini-2.5-flash",
                         generationConfig: { temperature: 0.1, maxOutputTokens: 8192, responseMimeType: "application/json" }
                     });
 
@@ -1953,7 +1953,7 @@ exports.validateMissionV2 = onCall(
                     };
                     const targetLangLabel = langMap[primaryLang] || "English";
                     if (attempt === 1) { // Only log this once to avoid clutter
-                        console.log(`[validateMissionDescription] Language mapping: language=${language}, detected=${detectedCode}, primaryLang=${primaryLang}, targetLangLabel=${targetLangLabel}`);
+                        console.log(`[validateMissionV2] Language mapping: language=${language}, detected=${detectedCode}, primaryLang=${primaryLang}, targetLangLabel=${targetLangLabel}`);
                     }
 
                     // BLIND CLASSIFICATION PROMPT

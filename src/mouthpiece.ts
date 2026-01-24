@@ -6,7 +6,7 @@ import { getDoc, doc, collection, getDocs } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { countryTimezones } from './timezones';
 import './chat-assistant'; // Enable Chat Widget
-// import { ScamCheck } from './scam-check'; // Logic merged into validateMissionDescription
+// import { ScamCheck } from './scam-check'; // Logic merged into validateMissionV2
 
 import './nav-active'; // Set active navigation item
 import { MISSION_SCENARIOS, MissionScenario } from './mission-scenarios';
@@ -21,7 +21,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 // ... (Existing code)
 
 // --- Safety Check State ---
-let isContentSafe = true; // Still used for form validation, updated by validateMissionDescription
+let isContentSafe = true; // Still used for form validation, updated by validateMissionV2
 
 
 // attachSafetyCheck and blur listener removed to reduce Cloud Function calls.
@@ -1255,7 +1255,7 @@ async function handleFormSubmit(e: Event) {
         return;
     }
 
-    // 4. Force Final Safety Check (Now handled by validateMissionDescription)
+    // 4. Force Final Safety Check (Now handled by validateMissionV2)
 
 
     if (!isContentSafe) {
@@ -1541,7 +1541,7 @@ function updateMissionDescription() {
 }
 
 // Validate description against selected mission
-async function validateMissionDescription() {
+async function validateMissionV2() {
     const validateBtn = document.getElementById('validateBtn') as HTMLButtonElement;
     const feedbackDiv = document.getElementById('validationFeedback');
     const scriptTextarea = document.getElementById('script') as HTMLTextAreaElement;
@@ -1707,7 +1707,7 @@ async function validateMissionDescription() {
 
                     feedbackDiv.style.display = 'none';
                     scriptTextarea.style.border = '2px solid #10b981';
-                    setTimeout(() => validateMissionDescription(), 500);
+                    setTimeout(() => validateMissionV2(), 500);
                 }
             });
 
@@ -1740,7 +1740,7 @@ async function validateMissionDescription() {
                         feedbackDiv.style.display = 'none';
                         scriptTextarea.style.border = '2px solid #10b981';
                         // Re-validate just to be sure context is now green
-                        setTimeout(() => validateMissionDescription(), 500);
+                        setTimeout(() => validateMissionV2(), 500);
                     }
                 });
                 btnContainer.appendChild(switchOnlyBtn);
@@ -2036,7 +2036,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (validateBtn) {
-        validateBtn.addEventListener('click', validateMissionDescription);
+        validateBtn.addEventListener('click', validateMissionV2);
     }
 
     // Reset validation when script changes
