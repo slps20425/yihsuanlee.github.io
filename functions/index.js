@@ -1916,10 +1916,11 @@ exports.validateMissionV2 = onCall(
                 try {
                     console.log(`[validateMissionV2] AI Attempt ${attempt}/${MAX_RETRIES}`);
 
-                    // Use stable gemini-1.5-flash. "2.5-flash" is likely causing instability/truncation.
+                    // User requested specific models. Using "gemini-1.5-pro" for advanced reasoning and stability.
+                    // Increased maxTokens to 8192 to prevent truncation (Unterminated string JSON error).
                     const model = genAI.getGenerativeModel({
-                        model: "gemini-1.5-flash",
-                        generationConfig: { temperature: 0.1, maxOutputTokens: 1000, responseMimeType: "application/json" }
+                        model: "gemini-1.5-pro",
+                        generationConfig: { temperature: 0.1, maxOutputTokens: 8192, responseMimeType: "application/json" }
                     });
 
                     // --- Language Detection (Character-based) ---
@@ -1991,7 +1992,13 @@ Output Format (JSON):
                     // Clean up markdown code blocks if present (e.g. ```json ... ```)
                     responseText = responseText.replace(/^```[a-z]*\n/i, "").replace(/```$/, "").trim();
 
-                    aiResult = JSON.parse(responseText);
+                    try {
+                        aiResult = JSON.parse(responseText);
+                    } catch (jsonErr) {
+                        console.error(`[validateMissionV2] JSON Parse Error on attempt ${attempt}.
+Raw Response: ${responseText.substring(0, 500)}... (truncated)`);
+                        throw jsonErr; // Rethrow to trigger retry
+                    }
 
                     // If we made it here, success!
                     break;
