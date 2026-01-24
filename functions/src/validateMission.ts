@@ -392,61 +392,38 @@ async function buildValidationPrompt(
         ? `\n- **Detected Input Language**: ${detectedInputLang} (The user wrote their description in this language)`
         : '';
 
-    return `
+    const systemContext = `
 Role: You are the Lead Dispatcher & Security Officer for "WiseCat AI".
-Goal: Analyze a user's request against a selected mission. You must verify validity, safety (scam detection), and suggest the correct mission if the current one is wrong.
+Current UI Language: ${language} ${inputLangContext}
+${langInstruction} // LANGUAGE INSTRUCTION IS PARAMOUNT.
+
+Task:
+1. **CLASSIFY**: Analyze the "User Task Description" and select the ONE best matching ID from the "Mission Database".
+2. **COMPARE**: Compare your selected ID with the "Current Target Mission".
+   - If they are the same: Result is VALID.
+   - If they are different: Result is INVALID (Mismatch).
+3. **REFINE**: Create a professional version of the user's text in ${language}.
 
 Current Context:
-- **Selected Mission**: "${missionName}" (ID: ${missionId})
+- **Current Target Mission**: "${missionName}" (ID: ${missionId})
 - **User Task Description**: "${description}"
-- **UI Language**: ${language}${inputLangContext}
 
-Mission Database (ID, Name, Keywords):
+Mission Database:
 ${availableMissionsList}
 
-Few-Shot Examples (Learn from these logic patterns):
-Example 1 (MATCH):
-- Selected Mission: "lost_item"
-- User Description: "I left my wallet at the table near the window."
-- Decision: { "valid": true, "suggestedMissionId": null, ... }
-
-Example 2 (MISMATCH - Dispatch Needed):
-- Selected Mission: "lost_item"
-- User Description: "I want to book an appointment with Dr. Smith for a toothache."
-- Decision: { "valid": false, "suggestedMissionId": "dental_consultation", "explanation": "This looks like a dental appointment request, not a lost item inquiry.", ... }
-
-Example 3 (MISMATCH - Language/Context):
-- Selected Mission: "restaurant_booking"
-- User Description: "Help me find my missing package."
-- Decision: { "valid": false, "suggestedMissionId": "package_tracking", ... }
-
-Your Decision Logic:
-1. **Security Check (CRITICAL)**:
-   - Does this request content seem like a scam, fraud, or phishing attempt?
-   - Examples: "You won a prize, call this number", "Your bank account is locked", "Grandson in trouble".
-   - If it feels like a scam (SCAM_LIKELY): Set valid=false, suggestedMissionId=null, and explanation="SCAM_ALERT: This request violates our safety policy."
-
-2. **Semantic Match Check**:
-   - If not a scam, does the "User Task Description" align with the "Selected Mission"?
-   - If it matches: Set valid=true, suggestedMissionId=null.
-   - If it DOES NOT match (e.g., user wants to find lost glasses but selected Dental): Set valid=false and PROCEED to step 3.
-   - **CRITICAL**: If you are going to suggest a different mission in Step 3, you MUST set valid=false here. You cannot have both valid=true and a different suggestedMissionId.
-
-3. **Intelligent Dispatch**:
-   - Scan the "Mission Database" for the best possible match based on keywords and context.
-   - If a strong match is found (e.g., "lost my glasses" matches "lost_item"):
-     - Set "suggestedMissionId" to the exact ID from the list (e.g., "lost_item").
-     - Set "refinedText" to a professional, polite version of the request optimized for THAT mission in ${language}.
-   - If no reasonable mission matches: Set "suggestedMissionId" to null.
+Output Logic:
+- If User Description implies a scam/fraud: valid=false, suggestedMissionId=null, explanation="SCAM_ALERT".
+- If Best Match ID == Current Target Mission ID: valid=true, suggestedMissionId=null.
+- If Best Match ID != Current Target Mission ID: valid=false, suggestedMissionId=[Best Match ID].
 
 Output Format (Strict JSON):
 {
   "valid": boolean,
-  "explanation": "Brief explanation in ${language}.",
-  "refinedText": "Professional version of the task in ${language}. If valid=false and suggestedMissionId is not null, optimize for the suggested mission instead.",
-  "suggestedMissionId": "The mission ID string" or null
+  "explanation": "Brief reasoning in ${language}.",
+  "refinedText": "Professional version of the task in ${language}.",
+  "suggestedMissionId": "The ID of the mission you classified in Step 1 (or null if no match)"
 }
-
-${langInstruction}
 `;
+
+    return systemContext;
 }
