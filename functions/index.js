@@ -1916,9 +1916,9 @@ exports.validateMissionV2 = onCall(
                 try {
                     console.log(`[validateMissionV2] AI Attempt ${attempt}/${MAX_RETRIES}`);
 
-                    // Use model. If 2.5 fails consistently, consider falling back to 1.5 or 2.0
+                    // Use stable gemini-1.5-flash. "2.5-flash" is likely causing instability/truncation.
                     const model = genAI.getGenerativeModel({
-                        model: "gemini-2.5-flash",
+                        model: "gemini-1.5-flash",
                         generationConfig: { temperature: 0.1, maxOutputTokens: 1000, responseMimeType: "application/json" }
                     });
 
@@ -1987,7 +1987,9 @@ Output Format (JSON):
 
                     const result = await model.generateContent(prompt);
                     let responseText = result.response.text().trim();
-                    if (responseText.startsWith("```")) responseText = responseText.replace(/```json|```/g, "").trim();
+
+                    // Clean up markdown code blocks if present (e.g. ```json ... ```)
+                    responseText = responseText.replace(/^```[a-z]*\n/i, "").replace(/```$/, "").trim();
 
                     aiResult = JSON.parse(responseText);
 

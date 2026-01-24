@@ -12,7 +12,8 @@
 ## Task History
 | ID | Task | Assignee | Date | Status | Notes |
 |----|------|----------|------|--------|-------|
-| 24 | Admin Access to AI Services Fix | Claude | 2026-01-24 | READY_FOR_QA | [Live URL](https://wisecat-8df8d.web.app) |
+| 25 | Fix JSON Parse Error in validateMissionV2 | Claude | 2026-01-24 | READY_FOR_QA | [Live URL](https://wisecat-8df8d.web.app) |
+| 24 | Admin Access to AI Services Fix | Claude | 2026-01-24 | COMPLETED | [Live URL](https://wisecat-8df8d.web.app) |
 | 23 | Sidebar Styling Redesign & Light Mode Fixes | Claude | 2026-01-24 | COMPLETED | [Live URL](https://wisecat-8df8d.web.app) |
 | 22 | Fix Phone Number Section Visibility & Upgrade Path | Claude | 2026-01-22 | COMPLETED | [Live URL](https://wise-catty.cc/dashboard.html) |
 | 21 | Unified Dynamic Billing & Usage Tracking | Claude | 2026-01-22 | COMPLETED | [Live URL](https://wise-catty.cc/dashboard.html) |
