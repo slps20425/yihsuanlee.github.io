@@ -2453,7 +2453,7 @@ async function initSearchLogic() {
             // Format Hours if available
             if (details.regularOpeningHours && details.regularOpeningHours.weekdayDescriptions) {
                 // Show all lines in a scrollable box
-                hours = `<div style="margin-top:5px; font-size:12px; color:#ccc; max-height: 120px; overflow-y: auto; padding-right: 4px;">${details.regularOpeningHours.weekdayDescriptions.join('<br>')}</div>`;
+                hours = `<div style="margin-top:5px; font-size:12px; color:var(--text-secondary); max-height: 120px; overflow-y: auto; padding-right: 4px;">${details.regularOpeningHours.weekdayDescriptions.join('<br>')}</div>`;
             }
         } catch (e) {
             console.error("Details fetch error:", e);
@@ -2465,23 +2465,23 @@ async function initSearchLogic() {
         const placeRating = place.rating ? `★ ${place.rating} (${place.userRatingCount || 0})` : "";
 
         detailsContent.innerHTML = `
-            <div style="font-weight: bold; color: #fff; font-size: 16px;">${placeName}</div>
-            <div style="font-size: 13px; color: #aaa; margin-bottom: 8px;">${placeAddress}</div>
+            <div style="font-weight: bold; color: var(--text-primary); font-size: 16px;">${placeName}</div>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">${placeAddress}</div>
             ${placeRating ? `<div style="font-size: 13px; color: #fbbf24; margin-bottom: 8px;">${placeRating}</div>` : ''}
             
-            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
-                <div style="font-size: 11px; color: #888; text-transform: uppercase;">Phone Number</div>
-                <div style="font-size: 14px; color: #fff; font-family: monospace;">${phoneNumber || '<span style="color:#f87171">Not Available</span>'}</div>
+            <div style="background: var(--input-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Phone Number</div>
+                <div style="font-size: 14px; color: var(--text-primary); font-family: monospace;">${phoneNumber || '<span style="color:#f87171">Not Available</span>'}</div>
             </div>
 
             ${website ? `
             <div style="margin-top: 8px;">
-                <a href="${website}" target="_blank" style="color: #3b82f6; text-decoration: none; font-size: 13px;">🌐 Visit Website</a>
+                <a href="${website}" target="_blank" style="color: var(--info); text-decoration: none; font-size: 13px;">🌐 Visit Website</a>
             </div>` : ''}
 
             ${hours ? `
-            <div style="margin-top: 10px; border-top: 1px solid #333; padding-top: 8px;">
-                <div style="font-size: 11px; color: #888; text-transform: uppercase;">Opening Hours</div>
+            <div style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 8px;">
+                <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Opening Hours</div>
                 ${hours}
             </div>` : ''}
         `;
@@ -2507,6 +2507,17 @@ async function initSearchLogic() {
         const searchInputEl = document.getElementById('searchPlaceInput') as HTMLInputElement;
 
         // PRIORITIZE internationalPhoneNumber for better country detection
+        // --- MOVED & FIXED LOGIC: Auto-fill Name & Update Display (Always) ---
+        const rawName = place.displayName?.text || (place.name && !place.name.startsWith('places/') ? place.name : "");
+        if (searchInputEl) searchInputEl.value = rawName || "Selected Location";
+
+        const rNameEl = document.getElementById('recipientName') as HTMLInputElement;
+        if (rNameEl && rawName) {
+            const clean = rawName.replace(/[^a-zA-Z0-9\s,.-]/g, ' ').replace(/\s+/g, ' ').trim();
+            rNameEl.value = clean;
+            rNameEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
         let phoneNumber = place.internationalPhoneNumber || place.formattedPhoneNumber || fetchedPhone;
 
         if (phoneNumber) {
@@ -2558,7 +2569,17 @@ async function initSearchLogic() {
             if (modal) modal.style.display = 'none';
 
         } else {
-            showToast("This place does not have a phone number listed.", "warning");
+            showToast("No phone number found. Please enter manually.", "warning");
+            if (phoneInput) {
+                phoneInput.readOnly = false;
+                phoneInput.style.backgroundColor = 'var(--input-bg)';
+                phoneInput.style.cursor = 'text';
+                phoneInput.style.opacity = '1';
+                phoneInput.focus();
+            }
+            // Also close modal
+            const modal = document.getElementById('searchModal');
+            if (modal) modal.style.display = 'none';
         }
     }
 }
