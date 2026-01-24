@@ -2123,15 +2123,15 @@ function applyPlaceSelection(place: any) {
     drawerContent.innerHTML = `
         <div class="detail-item" style="margin-bottom: 10px;">
             <div style="font-weight: bold; color: #888; font-size: 11px;">${(dict as any).label_detail_address || '📍 Address'}</div>
-            <div style="color: #fff;">${place.formatted_address || 'N/A'}</div>
+            <div style="color: var(--text-color);">${place.formatted_address || 'N/A'}</div>
         </div>
         <div class="detail-item" style="margin-bottom: 10px;">
             <div style="font-weight: bold; color: #888; font-size: 11px;">${(dict as any).label_detail_phone || '📞 Phone'}</div>
-            <div style="color: #fff;">${place.international_phone_number || place.formatted_phone_number || 'N/A'}</div>
+            <div style="color: var(--text-color);">${place.international_phone_number || place.formatted_phone_number || 'N/A'}</div>
         </div>
         <div class="detail-item">
             <div style="font-weight: bold; color: #888; font-size: 11px;">${(dict as any).label_detail_hours || '⏰ Opening Hours'}</div>
-            <div style="color: #ccc;">${hoursHtml}</div>
+            <div style="color: var(--text-color); opacity: 0.8;">${hoursHtml}</div>
         </div>
         ${place.website ? `<a href="${place.website}" target="_blank" style="color: var(--primary-color);">Visit Website</a>` : ''}
     `;
