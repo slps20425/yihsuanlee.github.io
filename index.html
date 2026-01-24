@@ -56,7 +56,7 @@
         <div id="loginPrompt" class="login-prompt fade-in delay-1"
             style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-top: 15px; backdrop-filter: blur(10px);">
             <div class="login-header" style="text-align: center; margin-bottom: 20px;">
-                <h3 style="margin: 0; color: #fff; font-size: 1.1rem;" data-i18n="portal_title">WiseCat AI Login</h3>
+                <h3 style="margin: 0; color: var(--text-primary); font-size: 1.1rem;" data-i18n="portal_title">WiseCat AI Login</h3>
             </div>
 
             <!-- Anti-Fraud & Terms Acceptance -->
@@ -89,7 +89,7 @@
                         <span data-i18n="btn_google">Sign in with Google</span>
                     </button>
                     <button type="button" class="social-btn" id="microsoftLoginBtn"
-                        style="background: #2f2f2f; color: #fff; border: 1px solid #555; height: 40px; border-radius: 10px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        style="background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); height: 40px; border-radius: 10px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
                         <img src="/microsoft-icon.svg" alt="Microsoft" style="width: 14px;">
                         <span data-i18n="btn_microsoft">Sign in with Microsoft</span>
                     </button>
@@ -105,9 +105,9 @@
 
             <style>
                 .guest-btn {
-                    background: rgba(255, 255, 255, 0.03);
-                    color: rgba(255, 255, 255, 0.6);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    background: var(--nav-item-hover, rgba(255, 255, 255, 0.03));
+                    color: var(--text-secondary);
+                    border: 1px solid var(--border-color);
                     width: 100%;
                     height: 42px;
                     border-radius: 12px;
@@ -124,15 +124,15 @@
                 }
 
                 .guest-btn:hover {
-                    background: rgba(255, 255, 255, 0.08);
-                    border-color: rgba(255, 255, 255, 0.2);
-                    color: rgba(255, 255, 255, 0.9);
+                    background: var(--nav-item-hover, rgba(255, 255, 255, 0.08));
+                    border-color: var(--border-color-hover, rgba(255, 255, 255, 0.2));
+                    color: var(--text-primary);
                     transform: translateY(-1px);
                 }
 
                 .guest-btn:active {
                     transform: translateY(0);
-                    background: rgba(255, 255, 255, 0.05);
+                    background: var(--nav-item-hover, rgba(255, 255, 255, 0.05));
                 }
 
                 .guest-btn .icon {

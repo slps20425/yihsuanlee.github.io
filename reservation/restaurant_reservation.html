@@ -57,8 +57,7 @@
     <!-- Sidebar Navigation (Synced from Dashboard) -->
     <nav class="sidebar-navigation">
         <div class="sidebar-header" style="text-align: center; padding: 0; width: 100%; overflow: hidden;">
-            <!-- Sidebar Header Image - Full Width to Boundary -->
-            <img src="/logo.png" alt="WiseCat AI" style="width: 100%; height: auto; display: block; object-fit: cover;">
+            <!-- Logo removed -->
         </div>
 
         <div class="nav-list">
@@ -283,7 +282,7 @@
                         style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">
                         Phone number auto-filled after search</div>
                     <div id="searchResults" class="search-results"
-                        style="position: absolute; top: 100%; left: 0; right: 0; background: #1a1a1a; border: 1px solid #444; border-radius: 12px; margin-top: 5px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none;">
+                        style="position: absolute; top: 100%; left: 0; right: 0; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; margin-top: 5px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none;">
                     </div>
                 </div>
 
@@ -317,7 +316,7 @@
                 </div>
 
                 <div id="preorderFields"
-                    style="display: none; margin-top: 15px; padding: 10px; border: 1px solid #444; border-radius: 8px; background: #222;">
+                    style="display: none; margin-top: 15px; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: #222;">
                     <!-- Order Details -->
                     <label data-i18n="label_order_details" style="margin-top: 0;">Order Details / Menu Items</label>
 
@@ -374,7 +373,7 @@
                 </div>
 
                 <textarea id="note" rows="3"
-                    style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white;"
+                    style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 16px; background: var(--card-bg); color: white;"
                     data-i18n-placeholder="placeholder_note" placeholder="Any special requests?"></textarea>
 
                 <!-- Validation Button and Feedback -->
@@ -495,9 +494,9 @@
     <div id="placeDetailsModal" class="modal-overlay"
         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2100; align-items: center; justify-content: center;">
         <div class="modal-content"
-            style="background: #1a1a1a; width: 90%; max-width: 400px; border-radius: 12px; padding: 20px; border: 1px solid #333; position: relative; max-height: 80vh; overflow-y: auto;">
+            style="background: var(--card-bg); width: 90%; max-width: 400px; border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); position: relative; max-height: 80vh; overflow-y: auto;">
             <h3
-                style="margin-top: 0; color: #fff; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                style="margin-top: 0; color: var(--text-primary); margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;">
                 Confirmation
             </h3>
 
@@ -534,7 +533,7 @@
         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2100; align-items: center; justify-content: center;">
         <div class="modal-content"
             style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); width: 90%; max-width: 450px; border-radius: 12px; padding: 24px; border: 1px solid #0f3460; position: relative; max-height: 80vh; overflow-y: auto;">
-            <h3 style="margin-top: 0; color: #fff; margin-bottom: 10px; font-size: 1.3rem;">
+            <h3 style="margin-top: 0; color: var(--text-primary); margin-bottom: 10px; font-size: 1.3rem;">
                 📱 You Need a Phone Number
             </h3>
             <p style="color: var(--text-secondary); margin: 0 0 20px 0; font-size: 0.95rem;">
@@ -547,7 +546,7 @@
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                         <span style="font-size: 1.3rem;">⚡</span>
                         <div>
-                            <div style="color: #fff; font-weight: 600;">One-Time Shared Number</div>
+                            <div style="color: var(--text-primary); font-weight: 600;">One-Time Shared Number</div>
                             <div style="color: var(--text-muted); font-size: 0.85rem;">Quick & Flexible</div>
                         </div>
                     </div>
@@ -566,7 +565,7 @@
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                         <span style="font-size: 1.3rem;">👑</span>
                         <div>
-                            <div style="color: #fff; font-weight: 600;">Monthly Dedicated Number</div>
+                            <div style="color: var(--text-primary); font-weight: 600;">Monthly Dedicated Number</div>
                             <div style="color: var(--text-muted); font-size: 0.85rem;">Best for Regular Use</div>
                         </div>
                     </div>
@@ -637,9 +636,9 @@
 
         /* Drawer Styles */
         .drawer {
-            border: 1px solid #444;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
-            background: #1a1a1a;
+            background: var(--card-bg);
             overflow: hidden;
             transition: all 0.3s ease;
         }
@@ -786,6 +785,24 @@
             <button id="goToAddTabBtn" class="btn btn-primary">Get a Number</button>
         </div>
     </dialog>
+
+    <!-- Theme Initialization Script -->
+    <script>
+        // Initialize theme from localStorage or system preference
+        function initTheme() {
+            const savedTheme = localStorage.getItem('wisecat_theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        // Initialize on page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initTheme);
+        } else {
+            initTheme();
+        }
+    </script>
 
 </body>
 

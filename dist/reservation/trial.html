@@ -40,11 +40,11 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/trial-_aIMdV7O.js"></script>
+  <script type="module" crossorigin src="/assets/trial-B6BTRayh.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-BgBT-wyw.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-mHhmnEVH.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-DvmvaQDU.js">
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-CHPfYMJK.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-DQND_7TJ.js">
   <link rel="modulepreload" crossorigin href="/assets/chat-assistant-Bs4pEItI.js">
   <link rel="stylesheet" crossorigin href="/assets/styles-tFtkjzEY.css">
 </head>
@@ -63,8 +63,7 @@
     <!-- Sidebar Navigation (Synced from Dashboard) -->
     <nav class="sidebar-navigation">
         <div class="sidebar-header" style="text-align: center; padding: 0; width: 100%; overflow: hidden;">
-            <!-- Sidebar Header Image - Full Width to Boundary -->
-            <img src="/logo.png" alt="WiseCat AI" style="width: 100%; height: auto; display: block; object-fit: cover;">
+            <!-- Logo removed -->
         </div>
 
         <div class="nav-list">
@@ -293,6 +292,17 @@
 
 
     <script>
+        // Initialize theme from localStorage or system preference
+        function initTheme() {
+            const savedTheme = localStorage.getItem('wisecat_theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        // Initialize immediately
+        initTheme();
+
         // Hamburger Menu Toggle
         document.addEventListener('DOMContentLoaded', () => {
             const hamburger = document.getElementById('hamburgerMenu');
