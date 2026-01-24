@@ -1,3 +1,4 @@
+import "../styles.css";
 import "./version";
 import { registerPWA } from './pwa';
 registerPWA();

@@ -1,3 +1,4 @@
+import "../styles.css";
 import "./version";
 import WiseCatI18n from './i18n';
 import { auth, db } from './firebase-config';

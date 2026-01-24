@@ -124,7 +124,8 @@ body {
     top: 20px;
     right: 20px;
     z-index: 10000;
-    display: flex; /* Change from none if header doesn't have theme toggle */
+    display: flex;
+    /* Change from none if header doesn't have theme toggle */
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid var(--border-color);
     border-radius: 12px;
@@ -741,6 +742,63 @@ textarea:focus {
     color: #3d2817;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
     color-scheme: light;
+}
+
+/* FORCE Custom Date/Time pickers to be readable in Light Mode */
+[data-theme="light"] .custom-date-display,
+[data-theme="light"] .custom-time-display,
+[data-theme="light"] .custom-select-trigger,
+[data-theme="light"] textarea,
+[data-theme="light"] input {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .custom-select-options,
+[data-theme="light"] .custom-date-dropdown,
+[data-theme="light"] .custom-time-dropdown,
+[data-theme="light"] .search-results {
+    background-color: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    color: #1f2937 !important;
+}
+
+[data-theme="light"] .date-picker-nav,
+[data-theme="light"] .time-ampm-btn {
+    color: #1f2937 !important;
+}
+
+[data-theme="light"] .date-picker-nav:hover,
+[data-theme="light"] .time-ampm-btn:hover {
+    background-color: #f3f4f6 !important;
+}
+
+[data-theme="light"] .search-result-item:hover {
+    background-color: #f3f4f6 !important;
+}
+
+/* FORCE Date/Time inputs to be readable in Light Mode */
+[data-theme="light"] input[type="date"],
+[data-theme="light"] input[type="time"],
+[data-theme="light"] input[type="datetime-local"] {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    color-scheme: light !important;
+    -webkit-text-fill-color: #1f2937 !important;
+}
+
+/* Ensure calendar picker icon is dark in light mode */
+[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="light"] input[type="time"]::-webkit-calendar-picker-indicator,
+[data-theme="light"] input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(0) !important;
+    /* Ensure it's dark (default) not inverted to white */
+    opacity: 0.6;
+    cursor: pointer;
 }
 
 [data-theme="light"] input::placeholder,
@@ -2418,8 +2476,47 @@ dialog::backdrop {
 .dialog-footer button {
     margin-top: 0;
     padding: 10px 16px;
-    flex: 1;
 }
+
+/* Light Theme Dialog Overrides */
+[data-theme="light"] dialog {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 239, 230, 0.95) 100%);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #3d2817;
+    /* Dark brown text */
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] dialog::backdrop {
+    background: rgba(255, 255, 255, 0.5);
+    /* Lighter backdrop */
+    backdrop-filter: blur(8px);
+}
+
+[data-theme="light"] .dialog-header h2 {
+    color: var(--primary-dark);
+}
+
+[data-theme="light"] .dialog-content {
+    color: #5c4033;
+    /* Use secondary text color */
+}
+
+[data-theme="light"] .dialog-class-content {
+    color: #5c4033 !important;
+}
+
+[data-theme="light"] .dialog-footer button.primary {
+    /* Keep primary button logic, usually handles itself, but verify text color */
+}
+
+[data-theme="light"] .dialog-footer button.secondary {
+    background: rgba(0, 0, 0, 0.05);
+    color: #3d2817;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+
 
 #headerLogoutBtn {
     min-width: 90px;
@@ -3581,6 +3678,51 @@ body.dashboard-layout {
     overflow-y: auto;
 }
 
+/* Light Theme Sidebar Overrides */
+[data-theme="light"] .sidebar-navigation {
+    background: rgba(253, 253, 253, 0.95);
+    /* Nearly white cream */
+    border-right-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .sidebar-logo-text {
+    background: linear-gradient(135deg, #1f2937 0%, #4b5563 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+[data-theme="light"] .nav-item {
+    color: #4b5563;
+    /* Dark gray text */
+}
+
+[data-theme="light"] .nav-item:hover,
+[data-theme="light"] .nav-item.active {
+    background: rgba(0, 0, 0, 0.05);
+    color: #111827;
+    /* Near black active */
+}
+
+[data-theme="light"] .nav-item.active::before {
+    background: #10b981;
+    /* Keep primary green */
+}
+
+[data-theme="light"] .user-snippet {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .user-snippet:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .user-snippet-name {
+    color: #1f2937;
+}
+
 /* Sidebar Header / Logo Area */
 .sidebar-header {
     margin-bottom: 32px;
@@ -3597,44 +3739,61 @@ body.dashboard-layout {
     letter-spacing: -0.03em;
 }
 
-/* Navigation List */
+/* Navigation List - Modern & Clean */
 .nav-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
+    /* Tighter gap for a cleaner list look */
     list-style: none;
     padding: 0;
     margin: 0;
     flex: 1;
-    /* Pushes footer down */
 }
 
-/* Nav Item */
+/* Nav Item - Sleek Transparent Style */
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 14px 16px;
-    border-radius: 16px;
-    background: transparent;
-    border: none;
-    color: var(--nav-text-color);
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    /* Softer, smaller radius */
+    background: transparent !important;
+    /* OVERRIDE GLOBAL BUTTON STYLE */
+    border: none !important;
+    box-shadow: none !important;
+    /* Remove button shadow */
+    color: var(--nav-text-color) !important;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     width: 100%;
     text-align: left;
     position: relative;
     font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    margin-top: 0 !important;
+    /* Fix global button margin */
 }
 
-.nav-item:hover,
+/* Hover State - Subtle Tint */
+.nav-item:hover {
+    background: var(--nav-item-hover) !important;
+    color: var(--nav-text-active) !important;
+    transform: translateX(2px);
+    /* Slight movement */
+    box-shadow: none !important;
+}
+
+/* Active State - Refined & Professional */
 .nav-item.active {
-    background: var(--nav-item-hover);
-    color: var(--nav-text-active);
-    transform: translateX(4px);
+    background: var(--nav-item-hover) !important;
+    color: var(--nav-text-active) !important;
+    font-weight: 600;
 }
 
+/* Active Indicator - Clean Left Border */
 .nav-item.active::before {
     content: '';
     position: absolute;
@@ -3647,33 +3806,36 @@ body.dashboard-layout {
     border-radius: 0 4px 4px 0;
 }
 
-/* Icons & Labels */
+/* Icons - Consistent Sizing */
 .nav-icon {
-    font-size: var(--nav-icon-size);
-    width: var(--nav-icon-size);
+    font-size: 18px;
+    /* Slightly smaller, more refined */
+    width: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    opacity: 0.9;
     transition: transform 0.2s ease;
 }
 
 .nav-item:hover .nav-icon {
-    transform: scale(1.1) rotate(5deg);
+    transform: scale(1.1);
+    opacity: 1;
 }
 
 .nav-label {
-    font-weight: 600;
-    font-size: 15px;
+    font-size: 14px;
     letter-spacing: 0.01em;
 }
 
-/* Dropdown Handling */
+/* Dropdown Handling - Flowing & Clean */
 .nav-dropdown {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
 }
 
+/* Toggle Button Style matches standard Nav Item */
 .nav-dropdown-toggle {
     justify-content: space-between;
 }
@@ -3681,44 +3843,73 @@ body.dashboard-layout {
 .dropdown-arrow {
     font-size: 10px;
     transition: transform 0.3s ease;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .nav-dropdown.open .dropdown-arrow {
     transform: rotate(180deg);
+    opacity: 1;
 }
 
+/* Dropdown Menu - Indented List (No Box) */
 .nav-dropdown-menu {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding-left: 12px;
+    gap: 2px;
+    padding-left: 0;
+    /* Handled by item padding */
 }
 
 .nav-dropdown.open .nav-dropdown-menu {
-    max-height: 300px;
-    /* Arbitrary large enough height */
+    max-height: 500px;
+    /* Allow expansion */
+    padding-top: 4px;
+    padding-bottom: 4px;
 }
 
+/* Dropdown Items - Sub-level styling */
 .nav-dropdown-item {
-    padding: 12px 16px;
-    border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 12px;
+    padding: 8px 16px 8px 48px;
+    /* Indented text (Icon+Gap+Padding) */
+    border-radius: 8px;
     color: var(--nav-text-muted);
     text-decoration: none;
     transition: all 0.2s;
-    font-size: 14px;
+    font-size: 13px;
+    /* Slightly smaller than main items */
+    font-weight: 500;
+    background: transparent;
 }
 
 .nav-dropdown-item:hover {
     background: var(--dropdown-item-hover-bg);
     color: var(--nav-text-active);
-    padding-left: 20px;
+    transform: translateX(2px);
+}
+
+.nav-dropdown-item.active {
+    color: var(--primary-color);
+    background: var(--dropdown-item-hover-bg);
+    font-weight: 600;
+}
+
+/* Remove the active bar from sub-items, use color instead */
+.nav-dropdown-item.active::before {
+    display: none;
+}
+
+/* Mobile Tweaks */
+@media (max-width: 1024px) {
+    .nav-item {
+        padding: 12px 16px;
+        /* Larger touch targets */
+    }
 }
 
 /* User Footer Section (Fixed Bottom) */
@@ -3873,7 +4064,7 @@ body.dashboard-layout {
     .sidebar-navigation {
         transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
         /* Smarter easing */
-        background: #0f172a !important;
+        background: var(--sidebar-bg) !important;
         /* Solid background to prevent see-through */
         box-shadow: 10px 0 50px rgba(0, 0, 0, 0.5) !important;
         /* Ensure z-index is top */
@@ -4269,121 +4460,111 @@ body.dashboard-layout {
     }
 }
 
-/* 2. Dynamic Flexbox Header */
+/* 2. Dynamic Flexbox Header - REBUILT FOR STABILITY */
 @media (max-width: 1024px) {
-    .header-content {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        /* Spread items: Menu - Title - Profile */
-        padding: 0 16px !important;
-        /* Standard mobile padding */
-        height: 60px !important;
-        /* Fixed header height */
-    }
 
-    /* Element 1: Hamburger Menu (Top Left) */
-    .hamburger-menu {
-        position: static !important;
-        /* Static to flow in flex */
-        display: flex !important;
-        flex-direction: column;
-        justify-content: center;
-        margin-right: 0 !important;
-        /* Let justify-content handle spacing */
-        padding: 8px !important;
-        order: 1;
-        /* Explicit order */
-        z-index: 1002;
-    }
-
-    /* Element 2: Title (Center or Left-Center) */
-    .header-title {
-        margin: 0 !important;
-        /* Remove defaults */
-        font-size: 1.2rem !important;
-        white-space: nowrap;
-        order: 2;
-        flex-grow: 1;
-        /* Take up available space */
-        text-align: center;
-        /* Center the title on mobile */
-        padding-left: 0 !important;
-        /* Remove offset */
-    }
-
-    /* Element 3: Right Side (Avatar/Lang) */
-    .header-content>div:last-child {
-        order: 3;
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-    }
-}
-
-/* 🔧 FIXED: Chat Dismiss Button Style */
-.chat-dismiss-btn {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border: none !important;
-    border-radius: 50% !important;
-    width: 28px !important;
-    height: 28px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    color: rgba(255, 255, 255, 0.7) !important;
-    transition: all 0.2s ease !important;
-}
-
-.chat-dismiss-btn:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
-    color: #fff !important;
-}
-
-.chat-dismiss-btn svg {
-    pointer-events: none;
-    /* Prevent SVG from stealing click */
-}
-
-/* 🔧 RESTORE SCROLL FIX */
-/* Reverting the aggressive 'position: fixed' on body which locked scrolling on subpages. */
-
-@media (max-width: 1024px) {
-    body.dashboard-layout {
-        position: static !important;
-        width: auto !important;
-        height: auto !important;
-        overflow: visible !important;
-        overflow-x: hidden !important;
-        /* Keep horizontal scroll locked */
-    }
-
-    .main-content {
-        height: auto !important;
-        /* Let content grow naturally */
-        overflow-y: visible !important;
-        /* Remove internal scroll element */
-        /* Padding top/bottom should remain from previous fixes to clear header/nav */
-    }
-}
-
-/* 🔧 FIXED: Sticky Mobile Header & Hamburger Position */
-
-/* 1. Ensure Header stays at top on mobile */
-@media (max-width: 1024px) {
+    /* Main Mobile Header Container */
     .top-header {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
         width: 100% !important;
+        height: 60px !important;
         z-index: 9999 !important;
-        /* Above everything except maybe modals */
-        background: rgba(10, 14, 23, 0.95) !important;
-        /* Solid/Opaque background */
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        background: rgba(10, 14, 23, 0.95);
+        /* Dark Default */
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        padding: 0;
+        /* Content handles padding */
+    }
+
+    [data-theme="light"] .top-header {
+        background: rgba(255, 255, 255, 0.95);
+        /* Light Theme */
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    /* Inner Flex Content */
+    .header-content {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        height: 100% !important;
+        padding: 0 16px !important;
+        /* Proper edge spacing */
+        box-sizing: border-box;
+    }
+
+    /* 1. Left: Hamburger Menu (ALWAYS VISIBLE) */
+    .hamburger-menu {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 40px !important;
+        height: 40px !important;
+        background: transparent !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 8px;
+        color: white !important;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0 !important;
+        margin: 0 !important;
+        z-index: 10000;
+        /* Super high so it's clickable */
+        flex-shrink: 0;
+    }
+
+    [data-theme="light"] .hamburger-menu {
+        border-color: rgba(0, 0, 0, 0.1) !important;
+        color: #1f2937 !important;
+        /* Dark icon */
+        background: rgba(0, 0, 0, 0.03) !important;
+    }
+
+    /* 2. Center: Title */
+    .header-title {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 16px !important;
+        font-weight: 700;
+        margin: 0 !important;
+        white-space: nowrap;
+        pointer-events: none;
+        /* Let clicks pass through if needed */
+        color: white;
+    }
+
+    [data-theme="light"] .header-title {
+        color: #1f2937;
+    }
+
+    .header-title .logo-highlight {
+        color: var(--primary-color);
+    }
+
+    /* 3. Right: Actions */
+    .header-right-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px;
+        margin-left: auto;
+        /* Push to right just in case */
+    }
+
+    /* Fix Avatar Size */
+    #mobileHeaderAvatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid var(--primary-color);
+        display: block !important;
     }
 }
 
@@ -4417,10 +4598,24 @@ body.dashboard-layout {
     .header-right-actions {
         order: 3 !important;
         margin-left: auto !important;
-        display: flex;
-        align-items: center;
-        gap: 12px;
+        display: flex !important;
+        flex-direction: row !important;
+        /* Ensure row */
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 12px !important;
         /* Space between profile and language selector */
+    }
+
+    .theme-toggle-header {
+        display: flex !important;
+        /* Ensure visible */
+        position: relative !important;
+        margin: 0 !important;
+    }
+
+    .language-selector-header {
+        margin: 0 !important;
     }
 
     /* Fix mobile header avatar alignment - Mobile Only */

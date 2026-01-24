@@ -1,3 +1,4 @@
+import "../styles.css";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";

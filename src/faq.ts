@@ -1,3 +1,4 @@
+import "../styles.css";
 import "./version";
 import WiseCatI18n from './i18n';
 import { setupSessionTimeout } from './session-timeout';
