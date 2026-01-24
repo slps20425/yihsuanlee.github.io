@@ -1215,7 +1215,12 @@ function activateTab(tabName: string) {
             default:
                 title = 'WiseCat AI - Dashboard';
         }
-        headerTitle.textContent = title;
+        const titleSpan = headerTitle.querySelector('.header-title-text');
+        if (titleSpan) {
+            titleSpan.textContent = title;
+        } else {
+            headerTitle.textContent = title;
+        }
     }
 
     // Persist to localStorage

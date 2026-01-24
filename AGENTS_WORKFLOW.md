@@ -20,6 +20,42 @@
 | 21 | Unified Dynamic Billing & Usage Tracking | Claude | 2026-01-22 | COMPLETED | [Live URL](https://wise-catty.cc/dashboard.html) |
 | 20 | Implement Shared Number System & Security Lockdown | Claude | 2026-01-22 | COMPLETED | [Live URL](https://wise-catty.cc/reservation/restaurant_reservation.html) |
 
+## Code Review Standards
+> [!CRITICAL]
+> **MANDATORY CODE REVIEW BEFORE DEPLOYMENT**
+>
+> All code changes MUST be reviewed using `/code-review-checklist` before deployment.
+>
+> **Workflow:**
+> 1. Make code changes (CSS, JS, HTML, etc.)
+> 2. Run `/code-review-checklist` to perform systematic review
+> 3. Address any blocking issues (🔴) found during review
+> 4. Only after review approval, proceed with build and deployment
+>
+> **What Gets Reviewed:**
+> - ✅ Correctness (functionality, edge cases, bugs)
+> - ✅ Security (XSS, injection, secrets, prompt injection)
+> - ✅ Performance (N+1 queries, bundle size, caching)
+> - ✅ Code Quality (naming, DRY, SOLID, abstractions)
+> - ✅ Testing (coverage, edge cases)
+> - ✅ Documentation (comments, API docs, README)
+>
+> **Review Severity Levels:**
+> - 🔴 **BLOCKING**: Must fix before deployment (security, critical bugs)
+> - 🟡 **SUGGESTION**: Should fix if time permits (performance, quality)
+> - 🟢 **NIT**: Minor improvements (style, naming)
+> - ❓ **QUESTION**: Clarifications needed
+>
+> **Example:**
+> ```bash
+> # After making changes to styles.css
+> /code-review-checklist
+> # Review output will validate changes
+> # Only proceed to deployment after approval
+> npm run build
+> npx firebase-tools deploy --project wisecat-8df8d --only hosting
+> ```
+
 ## Deployment Standards
 > [!IMPORTANT]
 > **Always use `npm run ship`** for full deployments.
