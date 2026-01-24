@@ -1,5 +1,5 @@
 import { httpsCallable } from 'firebase/functions';
-import { functions } from './firebase-config';
+import { functions, auth } from './firebase-config';
 
 // DOM elements
 const chatToggle = document.getElementById('chatToggle') as HTMLButtonElement;
@@ -55,6 +55,14 @@ async function sendMessage() {
 
     // Show typing indicator
     const typingId = addTypingIndicator();
+
+    // Check authentication
+    if (!auth.currentUser) {
+        removeTypingIndicator(typingId);
+        addMessage('Please log in first to satisfy your curiosity.', 'bot', true);
+        chatSend.disabled = false;
+        return;
+    }
 
     try {
         // Call Cloud Function
