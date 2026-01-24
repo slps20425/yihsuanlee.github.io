@@ -794,6 +794,7 @@ function showSharedNumberConfirmationDialog(phoneNumber?: string, originalPrice?
         const dialog = document.getElementById('sharedNumberDialog') as HTMLDialogElement;
         const confirmBtn = document.getElementById('confirmSharedBtn') as HTMLButtonElement;
         const cancelBtn = document.getElementById('cancelSharedBtn') as HTMLButtonElement;
+        const closeBtn = document.getElementById('closeSharedDialogBtn') as HTMLButtonElement;
 
         // Update dialog content with the specific phone number if provided
         if (phoneNumber) {
@@ -828,12 +829,14 @@ function showSharedNumberConfirmationDialog(phoneNumber?: string, originalPrice?
         const cleanup = () => {
             confirmBtn.removeEventListener('click', handleConfirm);
             cancelBtn.removeEventListener('click', handleCancel);
+            if (closeBtn) closeBtn.removeEventListener('click', handleCancel);
             dialog.removeEventListener('cancel', handleCancel);
             dialog.close();
         };
 
         confirmBtn.addEventListener('click', handleConfirm);
         cancelBtn.addEventListener('click', handleCancel);
+        if (closeBtn) closeBtn.addEventListener('click', handleCancel);
         dialog.addEventListener('cancel', handleCancel);
 
         dialog.showModal();

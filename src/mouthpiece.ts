@@ -714,7 +714,37 @@ onAuthStateChanged(auth, async (user) => { // Changed to async
             creditsDisplay.textContent = `$${(u.credits || 0).toFixed(2)}`;
         }
     } else {
-        // User not authenticated - redirect to login
+        // No Firebase user - check for guest/admin session
+        const localSession = localStorage.getItem('wisecat_user');
+
+        if (localSession) {
+            try {
+                const sessionData = JSON.parse(localSession);
+
+                // Allow access for guest and admin users
+                if (sessionData.isGuest || sessionData.isAdmin) {
+                    console.log('[Mouthpiece] Guest/Admin session detected, allowing access');
+
+                    // Update UI with session data
+                    if (headerUserName) headerUserName.textContent = sessionData.name || 'Guest';
+                    if (headerUserAvatar) headerUserAvatar.src = sessionData.picture || 'https://ui-avatars.com/api/?name=Guest';
+                    if (creditsDisplay) creditsDisplay.textContent = `$${(sessionData.credits || 0).toFixed(2)}`;
+
+                    // For admin/guest, still need to load missions and initialize the page
+                    dynamicMissions = await fetchMissionsFromFirestore();
+                    console.log(`Loaded ${dynamicMissions.length} missions from Firestore`);
+                    populateMissionDropdown();
+                    updateMissionDescription();
+
+                    // For admin/guest, skip phone number check (they have unlimited access)
+                    return;
+                }
+            } catch (e) {
+                console.error('[Mouthpiece] Error parsing session:', e);
+            }
+        }
+
+        // No valid session - redirect to login
         console.log('[Mouthpiece] User not authenticated, redirecting to login');
         window.location.href = '/';
     }

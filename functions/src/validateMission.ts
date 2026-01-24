@@ -13,6 +13,84 @@ interface ValidationResponse {
     confidence?: number;
     explanation?: string;
     refinedText?: string;
+    suggestedMissionId?: string | null;
+}
+
+/**
+ * Language Detection using Unicode Character Ranges
+ * Detects the primary language based on character composition
+ *
+ * Note: Spanish/French/Italian all use Latin script, so we detect them as a group.
+ * For more precise detection between Romance languages, would need NLP/dictionary approach.
+ */
+function detectLanguage(text: string): string {
+    if (!text || text.trim().length === 0) {
+        return 'unknown';
+    }
+
+    // Count characters by Unicode ranges
+    let chineseCount = 0;
+    let japaneseCount = 0;
+    let koreanCount = 0;
+    let latinCount = 0;
+
+    for (const char of text) {
+        const code = char.charCodeAt(0);
+
+        // Chinese (CJK Unified Ideographs)
+        if ((code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3400 && code <= 0x4DBF)) {
+            chineseCount++;
+        }
+        // Japanese (Hiragana + Katakana)
+        else if ((code >= 0x3040 && code <= 0x309F) || (code >= 0x30A0 && code <= 0x30FF)) {
+            japaneseCount++;
+        }
+        // Korean (Hangul)
+        else if (code >= 0xAC00 && code <= 0xD7AF) {
+            koreanCount++;
+        }
+        // Latin (Basic Latin + Latin-1 Supplement - covers English, Spanish, French, Italian, etc.)
+        else if ((code >= 0x0041 && code <= 0x005A) || (code >= 0x0061 && code <= 0x007A) ||
+                 (code >= 0x00C0 && code <= 0x00FF)) { // Extended Latin (accented characters)
+            latinCount++;
+        }
+    }
+
+    // Determine primary language (highest count)
+    const counts = {
+        zh: chineseCount,
+        ja: japaneseCount,
+        ko: koreanCount,
+        en: latinCount  // Latin-based languages grouped as 'en' (English/Spanish/French/Italian)
+    };
+
+    const maxLang = Object.entries(counts).reduce((a, b) => (b[1] > a[1] ? b : a));
+
+    // Return language code if it has significant characters (>3), otherwise unknown
+    return maxLang[1] > 3 ? maxLang[0] : 'unknown';
+}
+
+/**
+ * Validate if response language matches expected language
+ * Returns true if languages match or if validation is inconclusive
+ */
+function validateResponseLanguage(responseText: string, expectedLang: string): boolean {
+    const detectedLang = detectLanguage(responseText);
+
+    // If we couldn't detect, assume it's okay (inconclusive)
+    if (detectedLang === 'unknown') {
+        return true;
+    }
+
+    // Normalize language codes (ja/jp, ko/kr)
+    const normalizedExpected = expectedLang.split('-')[0];
+    const langMap: { [key: string]: string } = {
+        'jp': 'ja',
+        'kr': 'ko'
+    };
+    const expectedNormalized = langMap[normalizedExpected] || normalizedExpected;
+
+    return detectedLang === expectedNormalized;
 }
 
 /**
@@ -80,39 +158,87 @@ export const validateMissionDescription = functions.https.onCall(
                 }
             });
 
-            // Call Gemini AI
-            // Request JSON response
-            const responseSchema = {
-                type: "object",
-                properties: {
-                    valid: { type: "boolean" },
-                    explanation: { type: "string" },
-                    refinedText: { type: "string" },
-                    suggestedMissionId: { type: "string", nullable: true }
-                }
-            };
+            // Detect input language from user's description
+            const detectedInputLang = detectLanguage(description);
+            console.log('Detected input language:', detectedInputLang, 'UI language:', language);
 
             // Determine service type from missionId
-            // restaurant_booking is the legacy ID, reservation_* are the new ones
             const serviceType = (missionId === 'restaurant_booking' || missionId.startsWith('reservation_')) ? 'restaurant' : 'mouthpiece';
-            const prompt = await buildValidationPrompt(missionId, missionName, description, language, serviceType);
 
-            const result = await model.generateContent({
-                contents: [{ role: 'user', parts: [{ text: prompt }] }],
-                generationConfig: {
-                    responseMimeType: "application/json",
+            // Retry logic with language validation (max 3 attempts)
+            const MAX_RETRIES = 3;
+            let parsedResponse: any = null;
+            let lastError: Error | null = null;
+
+            for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+                try {
+                    console.log(`Attempt ${attempt}/${MAX_RETRIES} - Calling Gemini...`);
+
+                    // Build prompt with increasing language enforcement
+                    const prompt = await buildValidationPrompt(
+                        missionId,
+                        missionName,
+                        description,
+                        language,
+                        serviceType,
+                        detectedInputLang,
+                        attempt // Pass attempt number for stronger enforcement
+                    );
+
+                    const result = await model.generateContent({
+                        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                        }
+                    });
+
+                    const responseText = result.response.text();
+
+                    // Parse JSON
+                    try {
+                        parsedResponse = JSON.parse(responseText);
+                    } catch (e) {
+                        console.error(`Attempt ${attempt}: Failed to parse JSON:`, responseText);
+                        lastError = e as Error;
+                        continue; // Retry
+                    }
+
+                    // Validate response language
+                    const explanationLangValid = validateResponseLanguage(parsedResponse.explanation || '', language);
+                    const refinedTextLangValid = parsedResponse.refinedText
+                        ? validateResponseLanguage(parsedResponse.refinedText, language)
+                        : true;
+
+                    if (explanationLangValid && refinedTextLangValid) {
+                        console.log(`Attempt ${attempt}: Language validation PASSED ✅`);
+                        break; // Success!
+                    } else {
+                        console.warn(`Attempt ${attempt}: Language validation FAILED ❌`, {
+                            explanationValid: explanationLangValid,
+                            refinedTextValid: refinedTextLangValid,
+                            expected: language,
+                            detectedExplanation: detectLanguage(parsedResponse.explanation || ''),
+                            detectedRefined: parsedResponse.refinedText ? detectLanguage(parsedResponse.refinedText) : 'N/A'
+                        });
+
+                        // If last attempt, we'll use it anyway (fail-open)
+                        if (attempt === MAX_RETRIES) {
+                            console.warn('Max retries reached, using response anyway');
+                        }
+                        // Otherwise continue to next retry
+                    }
+
+                } catch (apiError) {
+                    console.error(`Attempt ${attempt}: Gemini API error:`, apiError);
+                    lastError = apiError as Error;
+                    // Continue to next retry
                 }
-            });
+            }
 
-            const responseText = result.response.text();
-            let parsedResponse: any;
-
-            try {
-                parsedResponse = JSON.parse(responseText);
-            } catch (e) {
-                console.error("Failed to parse JSON response:", responseText);
-                // Fallback
-                return { valid: true };
+            // If all retries failed
+            if (!parsedResponse) {
+                console.error('All retry attempts failed');
+                throw lastError || new Error('Failed to get valid response from Gemini');
             }
 
             // Log for monitoring
@@ -121,7 +247,8 @@ export const validateMissionDescription = functions.https.onCall(
                 missionName,
                 descriptionLength: description.length,
                 result: parsedResponse.valid ? 'MATCH' : 'NOT_MATCH',
-                language,
+                uiLanguage: language,
+                detectedInputLang,
                 userId: request.auth.uid,
                 suggested: parsedResponse.suggestedMissionId
             });
@@ -188,7 +315,15 @@ async function getMissions(): Promise<any[]> {
 /**
  * Build the validation prompt for Gemini
  */
-async function buildValidationPrompt(missionId: string, missionName: string, description: string, language: string, serviceType: string = 'mouthpiece'): Promise<string> {
+async function buildValidationPrompt(
+    missionId: string,
+    missionName: string,
+    description: string,
+    language: string,
+    serviceType: string = 'mouthpiece',
+    detectedInputLang: string = 'unknown',
+    attempt: number = 1
+): Promise<string> {
     const allMissions = await getMissions();
     // Build a detailed list for the AI
     const availableMissionsList = allMissions.map(m => {
@@ -198,34 +333,60 @@ async function buildValidationPrompt(missionId: string, missionName: string, des
         return `- ID: "${m.id}", Name: "${localizedName}"${keywords}`;
     }).join('\n');
 
-    // Language-specific instructions
+    // Determine response language based on detected input language (priority) or UI language
+    let responseLanguage = language;
     let langInstruction = "";
-    const primaryLang = language.split('-')[0]; // Handle zh-TW, en-US, etc.
+
+    // If we detected a specific language in the user's input, use that
+    if (detectedInputLang && detectedInputLang !== 'unknown') {
+        const detectedLangMap: { [key: string]: string } = {
+            'zh': 'zh',
+            'ja': 'jp',
+            'ko': 'kr',
+            'en': 'en'
+        };
+        responseLanguage = detectedLangMap[detectedInputLang] || language;
+    }
+
+    const primaryLang = responseLanguage.split('-')[0]; // Handle zh-TW, en-US, etc.
+
+    // Build language instruction with increasing strictness based on attempt
+    const retryEmphasis = attempt > 1 ? `\n\n🚨 CRITICAL RETRY #${attempt}: Your previous response was in the WRONG language. This is attempt ${attempt}/${3}. ` : '';
+
+    // Emphasize matching user's input language
+    const inputLanguageEmphasis = detectedInputLang !== 'unknown'
+        ? `\n\n⚠️ IMPORTANT: The user wrote their description in ${detectedInputLang.toUpperCase()} language. You MUST respond in the SAME language the user used in their input. `
+        : '';
 
     switch (primaryLang) {
         case 'zh':
-            langInstruction = "You MUST answer in Traditional Chinese (繁體中文).";
+            langInstruction = `${retryEmphasis}${inputLanguageEmphasis}**MANDATORY**: You MUST respond ONLY in Traditional Chinese (繁體中文). Use Chinese characters for ALL fields: "explanation" and "refinedText". DO NOT use English, Japanese, or Korean characters.`;
             break;
         case 'jp':
         case 'ja':
-            langInstruction = "You MUST answer in Japanese (日本語).";
+            langInstruction = `${retryEmphasis}${inputLanguageEmphasis}**MANDATORY**: You MUST respond ONLY in Japanese (日本語). Use Japanese Hiragana, Katakana, and Kanji for ALL fields. DO NOT use English, Chinese, or Korean.`;
             break;
         case 'kr':
         case 'ko':
-            langInstruction = "You MUST answer in Korean (한국어).";
+            langInstruction = `${retryEmphasis}${inputLanguageEmphasis}**MANDATORY**: You MUST respond ONLY in Korean (한국어). Use Hangul for ALL fields. DO NOT use English, Chinese, or Japanese.`;
             break;
         case 'es':
-            langInstruction = "You MUST answer in Spanish.";
+            langInstruction = `${retryEmphasis}${inputLanguageEmphasis}**MANDATORY**: You MUST respond ONLY in Spanish (Español). Use Spanish for ALL fields.`;
             break;
         case 'fr':
-            langInstruction = "You MUST answer in French.";
+            langInstruction = `${retryEmphasis}${inputLanguageEmphasis}**MANDATORY**: You MUST respond ONLY in French (Français). Use French for ALL fields.`;
             break;
         case 'it':
-            langInstruction = "You MUST answer in Italian.";
+            langInstruction = `${retryEmphasis}${inputLanguageEmphasis}**MANDATORY**: You MUST respond ONLY in Italian (Italiano). Use Italian for ALL fields.`;
             break;
         default:
-            langInstruction = "Answer in English.";
+            langInstruction = `${retryEmphasis}${inputLanguageEmphasis}**MANDATORY**: Respond in English only.`;
     }
+
+    // Add input language context
+    const inputLangContext = detectedInputLang !== 'unknown'
+        ? `\n- **Detected Input Language**: ${detectedInputLang} (The user wrote their description in this language)`
+        : '';
 
     return `
 Role: You are the Lead Dispatcher & Security Officer for "WiseCat AI".
@@ -234,7 +395,7 @@ Goal: Analyze a user's request against a selected mission. You must verify valid
 Current Context:
 - **Selected Mission**: "${missionName}" (ID: ${missionId})
 - **User Task Description**: "${description}"
-- **Language**: ${language}
+- **UI Language**: ${language}${inputLangContext}
 
 Mission Database (ID, Name, Keywords):
 ${availableMissionsList}

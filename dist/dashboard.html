@@ -94,15 +94,15 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/dashboard-DWJXO9iU.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-BgBT-wyw.js">
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-mHhmnEVH.js">
-  <link rel="modulepreload" crossorigin href="/assets/firebase-config-DvmvaQDU.js">
-  <link rel="modulepreload" crossorigin href="/assets/session-timeout-BPx8shAV.js">
+  <script type="module" crossorigin src="/assets/dashboard-DfJ7yJNT.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-Cm2w3tZ3.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-BSDclJAc.js">
+  <link rel="modulepreload" crossorigin href="/assets/firebase-config-B4hnM8JF.js">
+  <link rel="modulepreload" crossorigin href="/assets/session-timeout-CbBNYaFQ.js">
   <link rel="modulepreload" crossorigin href="/assets/utility-toast-DYoV_6Wf.js">
   <link rel="modulepreload" crossorigin href="/assets/pwa-Ece1kHLX.js">
-  <link rel="modulepreload" crossorigin href="/assets/chat-assistant-Bs4pEItI.js">
-  <link rel="stylesheet" crossorigin href="/assets/styles-CDJ6RCB5.css">
+  <link rel="modulepreload" crossorigin href="/assets/chat-assistant-BIcHyEJs.js">
+  <link rel="stylesheet" crossorigin href="/assets/styles-DWezqRIs.css">
 </head>
 
 <body class="dashboard-layout">
@@ -722,40 +722,36 @@
     <dialog id="sharedNumberDialog">
         <div class="dialog-header">
             <h2>🔗 Activate Shared Business Number</h2>
+            <button id="closeSharedDialogBtn" class="dialog-close-btn" aria-label="Close dialog">&times;</button>
         </div>
         <div class="dialog-content">
-            <div style="text-align: center; padding: 1rem 0;">
-                <div style="font-size: 2.5rem; margin-bottom: 1rem;">📞</div>
-                <p style="font-size: 1rem; margin-bottom: 1.5rem;">
-                    Use our shared business number for one-time calls
-                </p>
-                <div
-                    style="background: rgba(34, 197, 94, 0.1); border: 1px solid var(--success); border-radius: 8px; padding: 1.5rem; margin: 1rem 0;">
-                    <p style="font-size: 0.9rem; margin: 0.5rem 0;">
-                        <strong>Number:</strong> <span id="sharedNumberDisplay" style="font-family: monospace;">+1 (415)
-                            212-5191</span>
-                    </p>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0.5rem 0;">
-                        Activation cost: <strong id="sharedNumberCost" style="color: var(--success);">$2</strong>
-                    </p>
+            <div class="shared-dialog-icon">📞</div>
+            <p class="shared-dialog-subtitle">Use our shared business number for one-time calls</p>
+
+            <div class="shared-dialog-info-box">
+                <div class="info-row">
+                    <span class="info-label">Number:</span>
+                    <span id="sharedNumberDisplay" class="info-value">+1 (415) 212-5191</span>
                 </div>
-                <div
-                    style="background: rgba(234, 179, 8, 0.1); border: 1px solid var(--warning); border-radius: 8px; padding: 1rem; margin: 1rem 0;">
-                    <p style="font-size: 0.85rem; margin: 0;">
-                        ⚠️ <strong>Shared numbers do not support SMS messages.</strong><br>
-                        Only voice calls and system messages will be available.
-                    </p>
+                <div class="info-row">
+                    <span class="info-label">Activation cost:</span>
+                    <span id="sharedNumberCost" class="info-value success">$2</span>
                 </div>
-                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem;">
-                    Cost will be deducted when you make your first call.
-                </p>
             </div>
+
+            <div class="shared-dialog-warning">
+                <span class="warning-icon">⚠️</span>
+                <div class="warning-text">
+                    <strong>Shared numbers do not support SMS messages.</strong>
+                    <span class="warning-detail">Only voice calls and system messages available.</span>
+                </div>
+            </div>
+
+            <p class="shared-dialog-note">Cost deducted when you make your first call.</p>
         </div>
         <div class="dialog-footer">
-            <button id="cancelSharedBtn" class="btn"
-                style="background: var(--border); color: var(--text-primary); flex: 1;">Cancel</button>
-            <button id="confirmSharedBtn" class="btn btn-primary" style="flex: 1; background: var(--success);">✅
-                Activate Now</button>
+            <button id="cancelSharedBtn" class="btn btn-secondary-dialog">Cancel</button>
+            <button id="confirmSharedBtn" class="btn btn-primary-dialog">Activate Now</button>
         </div>
     </dialog>
 

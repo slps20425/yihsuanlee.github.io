@@ -62,6 +62,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const guestLoginBtn = document.getElementById('guestLoginBtn');
     if (guestLoginBtn) guestLoginBtn.addEventListener('click', handleGuestLogin);
 
+    // Admin Login
+    const adminLoginBtn = document.getElementById('adminLoginBtn');
+    if (adminLoginBtn) adminLoginBtn.addEventListener('click', handleAdminLogin);
+
     // Expose logout globally for the inline onclick handler in HTML (or we can bind it here)
     (window as any).logout = logout;
     const logoutBtn = document.querySelector('.logout-btn');
@@ -329,6 +333,79 @@ function handleGuestLogin() {
 
     // Redirect
     window.location.href = '/dashboard.html';
+}
+
+async function handleAdminLogin() {
+    authLog('👑 Admin login initiated');
+
+    // Prompt for admin password
+    const inputPassword = prompt('Enter admin password:');
+    if (!inputPassword) {
+        authLog('❌ Admin login cancelled - no password entered');
+        return;
+    }
+
+    try {
+        // Fetch admin password from Firestore configuration/settings in reservation database
+        authLog('🔍 Fetching admin password from Firestore reservation database...');
+        const { getFirestore, doc, getDoc } = await import('firebase/firestore');
+        const { getApp } = await import('firebase/app');
+        const app = getApp();
+        const firestoreDb = getFirestore(app, 'reservation');
+        const settingsRef = doc(firestoreDb, 'configuration', 'settings');
+        const settingsSnap = await getDoc(settingsRef);
+
+        if (!settingsSnap.exists()) {
+            authLog('❌ Settings document not found');
+            alert('Admin configuration not found. Please contact support.');
+            return;
+        }
+
+        const settings = settingsSnap.data();
+        const correctPassword = settings.admin_pwd;
+
+        if (!correctPassword) {
+            authLog('❌ admin_pwd field not configured');
+            alert('Admin password not configured. Please contact support.');
+            return;
+        }
+
+        // Verify password
+        if (inputPassword !== correctPassword) {
+            authLog('❌ Incorrect admin password');
+            alert('Incorrect password. Access denied.');
+            return;
+        }
+
+        authLog('✅ Password verified - creating admin session');
+
+        // Create Admin Session
+        const adminUser = {
+            name: "Admin User",
+            email: "admin@wisecat.ai",
+            uid: "admin_" + Date.now(),
+            picture: "https://ui-avatars.com/api/?name=Admin+User&background=fbbf24",
+            credits: 10000.00, // High credits for admin testing
+            isGuest: true, // Use same bypass logic as guest
+            isAdmin: true, // Mark as admin for future admin-only features
+            createdAt: Date.now()
+        };
+
+        authLog("💾 Saving ADMIN session to localStorage:", adminUser);
+        localStorage.setItem('wisecat_user', JSON.stringify(adminUser));
+
+        // Clear any auth state that might block us
+        sessionStorage.removeItem(AUTH_STATE_KEY);
+        sessionStorage.removeItem(AUTH_PROCESSING_KEY);
+
+        // Redirect
+        authLog('🔄 Redirecting to dashboard...');
+        window.location.href = '/dashboard.html';
+    } catch (error) {
+        authLog('❌ Error during admin login:', error);
+        console.error('Admin login error:', error);
+        alert('An error occurred. Please try again.');
+    }
 }
 
 function logout() {

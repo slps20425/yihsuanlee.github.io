@@ -98,14 +98,20 @@
             </div>
 
             <!-- Guest Access (QA/Testing) -->
-            <!-- Guest Access (QA/Testing) -->
             <button type="button" id="guestLoginBtn" class="guest-btn">
                 <span class="icon">🕵️</span>
                 <span class="text">Continue as Guest</span>
             </button>
 
+            <!-- Admin Access (Development/Testing) -->
+            <button type="button" id="adminLoginBtn" class="admin-btn">
+                <span class="icon">👑</span>
+                <span class="text">Continue as Admin</span>
+            </button>
+
             <style>
-                .guest-btn {
+                .guest-btn,
+                .admin-btn {
                     background: var(--nav-item-hover, rgba(255, 255, 255, 0.03));
                     color: var(--text-secondary);
                     border: 1px solid var(--border-color);
@@ -124,19 +130,27 @@
                     letter-spacing: 0.01em;
                 }
 
-                .guest-btn:hover {
+                .guest-btn:hover,
+                .admin-btn:hover {
                     background: var(--nav-item-hover, rgba(255, 255, 255, 0.08));
                     border-color: var(--border-color-hover, rgba(255, 255, 255, 0.2));
                     color: var(--text-primary);
                     transform: translateY(-1px);
                 }
 
-                .guest-btn:active {
+                .admin-btn:hover {
+                    border-color: rgba(251, 191, 36, 0.5);
+                    background: rgba(251, 191, 36, 0.05);
+                }
+
+                .guest-btn:active,
+                .admin-btn:active {
                     transform: translateY(0);
                     background: var(--nav-item-hover, rgba(255, 255, 255, 0.05));
                 }
 
-                .guest-btn .icon {
+                .guest-btn .icon,
+                .admin-btn .icon {
                     font-size: 1.1em;
                     opacity: 0.8;
                 }
