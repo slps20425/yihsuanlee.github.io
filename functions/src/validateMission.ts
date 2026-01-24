@@ -253,15 +253,25 @@ export const validateMissionDescription = functions.https.onCall(
                 suggested: parsedResponse.suggestedMissionId
             });
 
-            // Enforce consistency: If a different mission is suggested, valid MUST be false
-            const isMissionMismatch = parsedResponse.suggestedMissionId && parsedResponse.suggestedMissionId !== missionId;
-            const finalValid = isMissionMismatch ? false : parsedResponse.valid;
+            // Enforce "Blind Classification" Logic
+            // The AI returned what it thinks corresponds to the text in 'suggestedMissionId'.
+            // We compare it here in code, not trusting the AI's 'valid' flag if it contradicts.
+
+            const classifiedMissionId = parsedResponse.suggestedMissionId;
+            const isMatch = classifiedMissionId === missionId;
+
+            // If AI failed to classify (null), default to valid (benefit of doubt) or invalid? 
+            // Better to default to valid if no strong alternative found.
+            const finalValid = classifiedMissionId ? isMatch : true;
+            const finalSuggestedId = isMatch ? null : classifiedMissionId;
+
+            console.log(`[Version: v3.0-blind-class] User Mission: ${missionId}, AI Classified: ${classifiedMissionId}, Match: ${isMatch}`);
 
             return {
                 valid: finalValid,
                 explanation: parsedResponse.explanation,
                 refinedText: parsedResponse.refinedText,
-                suggestedMissionId: parsedResponse.suggestedMissionId
+                suggestedMissionId: finalSuggestedId
             };
 
         } catch (error) {
@@ -393,35 +403,30 @@ async function buildValidationPrompt(
         : '';
 
     const systemContext = `
-Role: You are the Lead Dispatcher & Security Officer for "WiseCat AI".
+Role: You are the Lead Dispatcher for "WiseCat AI".
 Current UI Language: ${language} ${inputLangContext}
 ${langInstruction} // LANGUAGE INSTRUCTION IS PARAMOUNT.
 
 Task:
 1. **CLASSIFY**: Analyze the "User Task Description" and select the ONE best matching ID from the "Mission Database".
-2. **COMPARE**: Compare your selected ID with the "Current Target Mission".
-   - If they are the same: Result is VALID.
-   - If they are different: Result is INVALID (Mismatch).
-3. **REFINE**: Create a professional version of the user's text in ${language}.
+2. **REFINE**: Create a professional version of the user's text in ${language}.
+3. **SAFETY**: Check for scams or prohibited content.
 
 Current Context:
-- **Current Target Mission**: "${missionName}" (ID: ${missionId})
 - **User Task Description**: "${description}"
 
 Mission Database:
 ${availableMissionsList}
 
 Output Logic:
-- If User Description implies a scam/fraud: valid=false, suggestedMissionId=null, explanation="SCAM_ALERT".
-- If Best Match ID == Current Target Mission ID: valid=true, suggestedMissionId=null.
-- If Best Match ID != Current Target Mission ID: valid=false, suggestedMissionId=[Best Match ID].
+- If User Description implies a scam/fraud: suggestedMissionId=null, explanation="SCAM_ALERT".
+- Otherwise: suggestedMissionId=[The Best Match Mission ID found in step 1].
 
 Output Format (Strict JSON):
 {
-  "valid": boolean,
   "explanation": "Brief reasoning in ${language}.",
   "refinedText": "Professional version of the task in ${language}.",
-  "suggestedMissionId": "The ID of the mission you classified in Step 1 (or null if no match)"
+  "suggestedMissionId": "The ID of the mission you classified in Step 1 (or null if no match found)"
 }
 `;
 
