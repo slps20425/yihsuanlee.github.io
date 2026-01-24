@@ -316,10 +316,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const u = JSON.parse(userSession);
                 creditsDisplay.textContent = `$${(u.credits || 0).toFixed(2)}`;
             }
-        } else {
-            // User not authenticated - redirect to login
-            console.log('[Trial] User not authenticated, redirecting to login');
-            window.location.href = '/';
         }
     });
 
@@ -330,6 +326,63 @@ document.addEventListener("DOMContentLoaded", async function () {
                 localStorage.removeItem('wisecat_user');
                 window.location.href = '/';
             });
+        });
+    }
+
+    // --- Protect navbar links for authenticated pages ---
+    let hasActivePhoneNumber = false;
+    const noNumberDialog = document.getElementById('noNumberDialog') as HTMLDialogElement | null;
+    const goToAddTabBtn = document.getElementById('goToAddTabBtn');
+    const closeNoNumberBtn = document.getElementById('closeNoNumberBtn');
+
+    function handleAIServiceClick(e: Event) {
+        if (!hasActivePhoneNumber) {
+            e.preventDefault();
+            noNumberDialog?.showModal();
+        }
+    }
+
+    // Get current user to check for phone number
+    const checkUserPhoneNumber = async () => {
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+            const { doc, getDoc } = await import("firebase/firestore");
+            const { db } = await import("./firebase-config");
+            const settingsDoc = await getDoc(doc(db, 'users', `uid_${currentUser.uid}`, 'settings', 'settings'));
+            const settings = settingsDoc.data() || {};
+            hasActivePhoneNumber = settings.phoneNumberStatus === 'active' && !!settings.phoneNumber;
+        }
+    };
+
+    // Check phone number on load and when user changes
+    checkUserPhoneNumber();
+    onAuthStateChanged(auth, checkUserPhoneNumber);
+
+    // Protect navbar links
+    const linkRestaurant = document.getElementById('linkRestaurant');
+    const linkMouthpiece = document.getElementById('linkMouthpiece');
+    linkRestaurant?.addEventListener('click', handleAIServiceClick);
+    linkMouthpiece?.addEventListener('click', handleAIServiceClick);
+
+    // Also protect navbar dropdown links with the same handler
+    document.querySelectorAll('.nav-dropdown-item[href*="/reservation/"]').forEach(link => {
+        const href = (link as HTMLAnchorElement).href;
+        // Skip trial link (doesn't require number)
+        if (!href.includes('trial.html')) {
+            link.addEventListener('click', handleAIServiceClick);
+        }
+    });
+
+    if (goToAddTabBtn) {
+        goToAddTabBtn.addEventListener('click', () => {
+            noNumberDialog?.close();
+            window.location.href = '/dashboard.html?tab=add';
+        });
+    }
+
+    if (closeNoNumberBtn) {
+        closeNoNumberBtn.addEventListener('click', () => {
+            noNumberDialog?.close();
         });
     }
 
