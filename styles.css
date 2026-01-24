@@ -2741,7 +2741,46 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
+/* Shared Number Item Styling */
+.shared-number-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(59, 130, 246, 0.03);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
 
+.shared-number-item:hover {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Light Mode Shared Numbers - Fix white text issue */
+[data-theme="light"] .shared-number-item {
+    background: rgba(59, 130, 246, 0.02);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .shared-number-item:hover {
+    background: rgba(59, 130, 246, 0.05);
+    border-color: rgba(59, 130, 246, 0.25);
+}
+
+/* Force dark text for phone numbers in light mode */
+[data-theme="light"] .shared-number-item > div > div:first-child {
+    color: #1e40af !important;
+}
+
+/* Force dark text for status in light mode */
+[data-theme="light"] .shared-number-item > div > div:last-child {
+    color: #4b5563 !important;
+}
 
 .buy-button-container {
     margin-top: auto;
