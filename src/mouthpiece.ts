@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="info-icon">i</div>
                         <div class="cost-tooltip">
                             <strong>Cost Information</strong><br>
-                            This task costs <span id="dynamicCostDisplay">${currentCost.toFixed(2)}</span> credit(s) per minute.
+                            This task starts at <span id="dynamicCostDisplay">${currentCost.toFixed(2)}</span> credit(s) per minute.
                         </div>
                     `;
                     header.parentNode?.insertBefore(iconContainer, header.nextSibling);
