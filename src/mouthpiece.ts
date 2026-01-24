@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="info-icon">i</div>
                         <div class="cost-tooltip">
                             <strong>Cost Information</strong><br>
-                            This task costs <span id="dynamicCostDisplay">${currentCost.toFixed(2)}</span> credit(s).
+                            This task costs <span id="dynamicCostDisplay">${currentCost.toFixed(2)}</span> credit(s) per minute.
                         </div>
                     `;
                     header.parentNode?.insertBefore(iconContainer, header.nextSibling);
@@ -2537,6 +2537,20 @@ async function initSearchLogic() {
             // Update Search Input to show selected place name
             if (searchInputEl) {
                 searchInputEl.value = place.displayName?.text || place.name || "";
+            }
+
+            // Auto-fill Recipient Name (Cleaned)
+            const recipientNameEl = document.getElementById('recipientName') as HTMLInputElement;
+            if (recipientNameEl) {
+                const rawName = place.displayName?.text || place.name || "";
+                if (rawName) {
+                    // Remove special chars, keep alphanumeric, space, comma, dot, dash
+                    // Replace others with space
+                    const cleanName = rawName.replace(/[^a-zA-Z0-9\s,.-]/g, ' ').replace(/\s+/g, ' ').trim();
+                    recipientNameEl.value = cleanName;
+                    // Trigger validation
+                    recipientNameEl.dispatchEvent(new Event('input', { bubbles: true }));
+                }
             }
 
             // Close search modal
