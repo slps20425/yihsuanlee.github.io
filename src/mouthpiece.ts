@@ -1666,51 +1666,87 @@ async function validateMissionDescription() {
                 feedbackDiv.appendChild(refinedPreview);
             }
 
-            // 4. Switch Action
-            const switchBtn = document.createElement('button');
-            switchBtn.className = 'btn-mission-switch';
-            switchBtn.style.width = '100%';
-            switchBtn.style.padding = '12px';
-            switchBtn.style.background = '#f59e0b';
-            switchBtn.style.color = 'white';
-            switchBtn.style.border = 'none';
-            switchBtn.style.borderRadius = '8px';
-            switchBtn.style.fontWeight = 'bold';
-            switchBtn.style.fontSize = '14px';
-            switchBtn.style.cursor = 'pointer';
-            switchBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
-            switchBtn.style.transition = 'transform 0.1s, opacity 0.2s';
+            // 4. Switch Actions
+            const btnContainer = document.createElement('div');
+            btnContainer.style.display = 'flex';
+            btnContainer.style.gap = '10px';
+            btnContainer.style.marginTop = '10px';
 
+            // Button 1: Switch & Fix (Primary)
+            const switchFixBtn = document.createElement('button');
+            switchFixBtn.className = 'btn-mission-switch-fix';
+            switchFixBtn.style.flex = '1';
+            switchFixBtn.style.padding = '12px';
+            switchFixBtn.style.background = '#f59e0b';
+            switchFixBtn.style.color = 'white';
+            switchFixBtn.style.border = 'none';
+            switchFixBtn.style.borderRadius = '8px';
+            switchFixBtn.style.fontWeight = 'bold';
+            switchFixBtn.style.fontSize = '14px';
+            switchFixBtn.style.cursor = 'pointer';
+
+            // Dynamic Label
             if (data.refinedText) {
-                switchBtn.innerHTML = `Switch to <strong>${suggestedName}</strong> & Apply Fix`;
+                switchFixBtn.innerHTML = `Switch & Fix`;
+                switchFixBtn.title = `Switch to ${suggestedName} and apply text refinement`;
             } else {
-                switchBtn.innerHTML = `Switch to <strong>${suggestedName}</strong>`;
+                switchFixBtn.innerHTML = `Switch to <strong>${suggestedName}</strong>`;
             }
 
-            switchBtn.addEventListener('click', () => {
+            switchFixBtn.addEventListener('click', () => {
                 const missionSelect = document.getElementById('mission') as HTMLSelectElement;
                 if (missionSelect) {
-                    // Update Mission
                     missionSelect.value = suggestedId;
                     missionSelect.dispatchEvent(new Event('change'));
 
-                    // Apply Refinement if available
+                    // Apply Refinement
                     if (data.refinedText) {
                         scriptTextarea.value = data.refinedText;
-                        // Trigger input event to update validation state (word count etc)
                         scriptTextarea.dispatchEvent(new Event('input'));
                     }
 
-                    // Reset UI
                     feedbackDiv.style.display = 'none';
                     scriptTextarea.style.border = '2px solid #10b981';
-
-                    // Re-validate to confirm everything is green (user sees immediate success)
                     setTimeout(() => validateMissionDescription(), 500);
                 }
             });
 
-            feedbackDiv.appendChild(switchBtn);
+            btnContainer.appendChild(switchFixBtn);
+
+            // Button 2: Switch Only (Secondary) - Only show if refinement exists, otherwise btn1 does the same thing
+            if (data.refinedText) {
+                const switchOnlyBtn = document.createElement('button');
+                switchOnlyBtn.className = 'btn-mission-switch-only';
+                switchOnlyBtn.style.flex = '1';
+                switchOnlyBtn.style.padding = '12px';
+                switchOnlyBtn.style.background = 'transparent';
+                switchOnlyBtn.style.color = '#f59e0b';
+                switchOnlyBtn.style.border = '1px solid #f59e0b';
+                switchOnlyBtn.style.borderRadius = '8px';
+                switchOnlyBtn.style.fontWeight = 'bold';
+                switchOnlyBtn.style.fontSize = '14px';
+                switchOnlyBtn.style.cursor = 'pointer';
+                switchOnlyBtn.innerHTML = `Switch Only`;
+                switchOnlyBtn.title = `Switch to ${suggestedName} but keep original text`;
+
+                switchOnlyBtn.addEventListener('click', () => {
+                    const missionSelect = document.getElementById('mission') as HTMLSelectElement;
+                    if (missionSelect) {
+                        missionSelect.value = suggestedId;
+                        missionSelect.dispatchEvent(new Event('change'));
+
+                        // DO NOT Apply Refinement -> Keep Original
+
+                        feedbackDiv.style.display = 'none';
+                        scriptTextarea.style.border = '2px solid #10b981';
+                        // Re-validate just to be sure context is now green
+                        setTimeout(() => validateMissionDescription(), 500);
+                    }
+                });
+                btnContainer.appendChild(switchOnlyBtn);
+            }
+
+            feedbackDiv.appendChild(btnContainer);
 
         } else if (data.valid) {
             isContentSafe = true; // Content is verified safe by backend
