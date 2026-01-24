@@ -149,12 +149,12 @@ export const validateMissionDescription = functions.https.onCall(
 
             const genAI = new GoogleGenerativeAI(apiKey);
 
-            // Use the newer gemini-2.5-flash-lite model (not the deprecated gemini-1.5-flash)
+            // Use the standard Flash model for better reasoning
             const model = genAI.getGenerativeModel({
-                model: "gemini-2.5-flash-lite",
+                model: "gemini-1.5-flash",
                 generationConfig: {
                     temperature: 0.1, // Low temperature for consistent validation
-                    maxOutputTokens: 256, // Increased for JSON response
+                    maxOutputTokens: 512,
                 }
             });
 
@@ -403,6 +403,22 @@ Current Context:
 
 Mission Database (ID, Name, Keywords):
 ${availableMissionsList}
+
+Few-Shot Examples (Learn from these logic patterns):
+Example 1 (MATCH):
+- Selected Mission: "lost_item"
+- User Description: "I left my wallet at the table near the window."
+- Decision: { "valid": true, "suggestedMissionId": null, ... }
+
+Example 2 (MISMATCH - Dispatch Needed):
+- Selected Mission: "lost_item"
+- User Description: "I want to book an appointment with Dr. Smith for a toothache."
+- Decision: { "valid": false, "suggestedMissionId": "dental_consultation", "explanation": "This looks like a dental appointment request, not a lost item inquiry.", ... }
+
+Example 3 (MISMATCH - Language/Context):
+- Selected Mission: "restaurant_booking"
+- User Description: "Help me find my missing package."
+- Decision: { "valid": false, "suggestedMissionId": "package_tracking", ... }
 
 Your Decision Logic:
 1. **Security Check (CRITICAL)**:
