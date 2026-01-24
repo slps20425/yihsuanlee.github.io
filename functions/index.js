@@ -1975,9 +1975,9 @@ Task:
    - Example 2 (Reservation): User says "Book for 2", you say "Hello, I would like to make a reservation for two people...".
 3. **SAFETY**: Check for scams or high-risk content. 
    - **CRITICAL**: If the User Input implies a scam, fraud, investment scheme, or unsolicited promotion:
-     - Set **suggestedMissionId** to `null`.
-     - Set **explanation** to exactly `SCAM_ALERT`.
-     - Set **refinedText** to `null`.
+     - Set **suggestedMissionId** to 'null'.
+     - Set **explanation** to exactly 'SCAM_ALERT'.
+     - Set **refinedText** to 'null'.
 
 Current Context:
 - **User's Input**: "${description}"
