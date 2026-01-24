@@ -1642,26 +1642,70 @@ async function validateMissionDescription() {
             explanation.style.marginBottom = '12px';
             feedbackDiv.appendChild(explanation);
 
-            // 3. Switch Action
+            // 3. New Refined Text Preview
+            if (data.refinedText) {
+                const refinedPreview = document.createElement('div');
+                refinedPreview.style.background = 'rgba(0,0,0,0.1)'; // Slightly darker background
+                refinedPreview.style.padding = '10px';
+                refinedPreview.style.borderRadius = '8px';
+                refinedPreview.style.marginBottom = '12px';
+                refinedPreview.style.borderLeft = '3px solid #f59e0b'; // Matching warning color
+
+                const previewTitle = document.createElement('div');
+                previewTitle.innerHTML = '✨ <strong>Proposed Professional Script:</strong>';
+                previewTitle.style.marginBottom = '4px';
+                previewTitle.style.fontSize = '0.9em';
+                refinedPreview.appendChild(previewTitle);
+
+                const previewText = document.createElement('div');
+                previewText.style.fontStyle = 'italic';
+                previewText.style.whiteSpace = 'pre-wrap';
+                previewText.textContent = data.refinedText;
+                refinedPreview.appendChild(previewText);
+
+                feedbackDiv.appendChild(refinedPreview);
+            }
+
+            // 4. Switch Action
             const switchBtn = document.createElement('button');
             switchBtn.className = 'btn-mission-switch';
             switchBtn.style.width = '100%';
-            switchBtn.style.padding = '10px';
+            switchBtn.style.padding = '12px';
             switchBtn.style.background = '#f59e0b';
             switchBtn.style.color = 'white';
             switchBtn.style.border = 'none';
             switchBtn.style.borderRadius = '8px';
             switchBtn.style.fontWeight = 'bold';
+            switchBtn.style.fontSize = '14px';
             switchBtn.style.cursor = 'pointer';
-            switchBtn.innerHTML = `Switch to <strong>${suggestedName}</strong>`;
+            switchBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+            switchBtn.style.transition = 'transform 0.1s, opacity 0.2s';
+
+            if (data.refinedText) {
+                switchBtn.innerHTML = `Switch to <strong>${suggestedName}</strong> & Apply Fix`;
+            } else {
+                switchBtn.innerHTML = `Switch to <strong>${suggestedName}</strong>`;
+            }
 
             switchBtn.addEventListener('click', () => {
                 const missionSelect = document.getElementById('mission') as HTMLSelectElement;
                 if (missionSelect) {
+                    // Update Mission
                     missionSelect.value = suggestedId;
                     missionSelect.dispatchEvent(new Event('change'));
+
+                    // Apply Refinement if available
+                    if (data.refinedText) {
+                        scriptTextarea.value = data.refinedText;
+                        // Trigger input event to update validation state (word count etc)
+                        scriptTextarea.dispatchEvent(new Event('input'));
+                    }
+
+                    // Reset UI
                     feedbackDiv.style.display = 'none';
                     scriptTextarea.style.border = '2px solid #10b981';
+
+                    // Re-validate to confirm everything is green (user sees immediate success)
                     setTimeout(() => validateMissionDescription(), 500);
                 }
             });
