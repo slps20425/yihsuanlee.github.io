@@ -3021,8 +3021,8 @@ async function validateNote() {
             isContentSafe = false;
             (document.getElementById('submitBtn') as HTMLButtonElement).disabled = true;
             // Check for Mission Suggestion
-            if ((data as any).suggestedMissionId) {
-                const suggestedId = (data as any).suggestedMissionId;
+            if ((data as any).suggestedId) {
+                const suggestedId = (data as any).suggestedId;
                 const suggestedNameFromBackend = (data as any).suggestedMissionName;
 
                 const missions = dynamicMissions.length > 0 ? dynamicMissions : [];

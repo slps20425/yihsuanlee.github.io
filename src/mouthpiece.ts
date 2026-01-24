@@ -1678,8 +1678,8 @@ async function validateMissionDescription() {
             feedbackDiv.style.color = '#f87171';
 
             // Check for Mission Suggestion
-            if ((data as any).suggestedMissionId) {
-                const suggestedId = (data as any).suggestedMissionId;
+            if ((data as any).suggestedId) {
+                const suggestedId = (data as any).suggestedId;
                 const suggestedNameFromBackend = (data as any).suggestedMissionName;
 
                 const missions = dynamicMissions.length > 0 ? dynamicMissions : MISSION_SCENARIOS;
