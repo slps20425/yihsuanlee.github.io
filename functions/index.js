@@ -1907,46 +1907,57 @@ exports.validateMissionV2 = onCall(
             // --- 3. AI Analysis (Gemini) ---
             const { GoogleGenerativeAI } = require("@google/generative-ai");
             const genAI = new GoogleGenerativeAI(GEMINI_API_KEY.value());
-            // Upgrade to gemini-2.5-flash for better reasoning
-            const model = genAI.getGenerativeModel({
-                model: "gemini-2.5-flash",
-                generationConfig: { temperature: 0.1, maxOutputTokens: 1000, responseMimeType: "application/json" }
-            });
 
-            // --- Language Detection (Character-based) ---
-            // If user types in Chinese/Japanese, we MUST respond in that language, ignoring UI setting.
-            const detectLang = (text) => {
-                let zh = 0, jp = 0, ko = 0;
-                for (const char of text) {
-                    const code = char.charCodeAt(0);
-                    // Chinese (Unified Ideographs)
-                    if ((code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3400 && code <= 0x4DBF)) zh++;
-                    // Japanese (Hiragana/Katakana) - Prioritize if found, as Kanji is shared
-                    else if ((code >= 0x3040 && code <= 0x30FF)) jp++;
-                    // Korean (Hangul)
-                    else if ((code >= 0xAC00 && code <= 0xD7AF)) ko++;
-                }
-                if (jp > 0) return 'ja'; // Japanese check first (Kana)
-                if (zh > 0) return 'zh';
-                if (ko > 0) return 'ko';
-                return null;
-            };
+            // Retry logic for AI generation
+            let aiResult = null;
+            const MAX_RETRIES = 3;
 
-            const detectedCode = detectLang(description);
-            const primaryLang = detectedCode || (language ? language.split('-')[0] : 'en');
+            for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+                try {
+                    console.log(`[validateMissionV2] AI Attempt ${attempt}/${MAX_RETRIES}`);
 
-            const langMap = {
-                zh: "Traditional Chinese (繁體中文)",
-                jp: "Japanese (日本語)", ja: "Japanese (日本語)",
-                kr: "Korean (한국어)", ko: "Korean (한국어)",
-                es: "Spanish", fr: "French", it: "Italian", de: "German"
-            };
-            const targetLangLabel = langMap[primaryLang] || "English";
-            console.log(`[validateMissionDescription] Language mapping: language=${language}, detected=${detectedCode}, primaryLang=${primaryLang}, targetLangLabel=${targetLangLabel}`);
+                    // Use model. If 2.5 fails consistently, consider falling back to 1.5 or 2.0
+                    const model = genAI.getGenerativeModel({
+                        model: "gemini-2.5-flash",
+                        generationConfig: { temperature: 0.1, maxOutputTokens: 1000, responseMimeType: "application/json" }
+                    });
 
-            // BLIND CLASSIFICATION PROMPT
-            // We do NOT tell the AI the 'selected mission'. We ask it to classify solely based on text.
-            const prompt = `
+                    // --- Language Detection (Character-based) ---
+                    // If user types in Chinese/Japanese, we MUST respond in that language, ignoring UI setting.
+                    const detectLang = (text) => {
+                        let zh = 0, jp = 0, ko = 0;
+                        for (const char of text) {
+                            const code = char.charCodeAt(0);
+                            // Chinese (Unified Ideographs)
+                            if ((code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3400 && code <= 0x4DBF)) zh++;
+                            // Japanese (Hiragana/Katakana) - Prioritize if found, as Kanji is shared
+                            else if ((code >= 0x3040 && code <= 0x30FF)) jp++;
+                            // Korean (Hangul)
+                            else if ((code >= 0xAC00 && code <= 0xD7AF)) ko++;
+                        }
+                        if (jp > 0) return 'ja'; // Japanese check first (Kana)
+                        if (zh > 0) return 'zh';
+                        if (ko > 0) return 'ko';
+                        return null;
+                    };
+
+                    const detectedCode = detectLang(description);
+                    const primaryLang = detectedCode || (language ? language.split('-')[0] : 'en');
+
+                    const langMap = {
+                        zh: "Traditional Chinese (繁體中文)",
+                        jp: "Japanese (日本語)", ja: "Japanese (日本語)",
+                        kr: "Korean (한국어)", ko: "Korean (한국어)",
+                        es: "Spanish", fr: "French", it: "Italian", de: "German"
+                    };
+                    const targetLangLabel = langMap[primaryLang] || "English";
+                    if (attempt === 1) { // Only log this once to avoid clutter
+                        console.log(`[validateMissionDescription] Language mapping: language=${language}, detected=${detectedCode}, primaryLang=${primaryLang}, targetLangLabel=${targetLangLabel}`);
+                    }
+
+                    // BLIND CLASSIFICATION PROMPT
+                    // We do NOT tell the AI the 'selected mission'. We ask it to classify solely based on text.
+                    const prompt = `
 **CRITICAL: ALL OUTPUT MUST BE IN ${targetLangLabel}.**
 
 Role: You are the Lead Dispatcher for "WiseCat AI".
@@ -1974,16 +1985,26 @@ Output Format (JSON):
 }
 `;
 
-            const result = await model.generateContent(prompt);
-            let responseText = result.response.text().trim();
-            if (responseText.startsWith("```")) responseText = responseText.replace(/```json|```/g, "").trim();
+                    const result = await model.generateContent(prompt);
+                    let responseText = result.response.text().trim();
+                    if (responseText.startsWith("```")) responseText = responseText.replace(/```json|```/g, "").trim();
 
-            let aiResult;
-            try {
-                aiResult = JSON.parse(responseText);
-            } catch (e) {
-                console.error("JSON Parse Error:", e, responseText);
-                aiResult = { valid: true, suggestedMissionId: null, explanation: "AI Error", refinedText: description };
+                    aiResult = JSON.parse(responseText);
+
+                    // If we made it here, success!
+                    break;
+
+                } catch (e) {
+                    console.error(`[validateMissionV2] Attempt ${attempt} failed: ${e.message}`);
+                    if (attempt === MAX_RETRIES) {
+                        console.error("All AI attempts failed. Falling back to default.");
+                        aiResult = { valid: true, suggestedMissionId: null, explanation: "AI Error (System Busy)", refinedText: description };
+                    } else {
+                        // Wait a bit before retry (exponential backoff)
+                        const delay = attempt * 1000;
+                        await new Promise(r => setTimeout(r, delay));
+                    }
+                }
             }
 
             // --- 4. Logic Validation (Code-Side) ---
@@ -2032,6 +2053,8 @@ Output Format (JSON):
         }
     }
 );
+
+
 
 /**
  * Twilio Inbound Webhook
