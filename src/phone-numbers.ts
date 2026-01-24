@@ -1300,6 +1300,15 @@ function handleAIServiceClick(e: Event) {
 linkRestaurant?.addEventListener('click', handleAIServiceClick);
 linkMouthpiece?.addEventListener('click', handleAIServiceClick);
 
+// Also protect navbar dropdown links with the same handler
+document.querySelectorAll('.nav-dropdown-item[href*="/reservation/"]').forEach(link => {
+    const href = (link as HTMLAnchorElement).href;
+    // Skip trial link (doesn't require number)
+    if (!href.includes('trial.html')) {
+        link.addEventListener('click', handleAIServiceClick);
+    }
+});
+
 goToAddTabBtn?.addEventListener('click', () => {
     noNumberDialog?.close();
     // Simulate clicking the "Add" tab button

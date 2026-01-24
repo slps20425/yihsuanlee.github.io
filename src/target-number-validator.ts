@@ -16,7 +16,7 @@ interface PlaceResult {
     place_id: string;
 }
 
-// Default blocklists (fallback if Firestore unavailable)
+// Minimal fallback defaults (primary source is Firestore configuration/location_blocklist)
 const DEFAULT_BLOCKED_TYPES = [
     'police', 'hospital', 'government_office', 'courthouse',
     'fire_station', 'military_base', 'prison', 'detention_center',
@@ -24,42 +24,22 @@ const DEFAULT_BLOCKED_TYPES = [
 ];
 
 const DEFAULT_BLOCKED_KEYWORDS = [
-    'police', 'hospital', 'government', 'courthouse', 'jail',
-    'prison', 'military', 'fbi', 'cia', 'dea', 'embassy'
+    'police', 'hospital', 'government', 'embassy'
 ];
 
-// Cache for blocklist and language config
+// Cache for blocklist
 let cachedBlocklist: {
     types: string[];
     keywords: string[];
     lastFetched: number;
 } | null = null;
 
-let cachedLanguageConfig: {
-    languages: Record<string, { latitude: number; longitude: number; radius: number }>;
-    lastFetched: number;
-} | null = null;
-
 let googleMapsLoaded = false;
 
 /**
- * Default language-to-location mappings (fallback if Firestore unavailable)
- * Non-ASCII languages use regional location bias for better search results
- * ASCII languages (en, es, fr, it) use null/default bias (Google handles them globally)
- */
-const DEFAULT_LANGUAGE_LOCATIONS: Record<string, { latitude: number; longitude: number; radius: number } | null> = {
-    en: null, // English - Global, no bias needed
-    zh: { latitude: 25.0330, longitude: 121.5654, radius: 100000 }, // Chinese - Taiwan
-    jp: { latitude: 35.6762, longitude: 139.6503, radius: 100000 }, // Japanese - Tokyo
-    kr: { latitude: 37.5665, longitude: 126.9780, radius: 100000 }, // Korean - Seoul
-    es: null, // Spanish - Global, ASCII compatible
-    fr: null, // French - Global, ASCII compatible
-    it: null  // Italian - Global, ASCII compatible
-};
-
-/**
- * Fetch blocklist from Firestore settings/location_blocklist
- * Falls back to hardcoded defaults if unavailable
+ * Fetch blocklist from Firestore configuration/location_blocklist
+ * All keywords are managed in Firestore (not hardcoded in code)
+ * Falls back to minimal defaults if unavailable
  * Exported for use in search result filtering
  */
 export async function fetchBlocklist(): Promise<{
@@ -105,44 +85,6 @@ export async function fetchBlocklist(): Promise<{
         types: DEFAULT_BLOCKED_TYPES,
         keywords: DEFAULT_BLOCKED_KEYWORDS
     };
-}
-
-/**
- * Fetch language-to-location bias mapping from Firestore settings/language_location_bias
- * Exported for use in Google Places search with regional bias
- * Supports: en, zh, jp, kr, es, fr, it
- */
-export async function fetchLanguageLocationBias(): Promise<Record<string, { latitude: number; longitude: number; radius: number } | null>> {
-    // Use cache if fresh (within 5 minutes)
-    if (cachedLanguageConfig && Date.now() - cachedLanguageConfig.lastFetched < 5 * 60 * 1000) {
-        return cachedLanguageConfig.languages;
-    }
-
-    try {
-        const docRef = doc(db, 'configuration', 'language_location_bias');
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            const languages = data.languages || DEFAULT_LANGUAGE_LOCATIONS;
-
-            // Cache it
-            cachedLanguageConfig = {
-                languages,
-                lastFetched: Date.now()
-            };
-
-            console.log('[TargetValidator] Language location bias loaded from Firestore:', languages);
-            return languages;
-        } else {
-            console.warn('[TargetValidator] Language location bias document not found, using defaults');
-        }
-    } catch (error) {
-        console.warn('[TargetValidator] Failed to fetch language location bias from Firestore:', error);
-    }
-
-    // Return defaults if Firestore fails
-    return DEFAULT_LANGUAGE_LOCATIONS;
 }
 
 /**
@@ -321,47 +263,18 @@ async function isLocationBlocked(place: PlaceResult): Promise<boolean> {
 }
 
 /**
- * Detect language from query text and return location bias if applicable
- * Supports: en, zh (Chinese), jp (Japanese), kr (Korean), es (Spanish), fr (French), it (Italian)
- * Returns null for ASCII languages (en, es, fr, it) or if no regional bias is configured
+ * Location bias disabled - Google Places API handles location inference
+ *
+ * Google is smart enough to:
+ * - Parse location mentions in queries ("イザカヤ 大阪" → Osaka results)
+ * - Understand language context automatically
+ * - Return relevant results globally
+ *
+ * Forcing location bias causes problems:
+ * - Restricts to specific circles with no results
+ * - Overrides user intent when they specify locations
  */
-export async function getLocationBiasForQuery(query: string): Promise<any> {
-    const isNonEnglish = /[^\x00-\x7F]/.test(query);
-    if (!isNonEnglish) return null; // ASCII languages don't need location bias
-
-    const languageConfig = await fetchLanguageLocationBias();
-
-    // Detect language by Unicode ranges (for non-ASCII languages)
-    if (/[\u4E00-\u9FFF]/.test(query)) {
-        // Chinese
-        const config = languageConfig['zh'];
-        return config ? {
-            circle: {
-                center: { latitude: config.latitude, longitude: config.longitude },
-                radius: config.radius
-            }
-        } : null;
-    } else if (/[\u3040-\u309F\u30A0-\u30FF]/.test(query)) {
-        // Japanese
-        const config = languageConfig['jp'];
-        return config ? {
-            circle: {
-                center: { latitude: config.latitude, longitude: config.longitude },
-                radius: config.radius
-            }
-        } : null;
-    } else if (/[\uAC00-\uD7AF]/.test(query)) {
-        // Korean
-        const config = languageConfig['kr'];
-        return config ? {
-            circle: {
-                center: { latitude: config.latitude, longitude: config.longitude },
-                radius: config.radius
-            }
-        } : null;
-    }
-
-    // If non-ASCII but language not recognized, no bias
+export async function getLocationBiasForQuery(query: string): Promise<null> {
     return null;
 }
 
