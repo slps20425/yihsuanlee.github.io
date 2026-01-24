@@ -1842,14 +1842,22 @@ function searchPlaces(query: string) {
         return;
     }
 
-    // Auto-detect location based on query
-    let location = { lat: 25.0330, lng: 121.5654 }; // Default: Taipei
+    // Auto-detect location based on query language
+    let location = { lat: 25.0330, lng: 121.5654 }; // Default: Taipei (Chinese)
 
-    // If query contains Japanese characters, search in Tokyo
-    if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(query)) {
-        location = { lat: 35.6762, lng: 139.6503 }; // Tokyo
+    // Detect language by Unicode ranges and set appropriate location bias
+    if (/[\u4E00-\u9FFF]/.test(query)) {
+        // Chinese - Taipei region
+        location = { lat: 25.0330, lng: 121.5654 };
+    } else if (/[\u3040-\u309F\u30A0-\u30FF]/.test(query)) {
+        // Japanese - Tokyo region
+        location = { lat: 35.6762, lng: 139.6503 };
+    } else if (/[\uAC00-\uD7AF]/.test(query)) {
+        // Korean - Seoul region
+        location = { lat: 37.5665, lng: 126.9780 };
     } else if (WiseCatI18n.currentLang === 'en') {
-        location = { lat: 40.7128, lng: -74.0060 }; // Default to NY for EN if no other bias
+        // English - use default
+        location = { lat: 25.0330, lng: 121.5654 };
     }
 
     const request = {

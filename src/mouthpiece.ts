@@ -11,7 +11,7 @@ import './nav-active'; // Set active navigation item
 import { MISSION_SCENARIOS, MissionScenario } from './mission-scenarios';
 import { showToast } from './utility-toast'; // Centralized toast notifications
 import { initSharedNumberConfig, fetchSharedNumberConfigOnce } from './shared-number-config'; // Shared number configuration
-import { initGoogleMapsAPI, searchPlaces, validatePlace, logBlockedAttempt, fetchBlocklist } from './target-number-validator'; // Target number validation
+import { initGoogleMapsAPI, searchPlaces, validatePlace, logBlockedAttempt, fetchBlocklist, getLocationBiasForQuery } from './target-number-validator'; // Target number validation
 
 // Global mission storage (fetched dynamically from Firestore)
 let dynamicMissions: MissionScenario[] = [];
@@ -2132,28 +2132,8 @@ async function initSearchLogic() {
             }
         }
 
-        // Default location bias for non-English queries (helps with regional search)
-        let locationBias: any = null;
-        if (isNonEnglish) {
-            // Detect language and set location bias
-            if (/[\u4E00-\u9FFF]/.test(query)) {
-                // Chinese characters - search in Taiwan/China region
-                locationBias = {
-                    circle: {
-                        center: { latitude: 25.0330, longitude: 121.5654 }, // Taipei
-                        radius: 100000 // 100km radius
-                    }
-                };
-            } else if (/[\u3040-\u309F\u30A0-\u30FF]/.test(query)) {
-                // Japanese characters - search in Japan
-                locationBias = {
-                    circle: {
-                        center: { latitude: 35.6762, longitude: 139.6503 }, // Tokyo
-                        radius: 100000
-                    }
-                };
-            }
-        }
+        // Get location bias from Firestore settings (supports Chinese, Japanese, Korean)
+        const locationBias = await getLocationBiasForQuery(query);
 
         // Prepare Request for Places API (New)
         const requestBody: any = {
