@@ -1855,7 +1855,7 @@ const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
  * Returns: { valid: boolean }
  */
 exports.validateMissionDescription = onCall(
-    { secrets: [GEMINI_API_KEY, OPENAI_API_KEY] }, // Added OpenAI key just in case
+    { secrets: [GEMINI_API_KEY, OPENAI_API_KEY] },
     async (request) => {
         const { missionId, missionName, description, language } = request.data;
         const auth = request.auth;
@@ -1865,7 +1865,7 @@ exports.validateMissionDescription = onCall(
             throw new HttpsError("invalid-argument", "Missing required parameters.");
         }
 
-        console.log(`[validateMissionDescription] Received: language=${language}, missionId=${missionId}`);
+        console.log(`[validateMissionDescription] Received: language=${language}, missionId=${missionId} [Version: v4.0-inline-fix]`);
 
         if (description.length < 10) {
             throw new HttpsError("invalid-argument", "Description too short.");
@@ -1877,7 +1877,6 @@ exports.validateMissionDescription = onCall(
             const dbRes = getFirestore(adminApp, "reservation");
 
             // --- 1. Security & Scam Check ---
-            // (Keeping existing keyword check logic for performance, but adding LLM instructions)
             let blacklist = [];
             try {
                 const settings = await dbRes.doc("configuration/settings").get();
@@ -1908,8 +1907,9 @@ exports.validateMissionDescription = onCall(
             // --- 3. AI Analysis (Gemini) ---
             const { GoogleGenerativeAI } = require("@google/generative-ai");
             const genAI = new GoogleGenerativeAI(GEMINI_API_KEY.value());
+            // Upgrade to gemini-2.5-flash for better reasoning
             const model = genAI.getGenerativeModel({
-                model: "gemini-2.0-flash-lite",
+                model: "gemini-2.5-flash",
                 generationConfig: { temperature: 0.1, maxOutputTokens: 1000, responseMimeType: "application/json" }
             });
 
@@ -1918,87 +1918,90 @@ exports.validateMissionDescription = onCall(
             const targetLangLabel = langMap[primaryLang] || "English";
             console.log(`[validateMissionDescription] Language mapping: language=${language}, primaryLang=${primaryLang}, targetLangLabel=${targetLangLabel}`);
 
+            // BLIND CLASSIFICATION PROMPT
+            // We do NOT tell the AI the 'selected mission'. We ask it to classify solely based on text.
             const prompt = `
-**CRITICAL: ALL OUTPUT MUST BE IN ${targetLangLabel}. DO NOT USE ENGLISH.**
+**CRITICAL: ALL OUTPUT MUST BE IN ${targetLangLabel}.**
 
-Role: You are a Professional AI Assistant for "WiseCat AI".
-Goal: Analyze a user's request, verify its safety, and refine it into a professional, clear, and direct script that an AI voice will speak when calling a business on the user's behalf.
+Role: You are the Lead Dispatcher for "WiseCat AI".
+Task: 
+1. **CLASSIFY**: Analyze the User's Input and select the ONE best matching Mission ID from the "Mission Database" list below.
+2. **REFINE**: Rewrite the User's Input into a professional script (first-person perspective) suitable for an AI to speak on a call.
+3. **SAFETY**: Check for scams.
 
 Current Context:
-- **Service Type**: AI Voice Proxy (calling businesses for the user)
-- **Selected Mission**: "${missionName}"
-- **User's Input (Script)**: "${description}"
-- **Target Language**: ${targetLangLabel}
-- **OUTPUT LANGUAGE**: You MUST respond ONLY in ${targetLangLabel}. If user input is in Chinese, respond in Chinese. If user input is in Japanese, respond in Japanese. Always match the user's language.
-
-Instructions:
-1. **Security & Scam Check**: 
-   - If the content is a scam, fraud, or policy violation, set "valid": false and "explanation": "SCAM_ALERT: Policy violation."
-2. **Refinement Role**:
-   - YOUR JOB IS NOT TO ASK THE USER QUESTIONS.
-   - YOUR JOB IS TO REWRITE THE USER'S INPUT INTO A PROFESSIONAL SCRIPT.
-   - The script should be in the **FIRST PERSON perspective** (e.g., "I am calling to inquire about...", "I might have left my bag...", "I would like to modify my booking...").
-   - It should sound like a professional assistant or the user themselves speaking to a business.
-   - DO NOT include placeholders like "[Your Name]". Use generic professional language if names aren't provided.
-   - Ensure the tone is polite but firm and efficient.
-3. **Mission Validation**:
-   - Check if the User's Input matches the **Selected Mission**.
-   - If it doesn't match, suggest the correct "suggestedMissionId" from the list below and explain why.
+- **User's Input**: "${description}"
+- **Output Language**: ${targetLangLabel} (Mandatory)
 
 Mission Database:
 ${availableMissions}
 
+Output Logic:
+- If User Input implies a scam/fraud: suggestedMissionId=null, explanation="SCAM_ALERT".
+- Otherwise: suggestedMissionId=[The Best Match Mission ID found in step 1].
+
 Output Format (JSON):
 {
-  "valid": boolean,
-  "explanation": "Brief reasoning for the decision (in ${targetLangLabel}).",
-  "refinedText": "The finalized professional script to be spoken by AI (in ${targetLangLabel}). This MUST be a script, not a conversation with the user.",
-  "suggestedMissionId": "ID string or null"
+  "explanation": "Brief reasoning for the classification (in ${targetLangLabel}).",
+  "refinedText": "Professional script in ${targetLangLabel}.",
+  "suggestedMissionId": "The ID of the mission you classified in Step 1 (or null if no match)"
 }
-
-IMPORTANT: The "refinedText" MUST be the actual script that will be read out during the phone call. It should NOT say "You should say..." or "Do you want to...?". It must be the direct request.
-Example of good refinedText: "你好，我是代表客戶來電詢問。客戶今天在貴司遺失了一部手機，想請您協助確認是否有拾獲？"
 `;
 
             const result = await model.generateContent(prompt);
             let responseText = result.response.text().trim();
             if (responseText.startsWith("```")) responseText = responseText.replace(/```json|```/g, "").trim();
 
-            const aiResult = JSON.parse(responseText);
-            let suggestedMissionName = null;
+            let aiResult;
+            try {
+                aiResult = JSON.parse(responseText);
+            } catch (e) {
+                console.error("JSON Parse Error:", e, responseText);
+                aiResult = { valid: true, suggestedMissionId: null, explanation: "AI Error", refinedText: description };
+            }
 
-            if (aiResult.suggestedMissionId) {
+            // --- 4. Logic Validation (Code-Side) ---
+            const classifiedMissionId = aiResult.suggestedMissionId;
+            const isMatch = classifiedMissionId === missionId;
+
+            // If AI failed to classify (null), we'll give benefit of doubt (valid=true) usually, 
+            // BUT if it classified something ELSE, it's definitely INVALID.
+            const finalValid = classifiedMissionId ? isMatch : true;
+            const finalSuggestedId = isMatch ? null : classifiedMissionId;
+
+            let suggestedMissionName = null;
+            if (finalSuggestedId) {
                 try {
-                    const suggDoc = await dbRes.collection("missions").doc(aiResult.suggestedMissionId).get();
+                    const suggDoc = await dbRes.collection("missions").doc(finalSuggestedId).get();
                     if (suggDoc.exists) {
                         const d = suggDoc.data();
                         const nameObj = d.name || {};
-                        const primaryLang = language ? language.split('-')[0] : 'en';
-                        suggestedMissionName = nameObj[language] || nameObj[primaryLang] || nameObj['en'] || aiResult.suggestedMissionId;
+                        const pl = language ? language.split('-')[0] : 'en';
+                        suggestedMissionName = nameObj[language] || nameObj[pl] || nameObj['en'] || finalSuggestedId;
                     }
-                } catch (e) {
-                    console.error("Error fetching suggested mission name:", e);
-                }
+                } catch (e) { console.error("Error fetching name:", e); }
             }
+
+            console.log(`[Version: v4.0-inline-fix] User Mission: ${missionId}, AI Classified: ${classifiedMissionId}, Match: ${isMatch}`);
 
             console.log({
                 missionId,
-                description: description.substring(0, 50),
-                valid: aiResult.valid,
-                suggestedId: aiResult.suggestedMissionId,
+                valid: finalValid,
+                suggestedId: finalSuggestedId,
                 uid: auth?.uid || "anonymous"
             });
 
             return {
-                valid: aiResult.valid,
+                valid: finalValid,
                 explanation: aiResult.explanation,
                 refinedText: aiResult.refinedText,
-                suggestedMissionId: aiResult.suggestedMissionId,
+                suggestedMissionId: finalSuggestedId,
                 suggestedMissionName: suggestedMissionName
             };
 
         } catch (error) {
             console.error("Critical Validation Error:", error);
+            // Default to allowed if system crashes, to not block users
             return { valid: true, refinedText: description, explanation: "System recovered after error.", suggestedMissionId: null };
         }
     }
