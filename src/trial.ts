@@ -331,14 +331,17 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // --- Protect navbar links for authenticated pages ---
     let hasActivePhoneNumber = false;
-    const noNumberDialog = document.getElementById('noNumberDialog') as HTMLDialogElement | null;
+    const noNumberDialog = document.getElementById('noNumberDialog') as HTMLElement | null;
     const noNumberBuyBtn = document.getElementById('noNumberBuy');
     const noNumberCancelBtn = document.getElementById('noNumberCancel');
 
     function handleAIServiceClick(e: Event) {
         if (!hasActivePhoneNumber) {
             e.preventDefault();
-            noNumberDialog?.showModal();
+            e.stopPropagation();
+            if (noNumberDialog) {
+                noNumberDialog.style.display = 'flex';
+            }
         }
     }
 
@@ -375,14 +378,18 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (noNumberBuyBtn) {
         noNumberBuyBtn.addEventListener('click', () => {
-            noNumberDialog?.close();
+            if (noNumberDialog) {
+                noNumberDialog.style.display = 'none';
+            }
             window.location.href = '/dashboard.html?tab=add';
         });
     }
 
     if (noNumberCancelBtn) {
         noNumberCancelBtn.addEventListener('click', () => {
-            noNumberDialog?.close();
+            if (noNumberDialog) {
+                noNumberDialog.style.display = 'none';
+            }
         });
     }
 
