@@ -2503,7 +2503,9 @@ async function handleFormSubmit(e: Event) {
     try {
         const configSnap = await getDoc(doc(db, 'configuration', 'settings'));
         if (configSnap.exists()) {
-            defaultOnHold = configSnap.data().default_callOnHold_minutes || 5;
+            const data = configSnap.data();
+            defaultOnHold = data.default_callOnHold_minutes || 5;
+            defaultRetryCount = data.default_retry_count || 5;
         }
     } catch (e) { }
 
