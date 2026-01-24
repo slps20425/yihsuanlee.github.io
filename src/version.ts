@@ -1,6 +1,6 @@
 // Version checker - displays in console
 const APP_VERSION = '1.0.0'; // Auto-synced from package.json
-const BUILD_TIME = '2026-01-24T10:27:21.877Z';
+const BUILD_TIME = '2026-01-24T10:31:01.886Z';
 
 console.log(
     '%c🐱 WiseCat AI %cv' + APP_VERSION,

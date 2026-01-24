@@ -7,12 +7,12 @@
 - **Assignee**: **QA Agent (Gemini)**
 - **Completed**: 2026-01-24T18:15:00+08:00
 - **Deploy URL**: https://wisecat-8df8d.web.app
-- **Notes**: Upgraded validation backend to Gemini 2.5 Flash. Fixed Light Theme visibility for restaurant details (address/phone). Removed redundant 2nd validation calls in Mouthpiece for better UX.
+- **Notes**: Upgraded validation backend to Gemini 2.5 Flash. Fixed mission switch bug (text no longer clears). Fixed Light Theme visibility for restaurant details, pre-order sections, and dropdown hovers. Removed redundant 2nd validation calls.
 
 ## Task History
 | ID | Task | Assignee | Date | Status | Notes |
 |----|------|----------|------|--------|-------|
-| 26 | Mission Validation v2 (Gemini 2.5 Flash Upgrade) | Claude | 2026-01-24 | READY_FOR_QA | [Live URL](https://wisecat-8df8d.web.app) |
+| 26 | Mission Validation v2 & UI Theme Fixes | Claude | 2026-01-24 | READY_FOR_QA | [Live URL](https://wisecat-8df8d.web.app) |
 | 25 | Fix JSON Parse Error in validateMissionV2 | Claude | 2026-01-24 | COMPLETED | [Live URL](https://wisecat-8df8d.web.app) |
 | 24 | Admin Access to AI Services Fix | Claude | 2026-01-24 | COMPLETED | [Live URL](https://wisecat-8df8d.web.app) |
 | 23 | Sidebar Styling Redesign & Light Mode Fixes | Claude | 2026-01-24 | COMPLETED | [Live URL](https://wisecat-8df8d.web.app) |
