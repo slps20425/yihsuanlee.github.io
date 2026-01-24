@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "generated": "2026-01-24T16:18:14.083Z",
+  "generated": "2026-01-24T16:21:18.269Z",
   "metadata": {
-    "lastUpdated": "2026-01-24T16:18:14.040Z",
+    "lastUpdated": "2026-01-24T16:21:18.229Z",
     "deployment": {
-      "timestamp": "2026-01-24T16:18:14.041Z",
-      "gitCommit": "2e87c2b18003d3a355552a554a896ae1d8b9c129",
+      "timestamp": "2026-01-24T16:21:18.229Z",
+      "gitCommit": "da4891d619a49e6010dfe4c891d096880f09e3a3",
       "gitBranch": "main"
     },
     "modules": {},
@@ -19,10 +19,10 @@
       },
       {
         "path": "src/chat-assistant.ts",
-        "size": 4900,
-        "lines": 158,
+        "size": 5145,
+        "lines": 166,
         "type": ".ts",
-        "lastModified": "2026-01-21T01:22:39.844Z"
+        "lastModified": "2026-01-24T16:20:26.391Z"
       },
       {
         "path": "src/entry.ts",
@@ -176,7 +176,7 @@
         "size": 1169,
         "lines": 34,
         "type": ".ts",
-        "lastModified": "2026-01-24T16:17:33.045Z"
+        "lastModified": "2026-01-24T16:20:35.365Z"
       },
       {
         "path": "functions/index.js",
@@ -211,98 +211,98 @@
         "size": 16035,
         "lines": 570,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:34.129Z"
+        "lastModified": "2026-01-24T16:20:36.511Z"
       },
       {
         "path": "dist/dashboard.html",
         "size": 46069,
         "lines": 896,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:34.129Z"
+        "lastModified": "2026-01-24T16:20:36.515Z"
       },
       {
         "path": "dist/entry.html",
         "size": 9344,
         "lines": 176,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:33.959Z"
+        "lastModified": "2026-01-24T16:20:36.331Z"
       },
       {
         "path": "dist/faq.html",
         "size": 15840,
         "lines": 391,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:34.128Z"
+        "lastModified": "2026-01-24T16:20:36.515Z"
       },
       {
         "path": "dist/index.html",
         "size": 12998,
         "lines": 247,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:34.129Z"
+        "lastModified": "2026-01-24T16:20:36.515Z"
       },
       {
         "path": "dist/login-success.html",
         "size": 1465,
         "lines": 57,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:34.129Z"
+        "lastModified": "2026-01-24T16:20:36.515Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_guide.html",
         "size": 14461,
         "lines": 442,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:33.987Z"
+        "lastModified": "2026-01-24T16:20:36.360Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/backtrack_dfs_mobile.html",
         "size": 15624,
         "lines": 425,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:33.989Z"
+        "lastModified": "2026-01-24T16:20:36.360Z"
       },
       {
         "path": "dist/projects/backtrack-dfs-guide/dp_indexing_mobile_full.html",
         "size": 7293,
         "lines": 198,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:33.989Z"
+        "lastModified": "2026-01-24T16:20:36.361Z"
       },
       {
         "path": "dist/reservation/mouthpiece.html",
         "size": 32899,
         "lines": 602,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:34.127Z"
+        "lastModified": "2026-01-24T16:20:36.515Z"
       },
       {
         "path": "dist/reservation/restaurant_reservation.html",
         "size": 41483,
         "lines": 827,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:34.129Z"
+        "lastModified": "2026-01-24T16:20:36.515Z"
       },
       {
         "path": "dist/reservation/trial.html",
         "size": 18338,
         "lines": 385,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:34.129Z"
+        "lastModified": "2026-01-24T16:20:36.513Z"
       },
       {
         "path": "dist/resume/index.html",
         "size": 41474,
         "lines": 688,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:34.129Z"
+        "lastModified": "2026-01-24T16:20:36.513Z"
       },
       {
         "path": "dist/terms.html",
         "size": 18374,
         "lines": 345,
         "type": ".html",
-        "lastModified": "2026-01-24T16:17:34.128Z"
+        "lastModified": "2026-01-24T16:20:36.515Z"
       },
       {
         "path": "faq.html",

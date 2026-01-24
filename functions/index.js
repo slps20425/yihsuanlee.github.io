@@ -2224,7 +2224,7 @@ exports.queryKnowledge = onCall(
             const topScore = searchResults.matches[0]?.score || 0;
             console.log(`[queryKnowledge] Top relevance score: ${topScore.toFixed(3)}`);
 
-            if (topScore < 0.5) {
+            if (topScore < 0.35) {
                 console.log(`[queryKnowledge] ❌ Rejected: Low relevance (${topScore.toFixed(3)})`);
                 return {
                     answer: "I'm sorry, but I can only help with questions about the **WiseCat platform**.\n\nI can assist you with:\n- 💰 Credits and billing\n- 📞 Making calls (Mouthpiece, Trial, Restaurant)\n- 📱 Phone number management\n- 🔐 Account and login issues\n- 📝 Writing AI scripts\n- 🔧 Troubleshooting\n\nPlease ask a question related to WiseCat!",
