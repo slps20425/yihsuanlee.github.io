@@ -2005,27 +2005,54 @@ input[type="date"]::-webkit-datetime-edit-day-field {
 
 .header-content {
     display: flex;
-    justify-content: space-evenly;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
-    gap: 1rem;
-    /* Prevent overflow clipping */
+    gap: 0.75rem;
     overflow: visible;
 }
 
 .header-title {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 700;
     margin: 0;
     color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Allow title to shrink if needed */
-    flex-shrink: 1;
+    flex: 1;
     min-width: 0;
+}
+
+/* Header right actions container */
+.header-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* Responsive header */
+@media (max-width: 768px) {
+    .header-title {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-title {
+        font-size: 0.9rem;
+    }
+
+    .header-content {
+        gap: 0.5rem;
+    }
+
+    .header-right-actions {
+        gap: 0.25rem;
+    }
 }
 
 /* Mobile Header Avatar - ensure visibility */
@@ -2455,11 +2482,62 @@ dialog::backdrop {
     backdrop-filter: blur(10px);
 }
 
+.dialog-header {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
 .dialog-header h2 {
     font-size: 1.25rem;
     color: var(--primary-light);
-    margin: 0 0 1rem 0;
+    margin: 0;
     text-align: left;
+    flex: 1;
+    padding-right: 2.5rem;
+}
+
+/* Dialog Close Button - High Contrast & Visible */
+.dialog-close-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 28px;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    line-height: 1;
+    padding: 0;
+    font-weight: 300;
+}
+
+.dialog-close-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+    transform: scale(1.05);
+}
+
+.dialog-close-btn:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 640px) {
+    .dialog-close-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 32px;
+    }
 }
 
 .dialog-content {
@@ -2495,6 +2573,18 @@ dialog::backdrop {
 
 [data-theme="light"] .dialog-header h2 {
     color: var(--primary-dark);
+}
+
+[data-theme="light"] .dialog-close-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #374151;
+}
+
+[data-theme="light"] .dialog-close-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #dc2626;
 }
 
 [data-theme="light"] .dialog-content {
@@ -2811,16 +2901,28 @@ body.dashboard-layout {
     align-items: center;
     z-index: 2000;
     backdrop-filter: blur(5px);
+    padding: 1rem; /* Add padding for mobile */
 }
 
 .modal-content {
     background: #1a1a1a;
-    padding: 25px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 400px;
+    padding: 1.5rem;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
     border: 1px solid #444;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    max-height: 90vh; /* Prevent overflow on small screens */
+    overflow-y: auto; /* Allow scrolling if content is too tall */
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+    .modal-content {
+        padding: 1.25rem;
+        border-radius: 12px;
+        max-width: 100%;
+    }
 }
 
 .modal-details {
@@ -2854,66 +2956,92 @@ body.dashboard-layout {
 
 .modal-btn {
     flex: 1;
-    padding: 12px;
+    padding: 0.875rem 1.25rem;
     border: none;
-    border-radius: 12px;
+    border-radius: 10px;
     font-size: 15px;
-    font-weight: bold;
+    font-weight: 600;
     cursor: pointer;
-    transition: 0.2s;
+    transition: all 0.2s ease;
+    min-height: 44px; /* Touch target size */
 }
 
 .modal-btn.cancel {
-    background: #333;
-    color: white;
+    background: #374151;
+    color: #ffffff;
+    border: 1px solid #4b5563;
+}
+
+.modal-btn.cancel:hover {
+    background: #4b5563;
 }
 
 .modal-btn.confirm {
-    background: #2e5482;
-    color: white;
+    background: #10b981;
+    color: #ffffff;
 }
 
-.modal-btn:hover {
-    transform: scale(1.02);
-    opacity: 0.9;
+.modal-btn.confirm:hover {
+    background: #059669;
+}
+
+.modal-btn:active {
+    transform: scale(0.98);
+}
+
+/* Mobile responsive buttons */
+@media (max-width: 640px) {
+    .modal-actions {
+        flex-direction: column-reverse; /* Cancel on top, Confirm on bottom for thumb reach */
+    }
+
+    .modal-btn {
+        width: 100%;
+        padding: 1rem;
+    }
 }
 
 /* Light Mode Modal */
 [data-theme="light"] .modal-overlay {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.5);
 }
 
 [data-theme="light"] .modal-content {
     background: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 [data-theme="light"] .modal-details {
-    color: #3d2817;
+    color: #1f2937;
 }
 
 [data-theme="light"] .detail-label {
-    color: #5c4033;
+    color: #6b7280;
 }
 
 [data-theme="light"] .detail-value {
-    color: #3d2817;
+    color: #111827;
 }
 
 [data-theme="light"] .modal-btn.cancel {
+    background: #f9fafb;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+[data-theme="light"] .modal-btn.cancel:hover {
     background: #f3f4f6;
-    color: #3d2817;
-    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-color: #9ca3af;
 }
 
 [data-theme="light"] .modal-btn.confirm {
     background: #10b981;
-    color: white;
+    color: #ffffff;
 }
 
-[data-theme="light"] .modal-btn:hover {
-    opacity: 0.85;
+[data-theme="light"] .modal-btn.confirm:hover {
+    background: #059669;
 }
 
 /* AI Services Dropdown Styles */
@@ -3009,53 +3137,62 @@ body.dashboard-layout {
    HAMBURGER MENU (Mobile Only)
    ======================================== */
 
-/* Hamburger Button */
+/* Hamburger Button - Part of header flow, not fixed */
 .hamburger-menu {
     display: none;
-    /* Hidden by default, shown on mobile */
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 10001;
-    background: rgba(15, 23, 42, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 10px;
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
     cursor: pointer;
     flex-direction: column;
-    gap: 4px;
-    width: 40px;
-    height: 40px;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
     justify-content: center;
     align-items: center;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    flex-shrink: 0;
 }
 
 .hamburger-menu:hover {
-    background: rgba(59, 130, 246, 0.2);
-    border-color: var(--accent);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.hamburger-menu:active {
+    transform: scale(0.95);
 }
 
 .hamburger-menu span {
     display: block;
-    width: 20px;
+    width: 22px;
     height: 2px;
-    background: white;
-    transition: all 0.3s ease;
+    background: var(--text-primary);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 2px;
 }
 
 /* Hamburger Animation (X when open) */
 .hamburger-menu.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
+    transform: rotate(45deg) translate(6px, 6px);
 }
 
 .hamburger-menu.active span:nth-child(2) {
     opacity: 0;
+    transform: scaleX(0);
 }
 
 .hamburger-menu.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(5px, -5px);
+    transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* Light mode hamburger */
+[data-theme="light"] .hamburger-menu span {
+    background: #1f2937;
+}
+
+[data-theme="light"] .hamburger-menu:hover {
+    background: rgba(59, 130, 246, 0.08);
 }
 
 /* Mobile Sidebar Overlay (Backdrop) */
