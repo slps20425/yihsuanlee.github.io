@@ -1594,9 +1594,81 @@ async function validateMissionDescription() {
 
 
 
-        const data = result.data as { valid: boolean; refinedText?: string; explanation?: string };
+        const data = result.data as {
+            valid: boolean;
+            refinedText?: string;
+            explanation?: string;
+            suggestedMissionId?: string;
+            suggestedMissionName?: string;
+        };
 
-        if (data.valid) {
+        const suggestedId = (data as any).suggestedMissionId || (data as any).suggestedId;
+
+        // PRIORITIZE Mission Suggestion (even if backend says "valid: true")
+        if (suggestedId && suggestedId !== missionId) {
+            isContentSafe = true;
+
+            // Mark as warning/invalid context
+            scriptTextarea.style.border = '2px solid #f59e0b';
+            scriptTextarea.style.boxShadow = '0 0 0 3px rgba(245, 158, 11, 0.1)';
+            feedbackDiv.style.background = 'rgba(245, 158, 11, 0.1)';
+            feedbackDiv.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+            feedbackDiv.style.color = '#f59e0b';
+
+            const suggestedNameFromBackend = (data as any).suggestedMissionName;
+            const missions = dynamicMissions.length > 0 ? dynamicMissions : MISSION_SCENARIOS;
+            const scenario = missions.find(m => m.id === suggestedId);
+            const currentLang = WiseCatI18n.currentLang;
+            let suggestedName = suggestedNameFromBackend;
+
+            if (!suggestedName && scenario) {
+                suggestedName = scenario.name[currentLang as keyof typeof scenario.name] || scenario.name['en'];
+            }
+            if (!suggestedName) {
+                suggestedName = suggestedId;
+            }
+
+            feedbackDiv.innerHTML = '';
+
+            // 1. Warning Header
+            const header = document.createElement('div');
+            header.innerHTML = '⚠️ <strong>Mission Mismatch Detected</strong>';
+            header.style.marginBottom = '10px';
+            feedbackDiv.appendChild(header);
+
+            // 2. Explanation
+            const explanation = document.createElement('div');
+            explanation.textContent = data.explanation || `It looks like you are asking about "${suggestedName}".`;
+            explanation.style.marginBottom = '12px';
+            feedbackDiv.appendChild(explanation);
+
+            // 3. Switch Action
+            const switchBtn = document.createElement('button');
+            switchBtn.className = 'btn-mission-switch';
+            switchBtn.style.width = '100%';
+            switchBtn.style.padding = '10px';
+            switchBtn.style.background = '#f59e0b';
+            switchBtn.style.color = 'white';
+            switchBtn.style.border = 'none';
+            switchBtn.style.borderRadius = '8px';
+            switchBtn.style.fontWeight = 'bold';
+            switchBtn.style.cursor = 'pointer';
+            switchBtn.innerHTML = `Switch to <strong>${suggestedName}</strong>`;
+
+            switchBtn.addEventListener('click', () => {
+                const missionSelect = document.getElementById('mission') as HTMLSelectElement;
+                if (missionSelect) {
+                    missionSelect.value = suggestedId;
+                    missionSelect.dispatchEvent(new Event('change'));
+                    feedbackDiv.style.display = 'none';
+                    scriptTextarea.style.border = '2px solid #10b981';
+                    setTimeout(() => validateMissionDescription(), 500);
+                }
+            });
+
+            feedbackDiv.appendChild(switchBtn);
+
+        } else if (data.valid) {
             isContentSafe = true; // Content is verified safe by backend
             validateForm();
 

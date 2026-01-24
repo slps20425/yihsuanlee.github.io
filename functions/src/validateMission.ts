@@ -51,7 +51,7 @@ function detectLanguage(text: string): string {
         }
         // Latin (Basic Latin + Latin-1 Supplement - covers English, Spanish, French, Italian, etc.)
         else if ((code >= 0x0041 && code <= 0x005A) || (code >= 0x0061 && code <= 0x007A) ||
-                 (code >= 0x00C0 && code <= 0x00FF)) { // Extended Latin (accented characters)
+            (code >= 0x00C0 && code <= 0x00FF)) { // Extended Latin (accented characters)
             latinCount++;
         }
     }
@@ -253,8 +253,12 @@ export const validateMissionDescription = functions.https.onCall(
                 suggested: parsedResponse.suggestedMissionId
             });
 
+            // Enforce consistency: If a different mission is suggested, valid MUST be false
+            const isMissionMismatch = parsedResponse.suggestedMissionId && parsedResponse.suggestedMissionId !== missionId;
+            const finalValid = isMissionMismatch ? false : parsedResponse.valid;
+
             return {
-                valid: parsedResponse.valid,
+                valid: finalValid,
                 explanation: parsedResponse.explanation,
                 refinedText: parsedResponse.refinedText,
                 suggestedMissionId: parsedResponse.suggestedMissionId
@@ -410,6 +414,7 @@ Your Decision Logic:
    - If not a scam, does the "User Task Description" align with the "Selected Mission"?
    - If it matches: Set valid=true, suggestedMissionId=null.
    - If it DOES NOT match (e.g., user wants to find lost glasses but selected Dental): Set valid=false and PROCEED to step 3.
+   - **CRITICAL**: If you are going to suggest a different mission in Step 3, you MUST set valid=false here. You cannot have both valid=true and a different suggestedMissionId.
 
 3. **Intelligent Dispatch**:
    - Scan the "Mission Database" for the best possible match based on keywords and context.
