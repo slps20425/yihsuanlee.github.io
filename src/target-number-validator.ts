@@ -103,8 +103,18 @@ export async function initGoogleMapsAPI(): Promise<boolean> {
             return;
         }
 
-        if (document.getElementById('google-maps-api')) {
-            resolve(window.google?.maps?.places ? true : false);
+        if (document.getElementById('google-maps-api') || (window as any).google?.maps) {
+            // Even if the script exists, if places is missing, we might have a problem.
+            // But if window.google.maps exists, we consider it "potentially loaded" and try to proceed.
+            if ((window as any).google?.maps?.places) {
+                googleMapsLoaded = true;
+                resolve(true);
+            } else {
+                // If it exists but no places, wait a bit or try to proceed anyway if it's still loading
+                setTimeout(() => {
+                    resolve(!!(window as any).google?.maps?.places);
+                }, 1000);
+            }
             return;
         }
 

@@ -1956,16 +1956,24 @@ exports.validateMissionV2 = onCall(
                         console.log(`[validateMissionV2] Language mapping: language=${language}, detected=${detectedCode}, primaryLang=${primaryLang}, targetLangLabel=${targetLangLabel}`);
                     }
 
-                    // BLIND CLASSIFICATION PROMPT
-                    // We do NOT tell the AI the 'selected mission'. We ask it to classify solely based on text.
+                    // ENHANCED FIRST-PERSON CALLER PROMPT
                     const prompt = `
 **CRITICAL: ALL OUTPUT MUST BE IN ${targetLangLabel}.**
 
-Role: You are the Lead Dispatcher for "WiseCat AI".
+Role: You are the "WiseCat AI Agent". Your job is to take the User's raw intent and turn it into a professional script for a phone call that YOU will make on their behalf.
+
 Task: 
 1. **CLASSIFY**: Analyze the User's Input and select the ONE best matching Mission ID from the "Mission Database" list below.
-2. **REFINE**: Rewrite the User's Input into a professional script (first-person perspective) suitable for an AI to speak on a call.
-3. **SAFETY**: Check for scams.
+2. **REFINE (The "Voice" of the Call)**: 
+   - Rewrite the User's Input into a professional, polite script.
+   - **MANDATORY PERSPECTIVE**: Use the FIRST-PERSON perspective ("I", "Me") - **第一人稱視角**.
+   - **STRICT RESTRICTION**: You are the CALLER. You are NOT a customer service agent helping the user.
+   - **DO NOT** talk to the user. 
+   - **DO NOT** say "How can I help you?" or "I understand you lost a hat, how can I help?".
+   - **DO** say things like "I am calling to..." or "I would like to...".
+   - Example 1 (Lost Item): User says "Found hat", you say "Hello, I'm calling to inquire if you found a lost hat recently...".
+   - Example 2 (Reservation): User says "Book for 2", you say "Hello, I would like to make a reservation for two people...".
+3. **SAFETY**: Check for scams or high-risk content.
 
 Current Context:
 - **User's Input**: "${description}"
@@ -1974,15 +1982,12 @@ Current Context:
 Mission Database:
 ${availableMissions}
 
-Output Logic:
-- If User Input implies a scam/fraud: suggestedMissionId=null, explanation="SCAM_ALERT".
-- Otherwise: suggestedMissionId=[The Best Match Mission ID found in step 1].
-
-Output Format (JSON):
+Output Format (JSON Only):
 {
-  "explanation": "Brief reasoning for the classification (in ${targetLangLabel}).",
-  "refinedText": "Professional script in ${targetLangLabel}.",
-  "suggestedMissionId": "The ID of the mission you classified in Step 1 (or null if no match)"
+  "explanation": "Brief explanation of why this mission was chosen (in ${targetLangLabel}).",
+  "refinedText": "The exact script YOU will speak on the phone (First-Person, in ${targetLangLabel}).",
+  "suggestedMissionId": "ID of the mission",
+  "suggestedMissionName": "The localized Name of the mission"
 }
 `;
 

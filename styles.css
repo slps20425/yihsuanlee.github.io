@@ -406,23 +406,27 @@ body {
 }
 
 [data-theme="light"] .toast.success {
-    background: #f0fdf4;
-    border-left: 4px solid #22c55e;
+    background: #f0fdf4 !important;
+    border-left: 4px solid #22c55e !important;
+    color: #166534 !important;
 }
 
 [data-theme="light"] .toast.error {
-    background: #fef2f2;
-    border-left: 4px solid #ef4444;
+    background: #fef2f2 !important;
+    border-left: 4px solid #ef4444 !important;
+    color: #991b1b !important;
 }
 
 [data-theme="light"] .toast.info {
-    background: #eff6ff;
-    border-left: 4px solid #3b82f6;
+    background: #eff6ff !important;
+    border-left: 4px solid #3b82f6 !important;
+    color: #1e40af !important;
 }
 
 [data-theme="light"] .toast.warning {
-    background: #fffbeb;
-    border-left: 4px solid #f59e0b;
+    background: #fffbeb !important;
+    border-left: 4px solid #f59e0b !important;
+    color: #92400e !important;
 }
 
 
