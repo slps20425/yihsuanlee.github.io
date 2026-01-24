@@ -603,13 +603,13 @@
 
         .search-result-item {
             padding: 12px;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border-color);
             cursor: pointer;
             transition: background 0.2s;
         }
 
         .search-result-item:hover {
-            background: #2d2d2d;
+            background: var(--input-bg);
         }
 
         .search-result-item:last-child {
@@ -655,17 +655,20 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #252525;
+            background: var(--input-bg);
+            /* Fixed from #252525 */
+            border-bottom: 1px solid var(--border-color);
             transition: background 0.2s;
         }
 
         .drawer-header:hover {
-            background: #2d2d2d;
+            background: var(--border-color-hover);
         }
 
         .drawer-content {
             padding: 15px;
-            border-top: 1px solid #333;
+            border-top: none;
+            /* Handled by header border */
             font-size: 14px;
             color: var(--text-secondary);
             max-height: 300px;
