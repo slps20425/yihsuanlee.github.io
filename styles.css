@@ -791,6 +791,20 @@ textarea:focus {
     color: #1f2937 !important;
 }
 
+[data-theme="light"] .custom-option {
+    color: #4b5563 !important;
+}
+
+[data-theme="light"] .custom-option:hover {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+}
+
+[data-theme="light"] .custom-option.selected {
+    background-color: #efefef !important;
+    color: var(--primary-color) !important;
+}
+
 [data-theme="light"] .date-picker-nav,
 [data-theme="light"] .time-ampm-btn {
     color: #1f2937 !important;

@@ -1079,9 +1079,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 div.innerHTML = `
                     <input type="text" placeholder="Item Name (e.g. Burger)" class="order-item-name" 
-                        style="flex: 1; min-width: 150px; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: white;">
+                        style="flex: 1; min-width: 150px; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary);">
                     <input type="number" value="1" min="1" max="99" class="order-item-qty" 
-                        style="width: 50px; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: white; text-align: center;">
+                        style="width: 50px; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary); text-align: center;">
                     <button type="button" class="remove-item-btn" 
                         style="flex: 0 0 auto; width: 24px; height: 24px; padding: 0; background: none; border: none; color: #ff4444; font-size: 16px; line-height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
                 `;
