@@ -75,7 +75,7 @@ export async function fetchBlocklist(): Promise<{
     }
 
     try {
-        const docRef = doc(db, 'settings', 'location_blocklist');
+        const docRef = doc(db, 'configuration', 'location_blocklist');
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -119,7 +119,7 @@ export async function fetchLanguageLocationBias(): Promise<Record<string, { lati
     }
 
     try {
-        const docRef = doc(db, 'settings', 'language_location_bias');
+        const docRef = doc(db, 'configuration', 'language_location_bias');
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {

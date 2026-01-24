@@ -55,7 +55,7 @@ const blocklistData = {
     lastUpdated: { timestampValue: new Date().toISOString() }
 };
 
-const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/settings/location_blocklist?key=${apiKey}`;
+const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/reservation/documents/configuration/location_blocklist?key=${apiKey}`;
 
 async function setupBlocklist() {
     try {

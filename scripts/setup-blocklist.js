@@ -66,10 +66,10 @@ async function setupBlocklist() {
             lastUpdated: admin.firestore.Timestamp.now()
         };
 
-        // Create settings collection and location_blocklist document
-        await db.collection('settings').doc('location_blocklist').set(blocklistData);
+        // Create configuration collection and location_blocklist document
+        await db.collection('configuration').doc('location_blocklist').set(blocklistData);
 
-        console.log('✅ Successfully created settings/location_blocklist');
+        console.log('✅ Successfully created configuration/location_blocklist');
         console.log('\nDocument contents:');
         console.log('├── types:', blocklistData.types.length, 'items');
         console.log('├── keywords:', blocklistData.keywords.length, 'items');

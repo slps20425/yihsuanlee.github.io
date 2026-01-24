@@ -53,7 +53,7 @@ async function setupWithGcloud() {
             }
         };
 
-        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/settings/location_blocklist`;
+        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/reservation/documents/configuration/location_blocklist`;
 
         const response = await fetch(url, {
             method: 'PATCH',

@@ -150,7 +150,7 @@ async function setupLanguageBias() {
             }
         };
 
-        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/settings/language_location_bias`;
+        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/reservation/documents/configuration/language_location_bias`;
 
         const response = await fetch(url, {
             method: 'PATCH',
