@@ -2010,7 +2010,7 @@ function showConfirmModal(place: any) {
     let hoursHtml = '';
     if (place.opening_hours && place.opening_hours.weekday_text) {
         // Show all lines in a scrollable box
-        hoursHtml = `<div style="margin-top:5px; font-size:12px; color:#ccc; max-height: 120px; overflow-y: auto; padding-right: 4px;">${place.opening_hours.weekday_text.join('<br>')}</div>`;
+        hoursHtml = `<div class="modal-opening-hours">${place.opening_hours.weekday_text.join('<br>')}</div>`;
     }
 
     const placeName = place.name || "Unknown Place";
@@ -2020,13 +2020,13 @@ function showConfirmModal(place: any) {
     const website = place.website;
 
     content.innerHTML = `
-        <div style="font-weight: bold; color: #fff; font-size: 16px;">${placeName}</div>
-        <div style="font-size: 13px; color: #aaa; margin-bottom: 8px;">${placeAddress}</div>
-        ${rating ? `<div style="font-size: 13px; color: #fbbf24; margin-bottom: 8px;">${rating}</div>` : ''}
+        <div class="modal-title-main">${placeName}</div>
+        <div class="modal-text-secondary" style="margin-bottom: 8px;">${placeAddress}</div>
+        ${rating ? `<div class="modal-rating">${rating}</div>` : ''}
         
-        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
-            <div style="font-size: 11px; color: #888; text-transform: uppercase;">${(dict as any).label_detail_phone || 'Phone Number'}</div>
-            <div style="font-size: 14px; color: #fff; font-family: monospace;">${phoneNumber || '<span style="color:#f87171">Not Available</span>'}</div>
+        <div class="modal-info-box">
+            <div class="modal-label-caps">${(dict as any).label_detail_phone || 'Phone Number'}</div>
+            <div class="modal-value-main" style="font-family: monospace;">${phoneNumber || '<span style="color:#f87171">Not Available</span>'}</div>
         </div>
 
         ${website ? `
@@ -2035,8 +2035,8 @@ function showConfirmModal(place: any) {
         </div>` : ''}
 
         ${hoursHtml ? `
-        <div style="margin-top: 10px; border-top: 1px solid #333; padding-top: 8px;">
-            <div style="font-size: 11px; color: #888; text-transform: uppercase;">${(dict as any).label_detail_hours || 'Opening Hours'}</div>
+        <div class="modal-divider">
+            <div class="modal-label-caps">${(dict as any).label_detail_hours || 'Opening Hours'}</div>
             ${hoursHtml}
         </div>` : ''}
     `;

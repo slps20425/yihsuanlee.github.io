@@ -2,17 +2,18 @@
 
 ## Current Status
 - **Status**: `READY_FOR_QA`
-- **Current Task**: Sidebar Styling Redesign & Light Mode Fixes
-- **Last Deployment**: 2026-01-24T15:45:00+08:00
+- **Current Task**: Admin Access to AI Services Fix
+- **Last Deployment**: 2026-01-24T16:16:00+08:00
 - **Assignee**: **QA Agent (Gemini)**
-- **Completed**: 2026-01-24T15:45:00+08:00
+- **Completed**: 2026-01-24T16:16:00+08:00
 - **Deploy URL**: https://wisecat-8df8d.web.app
-- **Notes**: Complete overhaul of the sidebar aesthetics (transparent buttons, clean dropdowns) and fixed critical light mode visibility issues (sidebar background, date/time inputs).
+- **Notes**: Fixed authentication logic to allow admin and guest accounts to access Restaurant and Mouthpiece pages by checking localStorage for session data before redirecting to login.
 
 ## Task History
 | ID | Task | Assignee | Date | Status | Notes |
 |----|------|----------|------|--------|-------|
-| 23 | Sidebar Styling Redesign & Light Mode Fixes | Claude | 2026-01-24 | READY_FOR_QA | [Live URL](https://wisecat-8df8d.web.app) |
+| 24 | Admin Access to AI Services Fix | Claude | 2026-01-24 | READY_FOR_QA | [Live URL](https://wisecat-8df8d.web.app) |
+| 23 | Sidebar Styling Redesign & Light Mode Fixes | Claude | 2026-01-24 | COMPLETED | [Live URL](https://wisecat-8df8d.web.app) |
 | 22 | Fix Phone Number Section Visibility & Upgrade Path | Claude | 2026-01-22 | COMPLETED | [Live URL](https://wise-catty.cc/dashboard.html) |
 | 21 | Unified Dynamic Billing & Usage Tracking | Claude | 2026-01-22 | COMPLETED | [Live URL](https://wise-catty.cc/dashboard.html) |
 | 20 | Implement Shared Number System & Security Lockdown | Claude | 2026-01-22 | COMPLETED | [Live URL](https://wise-catty.cc/reservation/restaurant_reservation.html) |
@@ -24,13 +25,13 @@
 > **DO NOT** rely on the global `firebase` command as it may be missing in the agent environment.
 
 ## Summary of Changes
-1. ✅ **Sidebar Redesign**: Transformed "AI Services" and other sidebar items from generic green buttons to sleek, transparent list items with clean indentation.
-2. ✅ **Light Mode Fixes**: Fixed the sidebar background to be properly white (was dark blue) and ensured text contrast is correct.
-3. ✅ **Input Visibility**: Forced Date & Time pickers to be White with Dark text (fixing the "pitch black" unreadable state).
-4. ✅ **Mobile Menu**: Ensured the Hamburger menu is always visible and functional on mobile/tablet viewports.
+1. ✅ **Restaurant Page Auth**: Modified `onAuthStateChanged` in `src/reservation.ts` to check `localStorage` for `isGuest` or `isAdmin` flags before redirecting to login.
+2. ✅ **Mouthpiece Page Auth**: Applied the same fix to `src/mouthpiece.ts`, including mission loading for admin/guest sessions.
+3. ✅ **Session Handling**: Admin and guest users now bypass Firebase authentication checks and can access AI services with their elevated privileges.
+4. ✅ **UI Updates**: Admin/guest session data (name, avatar, credits) is correctly displayed in the header.
 
 ## QA Testing Checklist
-- [ ] **Sidebar Aesthetics**: Verify the sidebar items are transparent and the "AI Services" dropdown is indented without a clunky grey box.
-- [ ] **Light Mode**: Switch to Light Mode and verify the sidebar background is white/cream, not dark.
-- [ ] **Inputs**: Check the Date and Time inputs on the Restaurant Reservation page; they should be white and readable.
-- [ ] **Mobile**: Resize to mobile width and verify the hamburger menu works and the layout is stable.
+- [ ] **Admin Login**: Log in using the admin account and verify access to Restaurant and Mouthpiece pages without being redirected to login.
+- [ ] **Guest Login**: Log in as a guest and verify access to all AI services.
+- [ ] **UI Display**: Verify that the admin/guest name, avatar, and credits are correctly displayed in the header.
+- [ ] **Functionality**: Test that admin users can submit tasks on both Restaurant and Mouthpiece pages.

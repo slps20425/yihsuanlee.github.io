@@ -854,9 +854,9 @@ async function showConfirmationModal(details: { label: string, value: string }[]
         }
 
         detailsContainer.innerHTML = details.map(item => `
-                <div class="detail-item" style="margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
-                    <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px;">${item.label}</div>
-                    <div style="font-size: 14px; color: #fff; white-space: pre-wrap; word-break: break-word;">${item.value || 'N/A'}</div>
+                <div class="detail-item modal-divider">
+                    <div class="modal-label-caps">${item.label}</div>
+                    <div class="modal-value-main" style="white-space: pre-wrap; word-break: break-word;">${item.value || 'N/A'}</div>
                 </div>
             `).join('');
 

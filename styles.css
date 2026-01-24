@@ -1618,11 +1618,11 @@ button:disabled {
 
 .iti__country-name,
 .iti__dial-code {
-    color: #fff !important;
+    color: var(--text-primary) !important;
 }
 
 .iti__selected-dial-code {
-    color: #fff !important;
+    color: var(--text-primary) !important;
 }
 
 .iti__selected-flag {
@@ -2901,7 +2901,8 @@ body.dashboard-layout {
     align-items: center;
     z-index: 2000;
     backdrop-filter: blur(5px);
-    padding: 1rem; /* Add padding for mobile */
+    padding: 1rem;
+    /* Add padding for mobile */
 }
 
 .modal-content {
@@ -2912,8 +2913,10 @@ body.dashboard-layout {
     max-width: 480px;
     border: 1px solid #444;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-    max-height: 90vh; /* Prevent overflow on small screens */
-    overflow-y: auto; /* Allow scrolling if content is too tall */
+    max-height: 90vh;
+    /* Prevent overflow on small screens */
+    overflow-y: auto;
+    /* Allow scrolling if content is too tall */
 }
 
 /* Mobile responsive */
@@ -2963,7 +2966,8 @@ body.dashboard-layout {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: 44px; /* Touch target size */
+    min-height: 44px;
+    /* Touch target size */
 }
 
 .modal-btn.cancel {
@@ -2992,7 +2996,8 @@ body.dashboard-layout {
 /* Mobile responsive buttons */
 @media (max-width: 640px) {
     .modal-actions {
-        flex-direction: column-reverse; /* Cancel on top, Confirm on bottom for thumb reach */
+        flex-direction: column-reverse;
+        /* Cancel on top, Confirm on bottom for thumb reach */
     }
 
     .modal-btn {
@@ -3042,6 +3047,56 @@ body.dashboard-layout {
 
 [data-theme="light"] .modal-btn.confirm:hover {
     background: #059669;
+}
+
+/* Modal Content Theme Supports */
+.modal-title-main {
+    font-weight: bold;
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.modal-text-secondary {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.modal-info-box {
+    background: var(--input-bg);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.modal-label-caps {
+    font-size: 11px;
+    color: var(--text-disabled);
+    text-transform: uppercase;
+}
+
+.modal-value-main {
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.modal-divider {
+    border-top: 1px solid var(--border-color);
+    margin-top: 10px;
+    padding-top: 8px;
+}
+
+.modal-rating {
+    font-size: 13px;
+    color: #fbbf24;
+    margin-bottom: 8px;
+}
+
+.modal-opening-hours {
+    margin-top: 5px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    max-height: 120px;
+    overflow-y: auto;
+    padding-right: 4px;
 }
 
 /* AI Services Dropdown Styles */
