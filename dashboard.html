@@ -115,6 +115,11 @@
             </button>
             <h1 class="header-title" onclick="switchTab('profile')" style="cursor: pointer;">WiseCat AI - Dashboard</h1>
             <div class="header-right-actions">
+                <!-- Theme Toggle Button -->
+                <button id="dashboardThemeToggle" class="theme-toggle-header" aria-label="Toggle theme" title="Switch between light and dark theme">
+                    <span id="themeToggleIcon">☀️</span>
+                </button>
+
                 <!-- Mobile Avatar -->
                 <img id="mobileHeaderAvatar" src="https://ui-avatars.com/api/?name=User" alt="Profile"
                     style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--accent); cursor: pointer; display: none;"
@@ -869,6 +874,48 @@
 
 
     <script type="module" src="/src/chat-assistant.ts"></script>
+
+    <!-- Theme Toggle Handler for Dashboard -->
+    <script>
+        // Initialize theme toggle button
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggleBtn = document.getElementById('dashboardThemeToggle');
+            const themeToggleIcon = document.getElementById('themeToggleIcon');
+
+            if (themeToggleBtn && themeToggleIcon) {
+                // Set initial icon based on current theme
+                const updateIcon = () => {
+                    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+                    themeToggleIcon.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+                };
+
+                updateIcon();
+
+                // Toggle theme on click
+                themeToggleBtn.addEventListener('click', () => {
+                    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('wisecat_theme', newTheme);
+                    updateIcon();
+
+                    // Update meta theme-color
+                    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+                    if (metaThemeColor) {
+                        metaThemeColor.setAttribute('content', newTheme === 'light' ? '#faf8f3' : '#0f172a');
+                    }
+                });
+
+                // Watch for theme changes from other sources
+                const observer = new MutationObserver(updateIcon);
+                observer.observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: ['data-theme']
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

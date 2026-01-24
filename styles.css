@@ -118,6 +118,7 @@ body {
     top: 20px;
     right: 20px;
     z-index: 10000;
+    display: flex; /* Change from none if header doesn't have theme toggle */
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid var(--border-color);
     border-radius: 12px;
@@ -153,6 +154,39 @@ body {
 }
 
 [data-theme="light"] .theme-toggle:hover {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+/* Theme Toggle in Header (Dashboard) */
+.theme-toggle-header {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 18px;
+    margin-right: 12px;
+}
+
+.theme-toggle-header:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--border-color-hover);
+    transform: scale(1.05);
+}
+
+[data-theme="light"] .theme-toggle-header {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .theme-toggle-header:hover {
     background: rgba(0, 0, 0, 0.1);
     border-color: rgba(0, 0, 0, 0.15);
 }
