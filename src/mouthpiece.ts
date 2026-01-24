@@ -1796,10 +1796,9 @@ async function validateMissionDescription() {
                             return;
                         }
 
-                        // Also update the description with refined text if available
-                        if (data.refinedText) {
-                            scriptTextarea.value = data.refinedText;
-                        }
+                        // Clear the description - user should rewrite for the new mission
+                        scriptTextarea.value = '';
+                        scriptTextarea.placeholder = `Please describe your ${suggestedName.toLowerCase()} request...`;
 
                         // Since AI suggests this, we assume the content is now safe for the new mission
                         isContentSafe = true;

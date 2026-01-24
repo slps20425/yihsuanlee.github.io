@@ -3071,9 +3071,9 @@ async function validateNote() {
                             missionInput.value = suggestedId;
                             triggerText.textContent = suggestedName;
 
-                            if (data.refinedText) {
-                                noteTextarea.value = data.refinedText;
-                            }
+                            // Clear the description - user should rewrite for the new mission
+                            noteTextarea.value = '';
+                            noteTextarea.placeholder = `Please describe your ${suggestedName.toLowerCase()} request...`;
 
                             // Since AI suggests this, we assume the content is now safe for the new mission
                             isContentSafe = true;

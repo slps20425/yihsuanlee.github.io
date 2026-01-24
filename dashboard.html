@@ -772,6 +772,15 @@
         import { initInbox } from './src/inbox.ts';
         import { registerPWA } from './src/pwa.ts';
 
+        // Initialize theme from localStorage or system preference
+        function initTheme() {
+            const savedTheme = localStorage.getItem('wisecat_theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        initTheme();
         registerPWA();
 
         // Initialize once DOM is ready or immediately

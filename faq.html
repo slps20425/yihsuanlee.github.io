@@ -366,6 +366,20 @@
 
     <script type="module" src="./src/chat-assistant.ts"></script>
     <script type="module" src="./src/faq.ts"></script>
+
+    <!-- Theme Initialization Script -->
+    <script>
+        // Initialize theme from localStorage or system preference
+        function initTheme() {
+            const savedTheme = localStorage.getItem('wisecat_theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        // Initialize immediately
+        initTheme();
+    </script>
 </body>
 
 </html>

@@ -1934,9 +1934,9 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     left: 0;
     right: 0;
     height: 60px;
-    background: rgba(15, 23, 42, 0.95);
+    background: var(--header-bg);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--header-border);
     z-index: 200;
     /* Increased from 100 to be above sidebar (50) */
     display: flex;
@@ -3536,6 +3536,8 @@ body.dashboard-layout {
     --logout-btn-border: rgba(239, 68, 68, 0.3);
     --logout-btn-text: #fca5a5;
     --logout-btn-hover-bg: rgba(239, 68, 68, 0.25);
+    --header-bg: rgba(15, 23, 42, 0.95);
+    --header-border: rgba(255, 255, 255, 0.1);
 }
 
 /* Light Mode Sidebar & Navigation Colors */
@@ -3555,6 +3557,8 @@ body.dashboard-layout {
     --logout-btn-border: rgba(239, 68, 68, 0.2);
     --logout-btn-text: #dc2626;
     --logout-btn-hover-bg: rgba(239, 68, 68, 0.15);
+    --header-bg: rgba(255, 255, 255, 0.95);
+    --header-border: rgba(0, 0, 0, 0.08);
 }
 
 /* Base Sidebar Container */
