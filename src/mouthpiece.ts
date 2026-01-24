@@ -2114,6 +2114,9 @@ async function initSearchLogic() {
 
         resultsContainer!.innerHTML = '<div style="color:#aaa; text-align:center;">Searching...</div>';
 
+        // Detect if query contains non-ASCII (non-English) characters FIRST
+        const isNonEnglish = /[^\x00-\x7F]/.test(query);
+
         let textQuery = query;
         let includedType = "";
 
@@ -2122,15 +2125,12 @@ async function initSearchLogic() {
             if (currentSearchMission.google_type && currentSearchMission.google_type !== 'any') {
                 includedType = currentSearchMission.google_type;
             }
-            // Append keywords if generic search
-            if (currentSearchMission.default_keyword && !includedType && !query.includes(currentSearchMission.default_keyword)) {
+            // Append keywords ONLY for English queries (non-English queries should not mix languages)
+            if (!isNonEnglish && currentSearchMission.default_keyword && !includedType && !query.includes(currentSearchMission.default_keyword)) {
                 // If we don't use strict type filtering, we append keyword for better relevance
                 textQuery = `${query} ${currentSearchMission.default_keyword} `;
             }
         }
-
-        // Detect if query contains non-ASCII (non-English) characters
-        const isNonEnglish = /[^\x00-\x7F]/.test(query);
 
         // Default location bias for non-English queries (helps with regional search)
         let locationBias: any = null;
