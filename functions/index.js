@@ -1913,10 +1913,36 @@ exports.validateMissionDescription = onCall(
                 generationConfig: { temperature: 0.1, maxOutputTokens: 1000, responseMimeType: "application/json" }
             });
 
-            const primaryLang = language ? language.split('-')[0] : 'en';
-            const langMap = { zh: "Traditional Chinese (繁體中文)", jp: "Japanese (日本語)", ja: "Japanese (日本語)", kr: "Korean (한국어)", ko: "Korean (한국어)", es: "Spanish", fr: "French", it: "Italian" };
+            // --- Language Detection (Character-based) ---
+            // If user types in Chinese/Japanese, we MUST respond in that language, ignoring UI setting.
+            const detectLang = (text) => {
+                let zh = 0, jp = 0, ko = 0;
+                for (const char of text) {
+                    const code = char.charCodeAt(0);
+                    // Chinese (Unified Ideographs)
+                    if ((code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3400 && code <= 0x4DBF)) zh++;
+                    // Japanese (Hiragana/Katakana) - Prioritize if found, as Kanji is shared
+                    else if ((code >= 0x3040 && code <= 0x30FF)) jp++;
+                    // Korean (Hangul)
+                    else if ((code >= 0xAC00 && code <= 0xD7AF)) ko++;
+                }
+                if (jp > 0) return 'ja'; // Japanese check first (Kana)
+                if (zh > 0) return 'zh';
+                if (ko > 0) return 'ko';
+                return null;
+            };
+
+            const detectedCode = detectLang(description);
+            const primaryLang = detectedCode || (language ? language.split('-')[0] : 'en');
+
+            const langMap = {
+                zh: "Traditional Chinese (繁體中文)",
+                jp: "Japanese (日本語)", ja: "Japanese (日本語)",
+                kr: "Korean (한국어)", ko: "Korean (한국어)",
+                es: "Spanish", fr: "French", it: "Italian", de: "German"
+            };
             const targetLangLabel = langMap[primaryLang] || "English";
-            console.log(`[validateMissionDescription] Language mapping: language=${language}, primaryLang=${primaryLang}, targetLangLabel=${targetLangLabel}`);
+            console.log(`[validateMissionDescription] Language mapping: language=${language}, detected=${detectedCode}, primaryLang=${primaryLang}, targetLangLabel=${targetLangLabel}`);
 
             // BLIND CLASSIFICATION PROMPT
             // We do NOT tell the AI the 'selected mission'. We ask it to classify solely based on text.
