@@ -1359,10 +1359,57 @@ async function handleFormSubmit(e: Event) {
             return;
         }
 
+        // --- Post-Confirmation Target Validation ---
+        // Perform the paid validation ONLY after user confirms they want to proceed.
+        if (targetPhoneValue) {
+            showToast('🔍 Verifying target with Google...', 'info');
+
+            // Initialize Google Maps if not already loaded
+            const mapsLoaded = await initGoogleMapsAPI();
+            if (mapsLoaded) {
+                try {
+                    // Create a timeout promise (5 seconds) to avoid hanging
+                    const validationPromise = (async () => {
+                        const searchResults = await searchPlaces(targetPhoneValue);
+                        if (searchResults.length > 0) {
+                            const validation = await validatePlace(searchResults[0].place_id);
+                            return validation;
+                        }
+                        return { valid: true, manualRequired: true };
+                    })();
+
+                    const timeoutPromise = new Promise<{ valid: boolean, timeout: boolean }>(resolve =>
+                        setTimeout(() => resolve({ valid: true, timeout: true }), 5000)
+                    );
+
+                    const result: any = await Promise.race([validationPromise, timeoutPromise]);
+
+                    if (!result.timeout && !result.valid) {
+                        // Location is explicitly blocked (e.g. Police Station)
+                        showToast(result.error || '❌ This location is restricted (e.g. Govt/Emergency). Task cancelled.', 'error');
+
+                        // Log blocked attempt
+                        const uid = currentUser.uid || 'unknown';
+                        if (result.place) logBlockedAttempt(result.place, uid);
+
+                        btn.disabled = false;
+                        return; // STOP execution, do not charge
+                    }
+                } catch (e) {
+                    console.error("Validation error:", e);
+                    // Proceed on error to avoid blocking valid tasks due to API hiccups
+                }
+            }
+        }
+        // -------------------------------------------
+
         let newBalance = 0;
         await runTransaction(db, async (transaction) => {
             const userDoc = await transaction.get(userDocRef);
+
+            // Re-fetch everything inside transaction including balance
             const settingsDoc = await transaction.get(settingsRef);
+            const settings = settingsDoc.exists() ? settingsDoc.data() : {};
 
             if (!userDoc.exists()) {
                 throw "User document does not exist!";
@@ -1370,7 +1417,6 @@ async function handleFormSubmit(e: Event) {
 
             const userData = userDoc.data();
             const currentCredits = Number(userData.credits || 0);
-            const settings = settingsDoc.exists() ? settingsDoc.data() : {};
 
             if (currentCredits < totalCost) {
                 // Throwing simple string to be caught below
