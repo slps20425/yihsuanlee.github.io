@@ -2227,6 +2227,7 @@ input[type="date"]::-webkit-datetime-edit-day-field {
 }
 
 /* Header Title */
+/* Header Title */
 .header-title {
     font-size: 1.25rem;
     font-weight: 700;
@@ -2234,17 +2235,18 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     color: var(--text-primary);
     flex: 1;
     min-width: 0;
-    display: flex;
-    align-items: center;
+    /* display: flex; REMOVED to allow text-overflow to work on block */
+    /* align-items: center; REMOVED */
     transition: color 0.2s ease;
-}
-
-.header-title-text {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    flex: 1;
-    min-width: 0;
+    line-height: 1.5;
+    /* Ensure vertical alignment */
+}
+
+.header-title-text {
+    /* Reset to default behavior */
 }
 
 /* Header right actions container */

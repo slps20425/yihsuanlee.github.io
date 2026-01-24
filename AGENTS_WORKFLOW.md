@@ -2,17 +2,18 @@
 
 ## Current Status
 - **Status**: `READY_FOR_QA`
-- **Current Task**: Mission Validation v2 (Gemini 2.5 Flash Upgrade)
-- **Last Deployment**: 2026-01-24T18:15:00+08:00
+- **Current Task**: Mobile Header Overlap Fix
+- **Last Deployment**: 2026-01-25T01:15:00+08:00
 - **Assignee**: **QA Agent (Gemini)**
-- **Completed**: 2026-01-24T18:15:00+08:00
+- **Completed**: 2026-01-25T01:15:00+08:00
 - **Deploy URL**: https://wisecat-8df8d.web.app
-- **Notes**: Fixed Address Validation failure. Polished Light Theme alerts (Toasts). Restored SCAM_ALERT logic. Enforced First-Person perspective (第一人稱視角) in AI refinement to ensure AI acts as caller, not customer service.
+- **Notes**: Fixed mobile header overlap issue where the theme toggle and profile were overlapping with the header text. Added flex properties to truncate text and updated JS to preserve truncation styles.
 
 ## Task History
 | ID | Task | Assignee | Date | Status | Notes |
 |----|------|----------|------|--------|-------|
-| 26 | Mission Validation v2 & UI Theme Fixes | Claude | 2026-01-24 | READY_FOR_QA | [Live URL](https://wisecat-8df8d.web.app) |
+| 27 | Mobile Header Overlap Fix | Claude | 2026-01-25 | READY_FOR_QA | [Live URL](https://wisecat-8df8d.web.app) |
+| 26 | Mission Validation v2 & UI Theme Fixes | Claude | 2026-01-24 | COMPLETED | [Live URL](https://wisecat-8df8d.web.app) |
 | 25 | Fix JSON Parse Error in validateMissionV2 | Claude | 2026-01-24 | COMPLETED | [Live URL](https://wisecat-8df8d.web.app) |
 | 24 | Admin Access to AI Services Fix | Claude | 2026-01-24 | COMPLETED | [Live URL](https://wisecat-8df8d.web.app) |
 | 23 | Sidebar Styling Redesign & Light Mode Fixes | Claude | 2026-01-24 | COMPLETED | [Live URL](https://wisecat-8df8d.web.app) |
