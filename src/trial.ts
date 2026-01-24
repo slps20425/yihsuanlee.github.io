@@ -316,6 +316,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const u = JSON.parse(userSession);
                 creditsDisplay.textContent = `$${(u.credits || 0).toFixed(2)}`;
             }
+        } else {
+            // User not authenticated - redirect to login
+            console.log('[Trial] User not authenticated, redirecting to login');
+            window.location.href = '/';
         }
     });
 
