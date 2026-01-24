@@ -1574,7 +1574,7 @@ async function validateMissionDescription() {
 
     try {
         const functions = getFunctions();
-        const validateFunction = httpsCallable(functions, 'validateMissionDescription');
+        const validateFunction = httpsCallable(functions, 'validateMissionV2');
 
         // Find mission in dynamicMissions or fallbacks
         const missions = dynamicMissions.length > 0

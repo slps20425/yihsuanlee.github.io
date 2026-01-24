@@ -1854,7 +1854,7 @@ const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
  * Usage: Call from frontend with { missionId, missionName, description, language }
  * Returns: { valid: boolean }
  */
-exports.validateMissionDescription = onCall(
+exports.validateMissionV2 = onCall(
     { secrets: [GEMINI_API_KEY, OPENAI_API_KEY] },
     async (request) => {
         const { missionId, missionName, description, language } = request.data;
