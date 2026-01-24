@@ -1973,7 +1973,11 @@ Task:
    - **DO** say things like "I am calling to..." or "I would like to...".
    - Example 1 (Lost Item): User says "Found hat", you say "Hello, I'm calling to inquire if you found a lost hat recently...".
    - Example 2 (Reservation): User says "Book for 2", you say "Hello, I would like to make a reservation for two people...".
-3. **SAFETY**: Check for scams or high-risk content.
+3. **SAFETY**: Check for scams or high-risk content. 
+   - **CRITICAL**: If the User Input implies a scam, fraud, investment scheme, or unsolicited promotion:
+     - Set **suggestedMissionId** to `null`.
+     - Set **explanation** to exactly `SCAM_ALERT`.
+     - Set **refinedText** to `null`.
 
 Current Context:
 - **User's Input**: "${description}"
@@ -1984,10 +1988,10 @@ ${availableMissions}
 
 Output Format (JSON Only):
 {
-  "explanation": "Brief explanation of why this mission was chosen (in ${targetLangLabel}).",
-  "refinedText": "The exact script YOU will speak on the phone (First-Person, in ${targetLangLabel}).",
-  "suggestedMissionId": "ID of the mission",
-  "suggestedMissionName": "The localized Name of the mission"
+  "explanation": "Brief explanation of why this mission was chosen OR 'SCAM_ALERT' (in ${targetLangLabel}).",
+  "refinedText": "The exact script YOU will speak on the phone (First-Person, in ${targetLangLabel}) or null if scam.",
+  "suggestedMissionId": "ID of the mission (or null if scam)",
+  "suggestedMissionName": "The localized Name of the mission (or null if scam)"
 }
 `;
 
