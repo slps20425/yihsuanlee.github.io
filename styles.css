@@ -30,6 +30,9 @@
     --error: #ef4444;
     --info: #3b82f6;
 
+    /* Input Field Backgrounds */
+    --input-bg: #242938;
+
     /* Border & Effects */
     --border-color: rgba(255, 255, 255, 0.08);
     --border-color-hover: rgba(255, 255, 255, 0.15);
@@ -76,6 +79,9 @@
     --warning: #f59e0b;
     --error: #ef4444;
     --info: #3b82f6;
+
+    /* Input Field Backgrounds - Light Theme */
+    --input-bg: #f5efe6;
 
     /* Border & Effects - Warm Light Theme */
     --border-color: rgba(0, 0, 0, 0.06);
@@ -3520,6 +3526,35 @@ body.dashboard-layout {
     --nav-text-color: #cbd5e1;
     --nav-text-active: #ffffff;
     --nav-icon-size: 24px;
+    --nav-text-muted: #94a3b8;
+    --dropdown-item-hover-bg: rgba(255, 255, 255, 0.05);
+    --user-snippet-bg: rgba(0, 0, 0, 0.2);
+    --user-snippet-border: rgba(255, 255, 255, 0.05);
+    --user-snippet-hover-bg: rgba(255, 255, 255, 0.05);
+    --user-snippet-hover-border: rgba(255, 255, 255, 0.1);
+    --logout-btn-bg: rgba(239, 68, 68, 0.15);
+    --logout-btn-border: rgba(239, 68, 68, 0.3);
+    --logout-btn-text: #fca5a5;
+    --logout-btn-hover-bg: rgba(239, 68, 68, 0.25);
+}
+
+/* Light Mode Sidebar & Navigation Colors */
+[data-theme="light"] {
+    --sidebar-bg: rgba(255, 255, 255, 0.95);
+    --sidebar-border: rgba(0, 0, 0, 0.08);
+    --nav-item-hover: rgba(59, 130, 246, 0.08);
+    --nav-text-color: #3d2817;
+    --nav-text-active: #10b981;
+    --nav-text-muted: #8b7355;
+    --dropdown-item-hover-bg: rgba(59, 130, 246, 0.08);
+    --user-snippet-bg: rgba(59, 130, 246, 0.08);
+    --user-snippet-border: rgba(0, 0, 0, 0.1);
+    --user-snippet-hover-bg: rgba(59, 130, 246, 0.12);
+    --user-snippet-hover-border: rgba(59, 130, 246, 0.2);
+    --logout-btn-bg: rgba(239, 68, 68, 0.1);
+    --logout-btn-border: rgba(239, 68, 68, 0.2);
+    --logout-btn-text: #dc2626;
+    --logout-btn-hover-bg: rgba(239, 68, 68, 0.15);
 }
 
 /* Base Sidebar Container */
@@ -3677,7 +3712,7 @@ body.dashboard-layout {
 }
 
 .nav-dropdown-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--dropdown-item-hover-bg);
     color: var(--nav-text-active);
     padding-left: 20px;
 }
@@ -3698,15 +3733,15 @@ body.dashboard-layout {
     gap: 12px;
     padding: 12px;
     border-radius: 12px;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--user-snippet-bg);
+    border: 1px solid var(--user-snippet-border);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .user-snippet:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--user-snippet-hover-bg);
+    border-color: var(--user-snippet-hover-border);
 }
 
 .user-snippet img {
@@ -3802,11 +3837,9 @@ body.dashboard-layout {
 
 /* 2. Improve Logout Button Visibility */
 #headerLogoutBtn {
-    background: rgba(239, 68, 68, 0.15) !important;
-    /* Red tint */
-    border: 1px solid rgba(239, 68, 68, 0.3) !important;
-    color: #fca5a5 !important;
-    /* Lighter red text */
+    background: var(--logout-btn-bg) !important;
+    border: 1px solid var(--logout-btn-border) !important;
+    color: var(--logout-btn-text) !important;
     font-weight: 600 !important;
     display: flex;
     align-items: center;
@@ -3818,7 +3851,7 @@ body.dashboard-layout {
 }
 
 #headerLogoutBtn:hover {
-    background: rgba(239, 68, 68, 0.25) !important;
+    background: var(--logout-btn-hover-bg) !important;
     color: #fff !important;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);

@@ -40,13 +40,13 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/trial-B2j_ylF2.js"></script>
+  <script type="module" crossorigin src="/assets/trial-_aIMdV7O.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index.esm-BgBT-wyw.js">
   <link rel="modulepreload" crossorigin href="/assets/index.esm-mHhmnEVH.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-config-DvmvaQDU.js">
-  <link rel="modulepreload" crossorigin href="/assets/index.esm-Cp_zNk9c.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm-CHPfYMJK.js">
   <link rel="modulepreload" crossorigin href="/assets/chat-assistant-Bs4pEItI.js">
-  <link rel="stylesheet" crossorigin href="/assets/styles-DWM0QRnu.css">
+  <link rel="stylesheet" crossorigin href="/assets/styles-tFtkjzEY.css">
 </head>
 
 <body class="dashboard-layout">
@@ -137,8 +137,7 @@
                     <div class="user-snippet-credits" id="creditsDisplay">$0.00</div>
                 </div>
             </div>
-            <button id="headerLogoutBtn"
-                style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px; font-size: 12px; margin-top: 4px;">
+            <button id="headerLogoutBtn">
                 <span data-i18n="nav_logout">Log out</span>
             </button>
         </div>
@@ -199,17 +198,16 @@
                 <div class="phone-container">
                     <input type="tel" id="targetPhone" required style="width: 100%;">
                 </div>
-                <div id="phoneHint" style="font-size: 11px; color: #ff4d4d; margin-top: 5px; display: none;"
+                <div id="phoneHint" style="font-size: 11px; color: var(--error); margin-top: 5px; display: none;"
                     data-i18n="validation_phone">
                     Invalid phone format for selected country
                 </div>
 
                 <label data-i18n="label_script_language" style="margin-top: 15px;">🗣️ Speaking Language</label>
-                <div style="font-size: 11px; color: #888; margin-bottom: 5px;" id="autoDetectHint">
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 5px;" id="autoDetectHint">
                     Default auto-detect based on phone number
                 </div>
-                <select id="scriptLanguage"
-                    style="width: 100%; padding: 12px; border: 1px solid #444; border-radius: 12px; font-size: 16px; background: #1a1a1a; color: white; margin-bottom: 20px;">
+                <select id="scriptLanguage">
                     <option value="auto" data-i18n="option_auto" selected>✨ Auto-Detect</option>
                     <option value="en">🇺🇸 English</option>
                     <option value="zh">🇹🇼 繁體中文</option>
@@ -283,7 +281,7 @@
     <div id="noNumberDialog" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <h2>📞 Active Phone Number Required</h2>
-            <p style="margin: 15px 0; color: #aaa;">
+            <p style="margin: 15px 0; color: var(--text-secondary);">
                 You need an active phone number to access this feature. Would you like to buy one now?
             </p>
             <div class="modal-actions">
