@@ -7,7 +7,7 @@
 - **Assignee**: **QA Agent (Gemini)**
 - **Completed**: 2026-01-24T18:15:00+08:00
 - **Deploy URL**: https://wisecat-8df8d.web.app
-- **Notes**: Upgraded validation backend to Gemini 2.5 Flash and consolidated all frontend calls (Mouthpiece, Restaurant, Trial) to use the unified `validateMissionV2` function.
+- **Notes**: Upgraded validation backend to Gemini 2.5 Flash. Fixed Light Theme visibility for restaurant details (address/phone). Removed redundant 2nd validation calls in Mouthpiece for better UX.
 
 ## Task History
 | ID | Task | Assignee | Date | Status | Notes |

@@ -1976,8 +1976,10 @@ async function validateMissionV2() {
                             return;
                         }
 
-                        // Clear the description - user should rewrite for the new mission
-                        scriptTextarea.value = '';
+                        // Apply the refined text if available
+                        if (refinedText) {
+                            scriptTextarea.value = refinedText;
+                        }
                         scriptTextarea.placeholder = `Please describe your ${suggestedName.toLowerCase()} request...`;
 
                         // Since AI suggests this, we assume the content is now safe for the new mission
