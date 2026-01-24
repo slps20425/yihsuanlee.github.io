@@ -140,7 +140,7 @@ export async function initGoogleMapsAPI(): Promise<boolean> {
 }
 
 /**
- * Search for places/businesses and filter blocked locations
+ * Search for places/businesses using various methods (Query or Phone)
  */
 export async function searchPlaces(query: string): Promise<Array<{
     place_id: string;
@@ -148,43 +148,76 @@ export async function searchPlaces(query: string): Promise<Array<{
     description: string;
 }>> {
     if (!window.google?.maps?.places) {
+        console.warn('[TargetValidator] Google Maps Places library not loaded');
         return [];
     }
 
     const blocklist = await fetchBlocklist();
 
-    return new Promise((resolve) => {
-        const service = new window.google!.maps.places.AutocompleteService();
-        service.getPlacePredictions(
-            {
-                input: query,
-                types: ['establishment', 'geocode']
-            },
-            (predictions: any[]) => {
-                if (predictions) {
-                    // Filter out blocked locations based on keywords
-                    const filtered = predictions.filter(p => {
-                        const text = `${p.main_text} ${p.description}`.toLowerCase();
-                        const isBlocked = blocklist.keywords.some(keyword =>
-                            text.includes(keyword.toLowerCase())
-                        );
-                        if (isBlocked) {
-                            console.log(`[TargetValidator] Filtered out: ${p.main_text}`);
-                        }
-                        return !isBlocked;
-                    });
+    // Check if query looks like a phone number (start with +, or has many digits)
+    const isPhone = /^\+?[\d\s-]{8,}$/.test(query);
 
-                    resolve(filtered.map(p => ({
-                        place_id: p.place_id,
-                        name: p.main_text,
-                        description: p.description
-                    })));
-                } else {
-                    resolve([]);
+    return new Promise((resolve) => {
+        if (isPhone) {
+            // Use findPlaceFromQuery for phone numbers as it's more accurate than Autocomplete
+            const container = document.createElement('div');
+            const service = new window.google!.maps.places.PlacesService(container);
+            service.findPlaceFromQuery(
+                {
+                    query: query,
+                    fields: ['name', 'place_id', 'formatted_address']
+                },
+                (results, status) => {
+                    container.remove();
+                    if (status === window.google!.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
+                        resolve(results.map(r => ({
+                            place_id: r.place_id!,
+                            name: r.name!,
+                            description: r.formatted_address || ''
+                        })));
+                    } else {
+                        // Fallback to autocomplete if phone search fails
+                        searchWithAutocomplete(query, blocklist, resolve);
+                    }
                 }
-            }
-        );
+            );
+        } else {
+            searchWithAutocomplete(query, blocklist, resolve);
+        }
     });
+}
+
+/**
+ * Internal helper for Autocomplete search
+ */
+async function searchWithAutocomplete(query: string, blocklist: any, resolve: (val: any) => void) {
+    const service = new window.google!.maps.places.AutocompleteService();
+    service.getPlacePredictions(
+        {
+            input: query,
+            types: ['establishment', 'geocode']
+        },
+        (predictions, status) => {
+            if (status === window.google!.maps.places.PlacesServiceStatus.OK && predictions && predictions.length > 0) {
+                // Filter out blocked locations based on keywords
+                const filtered = predictions.filter(p => {
+                    const text = `${p.description} ${p.structured_formatting?.main_text || ''}`.toLowerCase();
+                    const isBlocked = blocklist.keywords.some((keyword: string) =>
+                        text.includes(keyword.toLowerCase())
+                    );
+                    return !isBlocked;
+                });
+
+                resolve(filtered.map(p => ({
+                    place_id: p.place_id,
+                    name: (p as any).structured_formatting?.main_text || p.description,
+                    description: p.description
+                })));
+            } else {
+                resolve([]);
+            }
+        }
+    );
 }
 
 /**
@@ -284,7 +317,8 @@ async function isLocationBlocked(place: PlaceResult): Promise<boolean> {
  * - Restricts to specific circles with no results
  * - Overrides user intent when they specify locations
  */
-export async function getLocationBiasForQuery(query: string): Promise<null> {
+export async function getLocationBiasForQuery(_query: string): Promise<null> {
+    // Logic for biasing location search based on country/region
     return null;
 }
 

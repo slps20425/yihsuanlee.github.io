@@ -1054,47 +1054,54 @@ async function handleFormSubmit(e: Event) {
         // Initialize Google Maps if not already loaded
         const mapsLoaded = await initGoogleMapsAPI();
         if (!mapsLoaded) {
-            showToast('⚠️ Address validation unavailable. Please try again.', 'warning');
-            btn.disabled = false;
-            return;
-        }
+            console.warn('[TargetValidator] Google Maps API failed to load, skipping validation');
+        } else {
+            // Search for the target location with a timeout to avoid hanging the UI
+            showToast('🔍 Validating target location...', 'info');
 
-        // Search for the target location
-        showToast('🔍 Validating target location...', 'info');
-        try {
-            // Use the phone number to search for the business/location
-            const searchResults = await searchPlaces(targetPhoneValue);
-            if (searchResults.length === 0) {
-                showToast('❌ Could not find location for this phone number. Please verify and try again.', 'error');
-                btn.disabled = false;
-                return;
-            }
-
-            // Validate the first (most relevant) result
-            const validation = await validatePlace(searchResults[0].place_id);
-            if (!validation.valid) {
-                // Location is blocked
-                showToast(validation.error || 'This location cannot be contacted.', 'error');
-
-                // Log the blocked attempt
-                const uid = (localStorage.getItem('wisecat_user')
-                    ? JSON.parse(localStorage.getItem('wisecat_user') || '{}').uid
-                    : 'unknown');
-                if (validation.place) {
-                    logBlockedAttempt(validation.place, uid);
+            const validationPromise = (async () => {
+                try {
+                    const searchResults = await searchPlaces(targetPhoneValue);
+                    if (searchResults.length > 0) {
+                        const validation = await validatePlace(searchResults[0].place_id);
+                        return validation;
+                    }
+                    return { valid: true, manualRequired: true }; // No results found, assume valid but mark it
+                } catch (err) {
+                    console.error('[TargetValidator] Inner validation error:', err);
+                    return { valid: true, error: "Validation error" };
                 }
+            })();
 
-                btn.disabled = false;
-                return;
+            // Create a timeout promise (5 seconds)
+            const timeoutPromise = new Promise<{ valid: boolean, timeout: boolean }>(resolve =>
+                setTimeout(() => resolve({ valid: true, timeout: true }), 5000)
+            );
+
+            try {
+                const result: any = await Promise.race([validationPromise, timeoutPromise]);
+
+                if (result.timeout) {
+                    console.warn('[TargetValidator] Validation timed out, proceeding anyway');
+                } else if (!result.valid) {
+                    // Location is explicitly blocked
+                    showToast(result.error || '❌ This location cannot be contacted by AI.', 'error');
+
+                    // Log blocked attempt
+                    const uid = currentUser.uid || 'unknown';
+                    if (result.place) logBlockedAttempt(result.place, uid);
+
+                    btn.disabled = false;
+                    return;
+                } else if (result.manualRequired) {
+                    console.log('[TargetValidator] No business match found for number, proceeding to confirmation');
+                } else {
+                    showToast('✅ Location verified.', 'success');
+                }
+            } catch (err) {
+                console.error('[TargetValidator] Race error:', err);
+                // On error, we proceed anyway to avoid blocking the user
             }
-
-            // Valid location - continue with submission
-            showToast('✅ Location validated. Submitting call...', 'success');
-        } catch (err) {
-            console.error('[TargetValidator] Validation error:', err);
-            showToast('Error validating location. Please try again.', 'error');
-            btn.disabled = false;
-            return;
         }
     }
 

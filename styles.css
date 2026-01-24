@@ -2119,13 +2119,50 @@ input[type="date"]::-webkit-datetime-edit-day-field {
     right: 0;
     height: 60px;
     background: var(--header-bg);
-    backdrop-filter: blur(10px);
+    background-color: var(--header-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--header-border);
-    z-index: 200;
-    /* Increased from 100 to be above sidebar (50) */
+    z-index: 5000;
+    /* High enough to be above main content but below modals (2000?) Wait, modals are 2000. Let's use 500. */
     display: flex;
     align-items: center;
     padding: 0 1rem;
+    transition: left var(--transition-duration, 0.3s);
+}
+
+/* Modals should be above header */
+.modal-overlay {
+    z-index: 10000 !important;
+}
+
+.sidebar-navigation {
+    z-index: 9000 !important;
+}
+
+@media (min-width: 1024px) {
+    .dashboard-layout .top-header {
+        left: var(--sidebar-width, 280px);
+    }
+}
+
+/* Global Light Theme Header Overrides - Forcing Visibility */
+[data-theme="light"] .top-header {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+[data-theme="light"] .header-title {
+    color: #111827 !important;
+    opacity: 1 !important;
+}
+
+[data-theme="light"] .hamburger-menu span {
+    background: #111827 !important;
 }
 
 
@@ -4798,12 +4835,6 @@ body.dashboard-layout {
         align-items: center;
         padding: 0;
         /* Content handles padding */
-    }
-
-    [data-theme="light"] .top-header {
-        background: rgba(255, 255, 255, 0.95);
-        /* Light Theme */
-        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     }
 
     /* Inner Flex Content */
