@@ -4,237 +4,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WiseCat Portal</title>
-    <link rel="icon" href="favicon.png" type="image/x-icon">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <meta name="theme-color" content="#0f172a">
+    <meta http-equiv="refresh" content="0; url=./resume/">
+    <title>Yi-Hsuan Lee - Portfolio</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
 
+        .container {
+            text-align: center;
+        }
 
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
 
+        p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
 
+        a {
+            color: white;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 
 <body>
-    <canvas id="bg-canvas"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;"></canvas>
-
     <div class="container">
-        <!-- Language Selector -->
-        <select id="languageSelector" class="language-selector">
-            <option value="en">🇺🇸 English</option>
-            <option value="zh">🇹🇼 繁體中文</option>
-            <option value="jp">🇯🇵 日本語</option>
-            <option value="kr">🇰🇷 한국어</option>
-            <option value="es">🇪🇸 Español</option>
-            <option value="fr">🇫🇷 Français</option>
-            <option value="it">🇮🇹 Italiano</option>
-        </select>
-
-        <!-- Logo & Title -->
-        <div class="header fade-in">
-            <img src="/logo.png" alt="WiseCat Logo" class="logo" style="max-height: 120px; width: auto;">
-            <h1 data-i18n="portal_title">WiseCat Portal</h1>
-            <div class="subtitle" data-i18n="portal_subtitle">Your Trusted AI Assistant for Restaurant Reservations
-            </div>
-            <!-- Trust Badge -->
-            <div
-                style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; opacity: 0.8;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    style="color: #10b981;">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    <path d="M9 12l2 2 4-4"></path>
-                </svg>
-                <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Secure & Verified
-                    Service</span>
-            </div>
-        </div>
-
-        <!-- Credits Section Moved to Profile Page -->
-
-        <!-- Login Prompt (shown when not logged in) -->
-        <div id="loginPrompt" class="login-prompt fade-in delay-1"
-            style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-top: 15px; backdrop-filter: blur(10px);">
-            <div class="login-header" style="text-align: center; margin-bottom: 20px;">
-                <h3 style="margin: 0; color: var(--text-primary); font-size: 1.1rem;" data-i18n="portal_title">WiseCat
-                    AI Login</h3>
-            </div>
-
-            <!-- Anti-Fraud & Terms Acceptance -->
-            <label class="agreement-box" for="termsCheckbox">
-                <div class="custom-checkbox">
-                    <input type="checkbox" id="termsCheckbox" required>
-                    <span class="checkmark"></span>
-                </div>
-                <span class="agreement-text" data-i18n="label_agree_fraud">
-                    I agree I will not use this service for fraud. I agree to the <a href="terms.html">Terms of
-                        Service</a> & AI hub services.
-                </span>
-            </label>
-            <div class="social-buttons" style="display: flex; flex-direction: column; gap: 10px;">
-                <!-- Primary Action: LINE -->
-                <button type="button" class="social-btn" id="lineLoginBtn"
-                    style="background: #00b900; color: white; border: none; width: 100%; height: 48px; border-radius: 12px; font-weight: bold; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: transform 0.2s, background 0.2s; box-shadow: 0 4px 12px rgba(0, 185, 0, 0.2);">
-                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; margin-right: 10px; fill: white;">
-                        <path
-                            d="M24 10.304c0-5.232-5.328-9.5-11.895-9.5-6.568 0-11.895 4.268-11.895 9.5 0 4.69 4.238 8.604 9.96 9.351.388.084.916.256 1.047.584.12.3.078.77.038 1.074l-.166 1a.398 0 0 0 .584.422c.45-.264 2.428-1.428 3.315-2.222.062-.056.126-.11.18-.17 4.544-1.04 8.832-4.665 8.832-9.539z" />
-                    </svg>
-                    <span data-i18n="btn_line">Sign in with LINE</span>
-                </button>
-
-                <!-- Secondary Actions -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                    <button type="button" class="social-btn" id="googleLoginBtn"
-                        style="background: #fff; color: #444; border: 1px solid #ddd; height: 40px; border-radius: 10px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                        <img src="/google-icon.svg" alt="Google" style="width: 16px;">
-                        <span data-i18n="btn_google">Sign in with Google</span>
-                    </button>
-                    <button type="button" class="social-btn" id="microsoftLoginBtn"
-                        style="background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); height: 40px; border-radius: 10px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                        <img src="/microsoft-icon.svg" alt="Microsoft" style="width: 14px;">
-                        <span data-i18n="btn_microsoft">Sign in with Microsoft</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Guest Access (QA/Testing) -->
-            <button type="button" id="guestLoginBtn" class="guest-btn">
-                <span class="icon">🕵️</span>
-                <span class="text">Continue as Guest</span>
-            </button>
-
-            <!-- Admin Access (Development/Testing) -->
-            <button type="button" id="adminLoginBtn" class="admin-btn">
-                <span class="icon">👑</span>
-                <span class="text">Continue as Admin</span>
-            </button>
-
-            <style>
-                .guest-btn,
-                .admin-btn {
-                    background: var(--nav-item-hover, rgba(255, 255, 255, 0.03));
-                    color: var(--text-secondary);
-                    border: 1px solid var(--border-color);
-                    width: 100%;
-                    height: 42px;
-                    border-radius: 12px;
-                    font-size: 0.85rem;
-                    margin-top: 16px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 8px;
-                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                    font-weight: 500;
-                    letter-spacing: 0.01em;
-                }
-
-                .guest-btn:hover,
-                .admin-btn:hover {
-                    background: var(--nav-item-hover, rgba(255, 255, 255, 0.08));
-                    border-color: var(--border-color-hover, rgba(255, 255, 255, 0.2));
-                    color: var(--text-primary);
-                    transform: translateY(-1px);
-                }
-
-                .admin-btn:hover {
-                    border-color: rgba(251, 191, 36, 0.5);
-                    background: rgba(251, 191, 36, 0.05);
-                }
-
-                .guest-btn:active,
-                .admin-btn:active {
-                    transform: translateY(0);
-                    background: var(--nav-item-hover, rgba(255, 255, 255, 0.05));
-                }
-
-                .guest-btn .icon,
-                .admin-btn .icon {
-                    font-size: 1.1em;
-                    opacity: 0.8;
-                }
-            </style>
-
-            <div style="font-size: 10px; color: #666; margin-top: 25px; text-align: center; line-height: 1.4; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;"
-                data-i18n="login_privacy_notice">
-                This service (WiseCat) will access your LINE email address solely for account creation, credit
-                management, and service notifications.
-            </div>
-            <div id="authError" class="auth-error"></div>
-        </div>
-
-        <!-- User Profile (shown when logged in) -->
-        <div id="userProfile" class="user-profile fade-in delay-1">
-            <img id="userAvatar" src="" alt="User" class="user-avatar">
-            <div class="user-info">
-                <div class="user-name" id="userName"></div>
-                <div class="user-email" id="userEmail"></div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div style="display: flex; flex-direction: column; gap: 8px; min-width: 120px;">
-                <a href="/dashboard.html" class="logout-btn"
-                    style="background: var(--primary-color); text-decoration: none; display: flex; align-items: center; justify-content: center; height: 36px; padding: 0 12px; font-weight: 600; gap: 6px; border: none; font-size: 0.9rem; border-radius: 8px; color: white; width: 100%;">
-                    📊 Dashboard
-                </a>
-                <button onclick="logout()" class="logout-btn"
-                    style="height: 32px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); width: 100%;">
-                    Logout
-                </button>
-            </div>
-        </div>
-
-        <!-- Debug Tool (Temporary) -->
-        <div style="text-align: center; margin-top: 10px;">
-            <button
-                onclick="alert('Storage: ' + (localStorage.getItem('wisecat_user') ? 'FOUND' : 'EMPTY') + '\n\n' + localStorage.getItem('wisecat_user'))"
-                style="background: none; border: none; color: #555; font-size: 10px; cursor: pointer; padding: 5px;">
-                🔍 Debug Storage
-            </button>
-        </div>
-
-
-        <div class="footer fade-in delay-3">
-            <div style="font-weight: 600; margin-bottom: 8px;">&copy; 2026 WiseCat AI. All rights reserved.</div>
-            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
-                <a href="/faq.html"
-                    style="color: var(--text-secondary); text-decoration: none; margin-right: 15px;">FAQ</a>
-                <a href="/terms.html" style="color: var(--text-secondary); text-decoration: none;">Terms of Service</a>
-            </div>
-            <div style="font-size: 12px; color: var(--text-disabled); margin-bottom: 12px;">
-                Professional AI-Powered Communication Services
-            </div>
-            <div style="margin-top: 10px;">
-                <a href="https://line.me/R/ti/p/@785ausca" target="_blank"
-                    onclick="window.location.href='line://ti/p/@785ausca';"
-                    style="color: var(--primary-color); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
-                    <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;">
-                        <path
-                            d="M24 10.304c0-5.232-5.328-9.5-11.895-9.5-6.568 0-11.895 4.268-11.895 9.5 0 4.69 4.238 8.604 9.96 9.351.388.084.916.256 1.047.584.12.3.078.77.038 1.074l-.166 1a.398 0 0 0 .584.422c.45-.264 2.428-1.428 3.315-2.222.062-.056.126-.11.18-.17 4.544-1.04 8.832-4.665 8.832-9.539z" />
-                    </svg>
-                    Contact Support / Feedback
-                </a>
-            </div>
-        </div>
+        <h1>Yi-Hsuan Lee</h1>
+        <p>Redirecting to <a href="./resume/">resume</a>...</p>
     </div>
-
-    <!-- Theme Initialization Script (Before main scripts) -->
-    <script>
-        // Initialize theme from localStorage or system preference
-        // This runs before the main script to avoid flash of wrong theme
-        function initTheme() {
-            const savedTheme = localStorage.getItem('wisecat_theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-            document.documentElement.setAttribute('data-theme', theme);
-        }
-
-        // Initialize immediately before any DOM rendering
-        initTheme();
-    </script>
-
-    <script type="module" src="./src/entry.ts"></script>
 </body>
 
 </html>
