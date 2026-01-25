@@ -1,27 +1,10 @@
-# Yi-Hsuan Lee - Personal Portfolio
+# Personal Resume
 
-Personal resume and portfolio website.
+This repository hosts my personal resume.
 
-## Live Site
-
-🔗 https://yihsuanlee.github.io
-
-This repository hosts my personal resume using GitHub Pages.
+**Live URL:** [https://slps20425.github.io/yihsuanlee.github.io](https://slps20425.github.io/yihsuanlee.github.io)
 
 ## Structure
 
-```
-├── index.html          # Redirects to resume
-└── resume/
-    └── index.html      # Main resume page
-```
-
-## Deployment
-
-This site is automatically deployed via GitHub Pages from the `main` branch.
-
-## Contact
-
-- Email: eason.s@hotmail.com
-- Phone: +886-976-347-762
-- Location: Taiwan
+*   `index.html`: Redirects to the resume application.
+*   `resume/`: Contains the resume source code.
