@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evan Lee - Software QA Engineer</title>
+    <title>Evan Lee - Software QA Engineer | AI Agent Cowork</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -65,7 +65,7 @@
     <canvas id="particle-canvas" class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none"></canvas>
     <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
         <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
+            <div class="flex flex-wrap items-center justify-between gap-y-1 py-3 md:h-16 md:py-0">
                 <div class="flex-shrink-0">
                     <h1 class="text-xl font-bold text-gray-800">Evan Lee</h1>
                 </div>
@@ -83,6 +83,9 @@
                             class="nav-link text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Education</a>
                     </div>
                 </div>
+                <div class="text-xs sm:text-sm text-gray-500 text-right flex-shrink-0">
+                    <span>Taiwan</span> | <span>+886-976-347-762</span> | <span>eason.s@hotmail.com</span>
+                </div>
             </div>
         </nav>
     </header>
@@ -91,18 +94,19 @@
         <section id="summary" class="mb-16 scroll-mt-24">
             <div class="text-center">
                 <h2 class="text-4xl font-extrabold text-gray-900 tracking-tight">Evan Lee</h2>
-                <p class="mt-2 text-lg text-indigo-600 font-semibold">Software QA Engineer | Test Automation Specialist
+                <p class="mt-2 text-lg text-indigo-600 font-semibold">Software QA Engineer | Test Automation & AI
+                    Agent Cowork Specialist
                 </p>
                 <p class="mt-4 max-w-3xl mx-auto text-gray-600">
                     Experienced Software QA Engineer with 5+ years in comprehensive testing across mobile, web, and
-                    embedded systems. Proven track record in test automation, CI/CD pipeline management, and
-                    cross-functional collaboration with international teams. Skilled in leveraging AI/ML technologies
-                    and prompt engineering to build innovative tools that enhance team productivity and streamline
-                    development workflows.
+                    embedded systems, plus a growing track record of hands-on AI agent cowork outside my day job:
+                    shipping multiple end-to-end proof-of-concepts (POCs) on Claude Code multi-agent workflows, n8n
+                    automation, and voice AI (Vapi/ElevenLabs). I've personally built and operated two production
+                    AI-native platforms (WiseCat AI, ShareJoin) on Firebase/Firestore, including the engineering
+                    harness around them: self-built bug-detection/triage pipelines, CI/CD gates with auto-retry, and
+                    the full loop from ambiguous client requirements (legal/compliance, telephony, marketing
+                    automation, third-party partnerships) to a working, deployed solution.
                 </p>
-                <div class="mt-6 text-sm text-gray-500">
-                    <span>Taiwan</span> | <span>+886-976-347-762</span> | <span>eason.s@hotmail.com</span>
-                </div>
             </div>
         </section>
 
@@ -121,25 +125,31 @@
                     </div>
                 </div>
                 <div class="md:col-span-1 lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md border-2 border-indigo-100">
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">AI Agent Engineering & Automation</h4>
+                        <p class="text-gray-600 text-sm">Claude Code (multi-agent coworking, subagent orchestration),
+                            n8n workflow automation, RAG/Pinecone, Vapi & ElevenLabs voice AI, prompt evaluation &
+                            tuning, automated bug-triage pipelines, CI/CD harness design</p>
+                    </div>
                     <div class="bg-white p-6 rounded-lg shadow-md">
                         <h4 class="font-bold text-lg text-gray-800 mb-2">Systems & Cloud</h4>
                         <p class="text-gray-600 text-sm">Linux (Ubuntu), Unix, Windows, Mac OS, AWS (Bedrock, Lambda,
-                            S3, EC2), Amazon Q, Google Cloud, Firebase</p>
+                            S3, EC2), Amazon Q, Google Cloud Platform (GCP), Firebase (Auth, Hosting, Cloud Functions)</p>
                     </div>
                     <div class="bg-white p-6 rounded-lg shadow-md">
                         <h4 class="font-bold text-lg text-gray-800 mb-2">Programming</h4>
-                        <p class="text-gray-600 text-sm">Python, Java, SQL, Shell, JavaScript, TypeScript, Prompt
-                            Engineering (Claude AI)</p>
+                        <p class="text-gray-600 text-sm">Python, Java, SQL, Shell, JavaScript, TypeScript, Groovy,
+                            Gradle, Jenkins, Prompt Engineering (Claude AI)</p>
                     </div>
                     <div class="bg-white p-6 rounded-lg shadow-md">
                         <h4 class="font-bold text-lg text-gray-800 mb-2">Testing & Automation</h4>
-                        <p class="text-gray-600 text-sm">Selenium, Appium, Robot Framework, Jenkins CI/CD, Cucumber,
-                            BDD, N8N</p>
+                        <p class="text-gray-600 text-sm">Selenium, Appium, Robot Framework, Playwright, Jenkins
+                            CI/CD, Cucumber, BDD</p>
                     </div>
                     <div class="bg-white p-6 rounded-lg shadow-md">
                         <h4 class="font-bold text-lg text-gray-800 mb-2">Databases & Dev Tools</h4>
-                        <p class="text-gray-600 text-sm">Oracle, PostgreSQL, Firestore, Docker, Jira, Git, Postman,
-                            JMeter, npm/npx</p>
+                        <p class="text-gray-600 text-sm">Oracle, PostgreSQL, Firestore, Supabase, Docker, Jira, Git,
+                            Postman, JMeter, npm/npx</p>
                     </div>
                 </div>
             </div>
@@ -168,10 +178,16 @@
                                 <li>Manage Jenkins CI/CD pipelines for streamlined software delivery.</li>
                                 <li>Test EAA compliance and third-party sensor integration across Android/iOS platforms.
                                 </li>
+                                <li>Collaborate cross-functionally across Camera and Doorbell product lines, and partner
+                                    with the new Blink project team, coordinating with engineers across regions (US/Taiwan)
+                                    on shared test strategy, defect triage, and release readiness.</li>
                                 <li>Developed a prompt flow tool for efficient Jira ticket creation by analyzing
                                     screenshots/logs.</li>
                                 <li>Contributed functionality to MCP servers and automated test cases with 2-4 PRs per
                                     month.</li>
+                                <li>Serve as a go-to mentor for junior teammates, pairing on debugging and automation
+                                    design, and act as a professional PR reviewer providing thorough, constructive code
+                                    review feedback across the team.</li>
                             </ul>
                         </div>
                     </div>
@@ -256,6 +272,25 @@
                         class="project-modal-trigger mt-4 bg-indigo-100 text-indigo-700 text-sm font-semibold py-2 px-4 rounded-lg self-start hover:bg-indigo-200 transition-colors"
                         data-project-id="6">Learn More</button>
                 </div>
+                <!-- NEW PROJECT: ShareJoin (EventGo) -->
+                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col border-2 border-indigo-100">
+                    <h4 class="font-bold text-lg text-gray-800 flex items-center">ShareJoin (EventGo) Platform <span
+                            class="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-700 rounded-full">Live</span></h4>
+                    <p class="mt-2 text-gray-600 text-sm flex-grow">An AI-natively engineered event/rental marketplace
+                        with a self-built bug-triage pipeline, automated CI/CD release gates, and AI-driven marketing
+                        automation for third-party partners (coaches, venue partners).</p>
+                    <button
+                        class="project-modal-trigger mt-4 bg-indigo-100 text-indigo-700 text-sm font-semibold py-2 px-4 rounded-lg self-start hover:bg-indigo-200 transition-colors"
+                        data-project-id="7">Learn More</button>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                    <h4 class="font-bold text-lg text-gray-800">Automated Test Framework</h4>
+                    <p class="mt-2 text-gray-600 text-sm flex-grow">Consistently delivered automation improvements,
+                        submitting 2-4 pull requests monthly.</p>
+                    <button
+                        class="project-modal-trigger mt-4 bg-indigo-100 text-indigo-700 text-sm font-semibold py-2 px-4 rounded-lg self-start hover:bg-indigo-200 transition-colors"
+                        data-project-id="4">Learn More</button>
+                </div>
                 <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
                     <h4 class="font-bold text-lg text-gray-800">Prompt Flow for Jira Creation</h4>
                     <p class="mt-2 text-gray-600 text-sm flex-grow">An AI-powered tool that automates and enhances Jira
@@ -289,14 +324,6 @@
                         data-project-id="3">Learn More</button>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
-                    <h4 class="font-bold text-lg text-gray-800">Automated Test Framework</h4>
-                    <p class="mt-2 text-gray-600 text-sm flex-grow">Consistently delivered automation improvements,
-                        submitting 2-4 pull requests monthly.</p>
-                    <button
-                        class="project-modal-trigger mt-4 bg-indigo-100 text-indigo-700 text-sm font-semibold py-2 px-4 rounded-lg self-start hover:bg-indigo-200 transition-colors"
-                        data-project-id="4">Learn More</button>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
                     <h4 class="font-bold text-lg text-gray-800">Line Chat Bot</h4>
                     <p class="mt-2 text-gray-600 text-sm flex-grow">Personal project creating an interactive chatbot
                         using Python.</p>
@@ -311,6 +338,11 @@
             <h3 class="text-3xl font-bold text-gray-900 mb-6 text-center">Education & Training</h3>
             <div class="space-y-4 max-w-2xl mx-auto">
                 <div>
+                    <h4 class="text-lg font-bold text-gray-800">Recent Training</h4>
+                    <p class="text-indigo-600">OpenAI (LangChain) and GitHub Copilot Workshop | 2024</p>
+                </div>
+                <hr>
+                <div>
                     <h4 class="text-lg font-bold text-gray-800">Master of Science, Computer Science</h4>
                     <p class="text-indigo-600">National Central University | 2019</p>
                     <p class="text-sm text-gray-600 mt-1">Thesis: Portfolio Allocation using Autoencoder and
@@ -322,11 +354,6 @@
                     </h4>
                     <p class="text-indigo-600">Tamkang University | 2013</p>
                     <p class="text-sm text-gray-600 mt-1">Exchange Program: Washington State University</p>
-                </div>
-                <hr>
-                <div>
-                    <h4 class="text-lg font-bold text-gray-800">Recent Training</h4>
-                    <p class="text-indigo-600">OpenAI (LangChain) and GitHub Copilot Workshop | 2024</p>
                 </div>
             </div>
         </section>
@@ -458,17 +485,19 @@
 
             // Existing Chart Code
             const skillsData = {
-                labels: ['Systems & Cloud', 'Programming', 'Testing & Automation', 'Databases & Dev Tools'],
+                labels: ['AI Agent Engineering & Automation', 'Systems & Cloud', 'Programming', 'Testing & Automation', 'Databases & Dev Tools'],
                 datasets: [{
                     label: 'Skills Distribution',
-                    data: [5, 6, 6, 7],
+                    data: [8, 6, 6, 6, 8],
                     backgroundColor: [
+                        'rgba(236, 72, 153, 0.7)',
                         'rgba(79, 70, 229, 0.7)',
                         'rgba(59, 130, 246, 0.7)',
                         'rgba(16, 185, 129, 0.7)',
                         'rgba(249, 115, 22, 0.7)',
                     ],
                     borderColor: [
+                        'rgba(236, 72, 153, 1)',
                         'rgba(79, 70, 229, 1)',
                         'rgba(59, 130, 246, 1)',
                         'rgba(16, 185, 129, 1)',
@@ -619,7 +648,15 @@
                             </li>
                             <li class="flex items-start">
                                 <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
-                                <span><strong>AI Voice & Telephony:</strong> integrated <strong>Twilio</strong> and <strong>Vapi</strong> with custom webhook communication for ultra-low latency, handling real-time voice streams.</span>
+                                <span><strong>AI Voice & Telephony:</strong> integrated <strong>Twilio</strong>, <strong>Vapi</strong>, and <strong>ElevenLabs</strong> with custom webhook communication for ultra-low latency, handling real-time voice streams.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
+                                <span><strong>Voice Prompt Evaluation & Tuning:</strong> Built eval loops to iterate on voice-agent prompts (latency, accuracy, tone), comparing ElevenLabs synthesis quality against Vapi pipelines for production calls.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
+                                <span><strong>Legal & Corporate Compliance:</strong> Engineered telephony consent/legal-compliance flows for corporate and legal-services clients placing automated outbound/inbound calls.</span>
                             </li>
                             <li class="flex items-start">
                                 <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
@@ -628,6 +665,10 @@
                             <li class="flex items-start">
                                 <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
                                 <span><strong>RAG / Vector AI:</strong> Integrated <strong>RAG (Retrieval-Augmented Generation)</strong> with <strong>Pinecone Vector Database</strong> to give the AI long-term memory and context awareness.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
+                                <span><strong>AI-Native Dev Harness:</strong> Used <strong>Claude Code coworking</strong> to operate a robust build/fix/ship loop, with a routine that pulls bugs from our own bug-tracking system straight into the fix pipeline, plus CI/CD automation.</span>
                             </li>
                             <li class="flex items-start">
                                 <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
@@ -647,8 +688,65 @@
                                 <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">n8n</span>
                                 <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">TypeScript</span>
                                 <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">Pinecone (RAG)</span>
-                                <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">Twilio/Vapi</span>
+                                <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">Twilio/Vapi/ElevenLabs</span>
+                                <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">Claude Code</span>
                                 <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">Mermaid.js</span>
+                            </div>
+                        </div>`
+                },
+                {
+                    title: 'ShareJoin (EventGo) Platform (Live Project)',
+                    content: `
+                        <p class="mb-4">A live sports/activity event and rental marketplace platform, operated end-to-end with an AI-native engineering harness, from feature build to production bug triage and release.</p>
+
+                        <div class="mb-5">
+                            <a href="https://sharejoin.app/" target="_blank" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-bold rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition transform hover:-translate-y-0.5">
+                                🚀 Visit Live Project
+                            </a>
+                        </div>
+
+                        <h5 class="font-bold text-gray-900 border-b pb-1 mb-2">Advanced Tech Stack & Features</h5>
+                        <ul class="space-y-3 text-sm">
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
+                                <span><strong>Core Backend & Cloud:</strong> Built on <strong>Firebase Hosting</strong> and <strong>Supabase</strong> (Postgres, Auth, Realtime, RLS) for a serverless, multi-environment (stage/prod) architecture.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
+                                <span><strong>Self-Built Bug-Triage Pipeline:</strong> Designed a production bug-tracking table with a diagnosis-log feed; a daily/weekly triage routine classifies incoming bugs by severity and risk before any fix work starts.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
+                                <span><strong>Robust CI/CD Harness:</strong> End-to-end Playwright test gates with automatic failed-test retry, data-integrity and edge-function canaries, and a staged release flow (stage → prod) with rollback discipline.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
+                                <span><strong>AI-Native Dev Workflow:</strong> Operated the whole build/fix/ship loop via <strong>Claude Code coworking</strong> and parallel sub-agent dispatch, turning ambiguous product asks into shipped, tested changes.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
+                                <span><strong>AI-Driven Marketing Automation:</strong> Automated daily promotional posting on Threads (AI-drafted content, scheduled publishing) to grow organic reach.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
+                                <span><strong>B2B / Third-Party Integration:</strong> Built partner-facing flows for coaches and venue/massage-store partners to list and promote services on the marketplace.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 w-1.5 h-1.5 mt-1.5 bg-indigo-500 rounded-full mr-2"></span>
+                                <span><strong>Legal & Corporate Compliance:</strong> Implemented account-lifecycle and data-handling rules (consent, soft-delete, identity merge/unlink) aligned with corporate legal requirements.</span>
+                            </li>
+                        </ul>
+
+                        <div class="mt-4 pt-3 border-t border-gray-100">
+                             <p class="text-xs text-gray-500 font-medium uppercase tracking-wide mb-2">Technologies Used</p>
+                             <div class="flex flex-wrap gap-2">
+                                <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">Firebase</span>
+                                <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">Supabase / Postgres</span>
+                                <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">Claude Code</span>
+                                <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">Playwright CI/CD</span>
+                                <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">GitHub Actions</span>
+                                <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">Threads API</span>
+                                <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-mono">TypeScript/JavaScript</span>
                             </div>
                         </div>`
                 }
